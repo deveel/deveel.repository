@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Deveel</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Deveel.Mongo.Store" Version="1.0.0-3423081977" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
+  </ItemGroup>
+
+</Project>
