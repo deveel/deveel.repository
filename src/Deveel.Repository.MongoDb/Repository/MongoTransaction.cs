@@ -2,11 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+using Deveel.Repository;
+
 using MongoDB.Driver;
 
 namespace Deveel.Data {
-	class MongoDbSession : IDataTransaction {
-		public MongoDbSession(IClientSessionHandle sessionHandle) {
+	class MongoTransaction : IDataTransaction {
+		public MongoTransaction(IClientSessionHandle sessionHandle) {
 			this.SessionHandle = sessionHandle;
 		}
 

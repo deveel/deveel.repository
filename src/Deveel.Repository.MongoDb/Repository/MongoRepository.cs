@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Deveel.Data;
 using Deveel.Repository;
 
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 using MongoDB.Driver;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	public class MongoRepository<TDocument> : MongoStore<TDocument>, IRepository<TDocument>, IQueryableRepository<TDocument> 
 		where TDocument : class, IEntity {
 		private bool disposed;
@@ -49,7 +50,7 @@ namespace Deveel.Data {
 		IQueryable<TDocument> IQueryableRepository<TDocument>.AsQueryable() => AsQueryable();
 
 		internal IClientSessionHandle AssertMongoDbSession(IDataTransaction dataSession) {
-			if (dataSession is MongoDbSession session)
+			if (dataSession is MongoTransaction session)
 				return session.SessionHandle;
 
 			throw new ArgumentException("The session type is invalid in this context");
@@ -126,6 +127,38 @@ namespace Deveel.Data {
 			var result = await GetPageAsync(pageQuery, cancellationToken);
 
 			return new PaginatedResult<TDocument>(page, result.TotalItems, result.Items);
+		}
+
+		Task<bool> IRepository.ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken)
+			=> ExistsAsync(GetFilterDefinition(filter), cancellationToken);
+
+		Task<long> IRepository.CountAsync(IQueryFilter filter, CancellationToken cancellationToken)
+			=> CountAsync(GetFilterDefinition(filter), cancellationToken);
+
+		async Task<IEntity> IRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
+			=> await FindAsync(GetFilterDefinition(filter), cancellationToken);
+
+		Task<TDocument> IRepository<TDocument>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
+			=> FindAsync(GetFilterDefinition(filter), cancellationToken);
+
+		Task<IList<TDocument>> IRepository<TDocument>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken)
+			=> FindAllAsync(GetFilterDefinition(filter), cancellationToken);
+
+		async Task<IList<IEntity>> IRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
+			var result = await FindAllAsync(GetFilterDefinition(filter), cancellationToken);
+			return result.Cast<IEntity>().ToList();
+		}
+
+		protected virtual FilterDefinition<TDocument> GetFilterDefinition(IQueryFilter filter) {
+			if (filter == null || filter.IsEmpty())
+				return Builders<TDocument>.Filter.Empty;
+
+			if (filter is ExpressionQueryFilter<TDocument> expr)
+				return Builders<TDocument>.Filter.Where(expr.Expression);
+			if (filter is MongoQueryFilter<TDocument> filterDef)
+				return filterDef.Filter;
+
+			throw new ArgumentException($"The query filter type '{filter.GetType()}' is not supported by Mongo");
 		}
 
 		protected override FieldDefinition<TDocument, object> Field(string fieldName) {

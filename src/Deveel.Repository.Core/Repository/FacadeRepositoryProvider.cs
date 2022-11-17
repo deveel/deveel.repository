@@ -1,7 +1,5 @@
 ﻿using System;
 
-using Deveel.Data;
-
 namespace Deveel.Repository {
 	class FacadeRepositoryProvider<TEntity, TFacade> : IRepositoryProvider<TFacade>
 		where TEntity : class, TFacade, IEntity

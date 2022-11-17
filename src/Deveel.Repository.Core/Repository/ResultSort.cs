@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// Provides a default implementation of the result sort
 	/// </summary>

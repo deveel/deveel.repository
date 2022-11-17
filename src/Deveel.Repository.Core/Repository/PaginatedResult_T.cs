@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// The strongly typed page from a repository, obtained from a query
 	/// </summary>

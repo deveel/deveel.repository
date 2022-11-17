@@ -4,7 +4,7 @@ using System.Reflection.Metadata;
 
 using Deveel.Repository;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// Describes the request to obtain a page of a given size
 	/// from a repository

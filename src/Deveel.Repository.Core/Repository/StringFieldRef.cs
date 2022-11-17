@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// References a field of an entity by its name
 	/// </summary>

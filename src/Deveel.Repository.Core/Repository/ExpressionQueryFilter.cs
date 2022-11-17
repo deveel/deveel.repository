@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// An implementation of a query expr that uses a lambda expression
 	/// </summary>

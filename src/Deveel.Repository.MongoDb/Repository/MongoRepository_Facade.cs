@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
+﻿using Deveel.Data;
 
-using Microsoft.Extensions.Options;
-using System.Linq;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade> 
 		where TEntity : class, TFacade, IEntity
 		where TFacade : class, IEntity {
@@ -22,6 +18,14 @@ namespace Deveel.Data {
 			return entity;
 		}
 
+		async Task<IList<TFacade>> IRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
+			var result = await FindAllAsync(GetFilterDefinition(filter), cancellationToken);
+			return result.Cast<TFacade>().ToList();
+		}
+
+		async Task<TFacade> IRepository<TFacade>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default)
+			=> await FindAsync(GetFilterDefinition(filter), cancellationToken);
+		
 		Task<string> IRepository<TFacade>.CreateAsync(TFacade entity, CancellationToken cancellationToken)
 			=> CreateAsync(Assert(entity), cancellationToken);
 

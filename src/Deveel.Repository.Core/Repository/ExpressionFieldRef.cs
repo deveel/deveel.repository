@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// References a expr of an entity through a selection expression
 	/// </summary>

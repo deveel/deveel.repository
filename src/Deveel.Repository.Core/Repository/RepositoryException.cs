@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// An exception that is thrown during the execution
 	/// of an operation on the repository

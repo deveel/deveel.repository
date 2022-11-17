@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// Represents an provider of repositories that
 	/// are isolating the entities of a given tenant

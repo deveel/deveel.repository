@@ -1,9 +1,11 @@
 ﻿using System;
 
+using Deveel.Data;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	public class MongoRepositoryProvider<TEntity, TFacade> : MongoRepositoryProvider<TEntity>, IRepositoryProvider<TFacade>
 		where TEntity : class, TFacade, IEntity
 		where TFacade : class, IEntity {

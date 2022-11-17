@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// The contract defining a repository of entities, accessible
 	/// for read and write operations
@@ -139,6 +139,10 @@ namespace Deveel.Data {
 		/// or <c>null</c> if none entity was found.
 		/// </returns>
 		new Task<TEntity> FindByIdAsync(string id, CancellationToken cancellationToken = default);
+
+		new Task<TEntity> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
+
+		new Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Gets a page of items from the repository

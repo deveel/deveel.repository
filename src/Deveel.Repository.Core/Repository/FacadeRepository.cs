@@ -1,6 +1,5 @@
 ﻿using System;
 
-using Deveel.Data;
 using Deveel.States;
 
 using static System.Formats.Asn1.AsnWriter;
@@ -34,7 +33,7 @@ namespace Deveel.Repository {
 		}
 
 		public Task<string> CreateAsync(TFacade entity, CancellationToken cancellationToken)
-	=> repository.CreateAsync(Assert(entity), cancellationToken);
+			=> repository.CreateAsync(Assert(entity), cancellationToken);
 
 		public Task<string> CreateAsync(IDataTransaction session, TFacade entity, CancellationToken cancellationToken)
 			=> repository.CreateAsync(session, Assert(entity), cancellationToken);
@@ -80,5 +79,27 @@ namespace Deveel.Repository {
 
 		public Task<PaginatedResult<TFacade>> GetPageAsync(PageRequest<TFacade> request, CancellationToken cancellationToken = default)
 			=> throw new NotImplementedException();
+
+		public async Task<TFacade> FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
+			=> await repository.FindAsync(filter, cancellationToken);
+
+		async Task<IEntity> IRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
+			=> await repository.FindAsync(filter, cancellationToken);
+
+		public async Task<IList<TFacade>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+			var result = await repository.FindAllAsync(filter, cancellationToken);
+			return result.Cast<TFacade>().ToList();
+		}
+
+		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default)
+			=> repository.ExistsAsync(filter, cancellationToken);
+
+		public Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default)
+			=> repository.CountAsync(filter, cancellationToken);
+
+		async Task<IList<IEntity>> IRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) { 
+			var result = await FindAllAsync(filter, cancellationToken);
+			return result.Cast<IEntity>().ToList();
+		}
 	}
 }

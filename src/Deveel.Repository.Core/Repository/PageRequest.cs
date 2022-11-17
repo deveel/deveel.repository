@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// Describes the request to obtain a page of a repository of entities,
 	/// given a set of filters and a sort order of the results

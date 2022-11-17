@@ -4,10 +4,12 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Linq;
 
+using Deveel.Data;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	public class MongoRepositoryProvider<TEntity> : MongoStoreProvider<TEntity>, IRepositoryProvider<TEntity> where TEntity : class, IEntity {
 		public MongoRepositoryProvider(
 			IOptions<MongoDbOptions> baseOptions, 

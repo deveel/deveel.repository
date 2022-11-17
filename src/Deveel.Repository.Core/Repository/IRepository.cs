@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// The contract defining a repository of entities, accessible
 	/// for read and write operations
@@ -174,5 +174,13 @@ namespace Deveel.Data {
 		/// <seealso cref="SupportsPaging"/>
 		/// <seealso cref="SupportsFilters"/>
 		Task<PaginatedResult> GetPageAsync(PageRequest request, CancellationToken cancellationToken = default);
+
+		Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
+
+		Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken= default);
+
+		Task<IEntity> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
+
+		Task<IList<IEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
 	}
 }

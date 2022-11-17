@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// A factory that provides instances of transactions
 	/// used to isolate the access to data layers of an underlying storage

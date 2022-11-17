@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Deveel.Data {
+namespace Deveel.Repository {
 	/// <summary>
 	/// Represents a transaction provided by the underlying
 	/// storage of the repository, to isolate operations
