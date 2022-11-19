@@ -98,11 +98,22 @@ namespace Deveel.Data {
         public static Task<IEntity?> FindAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).FindAsync(cancellationToken);
 
-        #endregion
+		#endregion
 
-        #region FindAll
+		#region FindById
 
-        public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
+		public static Task<TEntity?> FindByIdAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, string id, CancellationToken cancellationToken = default)
+			where TEntity : class, IEntity
+			=> provider.GetRepository(tenantId).FindByIdAsync(id, cancellationToken);
+
+		public static Task<IEntity?> FindByIdAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
+			=> provider.GetRepository(tenantId).FindAsync(cancellationToken);
+
+		#endregion
+
+		#region FindAll
+
+		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
             where TEntity : class, IEntity
             => provider.GetRepository(tenantId).FindAllAsync(filter, cancellationToken);
 
@@ -120,6 +131,46 @@ namespace Deveel.Data {
         public static Task<IList<IEntity>> FindAllAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).FindAllAsync(cancellationToken);
 
-        #endregion
-    }
+		#endregion
+
+		#region Count
+
+		public static Task<long> CountAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
+			where TEntity : class, IEntity
+			=> provider.GetRepository(tenantId).CountAsync(filter, cancellationToken);
+
+		public static Task<long> CountAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+			where TEntity : class, IEntity
+			=> provider.GetRepository(tenantId).CountAsync(filter, cancellationToken);
+
+		public static Task<long> CountAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
+			=> provider.GetRepository(tenantId).CountAsync(filter, cancellationToken);
+
+
+		#endregion
+
+		#region CountAll
+
+		public static Task<long> CountAllAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, CancellationToken cancellationToken = default)
+			where TEntity : class, IEntity
+			=> provider.GetRepository(tenantId).CountAllAsync(cancellationToken);
+
+
+		public static Task<long> CountAllAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
+			=> provider.GetRepository(tenantId).CountAllAsync(cancellationToken);
+
+		#endregion
+
+		#region GetPage
+
+		public static Task<PaginatedResult<TEntity>> GetPageAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, PageRequest<TEntity> request, CancellationToken cancellationToken = default)
+			where TEntity : class, IEntity
+			=> provider.GetRepository(tenantId).GetPageAsync(request, cancellationToken);
+
+		public static Task<PaginatedResult> GetPageAsync(this IRepositoryProvider provider, string tenantId, PageRequest request, CancellationToken cancellationToken = default)
+			=> provider.GetRepository(tenantId).GetPageAsync(request, cancellationToken);
+
+
+		#endregion
+	}
 }
