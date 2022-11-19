@@ -28,7 +28,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
       
-    - name Pack NuGet
+    - name: Pack NuGet
       run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release -o ./nuget
       
     - name: Push NutGet
