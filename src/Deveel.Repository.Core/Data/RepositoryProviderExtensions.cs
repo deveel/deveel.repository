@@ -161,6 +161,22 @@ namespace Deveel.Data {
 
 		#endregion
 
+		#region Exists
+
+		public static Task<bool> ExistsAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
+			where TEntity : class, IEntity
+			=> provider.GetRepository(tenantId).ExistsAsync(filter, cancellationToken);
+
+		public static Task<bool> ExistsAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+			where TEntity : class, IEntity
+			=> provider.GetRepository(tenantId).ExistsAsync(filter, cancellationToken);
+
+		public static Task<bool> ExistsAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
+			=> provider.GetRepository(tenantId).ExistsAsync(filter, cancellationToken);
+
+
+		#endregion
+
 		#region GetPage
 
 		public static Task<PaginatedResult<TEntity>> GetPageAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, PageRequest<TEntity> request, CancellationToken cancellationToken = default)
