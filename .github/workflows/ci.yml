@@ -3,8 +3,6 @@ name: Repository CI/CD
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
@@ -35,4 +33,4 @@ jobs:
       run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release -o ./nuget
       
     - name: Push NutGet
-      run: dotnet nuget push ./nuget/*.nupkg -s "Deveel GitHub"
+      run: dotnet nuget push ./nuget/*.nupkg -s "Deveel GitHub" --skip-duplicate --api-key ${{secrets.DEVEEL_NUGET_TOKEN}}
