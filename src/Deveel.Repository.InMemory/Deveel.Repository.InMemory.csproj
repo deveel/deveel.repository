@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Deveel</RootNamespace>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Authors>Antonello Provenzano</Authors>
+    <Company>Deveel AS</Company>
+    <Copyright>(C) 2022 Deveel</Copyright>
+    <PackageProjectUrl>https://github.com/deveel/deveel.data.repository</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/deveel/deveel.data.repository</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>data framework repository memory in-memory inmemory</PackageTags>
+    <Description>An implementation of the repository model that is handled in-memory</Description>
+    <PackageLicenseFile>EULA.md</PackageLicenseFile>
+    <PackageIcon>deveel-logo.png</PackageIcon>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\deveel-logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\EULA.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
+  </ItemGroup>
+</Project>

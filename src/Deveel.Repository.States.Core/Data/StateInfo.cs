@@ -2,7 +2,7 @@
 
 using Deveel.States;
 
-namespace Deveel.Repository {
+namespace Deveel.Data {
 	/// <summary>
 	/// Describes a single state of an entity at a given time.
 	/// </summary>

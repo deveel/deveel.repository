@@ -1,14 +1,12 @@
 ﻿using System;
 
-namespace Deveel.Repository {
+namespace Deveel.Data {
 	/// <summary>
 	/// A repository that provides the capability of persisting the
-	/// states of typed entities
+	/// states of entities
 	/// </summary>
-	/// <typeparam name="TEntity">The type of the entity managed by the repository</typeparam>
 	/// <typeparam name="TStatus">The status code of the states of an entity</typeparam>
-	public interface IStateRepository<TEntity, TStatus> : IRepository<TEntity>, IStateRepository<TStatus> 
-		where TEntity : class, IEntity {
+	public interface IStateRepository<TStatus> : IRepository {
 		/// <summary>
 		/// Gets the listing of the states of the entity
 		/// </summary>
@@ -18,7 +16,7 @@ namespace Deveel.Repository {
 		/// Returns a list of <see cref="StateInfo{TStatus}"/> that are the states
 		/// currently held by the <paramref name="entity"/> given.
 		/// </returns>
-		Task<IList<StateInfo<TStatus>>> GetStatesAsync(TEntity entity, CancellationToken cancellationToken = default);
+		Task<IList<StateInfo<TStatus>>> GetStatesAsync(IEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Adds a new state to the entity
@@ -27,7 +25,7 @@ namespace Deveel.Repository {
 		/// <param name="stateInfo">The new state to be added</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		Task AddStateAsync(TEntity entity, StateInfo<TStatus> state, CancellationToken cancellationToken = default);
+		Task AddStateAsync(IEntity entity, StateInfo<TStatus> stateInfo, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Removes a state from the entity
@@ -36,6 +34,6 @@ namespace Deveel.Repository {
 		/// <param name="stateInfo">The state to be removed</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		Task RemoveStateAsync(TEntity entity, StateInfo<TStatus> state, CancellationToken cancellationToken = default);
+		Task RemoveStateAsync(IEntity entity, StateInfo<TStatus> stateInfo, CancellationToken cancellationToken= default);
 	}
 }

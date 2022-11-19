@@ -30,7 +30,7 @@ namespace Deveel.Data
             return result.Cast<TFacade>().ToList();
         }
 
-        async Task<TFacade> IRepository<TFacade>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
+        async Task<TFacade?> IRepository<TFacade>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
             => await FindAsync(GetFilterDefinition(filter), cancellationToken);
 
         Task<string> IRepository<TFacade>.CreateAsync(TFacade entity, CancellationToken cancellationToken)
@@ -51,7 +51,7 @@ namespace Deveel.Data
         Task<bool> IRepository<TFacade>.DeleteAsync(IDataTransaction session, TFacade entity, CancellationToken cancellationToken)
             => DeleteAsync(AssertMongoDbSession(session), Assert(entity), cancellationToken);
 
-        async Task<TFacade> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken)
+        async Task<TFacade?> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken)
             => await FindByIdAsync(id, cancellationToken);
 
         async Task<PaginatedResult<TFacade>> IRepository<TFacade>.GetPageAsync(PageRequest<TFacade> page, CancellationToken cancellationToken)

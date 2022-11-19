@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Deveel.Repository {
+namespace Deveel.Data {
 	public static class RepositoryExtensions {
 		public static void AddState<TEntity, TStatus>(this IStateRepository<TEntity, TStatus> repository, TEntity entity, StateInfo<TStatus> stateInfo)
 			where TEntity : class, IEntity

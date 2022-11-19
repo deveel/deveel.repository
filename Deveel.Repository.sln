@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.States.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Filters", "src\Deveel.Repository.Filters\Deveel.Repository.Filters.csproj", "{F71515B6-6552-4A64-81EC-E434AAB2599E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Filters.XUnit", "test\Deveel.Repository.Filters.XUnit\Deveel.Repository.Filters.XUnit.csproj", "{FADABC0A-6F56-4A98-ACBD-EC0184B16A1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.InMemory", "src\Deveel.Repository.InMemory\Deveel.Repository.InMemory.csproj", "{E2E38FDD-69EB-4071-AD7B-59B6C01A8194}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +47,14 @@ Global
 		{F71515B6-6552-4A64-81EC-E434AAB2599E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F71515B6-6552-4A64-81EC-E434AAB2599E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F71515B6-6552-4A64-81EC-E434AAB2599E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FADABC0A-6F56-4A98-ACBD-EC0184B16A1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FADABC0A-6F56-4A98-ACBD-EC0184B16A1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FADABC0A-6F56-4A98-ACBD-EC0184B16A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FADABC0A-6F56-4A98-ACBD-EC0184B16A1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2E38FDD-69EB-4071-AD7B-59B6C01A8194}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2E38FDD-69EB-4071-AD7B-59B6C01A8194}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2E38FDD-69EB-4071-AD7B-59B6C01A8194}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2E38FDD-69EB-4071-AD7B-59B6C01A8194}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +65,8 @@ Global
 		{65C630F4-3F6D-47C3-83AA-B75ACA6C5C3A} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 		{B34F4342-0840-4B48-9F44-A84E5C0C6B88} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 		{F71515B6-6552-4A64-81EC-E434AAB2599E} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
+		{FADABC0A-6F56-4A98-ACBD-EC0184B16A1F} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
+		{E2E38FDD-69EB-4071-AD7B-59B6C01A8194} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01FD9B16-84B3-4D99-80C1-11B2F3D65B56}
