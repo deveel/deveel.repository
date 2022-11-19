@@ -13,16 +13,19 @@
     <PackageProjectUrl>https://github.com/deveel/deveel.data.repository</PackageProjectUrl>
     <RepositoryUrl>https://github.com/deveel/deveel.data.repository</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>data core framework repository</PackageTags>
-    <Description>Abstractions for the definition of repositories of entities</Description>
+    <PackageTags>data framework repository filter dynamic linq filters</PackageTags>
+    <Description>Extenrions to the of repository model to provide dynamic filters</Description>
     <PackageLicenseFile>EULA.md</PackageLicenseFile>
     <PackageIcon>deveel-logo.png</PackageIcon>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Deveel.Model.Core" Version="1.1.0-3504856214" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Deveel.Service.Filters" Version="1.1.0-3504856214" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
