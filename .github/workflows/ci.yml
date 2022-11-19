@@ -18,6 +18,10 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
+        
+    - name: Add Sources
+      run: |
+        dotnet nuget add source --username tsutomi --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/deveel/index.json"
       
     - name: Restore dependencies
       run: dotnet restore
@@ -32,4 +36,4 @@ jobs:
       run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release -o ./nuget
       
     - name: Push NutGet
-      run: dotnet nuget push ./nuget/** 
+      run: dotnet nuget push ./nuget/** -s github
