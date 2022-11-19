@@ -9,7 +9,7 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Antonello Provenzano</Authors>
     <Company>Deveel AS</Company>
-    <Copyright>(C) 2022 Deveel</Copyright>
+    <Copyright>(C) 2022 Deveel AS</Copyright>
     <PackageProjectUrl>https://github.com/deveel/deveel.data.repository</PackageProjectUrl>
     <RepositoryUrl>https://github.com/deveel/deveel.data.repository</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
