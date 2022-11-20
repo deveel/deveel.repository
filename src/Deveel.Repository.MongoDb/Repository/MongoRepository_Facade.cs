@@ -54,15 +54,15 @@ namespace Deveel.Data
         async Task<TFacade?> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken)
             => await FindByIdAsync(id, cancellationToken);
 
-        async Task<PaginatedResult<TFacade>> IRepository<TFacade>.GetPageAsync(PageRequest<TFacade> page, CancellationToken cancellationToken)
+        async Task<RepositoryPage<TFacade>> IRepository<TFacade>.GetPageAsync(RepositoryPageRequest<TFacade> page, CancellationToken cancellationToken)
         {
-            var newPage = new PageRequest<TEntity>(page.Page, page.Size);
+            var newPage = page.As<TEntity>();
             var result = await GetPageAsync(newPage, cancellationToken);
 
             if (result == null)
-                return PaginatedResult<TFacade>.Empty(page);
+                return RepositoryPage<TFacade>.Empty(page);
 
-            return result.CastTo<TFacade>();
+            return result.As<TFacade>();
         }
 
         Task<bool> IRepository<TFacade>.UpdateAsync(TFacade entity, CancellationToken cancellationToken)

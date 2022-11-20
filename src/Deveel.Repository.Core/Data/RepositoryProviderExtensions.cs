@@ -179,11 +179,11 @@ namespace Deveel.Data {
 
 		#region GetPage
 
-		public static Task<PaginatedResult<TEntity>> GetPageAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, PageRequest<TEntity> request, CancellationToken cancellationToken = default)
+		public static Task<RepositoryPage<TEntity>> GetPageAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity
 			=> provider.GetRepository(tenantId).GetPageAsync(request, cancellationToken);
 
-		public static Task<PaginatedResult> GetPageAsync(this IRepositoryProvider provider, string tenantId, PageRequest request, CancellationToken cancellationToken = default)
+		public static Task<RepositoryPage> GetPageAsync(this IRepositoryProvider provider, string tenantId, RepositoryPageRequest request, CancellationToken cancellationToken = default)
 			=> provider.GetRepository(tenantId).GetPageAsync(request, cancellationToken);
 
 

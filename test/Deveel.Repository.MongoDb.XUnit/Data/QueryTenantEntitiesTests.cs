@@ -214,7 +214,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_GetPage() {
-			var request = new PageRequest<MongoPerson>(1, 10);
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
 
 			var result = await MongoRepository.GetPageAsync(request);
 
@@ -228,7 +228,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_GetPage() {
-			var request = new PageRequest<MongoPerson>(1, 10);
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
 
 			var result = await Repository.GetPageAsync(request);
 
@@ -242,7 +242,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_GetPage() {
-			var request = new PageRequest<MongoPerson>(1, 10);
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
 
 			var result = await FacadeRepository.GetPageAsync(request);
 
@@ -254,8 +254,6 @@ namespace Deveel.Data {
 			Assert.Equal(10, result.Items.Count());
 		}
 
-
-
 		[Fact]
 		public async Task Mongo_GetFilteredPage() {
 			var firstName = people[people.Count - 1].FirstName;
@@ -263,7 +261,7 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new PageRequest<MongoPerson>(1, 10) {
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
 				Filter = x => x.FirstName == firstName
 			};
 
@@ -283,7 +281,7 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new PageRequest<MongoPerson>(1, 10) {
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
 				Filter = x => x.FirstName == firstName
 			};
 
@@ -295,5 +293,27 @@ namespace Deveel.Data {
 			Assert.NotEmpty(result.Items);
 			Assert.Equal(perPage, result.Items.Count());
 		}
+
+		// TODO:
+		//[Fact]
+		//public async Task FacadeRepository_GetFilteredPage() {
+		//	var firstName = people[people.Count - 1].FirstName;
+		//	var peopleCount = people.Count(x => x.FirstName == firstName);
+		//	var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
+		//	var perPage = Math.Min(peopleCount, 10);
+
+		//	var request = new PageRequest<IPerson>(1, 10) {
+		//		Filter = x => x.FirstName == firstName
+		//	};
+
+		//	var result = await FacadeRepository.GetPageAsync(request);
+		//	Assert.NotNull(result);
+		//	Assert.Equal(totalPages, result.TotalPages);
+		//	Assert.Equal(peopleCount, result.TotalItems);
+		//	Assert.NotNull(result.Items);
+		//	Assert.NotEmpty(result.Items);
+		//	Assert.Equal(perPage, result.Items.Count());
+		//}
+
 	}
 }

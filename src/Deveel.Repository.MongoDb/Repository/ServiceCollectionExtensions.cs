@@ -55,7 +55,9 @@ namespace Deveel.Data {
         public static IServiceCollection AddMongoFacadeRepository<TEntity, TFacade>(this IServiceCollection services)
             where TEntity : class, TFacade, IEntity
             where TFacade : class, IEntity
-            => services.AddMongoFacadeRepository<MongoRepository<TEntity, TFacade>, TEntity, TFacade>();
+            => services
+				.AddRepositoryFacade<TEntity, TFacade>()
+				.AddMongoFacadeRepository<MongoRepository<TEntity, TFacade>, TEntity, TFacade>();
 
 
         #endregion

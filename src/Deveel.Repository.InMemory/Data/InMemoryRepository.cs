@@ -183,7 +183,7 @@ namespace Deveel.Data
 		Task<IEntity?> IRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
-		public Task<PaginatedResult<TEntity>> GetPageAsync(PageRequest<TEntity> request, CancellationToken cancellationToken = default) {
+		public Task<RepositoryPage<TEntity>> GetPageAsync(RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
@@ -196,7 +196,7 @@ namespace Deveel.Data
 				var itemCount = entitySet.Count();
 				var items = entitySet.Skip(request.Offset).Take(request.Size);
 
-				var result = new PaginatedResult<TEntity>(request, itemCount,items);
+				var result = new RepositoryPage<TEntity>(request, itemCount,items);
 				return Task.FromResult(result);
 			} catch (Exception ex) {
 				throw new RepositoryException("Unable to retrieve the page", ex) ;
@@ -204,14 +204,14 @@ namespace Deveel.Data
 		}
 
 
-		async Task<PaginatedResult> IRepository.GetPageAsync(PageRequest request, CancellationToken cancellationToken) {
-			var pageRequest = new PageRequest<TEntity>(request.Page, request.Size) {
+		async Task<RepositoryPage> IRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
+			var pageRequest = new RepositoryPageRequest<TEntity>(request.Page, request.Size) {
 				Filter = request.Filter?.AsLambda<TEntity>()
 			};
 
 			var result = await GetPageAsync(pageRequest, cancellationToken);
 
-			return new PaginatedResult(request, result.TotalItems, result.Items?.Cast<IEntity>());
+			return new RepositoryPage(request, result.TotalItems, result.Items?.Cast<IEntity>());
 		}
 		
 		public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {

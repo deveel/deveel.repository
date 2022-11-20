@@ -2,7 +2,7 @@
 
 namespace Deveel.Data {
     static class PageRequestExtensions {
-        public static MongoPageQuery<TDocument> AsPageQuery<TDocument>(this PageRequest request, Func<string, FieldDefinition<TDocument, object>> fieldSelector = null)
+        public static MongoPageQuery<TDocument> AsPageQuery<TDocument>(this RepositoryPageRequest request, Func<string, FieldDefinition<TDocument, object>>? fieldSelector = null)
             where TDocument : class, IEntity {
             var query = new MongoPageQuery<TDocument>(request.Page, request.Size);
 
@@ -29,6 +29,9 @@ namespace Deveel.Data {
                             Builders<TDocument>.Sort.Ascending(expr.Expression) :
                             Builders<TDocument>.Sort.Descending(expr.Expression);
                     } else if (s.Field is StringFieldRef stringRef) {
+						if (fieldSelector == null)
+							throw new NotSupportedException($"No field selector was provider: '{stringRef.FieldName}' cannot be derefereced");
+
                         var field = fieldSelector(stringRef.FieldName);
 
                         sort = s.Ascending ?

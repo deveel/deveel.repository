@@ -12,7 +12,7 @@ namespace Deveel.Data {
         /// Gets a flag indicating whether the implementation of the
         /// repository supports paging queries
         /// </summary>
-        /// <seealso cref="GetPageAsync(PageRequest, CancellationToken)"/>
+        /// <seealso cref="GetPageAsync(RepositoryPageRequest, CancellationToken)"/>
         bool SupportsPaging { get; }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace Deveel.Data {
         /// sorting order.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>
-        /// Returns an instance of <see cref="PaginatedResult"/> that provides the
+        /// Returns an instance of <see cref="RepositoryPage"/> that provides the
         /// page items and a count of total items.
         /// </returns>
         /// <exception cref="RepositoryException">
@@ -196,10 +196,10 @@ namespace Deveel.Data {
         /// Thrown if the filters or the sorting capabilities are not provided by the
         /// implementation of the repository
         /// </exception>
-        /// <seealso cref="PaginatedResult"/>
+        /// <seealso cref="RepositoryPage"/>
         /// <seealso cref="SupportsPaging"/>
         /// <seealso cref="SupportsFilters"/>
-        Task<PaginatedResult> GetPageAsync(PageRequest request, CancellationToken cancellationToken = default);
+        Task<RepositoryPage> GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Determines if at least one item in the repository exists for the

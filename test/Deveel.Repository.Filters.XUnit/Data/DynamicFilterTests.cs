@@ -64,7 +64,7 @@ namespace Deveel.Data {
 			var expected = peopleList.Where(x => x.FirstName == person.FirstName).ToList();
 			var expectedCount = Math.Min(10, expected.Count);
 
-			var page = new PageRequest<Person>(1, 10)
+			var page = new RepositoryPageRequest<Person>(1, 10)
 				.Where($"FirstName == \"{person.FirstName}\"");
 
 			var result = await people.GetPageAsync(page);

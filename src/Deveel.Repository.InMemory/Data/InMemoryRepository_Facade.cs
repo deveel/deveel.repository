@@ -42,14 +42,14 @@ namespace Deveel.Data {
 		Task<bool> IRepository<TFacade>.DeleteAsync(IDataTransaction transaction, TFacade entity, CancellationToken cancellationToken)
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
-		async Task<PaginatedResult<TFacade>> IRepository<TFacade>.GetPageAsync(PageRequest<TFacade> request, CancellationToken cancellationToken) {
-			var newPage = new PageRequest<TEntity>(request.Page, request.Size);
+		async Task<RepositoryPage<TFacade>> IRepository<TFacade>.GetPageAsync(RepositoryPageRequest<TFacade> request, CancellationToken cancellationToken) {
+			var newPage = new RepositoryPageRequest<TEntity>(request.Page, request.Size);
 			var result = await GetPageAsync(newPage, cancellationToken);
 
 			if (result == null)
-				return PaginatedResult<TFacade>.Empty(request);
+				return RepositoryPage<TFacade>.Empty(request);
 
-			return result.CastTo<TFacade>();
+			return result.As<TFacade>();
 		}
 
 		Task<bool> IRepository<TFacade>.UpdateAsync(TFacade entity, CancellationToken cancellationToken) 

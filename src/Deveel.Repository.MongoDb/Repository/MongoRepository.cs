@@ -140,19 +140,19 @@ namespace Deveel.Data {
         }
 
         /// <inheritdoc />
-        async Task<PaginatedResult> IRepository.GetPageAsync(PageRequest page, CancellationToken cancellationToken) {
+        async Task<RepositoryPage> IRepository.GetPageAsync(RepositoryPageRequest page, CancellationToken cancellationToken) {
             var request = page.AsPageQuery(Field);
 
             var result = await base.GetPageAsync(request, cancellationToken);
 
-            return new PaginatedResult(page, result.TotalItems, result.Items?.Cast<IEntity>());
+            return new RepositoryPage(page, result.TotalItems, result.Items?.Cast<IEntity>());
         }
 
-        public virtual async Task<PaginatedResult<TDocument>> GetPageAsync(PageRequest<TDocument> page, CancellationToken cancellationToken = default) {
+        public virtual async Task<RepositoryPage<TDocument>> GetPageAsync(RepositoryPageRequest<TDocument> page, CancellationToken cancellationToken = default) {
             var pageQuery = page.AsPageQuery(Field);
-            var result = await GetPageAsync(pageQuery, cancellationToken);
+            var result = await base.GetPageAsync(pageQuery, cancellationToken);
 
-            return new PaginatedResult<TDocument>(page, result.TotalItems, result.Items);
+            return new RepositoryPage<TDocument>(page, result.TotalItems, result.Items);
         }
 
         Task<bool> IRepository.ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken)

@@ -214,7 +214,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_GetPage() {
-			var request = new PageRequest<MongoPerson>(1, 10);
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
 
 			var result = await MongoRepository.GetPageAsync(request);
 
@@ -228,7 +228,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_GetPage() {
-			var request = new PageRequest<MongoPerson>(1, 10);
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
 
 			var result = await Repository.GetPageAsync(request);
 
@@ -242,7 +242,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_GetPage() {
-			var request = new PageRequest<MongoPerson>(1, 10);
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
 
 			var result = await FacadeRepository.GetPageAsync(request);
 
@@ -263,7 +263,7 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new PageRequest<MongoPerson>(1, 10) {
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
 				Filter = x => x.FirstName == firstName
 			};
 
@@ -283,7 +283,7 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new PageRequest<MongoPerson>(1, 10) {
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
 				Filter = x => x.FirstName == firstName
 			};
 
