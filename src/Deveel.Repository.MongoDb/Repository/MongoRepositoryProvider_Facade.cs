@@ -1,12 +1,7 @@
-﻿using System;
-
-using Deveel.Data;
-
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Deveel.Data
-{
+namespace Deveel.Data {
     public class MongoRepositoryProvider<TEntity, TFacade> : MongoRepositoryProvider<TEntity>, IRepositoryProvider<TFacade>
         where TEntity : class, TFacade, IEntity
         where TFacade : class, IEntity
@@ -22,7 +17,7 @@ namespace Deveel.Data
 
         IRepository<TFacade> IRepositoryProvider<TFacade>.GetRepository(string tenantId) => (IRepository<TFacade>)GetStore(tenantId);
 
-        protected override MongoStore<TEntity> CreateStore(IOptions<MongoDbStoreOptions<TEntity>> options, ILogger<MongoStore<TEntity>> logger)
+        protected override MongoStore<TEntity> CreateStore(IOptions<MongoDbStoreOptions<TEntity>> options, ILogger logger)
             => new MongoRepository<TEntity, TFacade>(options, FieldMapper, logger);
     }
 }

@@ -37,7 +37,7 @@ namespace Deveel.Data
         public MongoRepository<TEntity> GetRepository(string tenantId)
             => (MongoRepository<TEntity>)GetStore(tenantId);
 
-        protected override MongoStore<TEntity> CreateStore(IOptions<MongoDbStoreOptions<TEntity>> options, ILogger<MongoStore<TEntity>> logger)
+        protected override MongoStore<TEntity> CreateStore(IOptions<MongoDbStoreOptions<TEntity>> options, ILogger logger)
             => new MongoRepository<TEntity>(options, FieldMapper, logger);
     }
 }

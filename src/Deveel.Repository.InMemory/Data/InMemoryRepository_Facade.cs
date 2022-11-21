@@ -57,8 +57,11 @@ namespace Deveel.Data {
 		
 		Task<bool> IRepository<TFacade>.UpdateAsync(IDataTransaction transaction, TFacade entity, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
-		
-		Task<IList<TFacade>> IRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+		async Task<IList<TFacade>> IRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
+			var result = await FindAllAsync(filter, cancellationToken);
+			return result.Cast<TFacade>().ToList();
+		}
 		
 		async Task<TFacade?> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken) 
 			=> await FindByIdAsync(id, cancellationToken);

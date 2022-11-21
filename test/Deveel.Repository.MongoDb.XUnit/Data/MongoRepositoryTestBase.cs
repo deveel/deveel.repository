@@ -38,24 +38,27 @@ namespace Deveel.Data {
                     .Database("test_db")
                     .Collection("persons"))
                 .AddMongoRepository<MongoPerson>()
-                .AddMongoFacadeRepository<MongoPerson, IPerson>();
+                .AddMongoFacadeRepository<MongoPerson, IPerson>()
+                .AddRepositoryController();
         }
 
         protected virtual Task SeedAsync(MongoRepository<MongoPerson> repository) { 
             return Task.CompletedTask;
         }
 
-        public async Task InitializeAsync() {
-			await MongoRepository.CreateAsync();
-
+        public virtual async Task InitializeAsync() {
+            var controller = serviceProvider.GetRequiredService<IRepositoryController>();
+            await controller.CreateRepositoryAsync<MongoPerson>();
+			
 			await SeedAsync(MongoRepository);
         }
 
-        public async Task DisposeAsync() {
-            await MongoRepository.DropAsync();
-        }
+        public virtual async Task DisposeAsync() {
+			var controller = serviceProvider.GetRequiredService<IRepositoryController>();
+			await controller.DropRepositoryAsync<MongoPerson>();
+		}
 
-        protected class MongoPerson : IMongoDocument, IPerson {
+		protected class MongoPerson : IMongoDocument, IPerson {
             [BsonId]
             public ObjectId Id { get; set; }
 

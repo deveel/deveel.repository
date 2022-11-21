@@ -1,20 +1,22 @@
-﻿using System;
-
-using Deveel.Data;
-
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Deveel.Data {
-    public class MongoRepository<TDocument> : MongoStore<TDocument>, IRepository<TDocument>, IQueryableRepository<TDocument>
+    public class MongoRepository<TDocument> : MongoStore<TDocument>, IRepository<TDocument>, IQueryableRepository<TDocument>, IControllableRepository
         where TDocument : class, IEntity {
         private bool disposed;
 
-        public MongoRepository(IOptions<MongoDbStoreOptions<TDocument>> options, IDocumentFieldMapper<TDocument>? fieldMapper = null, ILogger<MongoStore<TDocument>> logger = null) : base(options, logger) {
-            FieldMapper = fieldMapper;
+        public MongoRepository(IOptions<MongoDbStoreOptions<TDocument>> options, IDocumentFieldMapper<TDocument>? fieldMapper = null, ILogger<MongoRepository<TDocument>>? logger = null) 
+            : this(options, fieldMapper, (ILogger?) logger) {
         }
+
+        protected internal MongoRepository(IOptions<MongoDbStoreOptions<TDocument>> options, IDocumentFieldMapper<TDocument>? fieldMapper = null, ILogger? logger = null)
+            : base(options, logger) {
+			FieldMapper = fieldMapper;
+		}
 
         protected IDocumentFieldMapper<TDocument>? FieldMapper { get; private set; }
 
@@ -60,9 +62,47 @@ namespace Deveel.Data {
             return entity;
         }
 
+		#region Controller Functions
 
-        /// <inheritdoc />
-        Task<string> IRepository<TDocument>.CreateAsync(IDataTransaction session, TDocument entity, CancellationToken cancellationToken) {
+        protected virtual CreateCollectionOptions GetCreateOptions() {
+            return new CreateCollectionOptions();
+        }
+
+        protected virtual Task CreateAsync(CancellationToken cancellationToken = default) {
+            return CreateAsync(GetCreateOptions(), cancellationToken);
+        }
+
+        Task IControllableRepository.CreateAsync(CancellationToken cancellationToken)
+            => CreateAsync(cancellationToken);
+
+        Task IControllableRepository.DropAsync(CancellationToken cancellationToken)
+            => DropAsync(cancellationToken);
+
+        protected virtual Task DropAsync(CancellationToken cancellationToken = default) {
+            return DropAsync(GetDropOptions(), cancellationToken);
+        }
+
+        protected virtual DropCollectionOptions GetDropOptions() {
+            return new DropCollectionOptions();
+        }
+
+        public async Task<bool> ExistsAsync(CancellationToken cancellationToken = default) {
+            // TODO: maybe use the filter in the options to optimize?
+            var options = new ListCollectionNamesOptions {
+                Filter = new BsonDocument(new Dictionary<string, object> { { "name", StoreOptions.CollectionName } })
+            };
+
+            using var names = await Database.ListCollectionNamesAsync(options, cancellationToken);
+            var result = await names.SingleOrDefaultAsync(cancellationToken);
+
+            return StoreOptions.CollectionName == result;
+        }
+
+		#endregion
+
+
+		/// <inheritdoc />
+		Task<string> IRepository<TDocument>.CreateAsync(IDataTransaction session, TDocument entity, CancellationToken cancellationToken) {
             return CreateAsync(AssertMongoDbSession(session), entity, cancellationToken);
         }
 

@@ -1,25 +1,25 @@
 ﻿using System;
 
 namespace Deveel.Data {
-	public class QueryEntitiesTests : MongoRepositoryTestBase {
-		private readonly IList<MongoPerson> people;
+	public class QueryEntitiesTests : InMemoryRepositoryTestBase {
+		private readonly IList<Person> people;
 
-		public QueryEntitiesTests(MongoDbTestFixture mongo) : base(mongo) {
+		public QueryEntitiesTests() {
 			var nameGen = new RandomNameGenerator();
 
 			people = Enumerable.Range(1, 100)
 				.Select(_ => nameGen.NewName())
-				.Select(x => new MongoPerson { FirstName = x.Item1, LastName = x.Item2 })
+				.Select(x => new Person { FirstName = x.Item1, LastName = x.Item2 })
 				.ToList();
 		}
 
-		protected override async Task SeedAsync(MongoRepository<MongoPerson> repository) {
+		protected override async Task SeedAsync(IRepository repository) {
 			await repository.CreateAsync(people);
 		}
 
 		[Fact]
-		public async Task Mongo_CountAll() {
-			var result = await MongoRepository.CountAllAsync();
+		public async Task Memory_CountAll() {
+			var result = await InMemoryRepository.CountAllAsync();
 
 			Assert.NotEqual(0, result);
 			Assert.Equal(people.Count, result);
@@ -43,11 +43,11 @@ namespace Deveel.Data {
 
 
 		[Fact]
-		public async Task Mongo_CountFiltered() {
+		public async Task Memory_CountFiltered() {
 			var firstName = people[people.Count - 1].FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
-			var count = await MongoRepository.CountAsync(p => p.FirstName == firstName);
+			var count = await InMemoryRepository.CountAsync(p => p.FirstName == firstName);
 
 			Assert.Equal(peopleCount, count);
 		}
@@ -63,10 +63,10 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task Mongo_FindById() {
+		public async Task Memory_FindById() {
 			var id = people[people.Count - 1].Id;
 
-			var result = await MongoRepository.FindByIdAsync(id.ToEntityId());
+			var result = await InMemoryRepository.FindByIdAsync(id);
 
 			Assert.NotNull(result);
 			Assert.Equal(id, result.Id);
@@ -77,7 +77,7 @@ namespace Deveel.Data {
 		public async Task Repository_FindById() {
 			var id = people[people.Count - 1].Id;
 
-			var result = await Repository.FindByIdAsync(id.ToEntityId());
+			var result = await Repository.FindByIdAsync(id);
 
 			Assert.NotNull(result);
 			Assert.Equal(id, result.Id);
@@ -87,19 +87,19 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_FindById() {
 			var id = people[people.Count - 1].Id;
 
-			var result = await FacadeRepository.FindByIdAsync(id.ToEntityId());
+			var result = await FacadeRepository.FindByIdAsync(id);
 
 			Assert.NotNull(result);
-			Assert.Equal(id.ToEntityId(), result.Id);
+			Assert.Equal(id, result.Id);
 		}
 
 
 
 		[Fact]
-		public async Task Mongo_FindFirstFiltered() {
+		public async Task Memory_FindFirstFiltered() {
 			var firstName = people[people.Count - 1].FirstName;
 
-			var result = await MongoRepository.FindAsync(x => x.FirstName == firstName);
+			var result = await InMemoryRepository.FindAsync(x => x.FirstName == firstName);
 
 			Assert.NotNull(result);
 			Assert.Equal(firstName, result.FirstName);
@@ -116,10 +116,10 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task Mongo_ExistsFiltered() {
+		public async Task Memory_ExistsFiltered() {
 			var firstName = people[people.Count - 1].FirstName;
 
-			var result = await MongoRepository.ExistsAsync(x => x.FirstName == firstName);
+			var result = await InMemoryRepository.ExistsAsync(x => x.FirstName == firstName);
 
 			Assert.True(result);
 		}
@@ -135,8 +135,8 @@ namespace Deveel.Data {
 
 
 		[Fact]
-		public async Task Mongo_FindFirst() {
-			var result = await MongoRepository.FindAsync();
+		public async Task Memory_FindFirst() {
+			var result = await InMemoryRepository.FindAsync();
 
 			Assert.NotNull(result);
 			Assert.Equal(people[0].FirstName, result.FirstName);
@@ -159,8 +159,8 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task Mongo_FindAll() {
-			var result = await MongoRepository.FindAllAsync();
+		public async Task Memory_FindAll() {
+			var result = await InMemoryRepository.FindAllAsync();
 
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
@@ -188,11 +188,11 @@ namespace Deveel.Data {
 
 
 		[Fact]
-		public async Task Mongo_FindAllFiltered() {
+		public async Task Memory_FindAllFiltered() {
 			var firstName = people[people.Count - 1].FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
-			var result = await MongoRepository.FindAllAsync(x => x.FirstName == firstName);
+			var result = await InMemoryRepository.FindAllAsync(x => x.FirstName == firstName);
 
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
@@ -213,10 +213,10 @@ namespace Deveel.Data {
 
 
 		[Fact]
-		public async Task Mongo_GetPage() {
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
+		public async Task Memory_GetPage() {
+			var request = new RepositoryPageRequest<Person>(1, 10);
 
-			var result = await MongoRepository.GetPageAsync(request);
+			var result = await InMemoryRepository.GetPageAsync(request);
 
 			Assert.NotNull(result);
 			Assert.Equal(10, result.TotalPages);
@@ -228,7 +228,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_GetPage() {
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
+			var request = new RepositoryPageRequest<Person>(1, 10);
 
 			var result = await Repository.GetPageAsync(request);
 
@@ -242,7 +242,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_GetPage() {
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
+			var request = new RepositoryPageRequest<Person>(1, 10);
 
 			var result = await FacadeRepository.GetPageAsync(request);
 
@@ -257,17 +257,17 @@ namespace Deveel.Data {
 
 
 		[Fact]
-		public async Task Mongo_GetFilteredPage() {
+		public async Task Memory_GetFilteredPage() {
 			var firstName = people[people.Count - 1].FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
+			var request = new RepositoryPageRequest<Person>(1, 10) {
 				Filter = x => x.FirstName == firstName
 			};
 
-			var result = await MongoRepository.GetPageAsync(request);
+			var result = await InMemoryRepository.GetPageAsync(request);
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
 			Assert.Equal(peopleCount, result.TotalItems);
@@ -283,7 +283,7 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
+			var request = new RepositoryPageRequest<Person>(1, 10) {
 				Filter = x => x.FirstName == firstName
 			};
 
@@ -295,37 +295,5 @@ namespace Deveel.Data {
 			Assert.NotEmpty(result.Items);
 			Assert.Equal(perPage, result.Items.Count());
 		}
-
-
-		[Fact]
-		public async Task Mongo_GetSortedPage() {
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
-				SortBy = new[] { ResultSort.Create<MongoPerson>(x => x.FirstName, false) }
-			};
-
-			var result = await MongoRepository.GetPageAsync(request);
-			Assert.NotNull(result);
-			Assert.Equal(10, result.TotalPages);
-			Assert.Equal(100, result.TotalItems);
-			Assert.NotNull(result.Items);
-			Assert.NotEmpty(result.Items);
-			Assert.Equal(10, result.Items.Count());
-		}
-
-		[Fact]
-		public async Task Repository_GetSortedPage() {
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
-				SortBy = new[] { ResultSort.Create<MongoPerson>(x => x.FirstName, false) }
-			};
-
-			var result = await Repository.GetPageAsync(request);
-			Assert.NotNull(result);
-			Assert.Equal(10, result.TotalPages);
-			Assert.Equal(100, result.TotalItems);
-			Assert.NotNull(result.Items);
-			Assert.NotEmpty(result.Items);
-			Assert.Equal(10, result.Items.Count());
-		}
-
 	}
 }

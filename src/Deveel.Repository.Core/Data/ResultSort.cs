@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Deveel.Data
-{
+namespace Deveel.Data {
     /// <summary>
     /// Provides a default implementation of the result sort
     /// </summary>
     /// <seealso cref="IResultSort"/>
-    public class ResultSort : IResultSort
-    {
-        public ResultSort(IFieldRef field, bool ascending = false)
-        {
+    public class ResultSort : IResultSort {
+        public ResultSort(IFieldRef field, bool ascending = false) {
             Field = field ?? throw new ArgumentNullException(nameof(field));
             Ascending = ascending;
         }

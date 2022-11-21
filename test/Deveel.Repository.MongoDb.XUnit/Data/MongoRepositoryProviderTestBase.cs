@@ -49,20 +49,27 @@ namespace Deveel.Data {
 					.Collection("Person", "persons")
 					.WithTenantField())
 				.AddMongoRepositoryProvider<MongoPerson>()
-				.AddMongoFacadeRepositoryProvider<MongoPerson, IPerson>();
+				.AddMongoFacadeRepositoryProvider<MongoPerson, IPerson>()
+				.AddRepositoryController();
 		}
 
-		public async Task InitializeAsync() {
+		public virtual async Task InitializeAsync() {
+			var controller = serviceProvider.GetRequiredService<IRepositoryController>();
+			await controller.CreateTenantRepositoryAsync<MongoPerson>(TenantId);
+
 			var repository = MongoRepositoryProvider.GetRepository(TenantId);
-			await repository.CreateAsync();
+			
+			//await repository.CreateAsync();
 
 			await SeedAsync(repository);
 		}
 
-		public async Task DisposeAsync() {
-			var repository = MongoRepositoryProvider.GetRepository(TenantId);
+		public virtual async Task DisposeAsync() {
+			var controller = serviceProvider.GetRequiredService<IRepositoryController>();
+			await controller.DropTenantRepositoryAsync<MongoPerson>(TenantId);
 
-			await repository.DropAsync();
+			//var repository = MongoRepositoryProvider.GetRepository(TenantId);
+			//await repository.DropAsync();
 		}
 
 		protected virtual Task SeedAsync(MongoRepository<MongoPerson> repository) {
