@@ -15,6 +15,10 @@ namespace Deveel.Data {
             : base(options, fieldMapper, logger) {
         }
 
+        protected MongoRepository(IOptions<MongoDbOptions> options, ICollectionKeyProvider keyProvider, IDocumentFieldMapper<TEntity>? fieldMapper = null, ILogger? logger = null)
+            : base(options, keyProvider, fieldMapper, logger) {
+        }
+
         Type IRepository.EntityType => typeof(TFacade);
 
         protected static TEntity Assert(TFacade obj) {
