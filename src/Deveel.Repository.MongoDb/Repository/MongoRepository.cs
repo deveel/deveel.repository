@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Deveel.Repository;
+
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using MongoDB.Bson;
@@ -18,6 +20,10 @@ namespace Deveel.Data {
 			FieldMapper = fieldMapper;
 		}
 
+        protected MongoRepository(IOptions<MongoDbOptions> options, ICollectionKeyProvider keyProvider, IDocumentFieldMapper<TDocument>? fieldMapper = null, ILogger? logger = null)
+            : this(BuildOptions(options, keyProvider), fieldMapper, logger) {
+        }
+
         protected IDocumentFieldMapper<TDocument>? FieldMapper { get; private set; }
 
         bool IRepository.SupportsPaging => true;
@@ -25,6 +31,41 @@ namespace Deveel.Data {
         bool IRepository.SupportsFilters => true;
 
         Type IRepository.EntityType => typeof(TDocument);
+
+        private static IOptions<MongoDbStoreOptions<TDocument>> BuildOptions(IOptions<MongoDbOptions> options, ICollectionKeyProvider keyProvider) {
+            var mongoOptions = options.Value;
+
+            var collectionName = keyProvider.GetCollectionKey(typeof(TDocument));
+
+            if (String.IsNullOrWhiteSpace(collectionName))
+                throw new InvalidOperationException($"Unable to determine the collection key for type '{typeof(TDocument)}'");
+
+            if (!mongoOptions.Collections.TryGetValue(collectionName, out var collectionOptions))
+                throw new ArgumentException($"The provided options have no collection '{collectionName}' specified");
+
+            var storeOptions = new MongoDbStoreOptions<TDocument> {
+                ConnectionString = mongoOptions.ConnectionString,
+                DatabaseName = mongoOptions.DatabaseName,
+                CollectionName = collectionOptions.Name,
+                EnableVersions = collectionOptions.EnableVersions,
+                VersionFieldName = collectionOptions.VersionFieldName,
+                VersionFormat = collectionOptions.VersionFormat
+            };
+
+            if (mongoOptions.MultiTenancy != null && 
+                mongoOptions.MultiTenancy.Handling != MultiTenancyHandling.None) {
+                // a bit useless here, since we have no TenantID available ...
+                if (mongoOptions.MultiTenancy.Handling == MultiTenancyHandling.TenantCollection) {
+                    // TODO: generate the collection name
+                } else if (mongoOptions.MultiTenancy.Handling == MultiTenancyHandling.TenantField) {
+                    storeOptions.TenantField = mongoOptions.MultiTenancy.TenantFieldName;
+                } else {
+                    throw new ArgumentException($"The multi-tenancy handling '{mongoOptions.MultiTenancy.Handling}' is not supported in this context");
+                }
+            }
+
+            return Options.Create(storeOptions);
+        }
 
         protected void ThrowIfDisposed() {
             if (disposed)
@@ -87,15 +128,15 @@ namespace Deveel.Data {
         }
 
         public async Task<bool> ExistsAsync(CancellationToken cancellationToken = default) {
-            // TODO: maybe use the filter in the options to optimize?
-            var options = new ListCollectionNamesOptions {
-                Filter = new BsonDocument(new Dictionary<string, object> { { "name", StoreOptions.CollectionName } })
-            };
+            try {
+				return await Database.CollectionExistsAsync(StoreOptions.CollectionName, cancellationToken);
+			} catch (Exception ex) {
+                Logger.LogError(ex, "Error while validating the existence of collection '{CollectionName}' in database '{DatabaseName}'",
+                    StoreOptions.CollectionName, StoreOptions.DatabaseName);
 
-            using var names = await Database.ListCollectionNamesAsync(options, cancellationToken);
-            var result = await names.SingleOrDefaultAsync(cancellationToken);
-
-            return StoreOptions.CollectionName == result;
+                throw new RepositoryException("Could not verify if the repository exists", ex);
+            }
+            
         }
 
 		#endregion

@@ -32,6 +32,25 @@ namespace Deveel.Data {
 				logger.LogError(ex, message, args);
 		}
 
+		private IRepository GetTenantRepository(IRepositoryProvider provider, string tenantId) {
+			try {
+				LogTrace("Obtaining a new repository instance for tenant '{TenantId}'", tenantId);
+
+				var repository = provider.GetRepository(tenantId);
+
+				LogTrace("A new repository of type {RepositoryType} was obtained for tenant '{TenantId}'",
+					repository.GetType().Name, tenantId);
+
+				return repository;
+			} catch(RepositoryException ex) {
+				LogError(ex, "Error while trying to obtain a repository for tenant '{TenantId}'", tenantId);
+				throw;
+			} catch (Exception ex) {
+				LogError(ex, "Error while trying to obtain a repository for tenant '{TenantId}'", tenantId);
+				throw new RepositoryException("Could not obtain a repository", ex);
+			}
+		}
+
 		private IControllableRepository? RequireRepository<TEntity>()
 			where TEntity : class, IEntity {
 
@@ -59,6 +78,8 @@ namespace Deveel.Data {
 			if (!(repository is IControllableRepository controllable)) {
 				if (!options.IgnoreNotControllable)
 					throw new NotSupportedException($"The repository of type '{repository.GetType()}' is not controllable");
+
+				LogTrace("The repository {RepositoryType} is not controllable and the service is ignoring it", repository.GetType().Name);
 
 				return null;
 			}
@@ -146,73 +167,102 @@ namespace Deveel.Data {
 		}
 
 		public virtual async Task CreateAllRepositoriesAsync(CancellationToken cancellationToken = default) {
+			LogTrace("Creating all repositoies registered in the current context");
+
 			var repositories = serviceProvider.GetServices<IRepository>()
 				.Select(RequireControllable);
 
 			foreach (var repository in repositories) {
 				await CreateRepository(repository, cancellationToken);
 			}
+
+			LogTrace("All repositoies registered in the current context were created");
 		}
 
 		public virtual async Task CreateTenantRepositoriesAsync(string tenantId, CancellationToken cancellationToken = default) {
+			LogTrace("Creating all repositoies registered in the current context for the tenant '{TenantId}'", tenantId);
+
 			var providers = serviceProvider.GetServices<IRepositoryProvider>();
 			foreach (var provider in providers) {
-				var repository = RequireControllable(provider.GetRepository(tenantId));
+				var repository = RequireControllable(GetTenantRepository(provider, tenantId));
 
 				await CreateRepository(repository, cancellationToken);
 			}
+
+			LogTrace("All repositoies registered in the current context for the tenant '{TenantId}' were created", tenantId);
 		}
 
 		public virtual async Task DropAllRepositoriesAsync(CancellationToken cancellationToken = default) {
+			LogTrace("Dropping all repositories registered in the current context");
+
 			var repositories = serviceProvider.GetServices<IRepository>()
 				.Select(RequireControllable);
 
 			foreach (var repository in repositories) {
 				await DropRepository(repository, cancellationToken);
 			}
+
+			LogTrace("All repositories registered in the current context were dropped");
 		}
 
 		public virtual async Task DropTenantRepositoriesAsync(string tenantId, CancellationToken cancellationToken = default) {
+			LogTrace("Dropping all repositories of tenant '{TenantId}'", tenantId);
+
 			var providers = serviceProvider.GetServices<IRepositoryProvider>();
 			foreach (var provider in providers) {
-				var repository = RequireControllable(provider.GetRepository(tenantId));
+				var repository = RequireControllable(GetTenantRepository(provider, tenantId));
 
 				await DropRepository(repository, cancellationToken);
 			}
+
+			LogTrace("All repositories of tenant '{TenantId}' were dropped", tenantId);
 		}
 
 		public virtual async Task CreateRepositoryAsync<TEntity>(CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity {
+			LogTrace("Creating the repository for type '{EntityType}'", typeof(TEntity).Name);
+
 			var repository = RequireRepository<TEntity>();
 
 			await CreateRepository(repository, cancellationToken);
+
+			LogTrace("The creation process for repository for type '{EntityType}' finished", typeof(TEntity).Name);
 		}
 
 		public async Task CreateTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity {
-			var provider = serviceProvider.GetService<IRepositoryProvider<TEntity>>();
-			if (provider == null)
-				throw new NotSupportedException();
+			LogTrace("Creating the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
+
+			var provider = RequireRepositoryProvider<TEntity>();
 
 			var repository = RequireControllable(provider.GetRepository(tenantId));
 
 			await CreateRepository(repository, cancellationToken);
+
+			LogTrace("The repository handling the type '{EntityType}' for tenant '{TenantId}' was created", typeof(TEntity).Name, tenantId);
 		}
 
 		public virtual async Task DropRepositoryAsync<TEntity>(CancellationToken cancellationToken = default) where TEntity : class, IEntity {
+			LogTrace("Dropping the repository handling the type '{EntityType}'", typeof(TEntity).Name);
+
 			var repository = RequireRepository<TEntity>();
 
 			await DropRepository(repository, cancellationToken);
+
+			LogTrace("The repository handling the type '{EntityType}' was dropped", typeof(TEntity).Name);
 		}
 
 		public virtual async Task DropTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity {
-			var providers = serviceProvider.GetServices<IRepositoryProvider>();
-			foreach (var provider in providers) {
-				var repository = RequireControllable(provider.GetRepository(tenantId));
+			LogTrace("Dropping the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
 
-				await DropRepository(repository, cancellationToken);
-			}
+			var provider = RequireRepositoryProvider<TEntity>();
+
+			var repository = RequireControllable(GetTenantRepository(provider, tenantId));
+
+			await DropRepository(repository, cancellationToken);
+
+			LogTrace("The repository handling the type '{EntityType}' for tenant '{TenantId}' was dropped", typeof(TEntity).Name, tenantId);
 		}
 	}
 }
