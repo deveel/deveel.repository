@@ -51,6 +51,9 @@ namespace Deveel.Data {
 		/// </summary>
 		public int TotalPages => (int)Math.Ceiling((double)TotalItems / Request.Size);
 
+		public RepositoryPage<TEntity> As<TEntity>() where TEntity : class, IEntity
+			=> new RepositoryPage<TEntity>(Request, TotalItems, Items?.Cast<TEntity>());
+
 		/// <summary>
 		/// Creates an empty page result 
 		/// </summary>

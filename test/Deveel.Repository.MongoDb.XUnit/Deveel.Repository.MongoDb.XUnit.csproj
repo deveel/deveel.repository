@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Deveel.Repository.Filters\Deveel.Repository.Filters.csproj" />
     <ProjectReference Include="..\..\src\Deveel.Repository.MongoDb\Deveel.Repository.MongoDb.csproj" />
   </ItemGroup>
 
