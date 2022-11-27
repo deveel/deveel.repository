@@ -31,7 +31,7 @@ namespace Deveel.Data {
             return entity;
         }
 
-		protected override FilterDefinition<TEntity> GetFilterDefinition(IQueryFilter filter) {
+		protected override FilterDefinition<TEntity> GetFilterDefinition(IQueryFilter? filter) {
 			if (filter is ExpressionQueryFilter<TFacade> exprFilter) {
 				var expr = exprFilter.Expression.AsMongoFilter<TEntity>();
 

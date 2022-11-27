@@ -1,0 +1,160 @@
+﻿using System;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+using MongoFramework;
+
+namespace Deveel.Data {
+	public static class ServiceCollectionExtensions {
+		#region Multi-Tenant Options
+
+		public static IServiceCollection AddMongoDbTenantOptions(this IServiceCollection services, string sectionName) {
+			services.AddOptions<MongoDbTenantConnectionOptions>()
+				.Configure<IConfiguration>((options, config) => config.GetSection(sectionName)?.Bind(options));
+
+			return services;
+		}
+
+		public static IServiceCollection AddMongoDbTenantOptions(this IServiceCollection services, Action<MongoDbTenantConnectionOptions> configure) {
+			services.AddOptions<MongoDbTenantConnectionOptions>()
+				.Configure(configure);
+
+			return services;
+		}
+
+		#endregion
+
+		#region AddMongoContext
+
+		public static IServiceCollection AddMongoContext<TContext>(this IServiceCollection services) where TContext : MongoDbContext {
+			services.AddSingleton<IMongoDbConnection, MongoDbConfiguredConnection>();
+			services.AddSingleton<MongoDbContext, TContext>();
+			services.AddSingleton<TContext>();
+
+			return services;
+		}
+
+		public static IServiceCollection AddMongoContext(this IServiceCollection services)
+			=> services.AddMongoContext<MongoDbContext>();
+
+		public static IServiceCollection AddMongoContext<TContext>(this IServiceCollection services, string sectionName) 
+			where TContext : MongoDbContext {
+			services.AddOptions<MongoDbConnectionOptions>()
+				.Configure<IConfiguration>((options, config) => config.GetSection(sectionName)?.Bind(options));
+
+			return services.AddMongoContext<TContext>();
+		}
+
+		public static IServiceCollection AddMongoContext(this IServiceCollection services, string sectionName)
+			=> services.AddMongoContext<MongoDbContext>(sectionName);
+
+		public static IServiceCollection AddMongoContext<TContext>(this IServiceCollection services, Action<MongoDbConnectionOptions> configure)
+			where TContext : MongoDbContext {
+			services.AddOptions<MongoDbConnectionOptions>()
+				.Configure(configure);
+
+			return services.AddMongoContext<TContext>();
+		}
+
+		public static IServiceCollection AddMongoContext(this IServiceCollection services, Action<MongoDbConnectionOptions> configure)
+			=> services.AddMongoContext<MongoDbContext>(configure);
+
+
+		#endregion
+
+		#region AddMultiTenantMongoContext
+
+		public static IServiceCollection AddMongoTenantContext<TContext>(this IServiceCollection services)
+			where TContext : MongoDbTenantContext {
+			services.AddSingleton<IMongoDbConnection, MongoDbTenantConnection>();
+			services.AddSingleton<MongoDbTenantContext, TContext>();
+			services.AddSingleton<TContext>();
+
+			return services;
+		}
+
+		public static IServiceCollection AddMongoTenantContext(this IServiceCollection services)
+			=> services.AddMongoTenantContext<MongoDbTenantContext>();
+
+		#endregion
+
+		#region AddMongoRepository<T>
+
+		public static IServiceCollection AddMongoRepository<TRepository, TEntity>(this IServiceCollection services)
+			where TEntity : class, IEntity
+			where TRepository : MongoRepository<TEntity>
+			=> services
+				.AddRepository<TRepository>(ServiceLifetime.Singleton)
+				.AddSingleton<IRepository, TRepository>()
+				.AddSingleton<IRepository<TEntity>, TRepository>();
+
+		public static IServiceCollection AddMongoRepository<TEntity>(this IServiceCollection services)
+			where TEntity : class, IEntity
+			=> services.AddMongoRepository<MongoRepository<TEntity>, TEntity>();
+
+		#endregion
+
+		#region AddMongoFacadeRepository<TEntity,TFacade>
+
+		public static IServiceCollection AddMongoFacadeRepository<TRepository, TEntity, TFacade>(this IServiceCollection services)
+			where TEntity : class, TFacade, IEntity
+			where TFacade : class, IEntity
+			where TRepository : MongoRepository<TEntity, TFacade>
+			=> services
+				.AddRepository<TRepository, TEntity>(ServiceLifetime.Singleton)
+				.AddRepository<TRepository, TFacade>(ServiceLifetime.Singleton)
+				.AddSingleton<IRepository, TRepository>()
+				.AddSingleton<IRepository<TEntity>, TRepository>()
+				.AddSingleton<IRepository<TFacade>, TRepository>();
+
+		public static IServiceCollection AddMongoFacadeRepository<TEntity, TFacade>(this IServiceCollection services)
+			where TEntity : class, TFacade, IEntity
+			where TFacade : class, IEntity
+			=> services
+				.AddRepositoryFacade<TEntity, TFacade>()
+				.AddMongoFacadeRepository<MongoRepository<TEntity, TFacade>, TEntity, TFacade>();
+
+
+		#endregion
+
+		#region AddMongoRepositoryProvider<TEntity>
+
+		public static IServiceCollection AddMongoRepositoryProvider<TProvider, TEntity>(this IServiceCollection services)
+			where TEntity : class, IEntity
+			where TProvider : MongoRepositoryProvider<TEntity>
+			=> services
+				.AddRepositoryProvider<TProvider, TEntity>(ServiceLifetime.Singleton)
+				.AddSingleton<IRepositoryProvider, TProvider>()
+				.AddSingleton<IRepositoryProvider<TEntity>, TProvider>();
+
+		public static IServiceCollection AddMongoRepositoryProvider<TEntity>(this IServiceCollection services)
+			where TEntity : class, IEntity
+			=> services.AddMongoRepositoryProvider<MongoRepositoryProvider<TEntity>, TEntity>();
+
+
+		#endregion
+
+		#region AddMongoFacadeRepositoryProvider<TEntity, TFacade>
+
+		public static IServiceCollection AddMongoFacadeRepositoryProvider<TProvider, TEntity, TFacade>(this IServiceCollection services)
+			where TEntity : class, TFacade, IEntity
+			where TFacade : class, IEntity
+			where TProvider : MongoRepositoryProvider<TEntity, TFacade>
+			=> services
+				.AddRepositoryProvider<TProvider, TEntity>()
+				.AddRepositoryProvider<TProvider, TFacade>()
+				.AddSingleton<IRepositoryProvider, TProvider>()
+				.AddSingleton<IRepositoryProvider<TEntity>, TProvider>()
+				.AddSingleton<IRepositoryProvider<TFacade>, TProvider>();
+
+		public static IServiceCollection AddMongoFacadeRepositoryProvider<TEntity, TFacade>(this IServiceCollection services)
+			where TEntity : class, TFacade, IEntity
+			where TFacade : class, IEntity
+			=> services.AddMongoFacadeRepositoryProvider<MongoRepositoryProvider<TEntity, TFacade>, TEntity, TFacade>();
+
+		#endregion
+
+
+	}
+}

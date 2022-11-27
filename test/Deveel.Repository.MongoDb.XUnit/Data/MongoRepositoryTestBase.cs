@@ -62,9 +62,9 @@ namespace Deveel.Data {
             [BsonId]
             public ObjectId Id { get; set; }
 
-            string? IMongoDocument.Id => Id.ToEntityId();
+            string IMongoDocument.Id => Id.ToEntityId();
 
-            string? IEntity.Id => Id.ToEntityId();
+            string IEntity.Id => Id.ToEntityId();
 
             public string FirstName { get; set; }
 
