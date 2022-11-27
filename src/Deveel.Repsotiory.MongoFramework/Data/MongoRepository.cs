@@ -30,6 +30,11 @@ namespace Deveel.Data {
 			: this(context, (ILogger?)logger) {
 		}
 
+		public MongoRepository(MongoPerTenantContext context, ILogger<MongoRepository<TEntity>>? logger = null)
+			: this(context, (ILogger?)logger) {
+		}
+
+
 		protected MongoDbContext Context { get; }
 
 		protected IMongoDbSet<TEntity> DbSet => GetEntitySet();

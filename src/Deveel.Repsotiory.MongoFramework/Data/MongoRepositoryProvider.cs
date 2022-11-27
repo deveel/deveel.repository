@@ -10,11 +10,11 @@ using MongoFramework;
 
 namespace Deveel.Data {
 	public class MongoRepositoryProvider<TEntity> : IRepositoryProvider<TEntity> where TEntity : class, IEntity {
-		private readonly MongoDbTenantConnectionOptions options;
+		private readonly MongoPerTenantConnectionOptions options;
 		private readonly IEnumerable<IMultiTenantStore<MongoTenantInfo>> stores;
 		private readonly ILoggerFactory loggerFactory;
 
-		public MongoRepositoryProvider(IOptions<MongoDbTenantConnectionOptions> options, IEnumerable<IMultiTenantStore<MongoTenantInfo>> stores, ILoggerFactory? loggerFactory = null) {
+		public MongoRepositoryProvider(IOptions<MongoPerTenantConnectionOptions> options, IEnumerable<IMultiTenantStore<MongoTenantInfo>> stores, ILoggerFactory? loggerFactory = null) {
 			this.stores = stores;
 			this.options = options.Value;
 			this.loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -26,6 +26,10 @@ namespace Deveel.Data {
 				var tenantInfo = store.TryGetAsync(tenantId)
 					.ConfigureAwait(false).GetAwaiter().GetResult();
 
+				if (tenantInfo == null)
+					tenantInfo = store.TryGetByIdentifierAsync(tenantId)
+						.ConfigureAwait(false).GetAwaiter().GetResult();
+
 				if (tenantInfo != null) {
 					return tenantInfo;
 				}
@@ -34,8 +38,8 @@ namespace Deveel.Data {
 			throw new RepositoryException($"Unable to get a context for tenant '{tenantId}'");
 		}
 
-		protected IMongoDbTenantConnection CreateConnection(MongoTenantInfo tenantInfo) {
-			return new MongoDbTenantConnection(tenantInfo, Options.Create(options));
+		protected IMongoPerTenantConnection CreateConnection(MongoTenantInfo tenantInfo) {
+			return new MongoPerTenantConnection(tenantInfo, Options.Create(options));
 		}
 
 		protected virtual ILogger CreateLogger() {

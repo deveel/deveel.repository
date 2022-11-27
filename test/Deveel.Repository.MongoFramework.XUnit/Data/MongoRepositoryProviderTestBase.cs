@@ -55,9 +55,8 @@ namespace Deveel.Data {
 				});
 
 			services
-				.AddMongoDbTenantOptions(options => {
-					options.DefaultDatabase = "testdb";
-					options.DefaultConnectionString = ConnectionString;
+				.AddMongoPerTenantConnection(options => {
+					options.DefaultConnectionString = mongo.SetDatabase("testdb");
 				})
 				.AddMongoRepositoryProvider<MongoPerson>()
 				.AddMongoFacadeRepositoryProvider<MongoPerson, IPerson>()

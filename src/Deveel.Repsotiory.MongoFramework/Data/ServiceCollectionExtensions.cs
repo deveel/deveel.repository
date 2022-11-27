@@ -7,24 +7,6 @@ using MongoFramework;
 
 namespace Deveel.Data {
 	public static class ServiceCollectionExtensions {
-		#region Multi-Tenant Options
-
-		public static IServiceCollection AddMongoDbTenantOptions(this IServiceCollection services, string sectionName) {
-			services.AddOptions<MongoDbTenantConnectionOptions>()
-				.Configure<IConfiguration>((options, config) => config.GetSection(sectionName)?.Bind(options));
-
-			return services;
-		}
-
-		public static IServiceCollection AddMongoDbTenantOptions(this IServiceCollection services, Action<MongoDbTenantConnectionOptions> configure) {
-			services.AddOptions<MongoDbTenantConnectionOptions>()
-				.Configure(configure);
-
-			return services;
-		}
-
-		#endregion
-
 		#region AddMongoContext
 
 		public static IServiceCollection AddMongoContext<TContext>(this IServiceCollection services) where TContext : MongoDbContext {
@@ -66,16 +48,17 @@ namespace Deveel.Data {
 		#region AddMultiTenantMongoContext
 
 		public static IServiceCollection AddMongoTenantContext<TContext>(this IServiceCollection services)
-			where TContext : MongoDbTenantContext {
-			services.AddSingleton<IMongoDbConnection, MongoDbTenantConnection>();
-			services.AddSingleton<MongoDbTenantContext, TContext>();
-			services.AddSingleton<TContext>();
+			where TContext : MongoPerTenantContext {
+
+			services.AddScoped<MongoPerTenantContext, TContext>();
+			services.AddScoped<MongoDbTenantContext, TContext>();
+			services.AddScoped<TContext>();
 
 			return services;
 		}
 
 		public static IServiceCollection AddMongoTenantContext(this IServiceCollection services)
-			=> services.AddMongoTenantContext<MongoDbTenantContext>();
+			=> services.AddMongoTenantContext<MongoPerTenantContext>();
 
 		#endregion
 
