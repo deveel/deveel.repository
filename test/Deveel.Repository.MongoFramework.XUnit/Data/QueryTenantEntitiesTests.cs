@@ -4,7 +4,7 @@ namespace Deveel.Data {
 	public class QueryTenantEntitiesTests : MongoRepositoryProviderTestBase {
 		private readonly IList<MongoPerson> people;
 
-		public QueryTenantEntitiesTests(MongoDbTestFixture mongo) : base(mongo) {
+		public QueryTenantEntitiesTests(MongoFrameworkTestFixture mongo) : base(mongo) {
 			people = GeneratePersons(100);
 		}
 

@@ -8,12 +8,7 @@ namespace Deveel.Data {
 
 		public UpdateEntityTests(MongoDbTestFixture mongo) 
 			: base(mongo) {
-			var nameGen = new RandomNameGenerator();
-
-			people = Enumerable.Range(1, 100)
-				.Select(_ => nameGen.NewName())
-				.Select(x => new MongoPerson { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			people = GeneratePersons(100);
 		}
 
 		protected override async Task SeedAsync(MongoRepository<MongoPerson> repository) {
@@ -24,7 +19,7 @@ namespace Deveel.Data {
 		public async Task Mongo_UpdateExisting() {
 			var entity = people[^1];
 
-			entity.BirthDate = new DateOnly(1980, 06, 04);
+			entity.BirthDate = new DateTime(1980, 06, 04);
 
 			var result = await MongoRepository.UpdateAsync(entity);
 
@@ -35,7 +30,7 @@ namespace Deveel.Data {
 		public async Task Mongo_UpdateExisting_TransactionCommit() {
 			var entity = people[^1];
 
-			entity.BirthDate = new DateOnly(1980, 06, 04);
+			entity.BirthDate = new DateTime(1980, 06, 04);
 
 			using var transaction = (MongoTransaction) await TransactionFactory.CreateTransactionAsync();
 			await transaction.BeginAsync();
@@ -51,7 +46,7 @@ namespace Deveel.Data {
 		public async Task Mongo_UpdateExisting_TransactionRollback() {
 			var entity = people[^1];
 
-			entity.BirthDate = new DateOnly(1980, 06, 04);
+			entity.BirthDate = new DateTime(1980, 06, 04);
 
 			using var transaction = (MongoTransaction) await TransactionFactory.CreateTransactionAsync();
 			await transaction.BeginAsync();
@@ -68,7 +63,7 @@ namespace Deveel.Data {
 		public async Task Repository_UpdateExisting() {
 			var entity = people[^1];
 
-			entity.BirthDate = new DateOnly(1980, 06, 04);
+			entity.BirthDate = new DateTime(1980, 06, 04);
 
 			var result = await Repository.UpdateAsync(entity);
 
@@ -79,7 +74,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_UpdateExisting() {
 			var entity = people[^1];
 
-			entity.BirthDate = new DateOnly(1980, 06, 04);
+			entity.BirthDate = new DateTime(1980, 06, 04);
 
 			var result = await FacadeRepository.UpdateAsync(entity);
 
@@ -88,36 +83,33 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_UpdateNotExisting() {
-			var name = new RandomNameGenerator().NewName();
-			var entity = new MongoPerson { Id = ObjectId.GenerateNewId(), FirstName = name.Item1, LastName = name.Item2 };
+			var person = GeneratePerson();
+			person.Id = ObjectId.GenerateNewId();
+			person.BirthDate = new DateTime(1980, 06, 04);
 
-			entity.BirthDate = new DateOnly(1980, 06, 04);
-
-			var result = await MongoRepository.UpdateAsync(entity);
+			var result = await MongoRepository.UpdateAsync(person);
 
 			Assert.False(result);
 		}
 
 		[Fact]
 		public async Task Repository_UpdateNotExisting() {
-			var name = new RandomNameGenerator().NewName();
-			var entity = new MongoPerson { Id = ObjectId.GenerateNewId(), FirstName = name.Item1, LastName = name.Item2 };
+			var person = GeneratePerson();
+			person.Id = ObjectId.GenerateNewId();
+			person.BirthDate = new DateTime(1980, 06, 04);
 
-			entity.BirthDate = new DateOnly(1980, 06, 04);
-
-			var result = await Repository.UpdateAsync(entity);
+			var result = await Repository.UpdateAsync(person);
 
 			Assert.False(result);
 		}
 
 		[Fact]
 		public async Task FacadeRepository_UpdateNotExisting() {
-			var name = new RandomNameGenerator().NewName();
-			var entity = new MongoPerson { Id = ObjectId.GenerateNewId(), FirstName = name.Item1, LastName = name.Item2 };
+			var person = GeneratePerson();
+			person.Id = ObjectId.GenerateNewId();
+			person.BirthDate = new DateTime(1980, 06, 04);
 
-			entity.BirthDate = new DateOnly(1980, 06, 04);
-
-			var result = await FacadeRepository.UpdateAsync(entity);
+			var result = await FacadeRepository.UpdateAsync(person);
 
 			Assert.False(result);
 		}

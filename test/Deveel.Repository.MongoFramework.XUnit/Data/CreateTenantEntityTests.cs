@@ -1,10 +1,12 @@
 ﻿using System;
 
+using Bogus;
+
 using MongoDB.Bson;
 
 namespace Deveel.Data {
 	public class CreateTenantEntityTests : MongoRepositoryProviderTestBase {
-		public CreateTenantEntityTests(MongoDbTestFixture mongo) 
+		public CreateTenantEntityTests(MongoFrameworkTestFixture mongo) 
 			: base(mongo) {
 		}
 
@@ -21,7 +23,6 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task Repository_CreateNewPerson() {
 			var person = GeneratePerson();
-
 			var id = await Repository.CreateAsync(person);
 
 			Assert.NotNull(id);
@@ -42,7 +43,6 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task MongoProvider_CreateNewPerson() {
 			var person = GeneratePerson();
-
 			var id = await MongoRepositoryProvider.CreateAsync(TenantId, person);
 
 			Assert.NotNull(id);

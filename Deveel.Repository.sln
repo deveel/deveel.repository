@@ -21,7 +21,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Filters.X
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.InMemory", "src\Deveel.Repository.InMemory\Deveel.Repository.InMemory.csproj", "{E2E38FDD-69EB-4071-AD7B-59B6C01A8194}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.InMemory.XUnit", "test\Deveel.Repository.InMemory.XUnit\Deveel.Repository.InMemory.XUnit.csproj", "{7D4BA787-5ACB-45D1-A792-0464BFC7BA3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.InMemory.XUnit", "test\Deveel.Repository.InMemory.XUnit\Deveel.Repository.InMemory.XUnit.csproj", "{7D4BA787-5ACB-45D1-A792-0464BFC7BA3F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repsotiory.MongoFramework", "src\Deveel.Repsotiory.MongoFramework\Deveel.Repsotiory.MongoFramework.csproj", "{84B44852-631C-453C-8CCD-9C649814DC79}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.MongoFramework.XUnit", "test\Deveel.Repository.MongoFramework.XUnit\Deveel.Repository.MongoFramework.XUnit.csproj", "{DE6078FD-4A73-4819-B505-EA4871F40991}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Annotations", "src\Deveel.Repository.Annotations\Deveel.Repository.Annotations.csproj", "{C7403D23-6846-4221-8142-7FA37B08A003}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +67,18 @@ Global
 		{7D4BA787-5ACB-45D1-A792-0464BFC7BA3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D4BA787-5ACB-45D1-A792-0464BFC7BA3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D4BA787-5ACB-45D1-A792-0464BFC7BA3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84B44852-631C-453C-8CCD-9C649814DC79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84B44852-631C-453C-8CCD-9C649814DC79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84B44852-631C-453C-8CCD-9C649814DC79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84B44852-631C-453C-8CCD-9C649814DC79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE6078FD-4A73-4819-B505-EA4871F40991}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE6078FD-4A73-4819-B505-EA4871F40991}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE6078FD-4A73-4819-B505-EA4871F40991}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE6078FD-4A73-4819-B505-EA4871F40991}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7403D23-6846-4221-8142-7FA37B08A003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7403D23-6846-4221-8142-7FA37B08A003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7403D23-6846-4221-8142-7FA37B08A003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7403D23-6846-4221-8142-7FA37B08A003}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,6 +92,9 @@ Global
 		{FADABC0A-6F56-4A98-ACBD-EC0184B16A1F} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 		{E2E38FDD-69EB-4071-AD7B-59B6C01A8194} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 		{7D4BA787-5ACB-45D1-A792-0464BFC7BA3F} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
+		{84B44852-631C-453C-8CCD-9C649814DC79} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
+		{DE6078FD-4A73-4819-B505-EA4871F40991} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
+		{C7403D23-6846-4221-8142-7FA37B08A003} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01FD9B16-84B3-4D99-80C1-11B2F3D65B56}

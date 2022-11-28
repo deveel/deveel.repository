@@ -9,14 +9,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new MongoPerson {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
+			var person = GeneratePerson();
 
 			var id = await MongoRepository.CreateAsync(person);
 
@@ -26,14 +19,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new MongoPerson {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
+			var person = GeneratePerson();
 
 			var id = await Repository.CreateAsync(person);
 
@@ -43,14 +29,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new MongoPerson {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
+			var person = GeneratePerson();
 
 			var id = await FacadeRepository.CreateAsync(person);
 
@@ -61,11 +40,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_CreateNewPersons() {
-			var randomNameGen = new RandomNameGenerator();
-			var persons = Enumerable.Range(0, 100)
-				.Select(_ => randomNameGen.NewName())
-				.Select(x => new MongoPerson { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			var persons = GeneratePersons(100);
 
 			var results = await MongoRepository.CreateAsync(persons);
 
@@ -80,11 +55,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CreateNewPersons() {
-			var randomNameGen = new RandomNameGenerator();
-			var persons = Enumerable.Range(0, 100)
-				.Select(_ => randomNameGen.NewName())
-				.Select(x => new MongoPerson { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			var persons = GeneratePersons(100);
 
 			var results = await Repository.CreateAsync(persons);
 
@@ -99,11 +70,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_CreateNewPersons() {
-			var randomNameGen = new RandomNameGenerator();
-			var persons = Enumerable.Range(0, 100)
-				.Select(_ => randomNameGen.NewName())
-				.Select(x => new MongoPerson { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			var persons = GeneratePersons(100);
 
 			var results = await FacadeRepository.CreateAsync(persons);
 
