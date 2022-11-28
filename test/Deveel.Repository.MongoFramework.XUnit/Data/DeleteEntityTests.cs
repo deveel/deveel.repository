@@ -1,22 +1,24 @@
 ﻿using System;
 
-namespace Deveel.Data {
-	public class DeleteEntityTests : InMemoryRepositoryTestBase {
-		private readonly IList<Person> people;
+using MongoDB.Bson;
 
-		public DeleteEntityTests() {
+namespace Deveel.Data {
+	public sealed class DeleteEntityTests : MongoFrameworkRepositoryTestBase {
+		private readonly IList<MongoPerson> people;
+
+		public DeleteEntityTests(MongoFrameworkTestFixture mongo) : base(mongo) {
 			people = GeneratePersons(100);
 		}
 
-		protected override async Task SeedAsync(IRepository repository) {
+		protected override async Task SeedAsync(MongoRepository<MongoPerson> repository) {
 			await repository.CreateAsync(people);
 		}
 
 		[Fact]
-		public async Task Memory_DeleteExisting() {
+		public async Task Mongo_DeleteExisting() {
 			var entity = people[^1];
 
-			var result = await InMemoryRepository.DeleteAsync(entity);
+			var result = await MongoRepository.DeleteAsync(entity);
 
 			Assert.True(result);
 		}
@@ -41,17 +43,17 @@ namespace Deveel.Data {
 
 
 		[Fact]
-		public async Task Memory_DeleteNotExisting() {
-			var entity = new Person { Id = Guid.NewGuid().ToString() };
+		public async Task Mongo_DeleteNotExisting() {
+			var entity = new MongoPerson { Id = ObjectId.GenerateNewId() };
 
-			var result = await InMemoryRepository.DeleteAsync(entity);
+			var result = await MongoRepository.DeleteAsync(entity);
 
 			Assert.False(result);
 		}
 
 		[Fact]
 		public async Task Repository_DeleteNotExisting() {
-			var entity = new Person { Id = Guid.NewGuid().ToString() };
+			var entity = new MongoPerson { Id = ObjectId.GenerateNewId() };
 
 			var result = await Repository.DeleteAsync(entity);
 
@@ -60,7 +62,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_DeleteNotExisting() {
-			var entity = new Person { Id = Guid.NewGuid().ToString() };
+			var entity = new MongoPerson { Id = ObjectId.GenerateNewId() };
 
 			var result = await FacadeRepository.DeleteAsync(entity);
 
@@ -68,10 +70,10 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task Memory_DeleteById_Existing() {
+		public async Task Mongo_DeleteById_Existing() {
 			var id = people[56].Id;
 
-			var result = await InMemoryRepository.DeleteByIdAsync(id);
+			var result = await MongoRepository.DeleteByIdAsync(id.ToEntityId());
 
 			Assert.True(result);
 		}
@@ -80,7 +82,7 @@ namespace Deveel.Data {
 		public async Task Repository_DeleteById_Existing() {
 			var id = people[56].Id;
 
-			var result = await Repository.DeleteByIdAsync(id);
+			var result = await Repository.DeleteByIdAsync(id.ToEntityId());
 
 			Assert.True(result);
 		}
@@ -89,34 +91,34 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_DeleteById_Existing() {
 			var id = people[56].Id;
 
-			var result = await FacadeRepository.DeleteByIdAsync(id);
+			var result = await FacadeRepository.DeleteByIdAsync(id.ToEntityId());
 
 			Assert.True(result);
 		}
 
 		[Fact]
-		public async Task Memory_DeleteById_NotExisting() {
-			var id = Guid.NewGuid().ToString();
+		public async Task Mongo_DeleteById_NotExisting() {
+			var id = ObjectId.GenerateNewId();
 
-			var result = await InMemoryRepository.DeleteByIdAsync(id);
+			var result = await MongoRepository.DeleteByIdAsync(id.ToEntityId());
 
 			Assert.False(result);
 		}
 
 		[Fact]
 		public async Task Repository_DeleteById_NotExisting() {
-			var id = Guid.NewGuid().ToString();
+			var id = ObjectId.GenerateNewId();
 
-			var result = await Repository.DeleteByIdAsync(id);
+			var result = await Repository.DeleteByIdAsync(id.ToEntityId());
 
 			Assert.False(result);
 		}
 
 		[Fact]
 		public async Task FacadeRepository_DeleteById_NotExisting() {
-			var id = Guid.NewGuid().ToString();
+			var id = ObjectId.GenerateNewId();
 
-			var result = await FacadeRepository.DeleteByIdAsync(id);
+			var result = await FacadeRepository.DeleteByIdAsync(id.ToEntityId());
 
 			Assert.False(result);
 		}

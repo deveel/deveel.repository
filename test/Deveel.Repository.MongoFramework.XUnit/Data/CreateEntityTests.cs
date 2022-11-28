@@ -1,16 +1,21 @@
-﻿using System;
+﻿using Bogus;
 
 using MongoDB.Bson;
 
 namespace Deveel.Data {
-	public class CreateTenantEntityTests : MongoRepositoryProviderTestBase {
-		public CreateTenantEntityTests(MongoDbTestFixture mongo) 
-			: base(mongo) {
+	public class CreateEntityTests : MongoFrameworkRepositoryTestBase {
+		private readonly Faker<MongoPerson> personFaker;
+
+		public CreateEntityTests(MongoFrameworkTestFixture mongo) : base(mongo) {
+			personFaker = new Faker<MongoPerson>()
+				.RuleFor(x => x.FirstName, f => f.Name.FirstName())
+				.RuleFor(x => x.LastName, f => f.Name.LastName())
+				.RuleFor(x => x.BirthDate, f => f.Date.Past(20));
 		}
 
 		[Fact]
 		public async Task Mongo_CreateNewPerson() {
-			var person = GeneratePerson();
+			var person = personFaker.Generate();
 
 			var id = await MongoRepository.CreateAsync(person);
 
@@ -20,7 +25,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CreateNewPerson() {
-			var person = GeneratePerson();
+			var person = personFaker.Generate();
 
 			var id = await Repository.CreateAsync(person);
 
@@ -30,7 +35,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_CreateNewPerson() {
-			var person = GeneratePerson();
+			var person = personFaker.Generate();
 
 			var id = await FacadeRepository.CreateAsync(person);
 
@@ -40,40 +45,10 @@ namespace Deveel.Data {
 
 
 		[Fact]
-		public async Task MongoProvider_CreateNewPerson() {
-			var person = GeneratePerson();
-
-			var id = await MongoRepositoryProvider.CreateAsync(TenantId, person);
-
-			Assert.NotNull(id);
-			Assert.NotEmpty(id);
-		}
-
-		[Fact]
-		public async Task RepositoryProvider_CreateNewPerson() {
-			var person = GeneratePerson();
-
-			var id = await RepositoryProvider.CreateAsync(TenantId, person);
-
-			Assert.NotNull(id);
-			Assert.NotEmpty(id);
-		}
-
-		[Fact]
-		public async Task FacadeRepositoryProvider_CreateNewPerson() {
-			var person = GeneratePerson();
-
-			var id = await FacadeRepositoryProvider.CreateAsync(TenantId, person);
-
-			Assert.NotNull(id);
-			Assert.NotEmpty(id);
-		}
-
-
-
-		[Fact]
 		public async Task Mongo_CreateNewPersons() {
-			var persons = GeneratePersons(100);
+			var persons = Enumerable.Range(0, 100)
+				.Select(x => personFaker.Generate())
+				.ToList();
 
 			var results = await MongoRepository.CreateAsync(persons);
 
@@ -88,7 +63,9 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CreateNewPersons() {
-			var persons = GeneratePersons(100);
+			var persons = Enumerable.Range(0, 100)
+				.Select(x => personFaker.Generate())
+				.ToList();
 
 			var results = await Repository.CreateAsync(persons);
 
@@ -103,7 +80,9 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_CreateNewPersons() {
-			var persons = GeneratePersons(100);
+			var persons = Enumerable.Range(0, 100)
+				.Select(x => personFaker.Generate())
+				.ToList();
 
 			var results = await FacadeRepository.CreateAsync(persons);
 

@@ -1,25 +1,24 @@
-﻿using System;
+﻿using Bogus;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
-using Bogus;
+using MongoDB.Bson.Serialization.Attributes;
+
+using MongoFramework;
 
 namespace Deveel.Data {
 	[Collection("Mongo Single Database")]
 
 	public abstract class MongoRepositoryProviderTestBase : IAsyncLifetime {
-		private MongoDbTestFixture mongo;
+		private MongoFrameworkTestFixture mongo;
 		private readonly IServiceProvider serviceProvider;
 
-		protected MongoRepositoryProviderTestBase(MongoDbTestFixture mongo) {
+		protected MongoRepositoryProviderTestBase(MongoFrameworkTestFixture mongo) {
 			this.mongo = mongo;
 
 			var services = new ServiceCollection();
 			AddRepositoryProvider(services);
-
-			services.AddMongoTransactionFactory();
 
 			serviceProvider = services.BuildServiceProvider();
 
@@ -28,6 +27,8 @@ namespace Deveel.Data {
 				.RuleFor(x => x.LastName, f => f.Name.LastName())
 				.RuleFor(x => x.BirthDate, f => f.Date.Past(20));
 		}
+
+		protected Faker<MongoPerson> PersonFaker { get; }
 
 		protected string TenantId { get; } = Guid.NewGuid().ToString("N");
 
@@ -47,19 +48,27 @@ namespace Deveel.Data {
 
 		protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
 
-		protected Faker<MongoPerson> PersonFaker { get; }
-
 		protected MongoPerson GeneratePerson() => PersonFaker.Generate();
 
-		protected IList<MongoPerson> GeneratePersons(int count) => PersonFaker.Generate(count);
+		protected IList<MongoPerson> GeneratePersons(int count)
+			=> PersonFaker.Generate(count);
 
 		protected virtual void AddRepositoryProvider(IServiceCollection services) {
+			services.AddMultiTenant<MongoTenantInfo>()
+				.WithInMemoryStore(config => {
+					config.Tenants.Add(new MongoTenantInfo {
+						Id = TenantId,
+						Identifier = "test",
+						Name = "Test Tenant",
+						DatabaseName = "test_db1",
+						ConnectionString = mongo.ConnectionString
+					}) ;
+				});
+
 			services
-				.AddMongoOptions(options => options
-					.ConnectionString(mongo.ConnectionString)
-					.Database("test_db")
-					.Collection("Person", "persons")
-					.WithTenantField())
+				.AddMongoPerTenantConnection(options => {
+					options.DefaultConnectionString = mongo.SetDatabase("testdb");
+				})
 				.AddMongoRepositoryProvider<MongoPerson>()
 				.AddMongoFacadeRepositoryProvider<MongoPerson, IPerson>()
 				.AddRepositoryController();
@@ -88,11 +97,10 @@ namespace Deveel.Data {
 			return Task.CompletedTask;
 		}
 
-		protected class MongoPerson : IMultiTenantDocument, IPerson {
+		[MultiTenant]
+		protected class MongoPerson : IPerson, IHaveTenantId {
 			[BsonId]
 			public ObjectId Id { get; set; }
-
-			string? IMongoDocument.Id => Id.ToEntityId();
 
 			string? IEntity.Id => Id.ToEntityId();
 

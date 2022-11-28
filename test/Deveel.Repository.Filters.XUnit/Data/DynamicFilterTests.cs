@@ -1,6 +1,4 @@
-﻿using System;
-
-using Deveel.Filters;
+﻿using Bogus;
 
 namespace Deveel.Data {
 	public class DynamicFilterTests {
@@ -8,11 +6,12 @@ namespace Deveel.Data {
 		private readonly IList<Person> peopleList;
 
 		public DynamicFilterTests() {
-			var randomGen = new RandomNameGenerator();
-			peopleList = Enumerable.Range(1, 210)
-				.Select(_ => randomGen.NewName())
-				.Select(x => new Person { Id = Guid.NewGuid().ToString("N"), FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			var faker = new Faker<Person>()
+				.RuleFor(x => x.Id, f => Guid.NewGuid().ToString("N"))
+				.RuleFor(x => x.FirstName, f => f.Name.FirstName())
+				.RuleFor(x => x.LastName, f => f.Name.LastName());
+
+			peopleList = faker.Generate(210);
 
 			people = new InMemoryRepository<Person>(peopleList);
 		}

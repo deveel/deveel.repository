@@ -6,7 +6,7 @@ namespace Deveel.Data {
 	public class UpdateTenantEntityTests : MongoRepositoryProviderTestBase {
 		private readonly IList<MongoPerson> people;
 
-		public UpdateTenantEntityTests(MongoDbTestFixture mongo) : base(mongo) {
+		public UpdateTenantEntityTests(MongoFrameworkTestFixture mongo) : base(mongo) {
 			people = GeneratePersons(100);
 		}
 
@@ -25,37 +25,37 @@ namespace Deveel.Data {
 			Assert.True(result);
 		}
 
-		[Fact]
-		public async Task Mongo_UpdateExisting_TransactionCommit() {
-			var entity = people[^1];
+		//[Fact]
+		//public async Task Mongo_UpdateExisting_TransactionCommit() {
+		//	var entity = people[^1];
 
-			entity.BirthDate = new DateTime(1980, 06, 04);
+		//	entity.BirthDate = new DateOnly(1980, 06, 04);
 
-			using var transaction = (MongoTransaction)await TransactionFactory.CreateTransactionAsync();
-			await transaction.BeginAsync();
+		//	using var transaction = (MongoTransaction)await TransactionFactory.CreateTransactionAsync();
+		//	await transaction.BeginAsync();
 
-			var result = await MongoRepository.UpdateAsync(transaction, entity);
+		//	var result = await MongoRepository.UpdateAsync(transaction, entity);
 
-			await transaction.CommitAsync();
+		//	await transaction.CommitAsync();
 
-			Assert.True(result);
-		}
+		//	Assert.True(result);
+		//}
 
-		[Fact]
-		public async Task Mongo_UpdateExisting_TransactionRollback() {
-			var entity = people[^1];
+		//[Fact]
+		//public async Task Mongo_UpdateExisting_TransactionRollback() {
+		//	var entity = people[^1];
 
-			entity.BirthDate = new DateTime(1980, 06, 04);
+		//	entity.BirthDate = new DateOnly(1980, 06, 04);
 
-			using var transaction = (MongoTransaction)await TransactionFactory.CreateTransactionAsync();
-			await transaction.BeginAsync();
+		//	using var transaction = (MongoTransaction)await TransactionFactory.CreateTransactionAsync();
+		//	await transaction.BeginAsync();
 
-			var result = await MongoRepository.UpdateAsync(transaction, entity);
+		//	var result = await MongoRepository.UpdateAsync(transaction, entity);
 
-			await transaction.RollbackAsync();
+		//	await transaction.RollbackAsync();
 
-			Assert.True(result);
-		}
+		//	Assert.True(result);
+		//}
 
 
 		[Fact]
@@ -84,6 +84,7 @@ namespace Deveel.Data {
 		public async Task Mongo_UpdateNotExisting() {
 			var person = GeneratePerson();
 			person.Id = ObjectId.GenerateNewId();
+
 			person.BirthDate = new DateTime(1980, 06, 04);
 
 			var result = await MongoRepository.UpdateAsync(person);
@@ -95,6 +96,7 @@ namespace Deveel.Data {
 		public async Task Repository_UpdateNotExisting() {
 			var person = GeneratePerson();
 			person.Id = ObjectId.GenerateNewId();
+
 			person.BirthDate = new DateTime(1980, 06, 04);
 
 			var result = await Repository.UpdateAsync(person);
@@ -106,6 +108,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_UpdateNotExisting() {
 			var person = GeneratePerson();
 			person.Id = ObjectId.GenerateNewId();
+
 			person.BirthDate = new DateTime(1980, 06, 04);
 
 			var result = await FacadeRepository.UpdateAsync(person);

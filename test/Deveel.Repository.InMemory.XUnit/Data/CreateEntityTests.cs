@@ -4,14 +4,7 @@ namespace Deveel.Data {
 	public class CreateEntityTests : InMemoryRepositoryTestBase {
 		[Fact]
 		public async Task Memory_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new Person {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
+			var person = GeneratePerson();
 
 			var id = await InMemoryRepository.CreateAsync(person);
 
@@ -21,14 +14,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new Person {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
+			var person = GeneratePerson();
 
 			var id = await Repository.CreateAsync(person);
 
@@ -38,14 +24,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new Person {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
+			var person = GeneratePerson();
 
 			var id = await FacadeRepository.CreateAsync(person);
 
@@ -56,11 +35,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Memory_CreateNewPersons() {
-			var randomNameGen = new RandomNameGenerator();
-			var persons = Enumerable.Range(0, 100)
-				.Select(_ => randomNameGen.NewName())
-				.Select(x => new Person { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			var persons = GeneratePersons(100);
 
 			var results = await InMemoryRepository.CreateAsync(persons);
 
@@ -75,11 +50,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CreateNewPersons() {
-			var randomNameGen = new RandomNameGenerator();
-			var persons = Enumerable.Range(0, 100)
-				.Select(_ => randomNameGen.NewName())
-				.Select(x => new Person { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			var persons = GeneratePersons(100);
 
 			var results = await Repository.CreateAsync(persons);
 
@@ -94,11 +65,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_CreateNewPersons() {
-			var randomNameGen = new RandomNameGenerator();
-			var persons = Enumerable.Range(0, 100)
-				.Select(_ => randomNameGen.NewName())
-				.Select(x => new Person { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			var persons = GeneratePersons(100);
 
 			var results = await FacadeRepository.CreateAsync(persons);
 

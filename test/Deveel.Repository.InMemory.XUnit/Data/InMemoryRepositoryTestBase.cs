@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bogus;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Deveel.Data {
@@ -15,6 +17,11 @@ namespace Deveel.Data {
 			AddRepository(services);
 
 			serviceProvider = services.BuildServiceProvider();
+
+			PersonFaker = new Faker<Person>()
+				.RuleFor(x => x.FirstName, f => f.Name.FirstName())
+				.RuleFor(x => x.LastName, f => f.Name.LastName())
+				.RuleFor(x => x.BirthDate, f => f.Date.Past(20));
 		}
 
 		protected InMemoryRepository<Person> InMemoryRepository => serviceProvider.GetRequiredService<InMemoryRepository<Person>>();
@@ -22,6 +29,13 @@ namespace Deveel.Data {
 		protected IRepository<Person> Repository => serviceProvider.GetRequiredService<IRepository<Person>>();
 
 		protected IRepository<IPerson> FacadeRepository => serviceProvider.GetRequiredService<IRepository<IPerson>>();
+
+		protected Faker<Person> PersonFaker { get; }
+
+		protected Person GeneratePerson() => PersonFaker.Generate();
+
+		protected IList<Person> GeneratePersons(int count)
+			=> PersonFaker.Generate(count);
 
 
 		protected virtual void AddRepository(IServiceCollection services) {
