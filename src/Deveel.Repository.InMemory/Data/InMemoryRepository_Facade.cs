@@ -43,7 +43,8 @@ namespace Deveel.Data {
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
 		async Task<RepositoryPage<TFacade>> IRepository<TFacade>.GetPageAsync(RepositoryPageRequest<TFacade> request, CancellationToken cancellationToken) {
-			var newPage = new RepositoryPageRequest<TEntity>(request.Page, request.Size);
+			var newPage = request.As<TEntity>();
+
 			var result = await GetPageAsync(newPage, cancellationToken);
 
 			if (result == null)

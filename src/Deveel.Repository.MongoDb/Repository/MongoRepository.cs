@@ -1,4 +1,6 @@
-﻿using Deveel.Repository;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using Deveel.Repository;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -181,7 +183,7 @@ namespace Deveel.Data {
         }
 
         Task<IEntity?> IRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken) {
-            throw new NotImplementedException();
+			throw new NotSupportedException("Mongo repositories not support finding entities within sessions (yet)");
         }
 
         /// <inheritdoc />
@@ -222,7 +224,7 @@ namespace Deveel.Data {
 
         /// <inheritdoc />
         async Task<RepositoryPage> IRepository.GetPageAsync(RepositoryPageRequest page, CancellationToken cancellationToken) {
-            var request = page.AsPageQuery(Field);
+            var request = page.AsPageQuery(Field, GetFilterDefinition);
 
             var result = await base.GetPageAsync(request, cancellationToken);
 
@@ -230,7 +232,7 @@ namespace Deveel.Data {
         }
 
         public virtual async Task<RepositoryPage<TDocument>> GetPageAsync(RepositoryPageRequest<TDocument> page, CancellationToken cancellationToken = default) {
-            var pageQuery = page.AsPageQuery(Field);
+            var pageQuery = page.AsPageQuery(Field, GetFilterDefinition);
             var result = await base.GetPageAsync(pageQuery, cancellationToken);
 
             return new RepositoryPage<TDocument>(page, result.TotalItems, result.Items);
@@ -256,7 +258,7 @@ namespace Deveel.Data {
             return result.Cast<IEntity>().ToList();
         }
 
-        protected virtual FilterDefinition<TDocument> GetFilterDefinition(IQueryFilter filter) {
+        protected virtual FilterDefinition<TDocument> GetFilterDefinition(IQueryFilter? filter) {
             if (filter == null || filter.IsEmpty())
                 return Builders<TDocument>.Filter.Empty;
 

@@ -1,7 +1,10 @@
 ﻿using Deveel.Data;
+using Deveel.Repository;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
+using MongoDB.Driver;
 
 namespace Deveel.Data {
     public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>
@@ -28,10 +31,24 @@ namespace Deveel.Data {
             return entity;
         }
 
-        async Task<IList<TFacade>> IRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
+		protected override FilterDefinition<TEntity> GetFilterDefinition(IQueryFilter filter) {
+			if (filter is ExpressionQueryFilter<TFacade> exprFilter) {
+				var expr = exprFilter.Expression.AsMongoFilter<TEntity>();
+
+				filter = new MongoQueryFilter<TEntity>(expr);
+				// filter = new ExpressionQueryFilter<TEntity>(expr);
+			}
+
+			return base.GetFilterDefinition(filter);
+		}
+
+		async Task<IList<TFacade>> IRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
             var result = await FindAllAsync(GetFilterDefinition(filter), cancellationToken);
             return result.Cast<TFacade>().ToList();
         }
+
+		async Task<long> IRepository.CountAsync(IQueryFilter filter, System.Threading.CancellationToken cancellationToken)
+			=> await CountAsync(GetFilterDefinition(filter), cancellationToken);
 
         async Task<TFacade?> IRepository<TFacade>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
             => await FindAsync(GetFilterDefinition(filter), cancellationToken);
@@ -58,13 +75,14 @@ namespace Deveel.Data {
             => await FindByIdAsync(id, cancellationToken);
 
         async Task<RepositoryPage<TFacade>> IRepository<TFacade>.GetPageAsync(RepositoryPageRequest<TFacade> page, CancellationToken cancellationToken) {
-            var newPage = page.As<TEntity>();
+			var newPage = page.AsPageQuery<TEntity>(Field, GetFilterDefinition);
+
             var result = await GetPageAsync(newPage, cancellationToken);
 
             if (result == null)
                 return RepositoryPage<TFacade>.Empty(page);
 
-            return result.As<TFacade>();
+            return new RepositoryPage<TFacade>(page, result.TotalItems, result.Items?.Cast<TFacade>());
         }
 
         Task<bool> IRepository<TFacade>.UpdateAsync(TFacade entity, CancellationToken cancellationToken)
