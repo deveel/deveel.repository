@@ -1,5 +1,7 @@
 ﻿using System;
 
+using Bogus;
+
 using MongoDB.Bson;
 
 namespace Deveel.Data {
@@ -10,14 +12,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new MongoPerson {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
+			var person = GeneratePerson();
 
 			var id = await MongoRepository.CreateAsync(person);
 
@@ -27,15 +22,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new MongoPerson {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
-
+			var person = GeneratePerson();
 			var id = await Repository.CreateAsync(person);
 
 			Assert.NotNull(id);
@@ -44,14 +31,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new MongoPerson {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
+			var person = GeneratePerson();
 
 			var id = await FacadeRepository.CreateAsync(person);
 
@@ -62,15 +42,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task MongoProvider_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new MongoPerson {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
-
+			var person = GeneratePerson();
 			var id = await MongoRepositoryProvider.CreateAsync(TenantId, person);
 
 			Assert.NotNull(id);
@@ -79,14 +51,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task RepositoryProvider_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new MongoPerson {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
+			var person = GeneratePerson();
 
 			var id = await RepositoryProvider.CreateAsync(TenantId, person);
 
@@ -96,14 +61,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepositoryProvider_CreateNewPerson() {
-			var randomNameGen = new RandomNameGenerator();
-
-			var name = randomNameGen.NewName();
-
-			var person = new MongoPerson {
-				FirstName = name.Item1,
-				LastName = name.Item2
-			};
+			var person = GeneratePerson();
 
 			var id = await FacadeRepositoryProvider.CreateAsync(TenantId, person);
 
@@ -115,11 +73,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_CreateNewPersons() {
-			var randomNameGen = new RandomNameGenerator();
-			var persons = Enumerable.Range(0, 100)
-				.Select(_ => randomNameGen.NewName())
-				.Select(x => new MongoPerson { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			var persons = GeneratePersons(100);
 
 			var results = await MongoRepository.CreateAsync(persons);
 
@@ -134,11 +88,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CreateNewPersons() {
-			var randomNameGen = new RandomNameGenerator();
-			var persons = Enumerable.Range(0, 100)
-				.Select(_ => randomNameGen.NewName())
-				.Select(x => new MongoPerson { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			var persons = GeneratePersons(100);
 
 			var results = await Repository.CreateAsync(persons);
 
@@ -153,11 +103,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_CreateNewPersons() {
-			var randomNameGen = new RandomNameGenerator();
-			var persons = Enumerable.Range(0, 100)
-				.Select(_ => randomNameGen.NewName())
-				.Select(x => new MongoPerson { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			var persons = GeneratePersons(100);
 
 			var results = await FacadeRepository.CreateAsync(persons);
 

@@ -5,12 +5,7 @@ namespace Deveel.Data {
 		private readonly IList<Person> people;
 
 		public DeleteEntityTests() {
-			var nameGen = new RandomNameGenerator();
-
-			people = Enumerable.Range(1, 100)
-				.Select(_ => nameGen.NewName())
-				.Select(x => new Person { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			people = GeneratePersons(100);
 		}
 
 		protected override async Task SeedAsync(IRepository repository) {

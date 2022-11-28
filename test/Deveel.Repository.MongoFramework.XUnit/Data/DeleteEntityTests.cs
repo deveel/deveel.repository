@@ -7,12 +7,7 @@ namespace Deveel.Data {
 		private readonly IList<MongoPerson> people;
 
 		public DeleteEntityTests(MongoFrameworkTestFixture mongo) : base(mongo) {
-			var nameGen = new RandomNameGenerator();
-
-			people = Enumerable.Range(1, 100)
-				.Select(_ => nameGen.NewName())
-				.Select(x => new MongoPerson { FirstName = x.Item1, LastName = x.Item2 })
-				.ToList();
+			people = GeneratePersons(100);
 		}
 
 		protected override async Task SeedAsync(MongoRepository<MongoPerson> repository) {

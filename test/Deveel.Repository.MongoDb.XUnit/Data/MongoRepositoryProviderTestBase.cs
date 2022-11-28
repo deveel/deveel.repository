@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
+using Bogus;
 
 namespace Deveel.Data {
 	[Collection("Mongo Single Database")]
@@ -21,6 +22,11 @@ namespace Deveel.Data {
 			services.AddMongoTransactionFactory();
 
 			serviceProvider = services.BuildServiceProvider();
+
+			PersonFaker = new Faker<MongoPerson>()
+				.RuleFor(x => x.FirstName, f => f.Name.FirstName())
+				.RuleFor(x => x.LastName, f => f.Name.LastName())
+				.RuleFor(x => x.BirthDate, f => f.Date.Past(20));
 		}
 
 		protected string TenantId { get; } = Guid.NewGuid().ToString("N");
@@ -40,6 +46,12 @@ namespace Deveel.Data {
 		protected IRepository<IPerson> FacadeRepository => FacadeRepositoryProvider.GetRepository(TenantId);
 
 		protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
+
+		protected Faker<MongoPerson> PersonFaker { get; }
+
+		protected MongoPerson GeneratePerson() => PersonFaker.Generate();
+
+		protected IList<MongoPerson> GeneratePersons(int count) => PersonFaker.Generate(count);
 
 		protected virtual void AddRepositoryProvider(IServiceCollection services) {
 			services
@@ -88,7 +100,7 @@ namespace Deveel.Data {
 
 			public string LastName { get; set; }
 
-			public DateOnly? BirthDate { get; set; }
+			public DateTime? BirthDate { get; set; }
 
 			public string? Description { get; set; }
 
@@ -100,7 +112,7 @@ namespace Deveel.Data {
 
 			public string LastName { get; }
 
-			public DateOnly? BirthDate { get; }
+			public DateTime? BirthDate { get; }
 
 			public string? Description { get; }
 		}
