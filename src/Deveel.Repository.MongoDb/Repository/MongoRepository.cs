@@ -46,6 +46,8 @@ namespace Deveel.Data {
                 throw new ArgumentException($"The provided options have no collection '{collectionName}' specified");
 
             var storeOptions = new MongoDbStoreOptions<TDocument> {
+				EnumAsString = mongoOptions.EnumAsString,
+				CamelCase = mongoOptions.CamelCase,
                 ConnectionString = mongoOptions.ConnectionString,
                 DatabaseName = mongoOptions.DatabaseName,
                 CollectionName = collectionOptions.Name,
