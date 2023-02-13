@@ -1,17 +1,17 @@
 ﻿using System;
+using System.Collections.Immutable;
+using System.Linq.Expressions;
 
 namespace Deveel.Data
 {
 	public class InMemoryRepository<TEntity> : IRepository<TEntity>, IQueryableRepository<TEntity>
 		where TEntity : class, IEntity {
 		private readonly List<TEntity> entities;
+		private readonly IEntityFieldMapper<TEntity>? fieldMapper;
 
-		public InMemoryRepository(IEnumerable<TEntity> list) {
-			entities = new List<TEntity>(list);
-		}
-
-		public InMemoryRepository() {
-			entities = new List<TEntity>();
+		public InMemoryRepository(IEnumerable<TEntity>? list = null, IEntityFieldMapper<TEntity>? fieldMapper = null) {
+			entities = list == null ? new List<TEntity>() : new List<TEntity>(list);
+			this.fieldMapper = fieldMapper;
 		}
 
 		bool IRepository.SupportsPaging => true;
@@ -21,6 +21,8 @@ namespace Deveel.Data
 		Type IRepository.EntityType => typeof(TEntity);
 
 		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => entities.AsQueryable();
+
+		public IReadOnlyList<TEntity> Entities => entities.AsReadOnly();
 
 		private static TEntity Assert(IEntity entity) {
 			if (entity == null)
@@ -183,6 +185,23 @@ namespace Deveel.Data
 		Task<IEntity?> IRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
+		private Expression<Func<TEntity, object>> MapField(IFieldRef fieldRef) {
+			if (fieldRef is ExpressionFieldRef<TEntity> expRef)
+				return expRef.Expression;
+
+			if (fieldRef is StringFieldRef fieldName)
+				return MapField(fieldName.FieldName);
+
+			throw new NotSupportedException();
+		}
+
+		protected virtual Expression<Func<TEntity, object>> MapField(string fieldName) {
+			if (fieldMapper == null)
+				throw new NotSupportedException("No field mapper was provided");
+
+			return fieldMapper.Map(fieldName);
+		}
+
 		public Task<RepositoryPage<TEntity>> GetPageAsync(RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -191,7 +210,15 @@ namespace Deveel.Data
 				if (request.Filter != null)
 					entitySet = entitySet.Where(request.Filter);
 
-				// TODO: sort ...
+				if (request.SortBy != null) {
+					foreach (var sort in request.SortBy) {
+						if (sort.Ascending) {
+							entitySet = entitySet.OrderBy(MapField(sort.Field));
+						} else {
+							entitySet = entitySet.OrderByDescending(MapField(sort.Field));
+						}
+					}
+				}
 
 				var itemCount = entitySet.Count();
 				var items = entitySet.Skip(request.Offset).Take(request.Size);

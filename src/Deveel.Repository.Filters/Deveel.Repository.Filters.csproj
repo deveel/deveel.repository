@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Deveel.Service.Filters" Version="1.1.0-4007393965" />
+    <PackageReference Include="Deveel.Service.Filters" Version="1.1.0-4161970316" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,26 +5,29 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Deveel</RootNamespace>
-    <VersionPrefix>1.0.1</VersionPrefix>
+    <VersionPrefix>0.8.1</VersionPrefix>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Antonello Provenzano</Authors>
     <Company>Deveel AS</Company>
-    <Copyright>(C) 2022 Deveel AS</Copyright>
+    <Copyright>(C) 2023 Deveel AS</Copyright>
     <PackageProjectUrl>https://github.com/deveel/deveel.data.repository</PackageProjectUrl>
     <RepositoryUrl>https://github.com/deveel/deveel.data.repository</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>data core framework repository</PackageTags>
-    <Description>Abstractions for the definition of repositories of entities</Description>
+    <PackageTags>data web model repository mvc</PackageTags>
+    <Description>Web models for the representations of data objects in ASP.NET MVC contexts</Description>
     <PackageLicenseFile>EULA.md</PackageLicenseFile>
     <PackageIcon>deveel-logo.png</PackageIcon>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Deveel.Model.Core" Version="1.1.5-4161970316" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+    <PackageReference Include="Deveel.Model.Web" Version="1.1.0-4161970316" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

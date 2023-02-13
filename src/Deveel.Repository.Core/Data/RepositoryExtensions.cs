@@ -125,6 +125,10 @@ namespace Deveel.Data
         //	return result.CastTo<TDest>();
         //}
 
+		public static RepositoryPage<TEntity> GetPage<TEntity>(this IRepository<TEntity> repository, RepositoryPageRequest<TEntity> request)
+			where TEntity : class, IEntity
+			=> repository.GetPageAsync(request).GetAwaiter().GetResult();
+
         #endregion
 
         #region Exists
