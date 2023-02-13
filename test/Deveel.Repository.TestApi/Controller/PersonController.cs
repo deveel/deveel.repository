@@ -15,11 +15,14 @@ namespace Deveel.Repository.TestApi.Controller {
 			this.repository = repository;
 		}
 
-		[HttpGet("page")]
+		[HttpGet("page", Name = "GetPage")]
 		public async Task<IActionResult> Query([FromQuery] PersonPageQueryModel query) {
 			var request = query.ToPageRequest();
 			var page = await repository.GetPageAsync(request, HttpContext.RequestAborted);
-			var response = new RepositoryPageModel<TestPersonModel>(query, page.TotalItems, page.Items);
+			var response = new RepositoryPageQueryResultModel<TestPersonModel>(query, page.TotalItems, page.Items);
+
+			response.SetActionLinks(this, "Query");
+
 			return Ok(response);
 		}
 	}

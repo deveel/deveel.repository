@@ -24,6 +24,7 @@
   <ItemGroup>
     <PackageReference Include="Deveel.Model.Web" Version="1.1.0-4161970316" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>

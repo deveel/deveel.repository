@@ -19,5 +19,14 @@ namespace Deveel.Repository.TestApi.Models {
 				filter.Add(QueryFilter.Where<TestPersonModel>(x => x.BirthDate != null && ((DateTimeOffset.Now.Subtract(x.BirthDate.Value).Days / 365.25) <= MaxAge)));
 			}
 		}
+
+		protected override void GetRouteValues(IDictionary<string, object> routeValues) {
+			if (!String.IsNullOrWhiteSpace(LastName))
+				routeValues["lastName"] = LastName;
+			if (MaxAge != null)
+				routeValues["maxAge"] = MaxAge;
+
+			base.GetRouteValues(routeValues);
+		}
 	}
 }

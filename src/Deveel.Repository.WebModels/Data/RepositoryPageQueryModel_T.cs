@@ -41,23 +41,23 @@ namespace Deveel.Data {
 
 		protected override void GetRouteValues(IDictionary<string, object> routeValues) {
 			var pageParam = GetPageParameterName();
-			if (!string.IsNullOrWhiteSpace(pageParam))
-				routeValues[pageParam] = Page ?? 1;
+			if (!string.IsNullOrWhiteSpace(pageParam) && Page != null)
+				routeValues[pageParam] = Page.Value;
 
 			var sizeParam = GetSizeParameterName();
-			if (!string.IsNullOrWhiteSpace(sizeParam))
-				routeValues[sizeParam] = GetPageSize();
+			if (!string.IsNullOrWhiteSpace(sizeParam) && Size != null)
+				routeValues[sizeParam] = Size;
 
 			var sortParam = GetSortParameterName();
 			if (!string.IsNullOrEmpty(sortParam) && SortBy != null)
-				routeValues[sortParam] = SortBy?.ToArray();
+				routeValues[sortParam] = SortBy.ToArray();
 
 			base.GetRouteValues(routeValues);
 		}
 
 		protected override IEnumerable<IResultSort>? GetResultSort() => SortBy?.Select(WebResultSortUtil.ParseSort);
 
-		public virtual void CopyTo(RepositoryPageQueryModel page) {
+		public virtual void CopyTo(RepositoryPageQueryModel<TEntity>? page) {
 			if (page == null)
 				return;
 
@@ -69,6 +69,7 @@ namespace Deveel.Data {
 			foreach (var property in properties) {
 				var otherProperty = page.GetType()
 					.GetProperty(property.Name, property.PropertyType);
+
 				if (otherProperty != null && otherProperty.CanWrite)
 					otherProperty.SetValue(page, property.GetValue(this, null));
 			}

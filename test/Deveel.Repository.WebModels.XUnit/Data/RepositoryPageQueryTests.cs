@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using System.Web;
 
 using Bogus;
 
@@ -53,6 +54,15 @@ namespace Deveel.Data {
 			Assert.NotNull(response.Items);
 			Assert.NotEmpty(response.Items);
 			Assert.Equal(10, response.Items.Count);
+			Assert.NotNull(response.Next);
+			Assert.NotNull(response.Self);
+			Assert.NotNull(response.First);
+			Assert.NotNull(response.Last);
+			Assert.Null(response.Previous);
+
+			var queryParams = HttpUtility.ParseQueryString(response.Next.Query);
+			Assert.NotNull(queryParams["p"]);
+			Assert.Equal("2", queryParams["p"]);
 		}
 
 		[Fact]
@@ -66,6 +76,15 @@ namespace Deveel.Data {
 			Assert.NotNull(response.Items);
 			Assert.NotEmpty(response.Items);
 			Assert.Equal(10, response.Items.Count);
+			Assert.NotNull(response.Next);
+			Assert.NotNull(response.Self);
+			Assert.NotNull(response.First);
+			Assert.NotNull(response.Last);
+			Assert.Null(response.Previous);
+
+			var queryParams = HttpUtility.ParseQueryString(response.Self.Query);
+			Assert.NotNull(queryParams["s"]);
+			Assert.Equal("lastName", queryParams["s"]);
 
 			var repository = webApp.Services.GetRequiredService<IRepository<TestPersonModel>>();
 			var inMemoryRepo = Assert.IsType<InMemoryRepository<TestPersonModel>>(repository);
@@ -86,6 +105,15 @@ namespace Deveel.Data {
 			Assert.NotNull(response.Items);
 			Assert.NotEmpty(response.Items);
 			Assert.Equal(10, response.Items.Count);
+			Assert.NotNull(response.Next);
+			Assert.NotNull(response.Self);
+			Assert.NotNull(response.First);
+			Assert.NotNull(response.Last);
+			Assert.Null(response.Previous);
+
+			var queryParams = HttpUtility.ParseQueryString(response.Self.Query);
+			Assert.NotNull(queryParams["maxAge"]);
+			Assert.Equal("23", queryParams["maxAge"]);
 
 			var repository = webApp.Services.GetRequiredService<IRepository<TestPersonModel>>();
 			var inMemoryRepo = Assert.IsType<InMemoryRepository<TestPersonModel>>(repository);
@@ -108,6 +136,11 @@ namespace Deveel.Data {
 			Assert.NotNull(response.Items);
 			Assert.NotEmpty(response.Items);
 			Assert.Equal(10, response.Items.Count);
+			Assert.NotNull(response.Next);
+			Assert.NotNull(response.Self);
+			Assert.NotNull(response.First);
+			Assert.NotNull(response.Last);
+			Assert.Null(response.Previous);
 
 			var repository = webApp.Services.GetRequiredService<IRepository<TestPersonModel>>();
 			var inMemoryRepo = Assert.IsType<InMemoryRepository<TestPersonModel>>(repository);
@@ -135,6 +168,7 @@ namespace Deveel.Data {
 			Assert.Equal(totalPages, response.TotalPages);
 			Assert.NotNull(response.Items);
 			Assert.NotEmpty(response.Items);
+			Assert.Null(response.Next);
 		}
 
 		class TestPersonPage {
@@ -143,6 +177,16 @@ namespace Deveel.Data {
 			public int? TotalPages { get; set; }
 
 			public IList<TestPerson> Items { get; set; }
+
+			public Uri? Next { get; set; }
+
+			public Uri? Previous { get; set; }
+
+			public Uri? Self { get; set; }
+
+			public Uri? First { get; set; }
+
+			public Uri? Last { get; set; }
 		}
 
 		class TestPerson {
