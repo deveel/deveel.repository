@@ -43,7 +43,7 @@ namespace Deveel.Data {
 			=> urlHelper.Action(action, controller, null, query, protocol);
 
 
-		public static RepositoryPageQueryResultModel<TItem>? SetLinks<TItem>(this IUrlHelper urlHelper, RepositoryPageQueryResultModel<TItem>? result, string routeName, object? routeValues)
+		public static RepositoryPageQueryResultBaseModel<TItem>? SetLinks<TItem>(this IUrlHelper urlHelper, RepositoryPageQueryResultBaseModel<TItem>? result, string routeName, object? routeValues)
 			where TItem : class, IEntity {
 
 			if (result == null)
@@ -94,17 +94,17 @@ namespace Deveel.Data {
 		}
 
 
-		public static RepositoryPageQueryResultModel<TItem>? SetActionLinks<TItem>(this IUrlHelper urlHelper, RepositoryPageQueryResultModel<TItem> result, string action, object? routeValues)
+		public static RepositoryPageQueryResultBaseModel<TItem>? SetActionLinks<TItem>(this IUrlHelper urlHelper, RepositoryPageQueryResultBaseModel<TItem> result, string action, object? routeValues)
 			where TItem : class, IEntity
 			=> urlHelper.SetActionLinks(result, action, null, routeValues);
 
-		public static RepositoryPageQueryResultModel<TItem>? SetActionLinks<TItem>(this IUrlHelper urlHelper, RepositoryPageQueryResultModel<TItem> result, string action, string? controller, object? routeValues)
+		public static RepositoryPageQueryResultBaseModel<TItem>? SetActionLinks<TItem>(this IUrlHelper urlHelper, RepositoryPageQueryResultBaseModel<TItem> result, string action, string? controller, object? routeValues)
 			where TItem : class, IEntity {
 
 			if (result == null)
 				return null;
 
-			result.Self = urlHelper.Action(action, controller, routeValues, result.Query);
+			result.Self = urlHelper.Action(action, controller, routeValues, result.PageQuery);
 
 			if (result.HasPages()) {
 				result.First = urlHelper.Action(action, controller, routeValues, result.FirstPage());

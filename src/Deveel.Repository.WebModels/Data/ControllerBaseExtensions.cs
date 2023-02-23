@@ -26,11 +26,11 @@ namespace Deveel.Data {
 			where TEntity : class, IEntity
 			=> urlHelper.Action(action, controller, routValues, query, protocol).SetHost(host);
 
-		public static RepositoryPageQueryResultModel<TItem>? SetPageActionLinks<TItem>(this ControllerBase controller, RepositoryPageQueryResultModel<TItem>? result, string action, object? routeValues = null)
+		public static RepositoryPageQueryResultBaseModel<TItem>? SetPageActionLinks<TItem>(this ControllerBase controller, RepositoryPageQueryResultBaseModel<TItem>? result, string action, object? routeValues = null)
 			where TItem : class, IEntity
 			=> controller.SetPageActionLinks(result, action, null, routeValues);
 
-		public static RepositoryPageQueryResultModel<TItem>? SetPageActionLinks<TItem>(this ControllerBase controller, RepositoryPageQueryResultModel<TItem>? result, string action, string? controllerName = null, object? routeValues = null)
+		public static RepositoryPageQueryResultBaseModel<TItem>? SetPageActionLinks<TItem>(this ControllerBase controller, RepositoryPageQueryResultBaseModel<TItem>? result, string action, string? controllerName = null, object? routeValues = null)
 			where TItem : class, IEntity {
 			if (result == null)
 				return null;
@@ -40,7 +40,7 @@ namespace Deveel.Data {
 			var host = siteConfig?.Host;
 			var protocol = controller.Request.Scheme;
 
-			result.Self = FormatAction(urlHelper, protocol, host, action, controllerName, routeValues, result.Query);
+			result.Self = FormatAction(urlHelper, protocol, host, action, controllerName, routeValues, result.PageQuery);
 
 			if (result.HasPages()) {
 				result.First = FormatAction(urlHelper, protocol, host, action, controllerName, routeValues, result.FirstPage());
@@ -58,7 +58,7 @@ namespace Deveel.Data {
 			return result;
 		}
 
-		public static RepositoryPageQueryResultModel<TItem>? SetPageLinks<TItem>(this ControllerBase controller, RepositoryPageQueryResultModel<TItem>? result, string routeName, object? routeValues = null)
+		public static RepositoryPageQueryResultBaseModel<TItem>? SetPageLinks<TItem>(this ControllerBase controller, RepositoryPageQueryResultBaseModel<TItem>? result, string routeName, object? routeValues = null)
 			where TItem : class, IEntity {
 			var siteConfig = controller.HttpContext?.RequestServices?.GetService<PaginationModelOptions>();
 
@@ -68,7 +68,7 @@ namespace Deveel.Data {
 			var urlHelper = controller.Url;
 			var domainName = siteConfig?.Host;
 
-			result.Self = FormatLink(urlHelper, domainName, routeName, routeValues, result.Query);
+			result.Self = FormatLink(urlHelper, domainName, routeName, routeValues, result.PageQuery);
 
 			if (result.HasPages()) {
 				result.First = FormatLink(urlHelper, domainName, routeName, routeValues, result.FirstPage());
