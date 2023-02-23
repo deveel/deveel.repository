@@ -1,6 +1,4 @@
-﻿using System;
-
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 
 namespace Deveel.Data {
 	public class CreateEntityTests : MongoRepositoryTestBase {
@@ -16,6 +14,17 @@ namespace Deveel.Data {
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
 		}
+
+		[Fact]
+		public async Task Mongo_CreateNewPerson_TransactionCommit() {
+            using var transaction = (MongoTransaction)await TransactionFactory.CreateTransactionAsync();
+			await transaction.BeginAsync();
+
+			var person = GeneratePerson();
+            var result = await MongoRepository.CreateAsync(transaction, person);
+
+            await transaction.CommitAsync();
+        }
 
 		[Fact]
 		public async Task Repository_CreateNewPerson() {
