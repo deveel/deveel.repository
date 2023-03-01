@@ -45,8 +45,6 @@ namespace Deveel.Data {
 
 		Type IRepository.EntityType => typeof(TEntity);
 
-		bool IRepository.SupportsPaging => true;
-
 		bool IRepository.SupportsFilters => true;
 
 		protected IMongoCollection<TEntity> Collection {

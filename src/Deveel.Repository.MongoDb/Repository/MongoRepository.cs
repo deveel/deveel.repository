@@ -25,8 +25,6 @@ namespace Deveel.Data {
 
         protected IDocumentFieldMapper<TDocument>? FieldMapper { get; private set; }
 
-        bool IRepository.SupportsPaging => true;
-
         bool IRepository.SupportsFilters => true;
 
         Type IRepository.EntityType => typeof(TDocument);

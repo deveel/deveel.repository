@@ -10,13 +10,6 @@ namespace Deveel.Data {
     public interface IRepository {
         /// <summary>
         /// Gets a flag indicating whether the implementation of the
-        /// repository supports paging queries
-        /// </summary>
-        /// <seealso cref="GetPageAsync(RepositoryPageRequest, CancellationToken)"/>
-        bool SupportsPaging { get; }
-
-        /// <summary>
-        /// Gets a flag indicating whether the implementation of the
         /// repository supports filtering
         /// </summary>
         bool SupportsFilters { get; }

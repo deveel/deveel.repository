@@ -10,8 +10,6 @@ namespace Deveel.Data {
 			this.repository = repository;
 		}
 
-		public bool SupportsPaging => repository.SupportsPaging;
-
 		public bool SupportsFilters => repository.SupportsFilters;
 
 		Type IRepository.EntityType => typeof(TFacade);

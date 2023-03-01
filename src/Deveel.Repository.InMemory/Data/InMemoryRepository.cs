@@ -14,8 +14,6 @@ namespace Deveel.Data
 			this.fieldMapper = fieldMapper;
 		}
 
-		bool IRepository.SupportsPaging => true;
-
 		bool IRepository.SupportsFilters => true;
 
 		Type IRepository.EntityType => typeof(TEntity);
