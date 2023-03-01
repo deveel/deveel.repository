@@ -14,25 +14,28 @@ namespace Deveel.Data {
 			Items = items?.ToList();
 		}
 
-		protected RepositoryPageRequestModelBase PageRequest { get; }
+		public RepositoryPageModel() {
+		}
+
+        protected RepositoryPageRequestModelBase? PageRequest { get; }
 
 		/// <summary>
 		/// The total number of items available
 		/// </summary>
 		[Required]
-		public int TotalItems { get; }
+		public int TotalItems { get; set; }
 
 		/// <summary>
 		/// The items returned in the page
 		/// </summary>
-		public virtual IReadOnlyCollection<TITem>? Items { get; }
+		public virtual IReadOnlyCollection<TITem>? Items { get; set; }
 
 		/// <summary>
 		/// The maximum size of items returned in the page
 		/// </summary>
 		[Required]
-		public int TotalPages => (int)Math.Ceiling((double)TotalItems / PageRequest.GetPageSize());
+		public int TotalPages => PageRequest == null ? 0 : (int)Math.Ceiling((double)TotalItems / PageRequest.GetPageSize());
 
-		public RouteValueDictionary RouteValues() => PageRequest.RouteValues();
+		public RouteValueDictionary? RouteValues() => PageRequest?.RouteValues();
 	}
 }

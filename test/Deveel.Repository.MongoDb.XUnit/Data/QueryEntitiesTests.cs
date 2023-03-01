@@ -270,7 +270,7 @@ namespace Deveel.Data {
 		public async Task Repository_GetPage() {
 			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
 
-			var result = await Repository.GetPageAsync(request);
+			var result = await PageableRepository.GetPageAsync(request);
 
 			Assert.NotNull(result);
 			Assert.Equal(10, result.TotalPages);
@@ -284,7 +284,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_GetPage() {
 			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
 
-			var result = await FacadeRepository.GetPageAsync(request);
+			var result = await FacadePageableRepository.GetPageAsync(request);
 
 			Assert.NotNull(result);
 			Assert.Equal(10, result.TotalPages);
@@ -327,7 +327,7 @@ namespace Deveel.Data {
 				Filter = x => x.FirstName == firstName
 			};
 
-			var result = await Repository.GetPageAsync(request);
+			var result = await PageableRepository.GetPageAsync(request);
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
 			Assert.Equal(peopleCount, result.TotalItems);
@@ -347,7 +347,7 @@ namespace Deveel.Data {
 				Filter = x => x.FirstName == firstName
 			};
 
-			var result = await FacadeRepository.GetPageAsync(request);
+			var result = await FacadePageableRepository.GetPageAsync(request);
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
 			Assert.Equal(peopleCount, result.TotalItems);
@@ -378,7 +378,7 @@ namespace Deveel.Data {
 				SortBy = new[] { ResultSort.Create<MongoPerson>(x => x.FirstName, false) }
 			};
 
-			var result = await Repository.GetPageAsync(request);
+			var result = await PageableRepository.GetPageAsync(request);
 			Assert.NotNull(result);
 			Assert.Equal(10, result.TotalPages);
 			Assert.Equal(100, result.TotalItems);

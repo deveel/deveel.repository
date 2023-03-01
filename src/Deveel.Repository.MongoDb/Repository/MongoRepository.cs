@@ -1,15 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-using Deveel.Repository;
+﻿using Deveel.Repository;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Deveel.Data {
-    public class MongoRepository<TDocument> : MongoStore<TDocument>, IRepository<TDocument>, IQueryableRepository<TDocument>, IControllableRepository
+    public class MongoRepository<TDocument> : MongoStore<TDocument>, IRepository<TDocument>, IQueryableRepository<TDocument>, IPageableRepository<TDocument>, IControllableRepository
         where TDocument : class, IEntity {
         private bool disposed;
 
@@ -135,9 +132,7 @@ namespace Deveel.Data {
             try {
 				return await Database.CollectionExistsAsync(StoreOptions.CollectionName, cancellationToken);
 			} catch (Exception ex) {
-                Logger.LogError(ex, "Error while validating the existence of collection '{CollectionName}' in database '{DatabaseName}'",
-                    StoreOptions.CollectionName, StoreOptions.DatabaseName);
-
+                Logger.LogUnknownError(ex, StoreOptions.DatabaseName, StoreOptions.CollectionName, "Could not check if the collection exists");
                 throw new RepositoryException("Could not verify if the repository exists", ex);
             }
             
@@ -225,7 +220,7 @@ namespace Deveel.Data {
         }
 
         /// <inheritdoc />
-        async Task<RepositoryPage> IRepository.GetPageAsync(RepositoryPageRequest page, CancellationToken cancellationToken) {
+        async Task<RepositoryPage> IPageableRepository.GetPageAsync(RepositoryPageRequest page, CancellationToken cancellationToken) {
             var request = page.AsPageQuery(Field, GetFilterDefinition);
 
             var result = await base.GetPageAsync(request, cancellationToken);
@@ -234,10 +229,15 @@ namespace Deveel.Data {
         }
 
         public virtual async Task<RepositoryPage<TDocument>> GetPageAsync(RepositoryPageRequest<TDocument> page, CancellationToken cancellationToken = default) {
-            var pageQuery = page.AsPageQuery(Field, GetFilterDefinition);
-            var result = await base.GetPageAsync(pageQuery, cancellationToken);
+            try {
+                var pageQuery = page.AsPageQuery(Field, GetFilterDefinition);
+                var result = await base.GetPageAsync(pageQuery, cancellationToken);
 
-            return new RepositoryPage<TDocument>(page, result.TotalItems, result.Items);
+                return new RepositoryPage<TDocument>(page, result.TotalItems, result.Items);
+            } catch (Exception ex) {
+                Logger.LogUnknownError(ex, StoreOptions.DatabaseName, StoreOptions.CollectionName, "Could not get a page of documents");
+                throw new RepositoryException("Could not get a page of documents because of an error", ex);
+            }
         }
 
         Task<bool> IRepository.ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken)

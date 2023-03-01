@@ -114,7 +114,7 @@ namespace Deveel.Data
 
         #region GetPage
 
-        public static Task<RepositoryPage<TEntity>> GetPageAsync<TEntity>(this IRepository<TEntity> repository, int page, int size, CancellationToken cancellationToken = default)
+        public static Task<RepositoryPage<TEntity>> GetPageAsync<TEntity>(this IPageableRepository<TEntity> repository, int page, int size, CancellationToken cancellationToken = default)
             where TEntity : class, IEntity
             => repository.GetPageAsync(new RepositoryPageRequest<TEntity>(page, size), cancellationToken);
 
@@ -125,7 +125,7 @@ namespace Deveel.Data
         //	return result.CastTo<TDest>();
         //}
 
-		public static RepositoryPage<TEntity> GetPage<TEntity>(this IRepository<TEntity> repository, RepositoryPageRequest<TEntity> request)
+		public static RepositoryPage<TEntity> GetPage<TEntity>(this IPageableRepository<TEntity> repository, RepositoryPageRequest<TEntity> request)
 			where TEntity : class, IEntity
 			=> repository.GetPageAsync(request).GetAwaiter().GetResult();
 

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Deveel.Data {
-    public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>
+    public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>
         where TEntity : class, TFacade, IEntity
         where TFacade : class, IEntity {
         public MongoRepository(IOptions<MongoDbStoreOptions<TEntity>> options, IDocumentFieldMapper<TEntity>? fieldMapper = null, ILogger<MongoStore<TEntity>>? logger = null)
@@ -74,7 +74,7 @@ namespace Deveel.Data {
         async Task<TFacade?> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken)
             => await FindByIdAsync(id, cancellationToken);
 
-        async Task<RepositoryPage<TFacade>> IRepository<TFacade>.GetPageAsync(RepositoryPageRequest<TFacade> page, CancellationToken cancellationToken) {
+        async Task<RepositoryPage<TFacade>> IPageableRepository<TFacade>.GetPageAsync(RepositoryPageRequest<TFacade> page, CancellationToken cancellationToken) {
 			var newPage = page.AsPageQuery<TEntity>(Field, GetFilterDefinition);
 
             var result = await GetPageAsync(newPage, cancellationToken);

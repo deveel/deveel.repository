@@ -84,15 +84,15 @@ namespace Deveel.Data {
 		async Task<IEntity?> IRepository.FindByIdAsync(string id, CancellationToken cancellationToken)
 		=> await repository.FindByIdAsync(id, cancellationToken);
 
-		async Task<RepositoryPage> IRepository.GetPageAsync(RepositoryPageRequest page, CancellationToken cancellationToken)
-			=> await repository.GetPageAsync(page, cancellationToken);
+		//async Task<RepositoryPage> IPageableRepository.GetPageAsync(RepositoryPageRequest page, CancellationToken cancellationToken)
+		//	=> await repository.GetPageAsync(page, cancellationToken);
 
-		public async Task<RepositoryPage<TFacade>> GetPageAsync(RepositoryPageRequest<TFacade> request, CancellationToken cancellationToken) {
-			var newRequest = request.As<TEntity>();
+		//public async Task<RepositoryPage<TFacade>> GetPageAsync(RepositoryPageRequest<TFacade> request, CancellationToken cancellationToken) {
+		//	var newRequest = request.As<TEntity>();
 
-			var result = await repository.GetPageAsync(newRequest, cancellationToken);
-			return new RepositoryPage<TFacade>(request, result.TotalItems, result.Items?.Cast<TFacade>());
-		}
+		//	var result = await repository.GetPageAsync(newRequest, cancellationToken);
+		//	return new RepositoryPage<TFacade>(request, result.TotalItems, result.Items?.Cast<TFacade>());
+		//}
 
 		public async Task<TFacade?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
 			=> await repository.FindAsync(filter, cancellationToken);

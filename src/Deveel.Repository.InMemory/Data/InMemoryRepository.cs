@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Deveel.Data
 {
-	public class InMemoryRepository<TEntity> : IRepository<TEntity>, IQueryableRepository<TEntity>
+	public class InMemoryRepository<TEntity> : IRepository<TEntity>, IQueryableRepository<TEntity>, IPageableRepository<TEntity>
 		where TEntity : class, IEntity {
 		private readonly List<TEntity> entities;
 		private readonly IEntityFieldMapper<TEntity>? fieldMapper;
@@ -231,7 +231,7 @@ namespace Deveel.Data
 		}
 
 
-		async Task<RepositoryPage> IRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
+		async Task<RepositoryPage> IPageableRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
 			var pageRequest = new RepositoryPageRequest<TEntity>(request.Page, request.Size) {
 				Filter = request.Filter?.AsLambda<TEntity>()
 			};

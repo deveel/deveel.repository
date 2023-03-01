@@ -4,11 +4,14 @@ using System.ComponentModel.DataAnnotations;
 namespace Deveel.Data {
 	public abstract class RepositoryPageQueryResultBaseModel<TItem> : RepositoryPageModel<TItem>
 		where TItem : class, IEntity {
-		public RepositoryPageQueryResultBaseModel(RepositoryPageQueryModel<TItem> pageRequest, int totalItems, IEnumerable<TItem>? items = null)
+		protected RepositoryPageQueryResultBaseModel(RepositoryPageQueryModel<TItem> pageRequest, int totalItems, IEnumerable<TItem>? items = null)
 			: base(pageRequest, totalItems, items) {
 		}
 
-		protected internal RepositoryPageQueryModel<TItem> PageQuery => (RepositoryPageQueryModel<TItem>)PageRequest;
+		protected RepositoryPageQueryResultBaseModel() {
+		}
+
+		protected internal RepositoryPageQueryModel<TItem>? PageQuery => (RepositoryPageQueryModel<TItem>?)PageRequest;
 
 		/// <summary>
 		/// The URL to the current page of the result
@@ -47,16 +50,16 @@ namespace Deveel.Data {
 			return page;
 		}
 
-		public bool HasNext() => (PageQuery.Page ?? 1) < TotalPages;
+		public bool HasNext() => (PageQuery?.Page ?? 1) < TotalPages;
 
 		public RepositoryPageQueryModel<TItem>? NextPage() {
-			return HasNext() ? MakePage((PageQuery.Page ?? 1) + 1) : null;
+			return HasNext() ? MakePage((PageQuery?.Page ?? 1) + 1) : null;
 		}
 
-		public bool HasPrevious() => (PageQuery.Page ?? 1) > 1;
+		public bool HasPrevious() => (PageQuery?.Page ?? 1) > 1;
 
 		public RepositoryPageQueryModel<TItem>? PreviousPage() {
-			return HasPrevious() ? MakePage((PageQuery.Page ?? 1) - 1) : null;
+			return HasPrevious() ? MakePage((PageQuery?.Page ?? 1) - 1) : null;
 		}
 
 		public bool HasPages() => TotalPages > 0;

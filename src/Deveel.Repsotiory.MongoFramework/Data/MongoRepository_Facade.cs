@@ -11,7 +11,7 @@ using MongoFramework;
 using MongoFramework.Linq;
 
 namespace Deveel.Data {
-	public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>
+	public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>
 		where TEntity : class, TFacade
 		where TFacade : class, IEntity {
 
@@ -75,7 +75,7 @@ namespace Deveel.Data {
 		async Task<TFacade?> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken)
 			=> await FindByIdAsync(id, cancellationToken);
 
-		async Task<RepositoryPage<TFacade>> IRepository<TFacade>.GetPageAsync(RepositoryPageRequest<TFacade> page, CancellationToken cancellationToken) {
+		async Task<RepositoryPage<TFacade>> IPageableRepository<TFacade>.GetPageAsync(RepositoryPageRequest<TFacade> page, CancellationToken cancellationToken) {
 			try {
 				var filter = Builders<TEntity>.Filter.Empty;
 				if (page.Filter != null) {

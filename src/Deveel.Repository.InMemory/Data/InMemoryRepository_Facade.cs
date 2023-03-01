@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Deveel.Data {
-	public class InMemoryRepository<TEntity, TFacade> : InMemoryRepository<TEntity>, IRepository<TFacade>
+	public class InMemoryRepository<TEntity, TFacade> : InMemoryRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>
 		where TEntity : class, IEntity, TFacade
 		where TFacade : class, IEntity {
 		public InMemoryRepository() {
@@ -42,7 +42,7 @@ namespace Deveel.Data {
 		Task<bool> IRepository<TFacade>.DeleteAsync(IDataTransaction transaction, TFacade entity, CancellationToken cancellationToken)
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
-		async Task<RepositoryPage<TFacade>> IRepository<TFacade>.GetPageAsync(RepositoryPageRequest<TFacade> request, CancellationToken cancellationToken) {
+		async Task<RepositoryPage<TFacade>> IPageableRepository<TFacade>.GetPageAsync(RepositoryPageRequest<TFacade> request, CancellationToken cancellationToken) {
 			var newPage = request.As<TEntity>();
 
 			var result = await GetPageAsync(newPage, cancellationToken);

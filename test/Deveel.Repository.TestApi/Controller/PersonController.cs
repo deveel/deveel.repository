@@ -18,7 +18,7 @@ namespace Deveel.Repository.TestApi.Controller {
 		[HttpGet("page", Name = "GetPage")]
 		public async Task<IActionResult> Query([FromQuery] PersonPageQueryModel query) {
 			var request = query.ToPageRequest();
-			var page = await repository.GetPageAsync(request, HttpContext.RequestAborted);
+			var page = await ((IPageableRepository<TestPersonModel>) repository).GetPageAsync(request, HttpContext.RequestAborted);
 			var response = new RepositoryPageQueryResultModel<TestPersonModel>(query, page.TotalItems, page.Items);
 
 			response.SetActionLinks(this, "Query");

@@ -15,7 +15,7 @@ using MongoFramework.Infrastructure.Mapping;
 using MongoFramework.Linq;
 
 namespace Deveel.Data {
-	public class MongoRepository<TEntity> : IRepository<TEntity>, IQueryableRepository<TEntity>, IControllableRepository, IAsyncDisposable, IDisposable
+	public class MongoRepository<TEntity> : IRepository<TEntity>, IQueryableRepository<TEntity>, IPageableRepository<TEntity>, IControllableRepository, IAsyncDisposable, IDisposable
 		where TEntity : class, IEntity 
 	{
 		private IMongoDbSet<TEntity>? _dbSet;
@@ -471,7 +471,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		async Task<RepositoryPage> IRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
+		async Task<RepositoryPage> IPageableRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
 			var newRequest = new RepositoryPageRequest<TEntity>(request.Page, request.Size) {
 				Filter = request.Filter?.AsLambda<TEntity>(),
 				SortBy = request.SortBy

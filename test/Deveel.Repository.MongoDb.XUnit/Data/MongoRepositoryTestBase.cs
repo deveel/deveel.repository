@@ -33,7 +33,11 @@ namespace Deveel.Data {
 
         protected IRepository<MongoPerson> Repository => serviceProvider.GetRequiredService<IRepository<MongoPerson>>();
 
+        protected IPageableRepository<MongoPerson> PageableRepository => Repository as IPageableRepository<MongoPerson>;
+
         protected IRepository<IPerson> FacadeRepository => serviceProvider.GetRequiredService<IRepository<IPerson>>();
+
+        protected IPageableRepository<IPerson> FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
 
         protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
 
