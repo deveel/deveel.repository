@@ -1,5 +1,7 @@
 ﻿using System;
 
+using Deveel.States;
+
 namespace Deveel.Data {
 	/// <summary>
 	/// A repository that provides the capability of persisting the
