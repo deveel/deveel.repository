@@ -49,7 +49,10 @@ namespace Deveel.Data {
 
         protected virtual void AddRepository(IServiceCollection services) {
             services
-                .AddMongoOptions(options => options.ConnectionString(mongo.ConnectionString))
+                .AddMongoOptions(options => options
+					.ConnectionString(mongo.ConnectionString)
+					.Database("test_db")
+					.Collection("Person", "persons"))
                 .AddMongoStoreOptions<MongoPerson>(options => options
                     .ConnectionString(ConnectionString)
                     .Database("test_db")

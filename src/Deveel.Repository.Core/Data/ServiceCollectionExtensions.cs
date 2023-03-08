@@ -3,23 +3,41 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Deveel.Data {
     public static class ServiceCollectionExtensions {
-        public static IServiceCollection AddRepository<TRepository>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TRepository : class, IRepository {
-            services.TryAdd(new ServiceDescriptor(typeof(IRepository), typeof(TRepository), lifetime));
-            services.Add(new ServiceDescriptor(typeof(TRepository), typeof(TRepository), lifetime));
+		public static IServiceCollection AddRepository<TRepository>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+			where TRepository : class, IRepository
+			=> services.AddRepository(typeof(TRepository), lifetime);
 
-            return services;
-        }
+		public static IServiceCollection AddRepository<TRepository, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+			where TRepository : class, IRepository<TEntity>
+			where TEntity : class, IEntity
+			=> services.AddRepository(typeof(TRepository), lifetime);
 
-        public static IServiceCollection AddRepository<TRepository, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TRepository : class, IRepository<TEntity>
-            where TEntity : class, IEntity {
-            services.TryAdd(new ServiceDescriptor(typeof(IRepository), typeof(TRepository), lifetime));
-            services.TryAdd(new ServiceDescriptor(typeof(IRepository<TEntity>), typeof(TRepository), lifetime));
-            services.Add(new ServiceDescriptor(typeof(TRepository), typeof(TRepository), lifetime));
+		public static IServiceCollection AddRepository(this IServiceCollection services, Type repositoryType, ServiceLifetime lifetime = ServiceLifetime.Scoped) {
+			if (repositoryType is null) 
+				throw new ArgumentNullException(nameof(repositoryType));
 
-            return services;
-        }
+			if (!typeof(IRepository).IsAssignableFrom(repositoryType))
+				throw new ArgumentException($"The type '{repositoryType}' is not assignable from '{typeof(IRepository)}'",  nameof(repositoryType));
+
+			services.Add(new ServiceDescriptor(typeof(IRepository), repositoryType, lifetime));
+
+			if (repositoryType.GenericTypeArguments.Length > 0) {
+				var argType = repositoryType.GenericTypeArguments[0];
+				if (!typeof(IEntity).IsAssignableFrom(argType))
+					throw new ArgumentException($"The argument type '{argType}' of the provided repository is not an entity", nameof(repositoryType));
+
+				var compareType = typeof(IRepository<>).MakeGenericType(argType);
+
+				if (!compareType.IsAssignableFrom(repositoryType))
+					throw new ArgumentException($"The type '{repositoryType}' is not assignable from '{compareType}'", nameof(repositoryType));
+
+				services.TryAdd(new ServiceDescriptor(compareType, repositoryType, lifetime));
+			}
+
+			services.Add(new ServiceDescriptor(repositoryType, repositoryType, lifetime));
+			
+			return services;
+		}
 
         public static IServiceCollection AddRepositoryFacade<TEntity, TInterface>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TEntity : class, IEntity, TInterface
@@ -30,33 +48,41 @@ namespace Deveel.Data {
         }
 
         public static IServiceCollection AddRepositoryProvider<TProvider>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-            where TProvider : class, IRepositoryProvider {
+            where TProvider : class, IRepositoryProvider
+			=> services.AddRepositoryProvider(typeof(TProvider), lifetime);
 
-            services.TryAdd(new ServiceDescriptor(typeof(IRepositoryProvider), typeof(TProvider), lifetime));
-            services.Add(new ServiceDescriptor(typeof(TProvider), typeof(TProvider), lifetime));
+		public static IServiceCollection AddRepositoryProvider<TProvider, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+			where TProvider : class, IRepositoryProvider<TEntity>
+			where TEntity : class, IEntity
+			=> services.AddRepositoryProvider(typeof(TProvider), lifetime);
 
-            return services;
-        }
+		public static IServiceCollection AddRepositoryProvider(this IServiceCollection services, Type providerType, ServiceLifetime lifetime = ServiceLifetime.Singleton) {
+			if (providerType is null)
+				throw new ArgumentNullException(nameof(providerType));
 
-        public static IServiceCollection AddRepositoryProvider<TProvider, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-            where TProvider : class, IRepositoryProvider<TEntity>
-            where TEntity : class, IEntity {
-            services.TryAdd(new ServiceDescriptor(typeof(IRepositoryProvider), typeof(TProvider), lifetime));
-            services.TryAdd(new ServiceDescriptor(typeof(IRepositoryProvider<TEntity>), typeof(TProvider), lifetime));
+			if (!typeof(IRepositoryProvider).IsAssignableFrom(providerType))
+				throw new ArgumentException($"The type '{providerType}' is not assignable from '{typeof(IRepositoryProvider)}'", nameof(providerType));
 
-            services.Add(new ServiceDescriptor(typeof(TProvider), typeof(TProvider), lifetime));
+			services.Add(new ServiceDescriptor(typeof(IRepositoryProvider), providerType, lifetime));
 
-            return services;
-        }
+			if (providerType.GenericTypeArguments.Length > 0) {
+				var argType = providerType.GenericTypeArguments[0];
+				if (!typeof(IEntity).IsAssignableFrom(argType))
+					throw new ArgumentException($"The argument type '{argType}' of the provided repository is not an entity", nameof(providerType));
 
-        public static IServiceCollection AddRepositoryProviderFacade<TEntity, TFacade>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-            where TEntity : class, TFacade
-            where TFacade : class, IEntity {
-            services.TryAdd(new ServiceDescriptor(typeof(IRepositoryProvider), typeof(FacadeRepositoryProvider<TEntity, TFacade>), lifetime));
-            services.TryAdd(new ServiceDescriptor(typeof(IRepositoryProvider<TFacade>), typeof(FacadeRepositoryProvider<TEntity, TFacade>), lifetime));
+				var compareType = typeof(IRepositoryProvider<>).MakeGenericType(argType);
 
-            return services;
-        }
+				if (!compareType.IsAssignableFrom(providerType))
+					throw new ArgumentException($"The type '{providerType}' is not assignable from '{compareType}'", nameof(providerType));
+
+				services.TryAdd(new ServiceDescriptor(compareType, providerType, lifetime));
+			}
+
+			services.Add(new ServiceDescriptor(providerType, providerType, lifetime));
+
+			return services;
+
+		}
 
         public static IServiceCollection AddRepositoryController<TController>(this IServiceCollection services, Action<RepositoryControllerOptions>? configure = null)
             where TController : class, IRepositoryController {
