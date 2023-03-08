@@ -21,7 +21,7 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Deveel.Mongo.Store" Version="1.0.2-4304759142" />
+    <PackageReference Include="Deveel.Mongo.Store" Version="1.0.2-4361989790" />
   </ItemGroup>
 
 	<ItemGroup>
