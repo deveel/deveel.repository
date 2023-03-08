@@ -60,17 +60,14 @@ namespace Deveel.Data {
 				.AddMongoFacadeRepository<MongoRepository<TEntity, TFacade>, TEntity, TFacade>();
 
 
-        #endregion
+		#endregion
 
-        #region AddMongoRepositoryProvider<TEntity>
+		#region AddMongoRepositoryProvider<TEntity>
 
-        public static IServiceCollection AddMongoRepositoryProvider<TProvider, TEntity>(this IServiceCollection services)
-            where TEntity : class, IEntity
-            where TProvider : MongoRepositoryProvider<TEntity>
-            => services
-                .AddRepositoryProvider<TProvider, TEntity>(ServiceLifetime.Singleton)
-                .AddSingleton<IRepositoryProvider, TProvider>()
-                .AddSingleton<IRepositoryProvider<TEntity>, TProvider>();
+		public static IServiceCollection AddMongoRepositoryProvider<TProvider, TEntity>(this IServiceCollection services)
+			where TEntity : class, IEntity
+			where TProvider : MongoRepositoryProvider<TEntity>
+			=> services	.AddRepositoryProvider<TProvider, TEntity>(ServiceLifetime.Singleton);
 
         public static IServiceCollection AddMongoRepositoryProvider<TEntity>(this IServiceCollection services)
             where TEntity : class, IEntity

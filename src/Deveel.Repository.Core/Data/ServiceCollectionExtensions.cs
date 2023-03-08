@@ -9,8 +9,12 @@ namespace Deveel.Data {
 
 		public static IServiceCollection AddRepository<TRepository, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
 			where TRepository : class, IRepository<TEntity>
-			where TEntity : class, IEntity
-			=> services.AddRepository(typeof(TRepository), lifetime);
+			where TEntity : class, IEntity {
+			services.AddRepository(typeof(TRepository), lifetime);
+			services.TryAdd(new ServiceDescriptor(typeof(IRepository<TEntity>), typeof(TRepository), lifetime));
+
+			return services;
+		}
 
 		public static IServiceCollection AddRepository(this IServiceCollection services, Type repositoryType, ServiceLifetime lifetime = ServiceLifetime.Scoped) {
 			if (repositoryType is null) 
@@ -53,8 +57,12 @@ namespace Deveel.Data {
 
 		public static IServiceCollection AddRepositoryProvider<TProvider, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TProvider : class, IRepositoryProvider<TEntity>
-			where TEntity : class, IEntity
-			=> services.AddRepositoryProvider(typeof(TProvider), lifetime);
+			where TEntity : class, IEntity {
+			services.AddRepositoryProvider(typeof(TProvider), lifetime);
+			services.TryAdd(new ServiceDescriptor(typeof(IRepositoryProvider<TEntity>), typeof(TProvider), lifetime));
+
+			return services;
+		}
 
 		public static IServiceCollection AddRepositoryProvider(this IServiceCollection services, Type providerType, ServiceLifetime lifetime = ServiceLifetime.Singleton) {
 			if (providerType is null)

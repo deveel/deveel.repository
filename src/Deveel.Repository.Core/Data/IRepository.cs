@@ -1,7 +1,5 @@
 ﻿using System;
 
-using Deveel.Repository;
-
 namespace Deveel.Data {
     /// <summary>
     /// The contract defining a repository of entities, accessible
