@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Deveel.Data {
-	public class InMemoryRepository<TEntity, TFacade> : InMemoryRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>
+	public class InMemoryRepository<TEntity, TFacade> : InMemoryRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>, IFilterableRepository<TFacade>
 		where TEntity : class, IEntity, TFacade
 		where TFacade : class, IEntity {
 		public InMemoryRepository() {
@@ -19,14 +19,14 @@ namespace Deveel.Data {
 			return entity;
 		}
 
-		async Task<TFacade?> IRepository<TFacade>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
-			=> await base.FindAsync(filter, cancellationToken);
+		async Task<TFacade?> IFilterableRepository<TFacade>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
+			=> await FindAsync(filter, cancellationToken);
 
 		Task<string> IRepository<TFacade>.CreateAsync(TFacade entity, CancellationToken cancellationToken)
 			=> CreateAsync(Assert(entity), cancellationToken);
 
 		Task<IList<string>> IRepository<TFacade>.CreateAsync(IEnumerable<TFacade> entities, CancellationToken cancellationToken)
-			=> base.CreateAsync(entities.Select(Assert), cancellationToken);
+			=> CreateAsync(entities.Select(Assert), cancellationToken);
 
 
 		Task<IList<string>> IRepository<TFacade>.CreateAsync(IDataTransaction transaction, IEnumerable<TFacade> entities, CancellationToken cancellationToken)
@@ -59,7 +59,7 @@ namespace Deveel.Data {
 		Task<bool> IRepository<TFacade>.UpdateAsync(IDataTransaction transaction, TFacade entity, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
-		async Task<IList<TFacade>> IRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
+		async Task<IList<TFacade>> IFilterableRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
 			var result = await FindAllAsync(filter, cancellationToken);
 			return result.Cast<TFacade>().ToList();
 		}

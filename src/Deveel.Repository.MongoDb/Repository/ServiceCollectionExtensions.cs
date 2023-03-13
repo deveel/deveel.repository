@@ -8,11 +8,16 @@ namespace Deveel.Data {
 
         public static IServiceCollection AddMongoRepository<TRepository, TEntity>(this IServiceCollection services)
             where TEntity : class, IEntity
-            where TRepository : MongoRepository<TEntity>
-            => services
-                .AddRepository<TRepository>(ServiceLifetime.Singleton)
+            where TRepository : MongoRepository<TEntity> {
+            services.AddRepository<TRepository>(ServiceLifetime.Singleton)
                 .AddSingleton<IRepository, TRepository>()
                 .AddSingleton<IRepository<TEntity>, TRepository>();
+
+            if (typeof(TRepository) != typeof(MongoRepository<TEntity>))
+                services.AddSingleton<MongoRepository<TEntity>, TRepository>();
+
+            return services;
+        }
 
         public static IServiceCollection AddMongoRepository<TEntity>(this IServiceCollection services)
             where TEntity : class, IEntity
@@ -56,7 +61,6 @@ namespace Deveel.Data {
             where TEntity : class, TFacade, IEntity
             where TFacade : class, IEntity
             => services
-				.AddRepositoryFacade<TEntity, TFacade>()
 				.AddMongoFacadeRepository<MongoRepository<TEntity, TFacade>, TEntity, TFacade>();
 
 

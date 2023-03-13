@@ -11,7 +11,7 @@ using MongoFramework;
 using MongoFramework.Linq;
 
 namespace Deveel.Data {
-	public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>
+	public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>, IFilterableRepository<TFacade>
 		where TEntity : class, TFacade
 		where TFacade : class, IEntity {
 
@@ -43,15 +43,15 @@ namespace Deveel.Data {
 			return base.GetFilterDefinition(filter);
 		}
 
-		async Task<IList<TFacade>> IRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
+		async Task<IList<TFacade>> IFilterableRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
 			var result = await FindAllAsync(GetFilterDefinition(filter), cancellationToken);
 			return result.Cast<TFacade>().ToList();
 		}
 
-		async Task<long> IRepository.CountAsync(IQueryFilter filter, System.Threading.CancellationToken cancellationToken)
+		async Task<long> IFilterableRepository.CountAsync(IQueryFilter filter, System.Threading.CancellationToken cancellationToken)
 			=> await CountAsync(GetFilterDefinition(filter), cancellationToken);
 
-		async Task<TFacade?> IRepository<TFacade>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
+		async Task<TFacade?> IFilterableRepository<TFacade>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
 			=> await FindAsync(GetFilterDefinition(filter), cancellationToken);
 
 		Task<string> IRepository<TFacade>.CreateAsync(TFacade entity, CancellationToken cancellationToken)

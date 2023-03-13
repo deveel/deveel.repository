@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Immutable;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
-namespace Deveel.Data
-{
-	public class InMemoryRepository<TEntity> : IRepository<TEntity>, IQueryableRepository<TEntity>, IPageableRepository<TEntity>
+namespace Deveel.Data {
+    public class InMemoryRepository<TEntity> : 
+		IRepository<TEntity>, 
+		IQueryableRepository<TEntity>, 
+		IPageableRepository<TEntity>, 
+		IFilterableRepository<TEntity>,
+		IMultiTenantRepository
 		where TEntity : class, IEntity {
 		private readonly List<TEntity> entities;
 		private readonly IEntityFieldMapper<TEntity>? fieldMapper;
@@ -14,13 +16,20 @@ namespace Deveel.Data
 			this.fieldMapper = fieldMapper;
 		}
 
-		bool IRepository.SupportsFilters => true;
+		internal InMemoryRepository(string tenantId, IEnumerable<TEntity>? list = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
+			: this(list, fieldMapper) {
+			TenantId = tenantId;
+		}
 
 		Type IRepository.EntityType => typeof(TEntity);
 
 		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => entities.AsQueryable();
 
 		public IReadOnlyList<TEntity> Entities => entities.AsReadOnly();
+
+		string? IMultiTenantRepository.TenantId => TenantId;
+
+		protected virtual string? TenantId { get; }
 
 		private static TEntity Assert(IEntity entity) {
 			if (entity == null)
@@ -263,11 +272,11 @@ namespace Deveel.Data
 		Task<bool> IRepository.UpdateAsync(IDataTransaction transaction, IEntity entity, CancellationToken cancellationToken)
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 		
-		async Task<IList<IEntity>> IRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
+		async Task<IList<IEntity>> IFilterableRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
 			return (await FindAllAsync(filter, cancellationToken)).Cast<IEntity>().ToList();
 		}
 		
-		async Task<IEntity?> IRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
+		async Task<IEntity?> IFilterableRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
 			=> await FindAsync(filter, cancellationToken);
 		
 		async Task<IEntity?> IRepository.FindByIdAsync(string id, CancellationToken cancellationToken)

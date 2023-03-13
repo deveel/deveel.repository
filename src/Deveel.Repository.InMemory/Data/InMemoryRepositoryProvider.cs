@@ -18,7 +18,7 @@ namespace Deveel.Data {
 		public InMemoryRepository<TEntity> GetRepository(string tenantId) {
 			lock (repositories) {
 				if (!repositories.TryGetValue(tenantId, out var repository)) {
-					repositories[tenantId] = repository = new InMemoryRepository<TEntity>();
+					repositories[tenantId] = repository = new InMemoryRepository<TEntity>(tenantId);
 				} 
 				
 				return repository;

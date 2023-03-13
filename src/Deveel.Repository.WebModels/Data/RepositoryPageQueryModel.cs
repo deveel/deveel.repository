@@ -1,11 +1,9 @@
-﻿using System;
-using System.Reflection;
-using System.Xml.Linq;
+﻿using System.Reflection;
 
 using Microsoft.AspNetCore.Mvc;
 
 namespace Deveel.Data {
-	public class RepositoryPageQueryModel : RepositoryPageRequestModelBase {
+    public class RepositoryPageQueryModel : RepositoryPageRequestModelBase {
 		public RepositoryPageQueryModel(int page, int size)
 			: base(page, size) {
 		}

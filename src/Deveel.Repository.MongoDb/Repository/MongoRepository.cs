@@ -6,13 +6,20 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Deveel.Data {
-    public class MongoRepository<TDocument> : MongoStore<TDocument>, IRepository<TDocument>, IQueryableRepository<TDocument>, IPageableRepository<TDocument>, IControllableRepository
+    public class MongoRepository<TDocument> : MongoStore<TDocument>, 
+        IRepository<TDocument>, 
+        IQueryableRepository<TDocument>, 
+        IPageableRepository<TDocument>, 
+        IFilterableRepository<TDocument>,
+        IMultiTenantRepository,
+        IControllableRepository
         where TDocument : class, IEntity {
         private bool disposed;
 
         public MongoRepository(IOptions<MongoDbStoreOptions<TDocument>> options, IDocumentFieldMapper<TDocument>? fieldMapper = null, ILogger<MongoRepository<TDocument>>? logger = null) 
             : this(options, fieldMapper, (ILogger?) logger) {
         }
+
 
         protected internal MongoRepository(IOptions<MongoDbStoreOptions<TDocument>> options, IDocumentFieldMapper<TDocument>? fieldMapper = null, ILogger? logger = null)
             : base(options, logger) {
@@ -25,9 +32,11 @@ namespace Deveel.Data {
 
         protected IDocumentFieldMapper<TDocument>? FieldMapper { get; private set; }
 
-        bool IRepository.SupportsFilters => true;
-
         Type IRepository.EntityType => typeof(TDocument);
+
+        protected virtual string? TenantId => StoreOptions.HasTenant ? StoreOptions?.TenantId : null;
+
+        string? IMultiTenantRepository.TenantId => TenantId;
 
         private static IOptions<MongoDbStoreOptions<TDocument>> BuildOptions(IOptions<MongoDbOptions> options, ICollectionKeyProvider keyProvider) {
             var mongoOptions = options.Value;
@@ -238,22 +247,22 @@ namespace Deveel.Data {
             }
         }
 
-        Task<bool> IRepository.ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken)
+        Task<bool> IFilterableRepository.ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken)
             => ExistsAsync(GetFilterDefinition(filter), cancellationToken);
 
-        Task<long> IRepository.CountAsync(IQueryFilter filter, CancellationToken cancellationToken)
+        Task<long> IFilterableRepository.CountAsync(IQueryFilter filter, CancellationToken cancellationToken)
             => CountAsync(GetFilterDefinition(filter), cancellationToken);
 
-        async Task<IEntity?> IRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
+        async Task<IEntity?> IFilterableRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
             => await FindAsync(GetFilterDefinition(filter), cancellationToken);
 
-        Task<TDocument?> IRepository<TDocument>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
+        Task<TDocument?> IFilterableRepository<TDocument>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
             => FindAsync(GetFilterDefinition(filter), cancellationToken);
 
-        Task<IList<TDocument>> IRepository<TDocument>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken)
+        Task<IList<TDocument>> IFilterableRepository<TDocument>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken)
             => FindAllAsync(GetFilterDefinition(filter), cancellationToken);
 
-        async Task<IList<IEntity>> IRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
+        async Task<IList<IEntity>> IFilterableRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
             var result = await FindAllAsync(GetFilterDefinition(filter), cancellationToken);
             return result.Cast<IEntity>().ToList();
         }

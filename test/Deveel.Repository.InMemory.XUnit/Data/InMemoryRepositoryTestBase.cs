@@ -30,11 +30,15 @@ namespace Deveel.Data {
 
 		protected IRepository<IPerson> FacadeRepository => serviceProvider.GetRequiredService<IRepository<IPerson>>();
 
-		protected IPageableRepository<Person> PageableRepository => Repository as IPageableRepository<Person>;
+		protected IPageableRepository<Person>? PageableRepository => Repository as IPageableRepository<Person>;
 
-		protected IPageableRepository<IPerson> FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
+		protected IPageableRepository<IPerson>? FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
 
-		protected Faker<Person> PersonFaker { get; }
+		protected IFilterableRepository<Person>? FilterableRepository => Repository as IFilterableRepository<Person>;
+
+		protected IFilterableRepository<IPerson>? FilterableFacadeRepository => FacadeRepository as IFilterableRepository<IPerson>;
+
+        protected Faker<Person> PersonFaker { get; }
 
 		protected Person GeneratePerson() => PersonFaker.Generate();
 

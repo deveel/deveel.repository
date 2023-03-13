@@ -2,6 +2,23 @@ using System.Linq.Expressions;
 
 namespace Deveel.Data {
     public static class RepositoryProviderExtensions {
+        private static IFilterableRepository RequireFilterable(this IRepositoryProvider provider, string tenantId) {
+            var filterable = provider.GetRepository(tenantId) as IFilterableRepository;
+            if (filterable == null)
+                throw new NotSupportedException("The repository is not filterable");
+
+            return filterable;
+        }
+
+        private static IFilterableRepository<TEntity> RequireFilterable<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId) where TEntity : class, IEntity {
+            var filterable = provider.GetRepository(tenantId) as IFilterableRepository<TEntity>;
+            if (filterable == null)
+                throw new NotSupportedException("The repository is not filterable");
+
+            return filterable;
+        }
+
+
         #region  Create
 
         public static Task<string> CreateAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, TEntity entity, CancellationToken cancellationToken = default)
@@ -82,7 +99,7 @@ namespace Deveel.Data {
 
         public static Task<TEntity?> FindAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
             where TEntity : class, IEntity
-            => provider.GetRepository(tenantId).FindAsync(filter, cancellationToken);
+            => provider.RequireFilterable(tenantId).FindAsync(filter, cancellationToken);
 
         public static Task<TEntity?> FindAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class, IEntity
@@ -93,7 +110,7 @@ namespace Deveel.Data {
             => provider.GetRepository(tenantId).FindAsync(cancellationToken);
 
         public static Task<IEntity?> FindAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
-            => provider.GetRepository(tenantId).FindAsync(filter, cancellationToken);
+            => provider.RequireFilterable(tenantId).FindAsync(filter, cancellationToken);
 
         public static Task<IEntity?> FindAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).FindAsync(cancellationToken);
@@ -115,7 +132,7 @@ namespace Deveel.Data {
 
 		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
             where TEntity : class, IEntity
-            => provider.GetRepository(tenantId).FindAllAsync(filter, cancellationToken);
+            => provider.RequireFilterable(tenantId).FindAllAsync(filter, cancellationToken);
 
         public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class, IEntity
@@ -126,7 +143,7 @@ namespace Deveel.Data {
             => provider.GetRepository(tenantId).FindAllAsync(cancellationToken);
 
         public static Task<IList<IEntity>> FindAllAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
-            => provider.GetRepository(tenantId).FindAllAsync(filter, cancellationToken);
+            => provider.RequireFilterable(tenantId).FindAllAsync(filter, cancellationToken);
 
         public static Task<IList<IEntity>> FindAllAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).FindAllAsync(cancellationToken);
@@ -137,14 +154,14 @@ namespace Deveel.Data {
 
 		public static Task<long> CountAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity
-			=> provider.GetRepository(tenantId).CountAsync(filter, cancellationToken);
+			=> provider.RequireFilterable(tenantId).CountAsync(filter, cancellationToken);
 
 		public static Task<long> CountAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity
-			=> provider.GetRepository(tenantId).CountAsync(filter, cancellationToken);
+			=> provider.RequireFilterable(tenantId).CountAsync(filter, cancellationToken);
 
 		public static Task<long> CountAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
-			=> provider.GetRepository(tenantId).CountAsync(filter, cancellationToken);
+			=> provider.RequireFilterable(tenantId).CountAsync(filter, cancellationToken);
 
 
 		#endregion
@@ -153,11 +170,11 @@ namespace Deveel.Data {
 
 		public static Task<long> CountAllAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity
-			=> provider.GetRepository(tenantId).CountAllAsync(cancellationToken);
+			=> provider.RequireFilterable(tenantId).CountAllAsync(cancellationToken);
 
 
 		public static Task<long> CountAllAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
-			=> provider.GetRepository(tenantId).CountAllAsync(cancellationToken);
+			=> provider.RequireFilterable(tenantId).CountAllAsync(cancellationToken);
 
 		#endregion
 
@@ -165,14 +182,14 @@ namespace Deveel.Data {
 
 		public static Task<bool> ExistsAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity
-			=> provider.GetRepository(tenantId).ExistsAsync(filter, cancellationToken);
+			=> provider.RequireFilterable(tenantId).ExistsAsync(filter, cancellationToken);
 
 		public static Task<bool> ExistsAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity
 			=> provider.GetRepository(tenantId).ExistsAsync(filter, cancellationToken);
 
 		public static Task<bool> ExistsAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
-			=> provider.GetRepository(tenantId).ExistsAsync(filter, cancellationToken);
+			=> provider.RequireFilterable(tenantId).ExistsAsync(filter, cancellationToken);
 
 
 		#endregion

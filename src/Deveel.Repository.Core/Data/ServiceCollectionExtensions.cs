@@ -43,14 +43,6 @@ namespace Deveel.Data {
 			return services;
 		}
 
-        public static IServiceCollection AddRepositoryFacade<TEntity, TInterface>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TEntity : class, IEntity, TInterface
-            where TInterface : class, IEntity {
-            services.TryAdd(new ServiceDescriptor(typeof(IRepository<TInterface>), typeof(FacadeRepository<TEntity, TInterface>), lifetime));
-
-            return services;
-        }
-
         public static IServiceCollection AddRepositoryProvider<TProvider>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
             where TProvider : class, IRepositoryProvider
 			=> services.AddRepositoryProvider(typeof(TProvider), lifetime);

@@ -95,7 +95,6 @@ namespace Deveel.Data {
 			where TEntity : class, TFacade, IEntity
 			where TFacade : class, IEntity
 			=> services
-				.AddRepositoryFacade<TEntity, TFacade>()
 				.AddMongoFacadeRepository<MongoRepository<TEntity, TFacade>, TEntity, TFacade>();
 
 

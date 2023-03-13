@@ -24,7 +24,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CountAll() {
-			var result = await Repository.CountAllAsync();
+			var result = await FilterableRepository.CountAllAsync();
 
 			Assert.NotEqual(0, result);
 			Assert.Equal(people.Count, result);
@@ -32,7 +32,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_CountAll() {
-			var result = await FacadeRepository.CountAllAsync();
+			var result = await FilterableFacadeRepository.CountAllAsync();
 
 			Assert.NotEqual(0, result);
 			Assert.Equal(people.Count, result);
@@ -54,7 +54,7 @@ namespace Deveel.Data {
 			var firstName = people[people.Count - 1].FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
-			var count = await Repository.CountAsync(p => p.FirstName == firstName);
+			var count = await FilterableRepository.CountAsync(p => p.FirstName == firstName);
 
 			Assert.Equal(peopleCount, count);
 		}
@@ -64,7 +64,7 @@ namespace Deveel.Data {
 			var firstName = people[people.Count - 1].FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 			
-			var count = await FacadeRepository.CountAsync(p => p.FirstName == firstName);
+			var count = await FilterableFacadeRepository.CountAsync(p => p.FirstName == firstName);
 
 			Assert.Equal(peopleCount, count);
 

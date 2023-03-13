@@ -15,7 +15,13 @@ using MongoFramework.Infrastructure.Mapping;
 using MongoFramework.Linq;
 
 namespace Deveel.Data {
-	public class MongoRepository<TEntity> : IRepository<TEntity>, IQueryableRepository<TEntity>, IPageableRepository<TEntity>, IControllableRepository, IAsyncDisposable, IDisposable
+	public class MongoRepository<TEntity> : IRepository<TEntity>, 
+		IQueryableRepository<TEntity>, 
+		IPageableRepository<TEntity>, IFilterableRepository<TEntity>,
+		IMultiTenantRepository,
+		IControllableRepository, 
+		IAsyncDisposable, 
+		IDisposable
 		where TEntity : class, IEntity 
 	{
 		private IMongoDbSet<TEntity>? _dbSet;
@@ -32,6 +38,7 @@ namespace Deveel.Data {
 
 		public MongoRepository(MongoPerTenantContext context, ILogger<MongoRepository<TEntity>>? logger = null)
 			: this(context, (ILogger?)logger) {
+			TenantId = context.TenantId;
 		}
 
 
@@ -41,11 +48,13 @@ namespace Deveel.Data {
 
 		protected ILogger Logger { get; }
 
+		protected string? TenantId { get; }
+
+		string? IMultiTenantRepository.TenantId => TenantId;
+
 		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => DbSet.AsQueryable();
 
 		Type IRepository.EntityType => typeof(TEntity);
-
-		bool IRepository.SupportsFilters => true;
 
 		protected IMongoCollection<TEntity> Collection {
 			get {
@@ -392,7 +401,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		async Task<IEntity?> IRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken) 
+		async Task<IEntity?> IFilterableRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken) 
 			=> await FindAsync(filter, cancellationToken);
 
 		#endregion
@@ -420,7 +429,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		async Task<IList<IEntity>> IRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
+		async Task<IList<IEntity>> IFilterableRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
 			var result = await FindAllAsync(filter, cancellationToken);
 			return result.Cast<IEntity>().ToList();
 		}

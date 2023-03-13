@@ -48,19 +48,19 @@ namespace Deveel.Data {
 
 		#region Count
 
-		public static Task<long> CountAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+		public static Task<long> CountAsync<TEntity>(this IFilterableRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity
 			=> repository.CountAsync<TEntity>(FilterExpression.AsLambda<TEntity>(paramName, expression), cancellationToken);
 
-		public static Task<long> CountAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
+		public static Task<long> CountAsync<TEntity>(this IFilterableRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity
 			=> repository.CountAsync("x", expression, cancellationToken);
 
-		public static Task<long> CountAsync<TEntity>(this IRepository<TEntity> repository, string paramName, IFilter filter, CancellationToken cancellationToken)
+		public static Task<long> CountAsync<TEntity>(this IFilterableRepository<TEntity> repository, string paramName, IFilter filter, CancellationToken cancellationToken)
 			where TEntity : class, IEntity
 			=> repository.CountAsync<TEntity>(filter.AsLambda<TEntity>(paramName), cancellationToken);
 
-		public static Task<long> CountAsync<TEntity>(this IRepository<TEntity> repository, IFilter filter, CancellationToken cancellationToken = default)
+		public static Task<long> CountAsync<TEntity>(this IFilterableRepository<TEntity> repository, IFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class, IEntity
 			=> repository.CountAsync("x", filter, cancellationToken);
 
