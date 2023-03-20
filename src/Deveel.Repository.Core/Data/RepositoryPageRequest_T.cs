@@ -1,17 +1,13 @@
-﻿using System;
-using System.Linq.Expressions;
-using System.Reflection.Metadata;
-
-using Deveel.Data;
+﻿using System.Linq.Expressions;
 
 namespace Deveel.Data {
-	/// <summary>
-	/// Describes the request to obtain a page of a given size
-	/// from a repository
-	/// </summary>
-	/// <typeparam name="TEntity"></typeparam>
-	/// <seealso cref="IRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>
-	public class RepositoryPageRequest<TEntity> : RepositoryPageRequest where TEntity : class, IEntity {
+    /// <summary>
+    /// Describes the request to obtain a page of a given size
+    /// from a repository
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <seealso cref="IRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>
+    public class RepositoryPageRequest<TEntity> : RepositoryPageRequest where TEntity : class, IDataEntity {
 		public RepositoryPageRequest(int page, int size)
 			: base(page, size) {
 		}
@@ -52,7 +48,7 @@ namespace Deveel.Data {
 			return this;
 		}
 
-		public RepositoryPageRequest<TTarget> As<TTarget>() where TTarget : class, IEntity {
+		public RepositoryPageRequest<TTarget> As<TTarget>() where TTarget : class, IDataEntity {
 			var page = new RepositoryPageRequest<TTarget>(Page, Size);
 
 			if (Filter != null) {

@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Xml.Linq;
-
-using Deveel.Data;
-
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Deveel.Data
-{
-    public class MongoRepositoryProvider<TEntity> : MongoStoreProvider<TEntity>, IRepositoryProvider<TEntity> where TEntity : class, IEntity
+namespace Deveel.Data {
+    public class MongoRepositoryProvider<TEntity> : MongoStoreProvider<TEntity>, IRepositoryProvider<TEntity> where TEntity : class, IDataEntity
     {
         public MongoRepositoryProvider(
             IOptions<MongoDbOptions> baseOptions,

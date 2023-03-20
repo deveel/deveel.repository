@@ -9,8 +9,8 @@ using MongoFramework;
 
 namespace Deveel.Data {
 	public class MongoRepositoryProvider<TEntity, TFacade> : MongoRepositoryProvider<TEntity>, IRepositoryProvider<TFacade>
-		where TFacade : class, IEntity 
-		where TEntity : class, TFacade, IEntity {
+		where TFacade : class, IDataEntity 
+		where TEntity : class, TFacade {
 		public MongoRepositoryProvider(IOptions<MongoPerTenantConnectionOptions> options, IEnumerable<IMultiTenantStore<MongoTenantInfo>> stores, ILoggerFactory? loggerFactory = null) 
 			: base(options, stores, loggerFactory) {
 		}

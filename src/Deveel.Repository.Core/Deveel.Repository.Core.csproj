@@ -5,11 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Deveel</RootNamespace>
-    <VersionPrefix>1.0.3</VersionPrefix>
+    <VersionPrefix>1.0.5</VersionPrefix>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Antonello Provenzano</Authors>
     <Company>Deveel AS</Company>
-    <Copyright>(C) 2022 Deveel AS</Copyright>
+    <Copyright>(C) 2022-2023 Deveel AS</Copyright>
     <PackageProjectUrl>https://github.com/deveel/deveel.data.repository</PackageProjectUrl>
     <RepositoryUrl>https://github.com/deveel/deveel.data.repository</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -25,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Deveel.Model.Core" Version="1.1.5-4365273015" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />

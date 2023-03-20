@@ -1,25 +1,31 @@
 ﻿using Deveel.Data;
 using Deveel.Data.Models;
+using Deveel.Repository.TestApi.Data;
 using Deveel.Repository.TestApi.Models;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Deveel.Repository.TestApi.Controller {
-	[Route("[controller]")]
+    [Route("[controller]")]
 	[ApiController]
 	public class PersonController : ControllerBase {
-		private readonly IRepository<TestPersonModel> repository;
+		private readonly IRepository<PersonEntity> repository;
 
-		public PersonController(IRepository<TestPersonModel> repository) {
+		public PersonController(IRepository<PersonEntity> repository) {
 			this.repository = repository;
 		}
 
 		[HttpGet("page", Name = "GetPage")]
 		public async Task<IActionResult> Query([FromQuery] PersonPageQueryModel query) {
-			var request = query.ToPageRequest();
-			var page = await ((IPageableRepository<TestPersonModel>) repository).GetPageAsync(request, HttpContext.RequestAborted);
-			var response = new RepositoryPageQueryResultModel<TestPersonModel>(query, page.TotalItems, page.Items);
+			var request = query.ToPageRequest<PersonEntity>();
+			var page = await ((IPageableRepository<PersonEntity>)repository).GetPageAsync(request, HttpContext.RequestAborted);
+
+			var response = new RepositoryPageQueryResultModel<TestPersonModel>(query, page.TotalItems, page.Items?.Select(person =>  new TestPersonModel {
+				Id = person.Id,
+				FirstName = person.FirstName,
+				LastName = person.LastName,
+				BirthDate = person.BirthDate
+			}));
 
 			response.SetActionLinks(this, "Query");
 

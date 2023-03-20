@@ -1,5 +1,6 @@
 ﻿using Deveel.Data;
 using Deveel.Data.Models;
+using Deveel.Repository.TestApi.Data;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,10 +14,10 @@ namespace Deveel.Repository.TestApi.Models {
 
 		protected override void GetFilters(IList<IQueryFilter> filter) {
 			if (!String.IsNullOrWhiteSpace(LastName))
-				filter.Add(QueryFilter.Where<TestPersonModel>(x => x.LastName == LastName));
+				filter.Add(QueryFilter.Where<PersonEntity>(x => x.LastName == LastName));
 
 			if (MaxAge != null) {
-				filter.Add(QueryFilter.Where<TestPersonModel>(x => x.BirthDate != null && ((DateTimeOffset.Now.Subtract(x.BirthDate.Value).Days / 365.25) <= MaxAge)));
+				filter.Add(QueryFilter.Where<PersonEntity>(x => x.BirthDate != null && ((DateTimeOffset.Now.Subtract(x.BirthDate.Value).Days / 365.25) <= MaxAge)));
 			}
 		}
 

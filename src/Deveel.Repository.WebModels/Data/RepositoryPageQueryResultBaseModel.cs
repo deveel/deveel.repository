@@ -11,7 +11,10 @@ namespace Deveel.Data {
 		protected RepositoryPageQueryResultBaseModel() {
 		}
 
-		protected internal RepositoryPageQueryModel<TItem>? PageQuery => (RepositoryPageQueryModel<TItem>?)PageRequest;
+		protected internal RepositoryPageQueryModel<TItem>? PageQuery {
+			get => (RepositoryPageQueryModel<TItem>?)PageRequest;
+			set => PageRequest = value;
+		}
 
 		/// <summary>
 		/// The URL to the current page of the result

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Threading;
-
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Deveel.Data {
-	public class DefaultRepositoryController : IRepositoryController {
+    public class DefaultRepositoryController : IRepositoryController {
 		private readonly RepositoryControllerOptions options;
 		private readonly IServiceProvider serviceProvider;
 		private readonly ILogger logger;
@@ -52,7 +49,7 @@ namespace Deveel.Data {
 		}
 
 		private IControllableRepository? RequireRepository<TEntity>()
-			where TEntity : class, IEntity {
+			where TEntity : class, IDataEntity {
 
 			LogTrace("Resolving a repository for entity of type {EntityType}", typeof(TEntity).Name);
 
@@ -88,7 +85,7 @@ namespace Deveel.Data {
 		}
 
 		private IRepositoryProvider<TEntity> RequireRepositoryProvider<TEntity>()
-			where TEntity : class, IEntity {
+			where TEntity : class, IDataEntity {
 			var provider = serviceProvider.GetService<IRepositoryProvider<TEntity>>();
 
 			if (provider == null)
@@ -219,7 +216,7 @@ namespace Deveel.Data {
 		}
 
 		public virtual async Task CreateRepositoryAsync<TEntity>(CancellationToken cancellationToken = default)
-			where TEntity : class, IEntity {
+			where TEntity : class, IDataEntity {
 			LogTrace("Creating the repository for type '{EntityType}'", typeof(TEntity).Name);
 
 			var repository = RequireRepository<TEntity>();
@@ -230,7 +227,7 @@ namespace Deveel.Data {
 		}
 
 		public async Task CreateTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class, IEntity {
+			where TEntity : class, IDataEntity {
 			LogTrace("Creating the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
 
 			var provider = RequireRepositoryProvider<TEntity>();
@@ -242,7 +239,7 @@ namespace Deveel.Data {
 			LogTrace("The repository handling the type '{EntityType}' for tenant '{TenantId}' was created", typeof(TEntity).Name, tenantId);
 		}
 
-		public virtual async Task DropRepositoryAsync<TEntity>(CancellationToken cancellationToken = default) where TEntity : class, IEntity {
+		public virtual async Task DropRepositoryAsync<TEntity>(CancellationToken cancellationToken = default) where TEntity : class, IDataEntity {
 			LogTrace("Dropping the repository handling the type '{EntityType}'", typeof(TEntity).Name);
 
 			var repository = RequireRepository<TEntity>();
@@ -253,7 +250,7 @@ namespace Deveel.Data {
 		}
 
 		public virtual async Task DropTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class, IEntity {
+			where TEntity : class, IDataEntity {
 			LogTrace("Dropping the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
 
 			var provider = RequireRepositoryProvider<TEntity>();

@@ -7,7 +7,7 @@ namespace Deveel.Data {
 		IPageableRepository<TEntity>, 
 		IFilterableRepository<TEntity>,
 		IMultiTenantRepository
-		where TEntity : class, IEntity {
+		where TEntity : class, IDataEntity {
 		private readonly List<TEntity> entities;
 		private readonly IEntityFieldMapper<TEntity>? fieldMapper;
 
@@ -31,7 +31,7 @@ namespace Deveel.Data {
 
 		protected virtual string? TenantId { get; }
 
-		private static TEntity Assert(IEntity entity) {
+		private static TEntity Assert(IDataEntity entity) {
 			if (entity == null)
 				throw new ArgumentNullException(nameof(entity));
 
@@ -102,16 +102,16 @@ namespace Deveel.Data {
 		Task<string> IRepository<TEntity>.CreateAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
-		Task<string> IRepository.CreateAsync(IEntity entity, CancellationToken cancellationToken)
+		Task<string> IRepository.CreateAsync(IDataEntity entity, CancellationToken cancellationToken)
 			=> CreateAsync(Assert(entity), cancellationToken);
 
-		Task<IList<string>> IRepository.CreateAsync(IEnumerable<IEntity> entities, CancellationToken cancellationToken)
+		Task<IList<string>> IRepository.CreateAsync(IEnumerable<IDataEntity> entities, CancellationToken cancellationToken)
 			=> CreateAsync(entities.Select(Assert), cancellationToken);
 
-		Task<IList<string>> IRepository.CreateAsync(IDataTransaction transaction, IEnumerable<IEntity> entities, CancellationToken cancellationToken) 
+		Task<IList<string>> IRepository.CreateAsync(IDataTransaction transaction, IEnumerable<IDataEntity> entities, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
-		Task<string> IRepository.CreateAsync(IDataTransaction transaction, IEntity entity, CancellationToken cancellationToken) 
+		Task<string> IRepository.CreateAsync(IDataTransaction transaction, IDataEntity entity, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
 		public Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default) {
@@ -133,10 +133,10 @@ namespace Deveel.Data {
 		Task<bool> IRepository<TEntity>.DeleteAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
-		Task<bool> IRepository.DeleteAsync(IEntity entity, CancellationToken cancellationToken) 
+		Task<bool> IRepository.DeleteAsync(IDataEntity entity, CancellationToken cancellationToken) 
 			=> DeleteAsync(Assert(entity), cancellationToken);
 
-		Task<bool> IRepository.DeleteAsync(IDataTransaction transaction, IEntity entity, CancellationToken cancellationToken) 
+		Task<bool> IRepository.DeleteAsync(IDataTransaction transaction, IDataEntity entity, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
 		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
@@ -189,7 +189,7 @@ namespace Deveel.Data {
 				throw new RepositoryException("Error while searching any entities with the given ID", ex);
 			}
 		}
-		Task<IEntity?> IRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken) 
+		Task<IDataEntity?> IRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
 		private Expression<Func<TEntity, object>> MapField(IFieldRef fieldRef) {
@@ -245,7 +245,7 @@ namespace Deveel.Data {
 
 			var result = await GetPageAsync(pageRequest, cancellationToken);
 
-			return new RepositoryPage(request, result.TotalItems, result.Items?.Cast<IEntity>());
+			return new RepositoryPage(request, result.TotalItems, result.Items?.Cast<IDataEntity>());
 		}
 		
 		public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
@@ -266,20 +266,20 @@ namespace Deveel.Data {
 		Task<bool> IRepository<TEntity>.UpdateAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 		
-		Task<bool> IRepository.UpdateAsync(IEntity entity, CancellationToken cancellationToken) 
+		Task<bool> IRepository.UpdateAsync(IDataEntity entity, CancellationToken cancellationToken) 
 			=> UpdateAsync(Assert(entity), cancellationToken);
 		
-		Task<bool> IRepository.UpdateAsync(IDataTransaction transaction, IEntity entity, CancellationToken cancellationToken)
+		Task<bool> IRepository.UpdateAsync(IDataTransaction transaction, IDataEntity entity, CancellationToken cancellationToken)
 			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 		
-		async Task<IList<IEntity>> IFilterableRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
-			return (await FindAllAsync(filter, cancellationToken)).Cast<IEntity>().ToList();
+		async Task<IList<IDataEntity>> IFilterableRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
+			return (await FindAllAsync(filter, cancellationToken)).Cast<IDataEntity>().ToList();
 		}
 		
-		async Task<IEntity?> IFilterableRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
+		async Task<IDataEntity?> IFilterableRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
 			=> await FindAsync(filter, cancellationToken);
 		
-		async Task<IEntity?> IRepository.FindByIdAsync(string id, CancellationToken cancellationToken)
+		async Task<IDataEntity?> IRepository.FindByIdAsync(string id, CancellationToken cancellationToken)
 			=> await FindByIdAsync(id, cancellationToken);
 	}
 }

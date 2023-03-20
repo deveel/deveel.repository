@@ -1,12 +1,10 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
-using System.Xml.Linq;
 
 using Microsoft.AspNetCore.Mvc;
 
 namespace Deveel.Data {
-	public class RepositoryPageQueryModel<TEntity> : RepositoryPageRequestModelBase 
+    public class RepositoryPageQueryModel<TEntity> : RepositoryPageRequestModelBase 
 		where TEntity : class, IEntity {
 		public RepositoryPageQueryModel(int page, int size)
 		: base(page, size) {
@@ -75,18 +73,18 @@ namespace Deveel.Data {
 			}
 		}
 
-		protected virtual Expression<Func<TEntity, bool>>? GetAggregatedFilter(IEnumerable<IQueryFilter> filters) {
+		protected virtual Expression<Func<TResult, bool>>? GetAggregatedFilter<TResult>(IEnumerable<IQueryFilter> filters) where TResult : class, IDataEntity {
 			if (filters != null && filters.Any()) {
-				Expression<Func<TEntity, bool>>? result = null;
+				Expression<Func<TResult, bool>>? result = null;
 				foreach (var filter in filters) {
-					var exp = filter.AsLambda<TEntity>();
+					var exp = filter.AsLambda<TResult>();
 
 					if (result== null) {
 						result = exp;
 					} else {
 						var param = result.Parameters[0];
 						var body = Expression.AndAlso(result.Body, exp.Body);
-						result = Expression.Lambda<Func<TEntity, bool>>(body, param);
+						result = Expression.Lambda<Func<TResult, bool>>(body, param);
 					}
 				}
 
@@ -96,9 +94,9 @@ namespace Deveel.Data {
 			return null;
 		}
 
-		public virtual RepositoryPageRequest<TEntity> ToPageRequest() {
-			return new RepositoryPageRequest<TEntity>(Page ?? 1, GetPageSize()) {
-				Filter = GetAggregatedFilter(PageFilters()),
+		public virtual RepositoryPageRequest<TResult> ToPageRequest<TResult>() where TResult : class, IDataEntity {
+			return new RepositoryPageRequest<TResult>(Page ?? 1, GetPageSize()) {
+				Filter = GetAggregatedFilter<TResult>(PageFilters()),
 				SortBy = PageSort()
 			};
 		}

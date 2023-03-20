@@ -17,7 +17,7 @@ namespace Deveel.Data {
 		public RepositoryPageModel() {
 		}
 
-        protected RepositoryPageRequestModelBase? PageRequest { get; }
+        protected RepositoryPageRequestModelBase? PageRequest { get; set; }
 
 		/// <summary>
 		/// The total number of items available

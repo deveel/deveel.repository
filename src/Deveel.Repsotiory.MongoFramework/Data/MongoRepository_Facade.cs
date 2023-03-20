@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
-
-using Deveel.Repository;
+﻿using Deveel.Repository;
 
 using Microsoft.Extensions.Logging;
 
@@ -11,9 +8,9 @@ using MongoFramework;
 using MongoFramework.Linq;
 
 namespace Deveel.Data {
-	public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>, IFilterableRepository<TFacade>
+    public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>, IFilterableRepository<TFacade>
 		where TEntity : class, TFacade
-		where TFacade : class, IEntity {
+		where TFacade : class, IDataEntity {
 
 		public MongoRepository(MongoDbContext context, ILogger<MongoRepository<TEntity, TFacade>>? logger = null)
 			: this(context, (ILogger?) logger) {

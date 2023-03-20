@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Deveel.Data {
-	public static class PageResultExtensions {
+    public static class PageResultExtensions {
 		public static void SetLinks<TITem>(this RepositoryPageQueryResultBaseModel<TITem> result, IUrlHelper urlHelper, string routeName, object? routeValues = null)
 			where TITem : class, IEntity
 			=> urlHelper.SetLinks(result, routeName, routeValues);

@@ -9,7 +9,7 @@ namespace Deveel.Data {
 
 		public static IServiceCollection AddRepository<TRepository, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
 			where TRepository : class, IRepository<TEntity>
-			where TEntity : class, IEntity {
+			where TEntity : class, IDataEntity {
 			services.AddRepository(typeof(TRepository), lifetime);
 			services.TryAdd(new ServiceDescriptor(typeof(IRepository<TEntity>), typeof(TRepository), lifetime));
 
@@ -27,7 +27,7 @@ namespace Deveel.Data {
 
 			if (repositoryType.GenericTypeArguments.Length > 0) {
 				var argType = repositoryType.GenericTypeArguments[0];
-				if (!typeof(IEntity).IsAssignableFrom(argType))
+				if (!typeof(IDataEntity).IsAssignableFrom(argType))
 					throw new ArgumentException($"The argument type '{argType}' of the provided repository is not an entity", nameof(repositoryType));
 
 				var compareType = typeof(IRepository<>).MakeGenericType(argType);
@@ -49,7 +49,7 @@ namespace Deveel.Data {
 
 		public static IServiceCollection AddRepositoryProvider<TProvider, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TProvider : class, IRepositoryProvider<TEntity>
-			where TEntity : class, IEntity {
+			where TEntity : class, IDataEntity {
 			services.AddRepositoryProvider(typeof(TProvider), lifetime);
 			services.TryAdd(new ServiceDescriptor(typeof(IRepositoryProvider<TEntity>), typeof(TProvider), lifetime));
 
@@ -67,7 +67,7 @@ namespace Deveel.Data {
 
 			if (providerType.GenericTypeArguments.Length > 0) {
 				var argType = providerType.GenericTypeArguments[0];
-				if (!typeof(IEntity).IsAssignableFrom(argType))
+				if (!typeof(IDataEntity).IsAssignableFrom(argType))
 					throw new ArgumentException($"The argument type '{argType}' of the provided repository is not an entity", nameof(providerType));
 
 				var compareType = typeof(IRepositoryProvider<>).MakeGenericType(argType);
