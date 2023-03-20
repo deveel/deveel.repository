@@ -38,4 +38,4 @@ jobs:
   clean:
     name: "Clean Old Packages"
     needs: build
-    uses: ./github/workflows/clean-packages.yml
+    uses: ./.github/workflows/clean-packages.yml
