@@ -1,32 +1,61 @@
 ﻿using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Deveel.Data {
     public class EntityRepository<TEntity> : 
         IRepository<TEntity>,
         IFilterableRepository<TEntity>,
-        IQueryableRepository<TEntity>
+        IQueryableRepository<TEntity>,
+        IDisposable
         where TEntity : class, IDataEntity {
+        private bool disposedValue;
 
-        public EntityRepository(DbContext context) {
+        public EntityRepository(DbContext context, ILogger<EntityRepository<TEntity>>? logger = null)
+            : this(context, (ILogger?) logger) {
+        }
+
+        protected EntityRepository(DbContext context, ILogger? logger = null) {
             Context = context ?? throw new ArgumentNullException(nameof(context));
+            Logger = logger ?? NullLogger.Instance;
+        }
+
+        ~EntityRepository() {
+            Dispose(disposing: false);
         }
 
         Type IRepository.EntityType => typeof(TEntity);
 
-        protected DbContext Context { get; }
+        protected DbContext Context { get; private set; }
+
+        protected ILogger Logger { get; }
 
         protected DbSet<TEntity> Entities => Context.Set<TEntity>();
 
-        public async Task<string> CreateAsync(TEntity entity, CancellationToken cancellationToken = default) {
-            Entities.Add(entity);
-            await Context.SaveChangesAsync(cancellationToken);
+        protected void ThrowIfDisposed() {
+            if (disposedValue)
+                throw new ObjectDisposedException(GetType().Name); 
+        }
 
-            return entity.Id;
+        public async Task<string> CreateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+            ThrowIfDisposed();
+
+            try {
+                Entities.Add(entity);
+                await Context.SaveChangesAsync(cancellationToken);
+
+                return entity.Id;
+            } catch (Exception ex) {
+                Logger.LogUnknownError(ex, typeof(TEntity));
+                throw;
+            }
         }
 
         public async Task<IList<string>> CreateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+            ThrowIfDisposed();
+
             foreach (var entity in entities) {
                 Entities.Add(entity);
             }
@@ -50,6 +79,8 @@ namespace Deveel.Data {
             => CreateAsync(entities.Select(x =>  AssertEntity(x)), cancellationToken);
 
         public async Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default) {
+            ThrowIfDisposed();
+
             var remove = Entities.Remove(entity);
             if (remove.State != EntityState.Deleted)
                 return false;
@@ -65,8 +96,16 @@ namespace Deveel.Data {
         public async Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default)
             => await Entities.FindAsync(id, cancellationToken);
 
-        public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
-            throw new NotImplementedException();
+        public async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+            ThrowIfDisposed();
+
+            var update = Entities.Update(entity);
+            if (update.State != EntityState.Modified)
+                return false;
+
+            await Context.SaveChangesAsync(cancellationToken);
+
+            return true;
         }
 
 
@@ -127,6 +166,20 @@ namespace Deveel.Data {
 
         public IQueryable<TEntity> AsQueryable() {
             return Entities.AsQueryable();
+        }
+
+        protected virtual void Dispose(bool disposing) {
+            if (!disposedValue) {
+
+                Context = null;
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose() {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

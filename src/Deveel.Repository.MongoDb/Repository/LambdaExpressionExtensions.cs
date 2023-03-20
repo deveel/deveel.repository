@@ -1,13 +1,11 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Deveel.Repository {
-	static class LambdaExpressionExtensions {
+    static class LambdaExpressionExtensions {
 		public static FilterDefinition<TEntity>? AsMongoFilter<TEntity>(this LambdaExpression expression) {
 			return Convert<TEntity>(expression.Body);
 		}
