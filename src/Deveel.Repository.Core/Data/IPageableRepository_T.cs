@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Deveel.Data {
-    public interface IPageableRepository<TEntity> : IRepository<TEntity>, IPageableRepository where TEntity : class, IEntity {
+    public interface IPageableRepository<TEntity> : IRepository<TEntity>, IPageableRepository where TEntity : class, IDataEntity {
 
         /// <summary>
         /// Gets a page of items from the repository

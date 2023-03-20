@@ -7,7 +7,13 @@ namespace Deveel.Data {
 			: base(pageRequest, totalItems, items) {
 		}
 
-		[Required]
-		public virtual RepositoryPageQueryModel<TItem> Query => (RepositoryPageQueryModel<TItem>)PageQuery;
+		public RepositoryPageQueryResultModel() {
+		}
+
+        [Required]
+		public virtual RepositoryPageQueryModel<TItem> Query {
+			get => PageQuery ?? throw new InvalidOperationException("The query was not set");
+			set => PageQuery = value;
+		}
 	}
 }

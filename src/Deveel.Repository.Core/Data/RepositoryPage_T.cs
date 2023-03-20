@@ -7,7 +7,7 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity"></typeparam>
 	/// <seealso cref="RepositoryPageRequest{TEntity}"/>
 	/// <seealso cref="IRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>
-	public class RepositoryPage<TEntity> : RepositoryPage where TEntity : class, IEntity {
+	public class RepositoryPage<TEntity> : RepositoryPage where TEntity : class, IDataEntity {
 		/// <inheritdoc/>
 		public RepositoryPage(RepositoryPageRequest request, int totalItems, IEnumerable<TEntity>? items = null)
 			: base(request, totalItems, items) {

@@ -6,7 +6,7 @@ using MongoDB.Driver;
 
 namespace Deveel.Data
 {
-    public sealed class MongoQueryFilter<TDocument> : IQueryFilter where TDocument : class, IEntity
+    public sealed class MongoQueryFilter<TDocument> : IQueryFilter where TDocument : class, IDataEntity
     {
         public MongoQueryFilter(FilterDefinition<TDocument> filter)
         {

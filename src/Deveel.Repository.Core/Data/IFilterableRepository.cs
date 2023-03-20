@@ -65,7 +65,7 @@ namespace Deveel.Data {
         /// Throw if the <paramref name="filter"/> is not supported by the repository
         /// </exception>
         /// <seealso cref="SupportsFilters" />
-        Task<IEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
+        Task<IDataEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all the items in the repository that match the given
@@ -83,6 +83,6 @@ namespace Deveel.Data {
         /// Throw if the <paramref name="filter"/> is not supported by the repository
         /// </exception>
         /// <seealso cref="SupportsFilters" />
-        Task<IList<IEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
+        Task<IList<IDataEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
     }
 }

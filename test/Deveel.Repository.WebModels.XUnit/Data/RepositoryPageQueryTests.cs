@@ -4,6 +4,7 @@ using System.Web;
 using Bogus;
 
 using Deveel.Data.Models;
+using Deveel.Repository.TestApi.Data;
 
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -16,18 +17,18 @@ namespace Deveel.Data {
 		public RepositoryPageQueryTests() {
 			webApp = new WebApplicationFactory<Program>()
 				.WithWebHostBuilder(builder => builder.ConfigureTestServices(services => {
-					services.AddSingleton<IRepository<TestPersonModel>>(_ => CreateTestRepository());
+					services.AddSingleton<IRepository<PersonEntity>>(_ => CreateTestRepository());
 				}));
 		}
 
-		private static InMemoryRepository<TestPersonModel> CreateTestRepository() {
-			var faker = new Faker<TestPersonModel>()
+		private static InMemoryRepository<PersonEntity> CreateTestRepository() {
+			var faker = new Faker<PersonEntity>()
 				.RuleFor(x => x.Id, f => f.Random.Guid().ToString("N"))
 				.RuleFor(x => x.FirstName, f => f.Name.FirstName())
 				.RuleFor(x => x.LastName, f => f.Name.LastName())
 				.RuleFor(x => x.BirthDate, f => f.Date.Past(20));
 
-			var mapper = FieldMapper.Map<TestPersonModel>(f => {
+			var mapper = FieldMapper.Map<PersonEntity>(f => {
 				return f.ToUpperInvariant() switch {
 					"ID" => p => p.Id,
 					"FIRSTNAME" => p => p.FirstName,
@@ -36,7 +37,7 @@ namespace Deveel.Data {
 				};
 			});
 
-			return new InMemoryRepository<TestPersonModel>(faker.Generate(120), mapper);
+			return new InMemoryRepository<PersonEntity>(faker.Generate(120), mapper);
 		}
 
 		public void Dispose() {
@@ -86,8 +87,8 @@ namespace Deveel.Data {
 			Assert.NotNull(queryParams["s"]);
 			Assert.Equal("lastName", queryParams["s"]);
 
-			var repository = webApp.Services.GetRequiredService<IRepository<TestPersonModel>>();
-			var inMemoryRepo = Assert.IsType<InMemoryRepository<TestPersonModel>>(repository);
+			var repository = webApp.Services.GetRequiredService<IRepository<PersonEntity>>();
+			var inMemoryRepo = Assert.IsType<InMemoryRepository<PersonEntity>>(repository);
 
 			var surnames = inMemoryRepo.Entities.OrderByDescending(x => x.LastName).Take(10).Select(x => x.LastName);
 
@@ -115,8 +116,8 @@ namespace Deveel.Data {
 			Assert.NotNull(queryParams["maxAge"]);
 			Assert.Equal("23", queryParams["maxAge"]);
 
-			var repository = webApp.Services.GetRequiredService<IRepository<TestPersonModel>>();
-			var inMemoryRepo = Assert.IsType<InMemoryRepository<TestPersonModel>>(repository);
+			var repository = webApp.Services.GetRequiredService<IRepository<PersonEntity>>();
+			var inMemoryRepo = Assert.IsType<InMemoryRepository<PersonEntity>>(repository);
 
 			var byAge = inMemoryRepo.Entities.Where(x => x.BirthDate != null && (DateTimeOffset.Now.Subtract(x.BirthDate.Value).Days / 365.25) <= 23)
 				.Take(10).Select(x => x.Id);
@@ -142,8 +143,8 @@ namespace Deveel.Data {
 			Assert.NotNull(response.Last);
 			Assert.Null(response.Previous);
 
-			var repository = webApp.Services.GetRequiredService<IRepository<TestPersonModel>>();
-			var inMemoryRepo = Assert.IsType<InMemoryRepository<TestPersonModel>>(repository);
+			var repository = webApp.Services.GetRequiredService<IRepository<PersonEntity>>();
+			var inMemoryRepo = Assert.IsType<InMemoryRepository<PersonEntity>>(repository);
 
 			var surnames = inMemoryRepo.Entities.Take(10).Select(x => x.LastName);
 
@@ -152,8 +153,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FilterPageQuery() {
-			var repository = webApp.Services.GetRequiredService<IRepository<TestPersonModel>>();
-			var inMemoryRepo = Assert.IsType<InMemoryRepository<TestPersonModel>>(repository);
+			var repository = webApp.Services.GetRequiredService<IRepository<PersonEntity>>();
+			var inMemoryRepo = Assert.IsType<InMemoryRepository<PersonEntity>>(repository);
 
 			var lastName = inMemoryRepo.Entities.Select(x => x.LastName).First();
 			var persons = inMemoryRepo.Entities.Where(x => x.LastName == lastName);

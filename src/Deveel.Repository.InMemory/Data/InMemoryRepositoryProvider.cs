@@ -2,7 +2,7 @@
 
 namespace Deveel.Data {
 	public class InMemoryRepositoryProvider<TEntity> : IRepositoryProvider<TEntity>, IDisposable
-		where TEntity : class, IEntity {
+		where TEntity : class, IDataEntity {
 		public InMemoryRepositoryProvider() {
 			repositories = new Dictionary<string, InMemoryRepository<TEntity>>();
 		}

@@ -8,7 +8,7 @@ namespace Deveel.Data
     /// </summary>
     /// <typeparam name="TEntity">The type of entity handled by the
     /// repository instances</typeparam>
-    public interface IRepositoryProvider<TEntity> : IRepositoryProvider where TEntity : class, IEntity
+    public interface IRepositoryProvider<TEntity> : IRepositoryProvider where TEntity : class, IDataEntity
     {
         /// <inheritdoc/>
         new IRepository<TEntity> GetRepository(string tenantId);

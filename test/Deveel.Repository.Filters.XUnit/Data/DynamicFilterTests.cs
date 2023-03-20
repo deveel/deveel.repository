@@ -77,7 +77,7 @@ namespace Deveel.Data {
 
 
 
-		protected class Person : IEntity {
+		protected class Person : IDataEntity {
 			public string Id { get; set; }
 
 			public string FirstName { get; set; }

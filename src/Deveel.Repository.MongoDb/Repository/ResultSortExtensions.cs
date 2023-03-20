@@ -7,7 +7,7 @@ using MongoDB.Driver;
 namespace Deveel.Repository {
 	static class ResultSortExtensions {
 		public static SortDefinition<TEntity>? AsMongoSort<TEntity>(this IResultSort? resultSort, Func<string, FieldDefinition<TEntity, object>>? fieldSelector = null)
-			where TEntity : class, IEntity {
+			where TEntity : class, IDataEntity {
 
 			if (resultSort == null)
 				return null;

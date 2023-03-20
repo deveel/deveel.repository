@@ -1,7 +1,5 @@
 ﻿using System;
 
-using Deveel.States;
-
 namespace Deveel.Data {
 	/// <summary>
 	/// A repository that provides the capability of persisting the
@@ -10,7 +8,7 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">The type of the entity managed by the repository</typeparam>
 	/// <typeparam name="TStatus">The status code of the states of an entity</typeparam>
 	public interface IStateRepository<TEntity, TStatus> : IRepository<TEntity> 
-		where TEntity : class, IEntity {
+		where TEntity : class, IDataEntity {
 		/// <summary>
 		/// Gets the listing of the states of the entity
 		/// </summary>
@@ -20,7 +18,7 @@ namespace Deveel.Data {
 		/// Returns a list of <see cref="StateInfo{TStatus}"/> that are the states
 		/// currently held by the <paramref name="entity"/> given.
 		/// </returns>
-		Task<IList<StateInfo<TStatus>>> GetStatesAsync(TEntity entity, CancellationToken cancellationToken = default);
+		Task<IList<EntityStateInfo<TStatus>>> GetStatesAsync(TEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Adds a new state to the entity
@@ -29,7 +27,7 @@ namespace Deveel.Data {
 		/// <param name="stateInfo">The new state to be added</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		Task AddStateAsync(TEntity entity, StateInfo<TStatus> state, CancellationToken cancellationToken = default);
+		Task AddStateAsync(TEntity entity, EntityStateInfo<TStatus> state, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Removes a state from the entity
@@ -38,6 +36,6 @@ namespace Deveel.Data {
 		/// <param name="stateInfo">The state to be removed</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		Task RemoveStateAsync(TEntity entity, StateInfo<TStatus> state, CancellationToken cancellationToken = default);
+		Task RemoveStateAsync(TEntity entity, EntityStateInfo<TStatus> state, CancellationToken cancellationToken = default);
 	}
 }

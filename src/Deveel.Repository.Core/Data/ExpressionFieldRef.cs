@@ -8,7 +8,7 @@ namespace Deveel.Data
     /// References a expr of an entity through a selection expression
     /// </summary>
     /// <typeparam name="TEntity">The type of the entity defining the expr to be selected</typeparam>
-    public sealed record class ExpressionFieldRef<TEntity> : IFieldRef where TEntity : class, IEntity
+    public sealed record class ExpressionFieldRef<TEntity> : IFieldRef where TEntity : class, IDataEntity
     {
         /// <summary>
         /// Constucts the reference with the expression to select

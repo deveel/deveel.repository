@@ -8,7 +8,7 @@ namespace Deveel.Data
     /// </summary>
     /// <typeparam name="TEntity">The type of entity to construct
     /// the expr</typeparam>
-    public sealed class ExpressionQueryFilter<TEntity> : IQueryFilter where TEntity : class, IEntity
+    public sealed class ExpressionQueryFilter<TEntity> : IQueryFilter where TEntity : class, IDataEntity
     {
         public ExpressionQueryFilter(Expression<Func<TEntity, bool>> expr)
         {

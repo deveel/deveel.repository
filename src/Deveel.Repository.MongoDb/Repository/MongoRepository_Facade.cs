@@ -8,8 +8,8 @@ using MongoDB.Driver;
 
 namespace Deveel.Data {
     public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>, IFilterableRepository<TFacade>
-        where TEntity : class, TFacade, IEntity
-        where TFacade : class, IEntity {
+        where TEntity : class, TFacade, IDataEntity
+        where TFacade : class, IDataEntity {
         public MongoRepository(IOptions<MongoDbStoreOptions<TEntity>> options, IDocumentFieldMapper<TEntity>? fieldMapper = null, ILogger<MongoStore<TEntity>>? logger = null)
             : base(options, fieldMapper, logger) {
         }

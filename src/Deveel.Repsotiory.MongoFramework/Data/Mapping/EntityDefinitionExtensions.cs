@@ -1,14 +1,13 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 
 using MongoDB.Driver;
 
 using MongoFramework.Infrastructure.Mapping;
 
 namespace Deveel.Data.Mapping {
-	public static class EntityDefinitionExtensions {
+    public static class EntityDefinitionExtensions {
 		public static bool IsVersioned(this IEntityDefinition definition)
-			=> definition.GetAllProperties().Any(x => Attribute.IsDefined(x.PropertyInfo, typeof(VersionedAttribute)));
+			=> definition.GetAllProperties().Any(x => Attribute.IsDefined(x.PropertyInfo, typeof(VersionAttribute)));
 
 		public static EntityVersionPropertry? GetVersionPropery(this IEntityDefinition definition) {
 			foreach (var property in definition.GetAllProperties()) {

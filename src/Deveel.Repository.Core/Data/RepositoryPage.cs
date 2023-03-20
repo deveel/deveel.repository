@@ -20,7 +20,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the <paramref name="request"/> is <c>null</c>.
 		/// </exception>
-		public RepositoryPage(RepositoryPageRequest request, int totalItems, IEnumerable<IEntity>? items = null) {
+		public RepositoryPage(RepositoryPageRequest request, int totalItems, IEnumerable<IDataEntity>? items = null) {
 			if (totalItems < 0)
 				throw new ArgumentOutOfRangeException(nameof(totalItems), "The number of total items must be zero or more");
 
@@ -43,7 +43,7 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Gets a list of items included in the page
 		/// </summary>
-		public IEnumerable<IEntity>? Items { get; set; }
+		public IEnumerable<IDataEntity>? Items { get; set; }
 
 		/// <summary>
 		/// Gets a count of the total available pages
@@ -51,7 +51,7 @@ namespace Deveel.Data {
 		/// </summary>
 		public int TotalPages => (int)Math.Ceiling((double)TotalItems / Request.Size);
 
-		public RepositoryPage<TEntity> As<TEntity>() where TEntity : class, IEntity
+		public RepositoryPage<TEntity> As<TEntity>() where TEntity : class, IDataEntity
 			=> new RepositoryPage<TEntity>(Request, TotalItems, Items?.Cast<TEntity>());
 
 		/// <summary>
