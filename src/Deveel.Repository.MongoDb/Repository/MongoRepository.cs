@@ -11,6 +11,7 @@ namespace Deveel.Data {
         IQueryableRepository<TDocument>, 
         IPageableRepository<TDocument>, 
         IFilterableRepository<TDocument>,
+        ITransactionalRepository<TDocument>,
         IMultiTenantRepository,
         IControllableRepository
         where TDocument : class, IDataEntity {
@@ -149,7 +150,7 @@ namespace Deveel.Data {
 
 
 		/// <inheritdoc />
-		Task<string> IRepository<TDocument>.CreateAsync(IDataTransaction session, TDocument entity, CancellationToken cancellationToken) {
+		Task<string> ITransactionalRepository<TDocument>.CreateAsync(IDataTransaction session, TDocument entity, CancellationToken cancellationToken) {
             return CreateAsync(AssertMongoDbSession(session), entity, cancellationToken);
         }
 
@@ -159,7 +160,7 @@ namespace Deveel.Data {
         }
 
         /// <inheritdoc />
-        Task<string> IRepository.CreateAsync(IDataTransaction session, IDataEntity entity, CancellationToken cancellationToken) {
+        Task<string> ITransactionalRepository.CreateAsync(IDataTransaction session, IDataEntity entity, CancellationToken cancellationToken) {
             return CreateAsync(AssertMongoDbSession(session), AssertIsEntity(entity), cancellationToken);
         }
 
@@ -169,13 +170,13 @@ namespace Deveel.Data {
         Task<IList<string>> IRepository.CreateAsync(IEnumerable<IDataEntity> entities, CancellationToken cancellationToken)
             => base.CreateAsync(entities.Select(AssertIsEntity), cancellationToken);
 
-        Task<IList<string>> IRepository.CreateAsync(IDataTransaction transaction, IEnumerable<IDataEntity> entities, CancellationToken cancellationToken)
+        Task<IList<string>> ITransactionalRepository.CreateAsync(IDataTransaction transaction, IEnumerable<IDataEntity> entities, CancellationToken cancellationToken)
             => base.CreateAsync(AssertMongoDbSession(transaction), entities.Select(AssertIsEntity), cancellationToken);
 
         Task<IList<string>> IRepository<TDocument>.CreateAsync(IEnumerable<TDocument> entities, CancellationToken cancellationToken)
             => base.CreateAsync(entities, cancellationToken);
 
-        Task<IList<string>> IRepository<TDocument>.CreateAsync(IDataTransaction transaction, IEnumerable<TDocument> entities, CancellationToken cancellationToken)
+        Task<IList<string>> ITransactionalRepository<TDocument>.CreateAsync(IDataTransaction transaction, IEnumerable<TDocument> entities, CancellationToken cancellationToken)
             => base.CreateAsync(AssertMongoDbSession(transaction), entities, cancellationToken);
 
         public Task<IList<string>> CreateAsync(MongoTransaction transaction, IEnumerable<TDocument> entities, CancellationToken cancellationToken = default)
@@ -186,12 +187,20 @@ namespace Deveel.Data {
             return await FindByIdAsync(id, cancellationToken);
         }
 
-        Task<IDataEntity?> IRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken) {
-			throw new NotSupportedException("Mongo repositories not support finding entities within sessions (yet)");
+        public async Task<TDocument> FindByIdAsync(MongoTransaction transaction, string id, CancellationToken cancellationToken = default) {
+            var result = await Collection.FindAsync(transaction.SessionHandle, IdFilter(id), cancellationToken: cancellationToken);
+            return await result.FirstOrDefaultAsync(cancellationToken);
         }
 
+        async Task<IDataEntity?> ITransactionalRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
+            => await FindByIdAsync((MongoTransaction) transaction, id, cancellationToken);
+
+        async Task<TDocument?> ITransactionalRepository<TDocument>.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
+            => await FindByIdAsync((MongoTransaction)transaction, id, cancellationToken);
+
+
         /// <inheritdoc />
-        Task<bool> IRepository<TDocument>.UpdateAsync(IDataTransaction session, TDocument entity, CancellationToken cancellationToken) {
+        Task<bool> ITransactionalRepository<TDocument>.UpdateAsync(IDataTransaction session, TDocument entity, CancellationToken cancellationToken) {
             return UpdateAsync(AssertMongoDbSession(session), entity, cancellationToken);
         }
 
@@ -199,7 +208,7 @@ namespace Deveel.Data {
             => UpdateAsync(transaction?.SessionHandle, entity, cancellationToken);
 
         /// <inheritdoc />
-        Task<bool> IRepository<TDocument>.DeleteAsync(IDataTransaction session, TDocument entity, CancellationToken cancellationToken) {
+        Task<bool> ITransactionalRepository<TDocument>.DeleteAsync(IDataTransaction session, TDocument entity, CancellationToken cancellationToken) {
             return DeleteAsync(AssertMongoDbSession(session), entity, cancellationToken);
         }
 
@@ -209,7 +218,7 @@ namespace Deveel.Data {
         }
 
         /// <inheritdoc />
-        Task<bool> IRepository.DeleteAsync(IDataTransaction session, IDataEntity entity, CancellationToken cancellationToken) {
+        Task<bool> ITransactionalRepository.DeleteAsync(IDataTransaction session, IDataEntity entity, CancellationToken cancellationToken) {
             return DeleteAsync(AssertMongoDbSession(session), AssertIsEntity(entity), cancellationToken);
         }
 
@@ -222,7 +231,7 @@ namespace Deveel.Data {
         }
 
         /// <inheritdoc />
-        Task<bool> IRepository.UpdateAsync(IDataTransaction session, IDataEntity entity, CancellationToken cancellationToken) {
+        Task<bool> ITransactionalRepository.UpdateAsync(IDataTransaction session, IDataEntity entity, CancellationToken cancellationToken) {
             return UpdateAsync(AssertMongoDbSession(session), AssertIsEntity(entity), cancellationToken);
         }
 

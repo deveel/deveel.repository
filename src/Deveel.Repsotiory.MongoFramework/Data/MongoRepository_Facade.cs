@@ -57,17 +57,8 @@ namespace Deveel.Data {
 		Task<IList<string>> IRepository<TFacade>.CreateAsync(IEnumerable<TFacade> entities, CancellationToken cancellationToken)
 			=> base.CreateAsync(entities.Select(Assert), cancellationToken);
 
-		Task<IList<string>> IRepository<TFacade>.CreateAsync(IDataTransaction transaction, IEnumerable<TFacade> entities, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transactions not supported");
-
-		Task<string> IRepository<TFacade>.CreateAsync(IDataTransaction session, TFacade entity, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transaction not supported");
-
 		Task<bool> IRepository<TFacade>.DeleteAsync(TFacade entity, CancellationToken cancellationToken)
 			=> DeleteAsync(Assert(entity), cancellationToken);
-
-		Task<bool> IRepository<TFacade>.DeleteAsync(IDataTransaction session, TFacade entity, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transaction not supported");
 
 		async Task<TFacade?> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken)
 			=> await FindByIdAsync(id, cancellationToken);
@@ -121,9 +112,5 @@ namespace Deveel.Data {
 
 		Task<bool> IRepository<TFacade>.UpdateAsync(TFacade entity, CancellationToken cancellationToken)
 			=> UpdateAsync(Assert(entity), cancellationToken);
-
-		Task<bool> IRepository<TFacade>.UpdateAsync(IDataTransaction session, TFacade entity, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transaction not supported");
-
 	}
 }

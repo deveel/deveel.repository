@@ -9,29 +9,21 @@
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<Authors>Antonello Provenzano</Authors>
 		<Company>Deveel AS</Company>
-		<Copyright>(C) 2022-2023 Deveel AS</Copyright>
+		<Copyright>(C) 2023 Deveel AS</Copyright>
 		<PackageProjectUrl>https://github.com/deveel/deveel.data.repository</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/deveel/deveel.data.repository</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<PackageTags>data core framework repository mongo mongoframework</PackageTags>
-		<Description>Provides an implementation of the repository pattern that is backed by the MongoFramework library and provides multi-tenancy support through Finbuckle</Description>
+		<PackageTags>data core framework repository entity entityframework ef efcore</PackageTags>
+		<Description>Provides an implementation of the repository pattern that is backed by the Entity Framework and provides multi-tenancy support through Finbuckle</Description>
 		<PackageLicenseFile>EULA.md</PackageLicenseFile>
 		<PackageIcon>deveel-logo.png</PackageIcon>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<DocumentationFile>Deveel.Repository.MongoFramework.xml</DocumentationFile>
+
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Finbuckle.MultiTenant.MongoFramework" Version="0.5.1" />
-		<PackageReference Include="MongoFramework" Version="0.27.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.15" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\Deveel.Repository.Annotations\Deveel.Repository.Annotations.csproj" />
-		<ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
-	</ItemGroup>
-
 	<ItemGroup>
 		<None Include="..\..\deveel-logo.png">
 			<Pack>True</Pack>
@@ -42,4 +34,8 @@
 			<PackagePath></PackagePath>
 		</None>
 	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
+	</ItemGroup>
+
 </Project>

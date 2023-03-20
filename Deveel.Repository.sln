@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.WebModels
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.TestApi", "test\Deveel.Repository.TestApi\Deveel.Repository.TestApi.csproj", "{066409E0-EFF5-4A08-94B7-D769D4E1A63B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.EntityFramework", "src\Deveel.Repository.EntityFramework\Deveel.Repository.EntityFramework.csproj", "{EDB6552F-37A5-4AC6-A993-DB40EDD02F0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{066409E0-EFF5-4A08-94B7-D769D4E1A63B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{066409E0-EFF5-4A08-94B7-D769D4E1A63B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{066409E0-EFF5-4A08-94B7-D769D4E1A63B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDB6552F-37A5-4AC6-A993-DB40EDD02F0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDB6552F-37A5-4AC6-A993-DB40EDD02F0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDB6552F-37A5-4AC6-A993-DB40EDD02F0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDB6552F-37A5-4AC6-A993-DB40EDD02F0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +115,7 @@ Global
 		{1694B372-99A1-4A7D-BF9F-23869AC26CC9} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 		{FBC5DC74-D8D4-4229-8A08-017F22B71424} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 		{066409E0-EFF5-4A08-94B7-D769D4E1A63B} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
+		{EDB6552F-37A5-4AC6-A993-DB40EDD02F0E} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01FD9B16-84B3-4D99-80C1-11B2F3D65B56}

@@ -7,7 +7,11 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Deveel.Data {
-    public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>, IFilterableRepository<TFacade>
+    public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, 
+        IRepository<TFacade>, 
+        IPageableRepository<TFacade>, 
+        IFilterableRepository<TFacade>,
+        ITransactionalRepository<TFacade>
         where TEntity : class, TFacade, IDataEntity
         where TFacade : class, IDataEntity {
         public MongoRepository(IOptions<MongoDbStoreOptions<TEntity>> options, IDocumentFieldMapper<TEntity>? fieldMapper = null, ILogger<MongoStore<TEntity>>? logger = null)
@@ -59,16 +63,16 @@ namespace Deveel.Data {
         Task<IList<string>> IRepository<TFacade>.CreateAsync(IEnumerable<TFacade> entities, CancellationToken cancellationToken)
             => base.CreateAsync(entities.Select(Assert), cancellationToken);
 
-        Task<IList<string>> IRepository<TFacade>.CreateAsync(IDataTransaction transaction, IEnumerable<TFacade> entities, CancellationToken cancellationToken)
+        Task<IList<string>> ITransactionalRepository<TFacade>.CreateAsync(IDataTransaction transaction, IEnumerable<TFacade> entities, CancellationToken cancellationToken)
             => base.CreateAsync(AssertMongoDbSession(transaction), entities.Select(Assert), cancellationToken);
 
-        Task<string> IRepository<TFacade>.CreateAsync(IDataTransaction session, TFacade entity, CancellationToken cancellationToken)
+        Task<string> ITransactionalRepository<TFacade>.CreateAsync(IDataTransaction session, TFacade entity, CancellationToken cancellationToken)
             => CreateAsync(AssertMongoDbSession(session), Assert(entity), cancellationToken);
 
         Task<bool> IRepository<TFacade>.DeleteAsync(TFacade entity, CancellationToken cancellationToken)
             => DeleteAsync(Assert(entity), cancellationToken);
 
-        Task<bool> IRepository<TFacade>.DeleteAsync(IDataTransaction session, TFacade entity, CancellationToken cancellationToken)
+        Task<bool> ITransactionalRepository<TFacade>.DeleteAsync(IDataTransaction session, TFacade entity, CancellationToken cancellationToken)
             => DeleteAsync(AssertMongoDbSession(session), Assert(entity), cancellationToken);
 
         async Task<TFacade?> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken)
@@ -88,7 +92,10 @@ namespace Deveel.Data {
         Task<bool> IRepository<TFacade>.UpdateAsync(TFacade entity, CancellationToken cancellationToken)
             => UpdateAsync(Assert(entity), cancellationToken);
 
-        Task<bool> IRepository<TFacade>.UpdateAsync(IDataTransaction session, TFacade entity, CancellationToken cancellationToken)
+        Task<bool> ITransactionalRepository<TFacade>.UpdateAsync(IDataTransaction session, TFacade entity, CancellationToken cancellationToken)
             => UpdateAsync(AssertMongoDbSession(session), Assert(entity), cancellationToken);
+
+        async Task<TFacade?> ITransactionalRepository<TFacade>.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
+            => await FindByIdAsync((MongoTransaction)transaction, id, cancellationToken);
     }
 }

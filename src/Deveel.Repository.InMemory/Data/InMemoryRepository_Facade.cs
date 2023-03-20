@@ -29,18 +29,9 @@ namespace Deveel.Data {
 			=> CreateAsync(entities.Select(Assert), cancellationToken);
 
 
-		Task<IList<string>> IRepository<TFacade>.CreateAsync(IDataTransaction transaction, IEnumerable<TFacade> entities, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
-
-		Task<string> IRepository<TFacade>.CreateAsync(IDataTransaction transaction, TFacade entity, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
-
 
 		Task<bool> IRepository<TFacade>.DeleteAsync(TFacade entity, CancellationToken cancellationToken) 
 			=> DeleteAsync(Assert(entity), cancellationToken);
-
-		Task<bool> IRepository<TFacade>.DeleteAsync(IDataTransaction transaction, TFacade entity, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
 
 		async Task<RepositoryPage<TFacade>> IPageableRepository<TFacade>.GetPageAsync(RepositoryPageRequest<TFacade> request, CancellationToken cancellationToken) {
 			var newPage = request.As<TEntity>();
@@ -56,9 +47,6 @@ namespace Deveel.Data {
 		Task<bool> IRepository<TFacade>.UpdateAsync(TFacade entity, CancellationToken cancellationToken) 
 			=> UpdateAsync(Assert(entity), cancellationToken);
 		
-		Task<bool> IRepository<TFacade>.UpdateAsync(IDataTransaction transaction, TFacade entity, CancellationToken cancellationToken) 
-			=> throw new NotSupportedException("Transactions not supported for in-memory repositories");
-
 		async Task<IList<TFacade>> IFilterableRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
 			var result = await FindAllAsync(filter, cancellationToken);
 			return result.Cast<TFacade>().ToList();
