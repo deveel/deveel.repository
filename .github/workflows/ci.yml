@@ -34,3 +34,8 @@ jobs:
       
     - name: Push NutGet
       run: dotnet nuget push ./nuget/*.nupkg -s "Deveel GitHub" --skip-duplicate --api-key ${{secrets.DEVEEL_NUGET_TOKEN}}
+
+  clean:
+    name: "Clean Old Packages"
+    needs: build
+    uses: ./github/workflows/clean-packages.yml

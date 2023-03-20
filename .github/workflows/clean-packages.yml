@@ -1,0 +1,74 @@
+name: Clean Old Files
+
+on:
+  workflow_dispatch:
+
+  workflow_call:
+  
+#  workflow_run:
+#    workflows: ["Deveel FX CD"]
+#    branches: [main]
+#    types: 
+#      - completed
+  
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+      
+    steps:
+
+    - name: Remove the Old Deveel.Repository.Core Package
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: 'Deveel.Repository.Core'
+        package-type: 'nuget'
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: "true"
+
+    - name: Remove the Old Deveel.Repository.Annotations Package
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: 'Deveel.Repository.Annotations'
+        package-type: 'nuget'
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: "true"
+
+    - name: Remove the Old Deveel.Repository.Filters Package
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: 'Deveel.Repository.Filters'
+        package-type: 'nuget'
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: "true"
+
+    - name: Remove the Old Deveel.Repository.InMemory Package
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: 'Deveel.Repository.InMemory'
+        package-type: 'nuget'
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: "true"
+
+    - name: Remove the Old Deveel.Repository.MongoDb Package
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: 'Deveel.Repository.MongoDb'
+        package-type: 'nuget'
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: "true"
+
+    - name: Remove the Old Deveel.Repository.MongoFramework Package
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: 'Deveel.Repository.MongoFramework'
+        package-type: 'nuget'
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: "true"
+
+    - name: Remove the Old Deveel.Repository.WebModels Package
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: 'Deveel.Repository.WebModels'
+        package-type: 'nuget'
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: "true"
