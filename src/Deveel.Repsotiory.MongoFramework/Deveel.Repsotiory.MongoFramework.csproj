@@ -26,7 +26,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Deveel.Repository.Annotations\Deveel.Repository.Annotations.csproj" />
 		<ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
 	</ItemGroup>
 
