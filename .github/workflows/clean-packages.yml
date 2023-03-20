@@ -57,10 +57,10 @@ jobs:
         min-versions-to-keep: 10
         delete-only-pre-release-versions: "true"
 
-    - name: Remove the Old Deveel.Repository.MongoFramework Package
+    - name: Remove the Old Deveel.Repsotiory.MongoFramework Package
       uses: actions/delete-package-versions@v4
       with:
-        package-name: 'Deveel.Repository.MongoFramework'
+        package-name: 'Deveel.Repsotiory.MongoFramework'
         package-type: 'nuget'
         min-versions-to-keep: 10
         delete-only-pre-release-versions: "true"
