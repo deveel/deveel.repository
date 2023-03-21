@@ -67,7 +67,9 @@ namespace Deveel.Data {
 			return Task.CompletedTask;
 		}
 
-		protected interface IPerson : IDataEntity {
+		protected interface IPerson {
+			string? Id { get; }
+
 			string FirstName { get; }
 
 			string LastName { get; }

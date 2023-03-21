@@ -7,7 +7,7 @@ namespace Deveel.Data {
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <seealso cref="IRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>
-    public class RepositoryPageRequest<TEntity> : RepositoryPageRequest where TEntity : class, IDataEntity {
+    public class RepositoryPageRequest<TEntity> : RepositoryPageRequest where TEntity : class {
 		public RepositoryPageRequest(int page, int size)
 			: base(page, size) {
 		}
@@ -48,7 +48,7 @@ namespace Deveel.Data {
 			return this;
 		}
 
-		public RepositoryPageRequest<TTarget> As<TTarget>() where TTarget : class, IDataEntity {
+		public RepositoryPageRequest<TTarget> As<TTarget>() where TTarget : class {
 			var page = new RepositoryPageRequest<TTarget>(Page, Size);
 
 			if (Filter != null) {

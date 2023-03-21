@@ -10,7 +10,7 @@ using MongoFramework.Linq;
 namespace Deveel.Data {
     public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>, IFilterableRepository<TFacade>
 		where TEntity : class, TFacade
-		where TFacade : class, IDataEntity {
+		where TFacade : class {
 
 		public MongoRepository(MongoDbContext context, ILogger<MongoRepository<TEntity, TFacade>>? logger = null)
 			: this(context, (ILogger?) logger) {

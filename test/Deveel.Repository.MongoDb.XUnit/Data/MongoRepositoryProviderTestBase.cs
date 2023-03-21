@@ -102,7 +102,7 @@ namespace Deveel.Data {
 
 			string? IMongoDocument.Id => Id.ToEntityId();
 
-			string? IDataEntity.Id => Id.ToEntityId();
+			string? IPerson.Id => Id.ToEntityId();
 
 			public string FirstName { get; set; }
 
@@ -115,14 +115,16 @@ namespace Deveel.Data {
 			public string TenantId { get; set; }
 		}
 
-		protected interface IPerson : IDataEntity {
-			public string FirstName { get; }
+		protected interface IPerson {
+			string? Id { get; }
 
-			public string LastName { get; }
+			string FirstName { get; }
 
-			public DateTime? BirthDate { get; }
+			string LastName { get; }
 
-			public string? Description { get; }
+			DateTime? BirthDate { get; }
+
+			string? Description { get; }
 		}
 	}
 }

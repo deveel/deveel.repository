@@ -17,12 +17,13 @@ using MongoFramework.Linq;
 namespace Deveel.Data {
 	public class MongoRepository<TEntity> : IRepository<TEntity>, 
 		IQueryableRepository<TEntity>, 
-		IPageableRepository<TEntity>, IFilterableRepository<TEntity>,
+		IPageableRepository<TEntity>, 
+		IFilterableRepository<TEntity>,
 		IMultiTenantRepository,
 		IControllableRepository, 
 		IAsyncDisposable, 
 		IDisposable
-		where TEntity : class, IDataEntity 
+		where TEntity : class 
 	{
 		private IMongoDbSet<TEntity>? _dbSet;
 		private bool disposed;
@@ -101,9 +102,13 @@ namespace Deveel.Data {
 			return _dbSet;
 		}
 
-		protected virtual object GetIdValue(TEntity entity) => GetIdValue(entity.Id);
+		protected virtual object? GetIdValue(TEntity entity) 
+			=> entity.TryGetId(out var id) ? GetIdValue(id) : null;
 
-		protected virtual object GetIdValue(string id) {
+		protected virtual object? GetIdValue(string? id) {
+			if (String.IsNullOrWhiteSpace(id))
+				return null;
+
 			var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
 			var idProperty = entityDef.GetIdProperty();
@@ -125,7 +130,7 @@ namespace Deveel.Data {
 			throw new NotSupportedException($"It is not possible to convert the ID to '{valueType}'");
 		}
 
-		protected static TEntity Assert(IDataEntity entity) {
+		protected static TEntity Assert(object entity) {
 			if (!(entity is TEntity entityObj))
 				throw new ArgumentException($"The type '{entity.GetType()}' is not assignable from '{typeof(TEntity)}'");
 
@@ -247,19 +252,19 @@ namespace Deveel.Data {
 			}
 		}
 
-		Task<string> IRepository.CreateAsync(IDataEntity entity, CancellationToken cancellationToken)
+		Task<string> IRepository.CreateAsync(object entity, CancellationToken cancellationToken)
 			=> CreateAsync(Assert(entity), cancellationToken);
 
-		Task<string> IRepository.CreateAsync(IDataTransaction transaction, IDataEntity entity, CancellationToken cancellationToken)
+		Task<string> IRepository.CreateAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken)
 			=> throw new NotSupportedException("Transactions not supported");
 
 		Task<IList<string>> IRepository<TEntity>.CreateAsync(IDataTransaction transaction, IEnumerable<TEntity> entities, CancellationToken cancellationToken)
 			=> throw new NotSupportedException("Transactions not supported");
 
-		Task<IList<string>> IRepository.CreateAsync(IDataTransaction transaction, IEnumerable<IDataEntity> entities, CancellationToken cancellationToken)
+		Task<IList<string>> IRepository.CreateAsync(IDataTransaction transaction, IEnumerable<object> entities, CancellationToken cancellationToken)
 			=> throw new NotSupportedException("Transactions not supported");
 
-		Task<IList<string>> IRepository.CreateAsync(IEnumerable<IDataEntity> entities, CancellationToken cancellationToken)
+		Task<IList<string>> IRepository.CreateAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
 			=> CreateAsync(entities.Select(x => Assert(x)), cancellationToken);
 
 		public async Task<IList<string>> CreateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
@@ -313,10 +318,10 @@ namespace Deveel.Data {
 		Task<bool> IRepository<TEntity>.UpdateAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken)
 			=> throw new NotSupportedException("Transactions not supported");
 
-		Task<bool> IRepository.UpdateAsync(IDataEntity entity, CancellationToken cancellationToken) 
+		Task<bool> IRepository.UpdateAsync(object entity, CancellationToken cancellationToken) 
 			=> UpdateAsync(Assert(entity), cancellationToken);
 
-		Task<bool> IRepository.UpdateAsync(IDataTransaction transaction, IDataEntity entity, CancellationToken cancellationToken)
+		Task<bool> IRepository.UpdateAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken)
 			=> throw new NotSupportedException("Transactions not supported");
 
 		#endregion
@@ -328,8 +333,11 @@ namespace Deveel.Data {
 				throw new ArgumentNullException(nameof(entity));
 
 			try {
-				var toDelete = await DbSet.FindAsync(GetIdValue(entity));
+				var entityId = GetIdValue(entity);
+				if (entityId == null)
+					return false;
 
+				var toDelete = await DbSet.FindAsync(entityId);
 				if (toDelete == null)
 					return false;
 
@@ -346,10 +354,10 @@ namespace Deveel.Data {
 			=> throw new NotSupportedException("Transactions not supported");
 
 
-		Task<bool> IRepository.DeleteAsync(IDataEntity entity, CancellationToken cancellationToken)
+		Task<bool> IRepository.DeleteAsync(object entity, CancellationToken cancellationToken)
 			=> DeleteAsync(Assert(entity), cancellationToken);
 
-		Task<bool> IRepository.DeleteAsync(IDataTransaction transaction, IDataEntity entity, CancellationToken cancellationToken) 
+		Task<bool> IRepository.DeleteAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken) 
 			=> throw new NotSupportedException("Transactions not supported");
 
 		#endregion
@@ -366,10 +374,10 @@ namespace Deveel.Data {
 			}
 		}
 
-		async Task<IDataEntity?> IRepository.FindByIdAsync(string id, CancellationToken cancellationToken)
+		async Task<object?> IRepository.FindByIdAsync(string id, CancellationToken cancellationToken)
 			=> await FindByIdAsync(id, cancellationToken);
 
-		Task<IDataEntity?> IRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
+		Task<object?> IRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
 			=> throw new NotSupportedException("Transactions not supported");
 
 		#endregion
@@ -401,7 +409,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		async Task<IDataEntity?> IFilterableRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken) 
+		async Task<object?> IFilterableRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken) 
 			=> await FindAsync(filter, cancellationToken);
 
 		#endregion
@@ -429,9 +437,9 @@ namespace Deveel.Data {
 			}
 		}
 
-		async Task<IList<IDataEntity>> IFilterableRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
+		async Task<IList<object>> IFilterableRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
 			var result = await FindAllAsync(filter, cancellationToken);
-			return result.Cast<IDataEntity>().ToList();
+			return result.Cast<object>().ToList();
 		}
 
 		#endregion
@@ -486,7 +494,7 @@ namespace Deveel.Data {
 
 			var result = await GetPageAsync(newRequest, cancellationToken);
 
-			return new RepositoryPage(request, result.TotalItems, result.Items?.Cast<IDataEntity>());
+			return new RepositoryPage(request, result.TotalItems, result.Items?.Cast<object>());
 		}
 
 		#endregion
