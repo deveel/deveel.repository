@@ -3,26 +3,34 @@
 namespace Deveel.Data {
 	public class InMemoryRepositoryProvider<TEntity> : IRepositoryProvider<TEntity>, IDisposable
 		where TEntity : class {
-		public InMemoryRepositoryProvider() {
+		public InMemoryRepositoryProvider(IEntityFieldMapper<TEntity>? fieldMapper = null) {
 			repositories = new Dictionary<string, InMemoryRepository<TEntity>>();
+			FieldMapper = fieldMapper;
 		}
 
-		public InMemoryRepositoryProvider(IDictionary<string, IList<TEntity>> list) {
-			var repos = list.ToDictionary(x => x.Key, y => new InMemoryRepository<TEntity>(y.Value));
+		public InMemoryRepositoryProvider(IDictionary<string, IList<TEntity>> list, IEntityFieldMapper<TEntity>? fieldMapper = null) {
+			var repos = list.ToDictionary(x => x.Key, y => CreateRepository(y.Key, y.Value));
 			repositories = new Dictionary<string, InMemoryRepository<TEntity>>(repos);
+			FieldMapper = fieldMapper;
 		}
 
 		private readonly Dictionary<string, InMemoryRepository<TEntity>> repositories;
 		private bool disposedValue;
 
+		protected virtual IEntityFieldMapper<TEntity>? FieldMapper { get; }
+
 		public InMemoryRepository<TEntity> GetRepository(string tenantId) {
 			lock (repositories) {
 				if (!repositories.TryGetValue(tenantId, out var repository)) {
-					repositories[tenantId] = repository = new InMemoryRepository<TEntity>(tenantId);
+					repositories[tenantId] = repository = CreateRepository(tenantId);
 				} 
 				
 				return repository;
 			}
+		}
+
+		public  virtual InMemoryRepository<TEntity> CreateRepository(string tenantId, IList<TEntity>? entities = null) {
+			return new InMemoryRepository<TEntity>(tenantId, entities, FieldMapper);
 		}
 
 		IRepository<TEntity> IRepositoryProvider<TEntity>.GetRepository(string tenantId) => GetRepository(tenantId);
