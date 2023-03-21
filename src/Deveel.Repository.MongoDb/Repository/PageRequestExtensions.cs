@@ -5,7 +5,7 @@ using MongoDB.Driver;
 namespace Deveel.Data {
     static class PageRequestExtensions {
         public static MongoPageQuery<TDocument> AsPageQuery<TDocument>(this RepositoryPageRequest request, Func<string, FieldDefinition<TDocument, object>>? fieldSelector = null, Func<IQueryFilter?, FilterDefinition<TDocument>>? filterBuilder = null)
-            where TDocument : class, IDataEntity {
+            where TDocument : class {
 			var query = new MongoPageQuery<TDocument>(request.Page, request.Size) {
 				Filter = filterBuilder?.Invoke(request.Filter)
 			};

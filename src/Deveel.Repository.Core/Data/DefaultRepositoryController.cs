@@ -49,7 +49,7 @@ namespace Deveel.Data {
 		}
 
 		private IControllableRepository? RequireRepository<TEntity>()
-			where TEntity : class, IDataEntity {
+			where TEntity : class {
 
 			LogTrace("Resolving a repository for entity of type {EntityType}", typeof(TEntity).Name);
 
@@ -85,7 +85,7 @@ namespace Deveel.Data {
 		}
 
 		private IRepositoryProvider<TEntity> RequireRepositoryProvider<TEntity>()
-			where TEntity : class, IDataEntity {
+			where TEntity : class {
 			var provider = serviceProvider.GetService<IRepositoryProvider<TEntity>>();
 
 			if (provider == null)
@@ -216,7 +216,7 @@ namespace Deveel.Data {
 		}
 
 		public virtual async Task CreateRepositoryAsync<TEntity>(CancellationToken cancellationToken = default)
-			where TEntity : class, IDataEntity {
+			where TEntity : class {
 			LogTrace("Creating the repository for type '{EntityType}'", typeof(TEntity).Name);
 
 			var repository = RequireRepository<TEntity>();
@@ -227,7 +227,7 @@ namespace Deveel.Data {
 		}
 
 		public async Task CreateTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class, IDataEntity {
+			where TEntity : class {
 			LogTrace("Creating the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
 
 			var provider = RequireRepositoryProvider<TEntity>();
@@ -239,7 +239,7 @@ namespace Deveel.Data {
 			LogTrace("The repository handling the type '{EntityType}' for tenant '{TenantId}' was created", typeof(TEntity).Name, tenantId);
 		}
 
-		public virtual async Task DropRepositoryAsync<TEntity>(CancellationToken cancellationToken = default) where TEntity : class, IDataEntity {
+		public virtual async Task DropRepositoryAsync<TEntity>(CancellationToken cancellationToken = default) where TEntity : class {
 			LogTrace("Dropping the repository handling the type '{EntityType}'", typeof(TEntity).Name);
 
 			var repository = RequireRepository<TEntity>();
@@ -250,7 +250,7 @@ namespace Deveel.Data {
 		}
 
 		public virtual async Task DropTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class, IDataEntity {
+			where TEntity : class {
 			LogTrace("Dropping the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
 
 			var provider = RequireRepositoryProvider<TEntity>();

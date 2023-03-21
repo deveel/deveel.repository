@@ -25,7 +25,7 @@ namespace Deveel.Data {
         /// <exception cref="ArgumentNullException">
         /// Thrown if the provided <paramref name="entity"/> is <c>null</c>
         /// </exception>
-        Task<string> CreateAsync(IDataEntity entity, CancellationToken cancellationToken = default);
+        Task<string> CreateAsync(object entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Creates a list of entities in the repository in one single operation
@@ -51,7 +51,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
 		/// </exception>
-		Task<IList<string>> CreateAsync(IEnumerable<IDataEntity> entities, CancellationToken cancellationToken = default);
+		Task<IList<string>> CreateAsync(IEnumerable<object> entities, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates a list of entities in the repository in one single operation, within
@@ -69,7 +69,7 @@ namespace Deveel.Data {
         /// <exception cref="ArgumentNullException">
         /// Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
         /// </exception>
-        Task<IList<string>> CreateAsync(IDataTransaction transaction, IEnumerable<IDataEntity> entities, CancellationToken cancellationToken = default);
+        Task<IList<string>> CreateAsync(IDataTransaction transaction, IEnumerable<object> entities, CancellationToken cancellationToken = default);
 
 
 		/// <summary>
@@ -93,7 +93,7 @@ namespace Deveel.Data {
 		/// with the underlying storage of the repository
 		/// </exception>
 		/// <seealso cref="IDataTransactionFactory"/>
-		Task<string> CreateAsync(IDataTransaction transaction, IDataEntity entity, CancellationToken cancellationToken = default);
+		Task<string> CreateAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Deletes an entity from the repository
@@ -110,7 +110,7 @@ namespace Deveel.Data {
         /// <exception cref="RepositoryException">
         /// Thrown if it an error occurred while deleting the entity
         /// </exception>
-        Task<bool> DeleteAsync(IDataEntity entity, CancellationToken cancellationToken = default);
+        Task<bool> DeleteAsync(object entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Deletes an entity from the repository
@@ -134,7 +134,7 @@ namespace Deveel.Data {
         /// with the underlying storage of the repository
         /// </exception>
         /// <seealso cref="IDataTransactionFactory"/>
-        Task<bool> DeleteAsync(IDataTransaction transaction, IDataEntity entity, CancellationToken cancellationToken = default);
+        Task<bool> DeleteAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates an existing entity in the repository
@@ -151,7 +151,7 @@ namespace Deveel.Data {
         /// <exception cref="RepositoryException">
         /// Thrown if it an error occurred while updating the entity
         /// </exception>
-        Task<bool> UpdateAsync(IDataEntity entity, CancellationToken cancellationToken = default);
+        Task<bool> UpdateAsync(object entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates an existing entity in the repository
@@ -175,7 +175,7 @@ namespace Deveel.Data {
         /// with the underlying storage of the repository
         /// </exception>
         /// <seealso cref="IDataTransactionFactory"/>
-        Task<bool> UpdateAsync(IDataTransaction transaction, IDataEntity entity, CancellationToken cancellationToken = default);
+        Task<bool> UpdateAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Attempts to find in the repository an entity with the 
@@ -187,7 +187,7 @@ namespace Deveel.Data {
         /// Returns the instance of the entity associated to the given <paramref name="id"/>,
         /// or <c>null</c> if none entity was found.
         /// </returns>
-        Task<IDataEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default);
+        Task<object?> FindByIdAsync(string id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Attempts to find in the repository an entity with the 
@@ -201,6 +201,6 @@ namespace Deveel.Data {
         /// Returns the instance of the entity associated to the given <paramref name="id"/>,
         /// or <c>null</c> if none entity was found.
         /// </returns>
-        Task<IDataEntity?> FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken = default);
+        Task<object?> FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken = default);
     }
 }

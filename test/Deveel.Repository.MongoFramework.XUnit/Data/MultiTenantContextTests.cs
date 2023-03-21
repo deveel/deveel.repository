@@ -76,7 +76,7 @@ namespace Deveel.Data {
 			return null;
 		}
 
-		protected class MongoPerson : IDataEntity {
+		protected class MongoPerson {
 			[Key]
 			public string Id { get; set; }
 

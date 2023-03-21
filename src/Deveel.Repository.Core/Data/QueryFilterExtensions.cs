@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 namespace Deveel.Data {
 	public static class QueryFilterExtensions {
 		public static Expression<Func<TEntity, bool>> AsLambda<TEntity>(this IQueryFilter filter) 
-			where TEntity : class, IDataEntity {
+			where TEntity : class {
 			if (filter == null)
 				throw new ArgumentNullException(nameof(filter));
 			if (filter.IsEmpty())

@@ -82,7 +82,7 @@ namespace Deveel.Data {
 			public ObjectId Id { get; set; }
 
 
-			string? IDataEntity.Id => Id.ToEntityId();
+			string? IPerson.Id => Id.ToEntityId();
 
 			public string FirstName { get; set; }
 
@@ -96,7 +96,9 @@ namespace Deveel.Data {
 			public string Version { get; set; }
 		}
 
-		protected interface IPerson : IDataEntity {
+		protected interface IPerson {
+			string? Id { get; }
+
 			public string FirstName { get; }
 
 			public string LastName { get; }

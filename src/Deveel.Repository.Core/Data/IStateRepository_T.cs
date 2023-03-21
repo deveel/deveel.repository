@@ -8,7 +8,7 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">The type of the entity managed by the repository</typeparam>
 	/// <typeparam name="TStatus">The status code of the states of an entity</typeparam>
 	public interface IStateRepository<TEntity, TStatus> : IRepository<TEntity> 
-		where TEntity : class, IDataEntity {
+		where TEntity : class {
 		/// <summary>
 		/// Gets the listing of the states of the entity
 		/// </summary>

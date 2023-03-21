@@ -7,7 +7,7 @@ namespace Deveel.Data {
         #region AddMongoRepository<T>
 
         public static IServiceCollection AddMongoRepository<TRepository, TEntity>(this IServiceCollection services)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             where TRepository : MongoRepository<TEntity> {
             services.AddRepository<TRepository>(ServiceLifetime.Singleton)
                 .AddSingleton<IRepository, TRepository>()
@@ -20,25 +20,25 @@ namespace Deveel.Data {
         }
 
         public static IServiceCollection AddMongoRepository<TEntity>(this IServiceCollection services)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => services.AddMongoRepository<MongoRepository<TEntity>, TEntity>();
 
         public static IServiceCollection AddMongoRepository<TRepository, TEntity>(this IServiceCollection services, Action<MongoDbStoreOptions> configure)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             where TRepository : MongoRepository<TEntity>
             => services.AddMongoStoreOptions<TEntity>(configure).AddMongoRepository<TRepository, TEntity>();
 
         public static IServiceCollection AddMongoRepository<TEntity>(this IServiceCollection services, Action<MongoDbStoreOptions> configure)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => services.AddMongoRepository<MongoRepository<TEntity>, TEntity>(configure);
 
         public static IServiceCollection AddMongoRepository<TRepository, TEntity>(this IServiceCollection services, string sectionName)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             where TRepository : MongoRepository<TEntity>
             => services.AddMongoStoreOptions<TEntity>(sectionName).AddMongoRepository<TRepository, TEntity>();
 
         public static IServiceCollection AddMongoRepository<TEntity>(this IServiceCollection services, string sectionName)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => services.AddMongoRepository<MongoRepository<TEntity>, TEntity>(sectionName);
 
 
@@ -47,8 +47,8 @@ namespace Deveel.Data {
         #region AddMongoFacadeRepository<TEntity,TFacade>
 
         public static IServiceCollection AddMongoFacadeRepository<TRepository, TEntity, TFacade>(this IServiceCollection services)
-            where TEntity : class, TFacade, IDataEntity
-            where TFacade : class, IDataEntity
+            where TEntity : class, TFacade
+            where TFacade : class
             where TRepository : MongoRepository<TEntity, TFacade>
             => services
                 .AddRepository<TRepository, TEntity>(ServiceLifetime.Singleton)
@@ -58,8 +58,8 @@ namespace Deveel.Data {
                 .AddSingleton<IRepository<TFacade>, TRepository>();
 
         public static IServiceCollection AddMongoFacadeRepository<TEntity, TFacade>(this IServiceCollection services)
-            where TEntity : class, TFacade, IDataEntity
-            where TFacade : class, IDataEntity
+            where TEntity : class, TFacade
+            where TFacade : class
             => services
 				.AddMongoFacadeRepository<MongoRepository<TEntity, TFacade>, TEntity, TFacade>();
 
@@ -69,30 +69,30 @@ namespace Deveel.Data {
 		#region AddMongoRepositoryProvider<TEntity>
 
 		public static IServiceCollection AddMongoRepositoryProvider<TProvider, TEntity>(this IServiceCollection services)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			where TProvider : MongoRepositoryProvider<TEntity>
 			=> services	.AddRepositoryProvider<TProvider, TEntity>(ServiceLifetime.Singleton);
 
         public static IServiceCollection AddMongoRepositoryProvider<TEntity>(this IServiceCollection services)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => services.AddMongoRepositoryProvider<MongoRepositoryProvider<TEntity>, TEntity>();
 
         public static IServiceCollection AddMongoRepositoryProvider<TProvider, TEntity>(this IServiceCollection services, string sectionName)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             where TProvider : MongoRepositoryProvider<TEntity>
             => services.AddMongoStoreOptions<TEntity>(sectionName).AddMongoRepositoryProvider<TProvider, TEntity>();
 
         public static IServiceCollection AddMongoRepositoryProvider<TEntity>(this IServiceCollection services, IConfiguration configuration, string sectionName = null, string connectionStringName = null)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => services.AddMongoRepositoryProvider<TEntity>(configuration, sectionName, connectionStringName);
 
         public static IServiceCollection AddMongoRepositoryProvider<TProvider, TEntity>(this IServiceCollection services, Action<MongoDbStoreOptions> configure)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             where TProvider : MongoRepositoryProvider<TEntity>
             => services.AddMongoStoreOptions<TEntity>(configure).AddMongoRepositoryProvider<TProvider, TEntity>();
 
         public static IServiceCollection AddMongoRepositoryProvider<TEntity>(this IServiceCollection services, Action<MongoDbStoreOptions> configure)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => services.AddMongoRepositoryProvider<MongoRepositoryProvider<TEntity>, TEntity>(configure);
 
         #endregion
@@ -100,8 +100,8 @@ namespace Deveel.Data {
         #region AddMongoFacadeRepositoryProvider<TEntity, TFacade>
 
         public static IServiceCollection AddMongoFacadeRepositoryProvider<TProvider, TEntity, TFacade>(this IServiceCollection services)
-            where TEntity : class, TFacade, IDataEntity
-            where TFacade : class, IDataEntity
+            where TEntity : class, TFacade
+            where TFacade : class
             where TProvider : MongoRepositoryProvider<TEntity, TFacade>
             => services
                 .AddRepositoryProvider<TProvider, TEntity>()
@@ -111,8 +111,8 @@ namespace Deveel.Data {
                 .AddSingleton<IRepositoryProvider<TFacade>, TProvider>();
 
         public static IServiceCollection AddMongoFacadeRepositoryProvider<TEntity, TFacade>(this IServiceCollection services)
-            where TEntity : class, TFacade, IDataEntity
-            where TFacade : class, IDataEntity
+            where TEntity : class, TFacade
+            where TFacade : class
             => services.AddMongoFacadeRepositoryProvider<MongoRepositoryProvider<TEntity, TFacade>, TEntity, TFacade>();
 
         #endregion
@@ -120,7 +120,7 @@ namespace Deveel.Data {
         #region AddFieldMapper
 
         public static IServiceCollection AddDocumentFieldMapper<TDocument, TMapper>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-            where TDocument : class, IDataEntity
+            where TDocument : class
             where TMapper : class, IDocumentFieldMapper<TDocument> {
             services.Add(new ServiceDescriptor(typeof(IDocumentFieldMapper<TDocument>), typeof(TMapper), lifetime));
             services.Add(new ServiceDescriptor(typeof(TMapper), typeof(TMapper), lifetime));
@@ -129,7 +129,7 @@ namespace Deveel.Data {
         }
 
         public static IServiceCollection AddDocumentFieldMapper<TDocument, TMapper>(this IServiceCollection services, TMapper mapper)
-            where TDocument : class, IDataEntity
+            where TDocument : class
             where TMapper : class, IDocumentFieldMapper<TDocument> {
             services.Add(new ServiceDescriptor(typeof(IDocumentFieldMapper<TDocument>), mapper));
             services.Add(new ServiceDescriptor(typeof(TMapper), mapper));
@@ -138,7 +138,7 @@ namespace Deveel.Data {
         }
 
         public static IServiceCollection AddDocumentFieldMapper<TDocument>(this IServiceCollection services, Func<string, string> fieldMapper)
-            where TDocument : class, IDataEntity
+            where TDocument : class
             => services.AddDocumentFieldMapper<TDocument, DelegatedDocumentFieldMapper<TDocument>>(new DelegatedDocumentFieldMapper<TDocument>(fieldMapper));
 
 		#endregion

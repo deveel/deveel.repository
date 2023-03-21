@@ -5,7 +5,7 @@ namespace Deveel.Data {
 		#region AddInMemoryRepository<T>
 
 		public static IServiceCollection AddInMemoryRepository<TRepository, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			where TRepository : InMemoryRepository<TEntity> {
 			services.AddRepository<TRepository>(lifetime);
 			services.Add(new ServiceDescriptor(typeof(IRepository), typeof(TRepository), lifetime));
@@ -15,7 +15,7 @@ namespace Deveel.Data {
 		}
 
 		public static IServiceCollection AddInMemoryRepository<TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			=> services.AddInMemoryRepository<InMemoryRepository<TEntity>, TEntity>(lifetime);
 
 		#endregion
@@ -23,8 +23,8 @@ namespace Deveel.Data {
 		#region AddInMemoryFacadeRepository<TEntity,TFacade>
 
 		public static IServiceCollection AddInMemoryFacadeRepository<TRepository, TEntity, TFacade>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			where TEntity : class, TFacade, IDataEntity
-			where TFacade : class, IDataEntity
+			where TEntity : class, TFacade
+			where TFacade : class
 			where TRepository : InMemoryRepository<TEntity, TFacade> {
 			services
 				.AddRepository<TRepository, TEntity>(lifetime)
@@ -38,8 +38,8 @@ namespace Deveel.Data {
 		}
 
 		public static IServiceCollection AddInMemoryFacadeRepository<TEntity, TFacade>(this IServiceCollection services)
-			where TEntity : class, TFacade, IDataEntity
-			where TFacade : class, IDataEntity
+			where TEntity : class, TFacade
+			where TFacade : class
 			=> services
 				.AddInMemoryFacadeRepository<InMemoryRepository<TEntity, TFacade>, TEntity, TFacade>();
 
@@ -49,7 +49,7 @@ namespace Deveel.Data {
 		#region AddInMemoryRepositoryProvider<TEntity>
 
 		public static IServiceCollection AddInMemoryRepositoryProvider<TProvider, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			where TProvider : InMemoryRepositoryProvider<TEntity> {
 			services.AddRepositoryProvider<TProvider, TEntity>(lifetime);
 
@@ -60,7 +60,7 @@ namespace Deveel.Data {
 		}
 
 		public static IServiceCollection AddInMemoryRepositoryProvider<TEntity>(this IServiceCollection services)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			=> services.AddInMemoryRepositoryProvider<InMemoryRepositoryProvider<TEntity>, TEntity>();
 
 		#endregion
