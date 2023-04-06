@@ -117,8 +117,7 @@ namespace Deveel.Data {
             [Key]
             public Guid Id { get; set; }
 
-
-            string? IDataEntity.Id => Id.ToString();
+			string IPerson.Id => Id.ToString();
 
             public string FirstName { get; set; }
 
@@ -149,14 +148,16 @@ namespace Deveel.Data {
             public string FullName { get; set; }
         }
 
-        protected interface IPerson : IDataEntity {
-            public string FirstName { get; }
+        protected interface IPerson {
+			string Id { get; }
 
-            public string LastName { get; }
+            string FirstName { get; }
 
-            public DateTime? BirthDate { get; }
+            string LastName { get; }
 
-            public string? Description { get; }
+            DateTime? BirthDate { get; }
+
+            string? Description { get; }
 
             IEnumerable<IRelationship> Relationships { get; }
         }

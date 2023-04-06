@@ -5,7 +5,7 @@ namespace Deveel.Data {
     /// A repository that can handle write operations within
     /// transactional contexts
     /// </summary>
-    public interface ITransactionalRepository<TEntity> : IRepository<TEntity>, ITransactionalRepository where TEntity : class, IDataEntity {
+    public interface ITransactionalRepository<TEntity> : IRepository<TEntity>, ITransactionalRepository where TEntity : class {
         /// <summary>
         /// Creates a list of entities in the repository in one single operation, within
         /// the scope of a given transaction

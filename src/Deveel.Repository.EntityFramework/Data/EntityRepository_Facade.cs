@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Deveel.Data {
     public class EntityRepository<TEntity, TFacade> : EntityRepository<TEntity>, IRepository<TFacade> 
-        where TFacade : class, IDataEntity 
+        where TFacade : class 
         where TEntity : class, TFacade {
         public EntityRepository(DbContext context, ILogger<EntityRepository<TEntity, TFacade>>? logger = null) : base(context, logger) {
         }

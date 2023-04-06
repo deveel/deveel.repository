@@ -5,12 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Deveel.Data {
     public static class ServiceCollectionExtensions {
         public static IServiceCollection AddEntityRepository<TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => services.AddEntityRepository<EntityRepository<TEntity>, TEntity>(lifetime);
 
         public static IServiceCollection AddEntityRepository<TRepository, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TRepository : EntityRepository<TEntity>
-            where TEntity : class, IDataEntity {
+            where TEntity : class {
             services.AddRepository<TRepository, TEntity>(lifetime);
             services.Add(new ServiceDescriptor(typeof(EntityRepository<TEntity>), typeof(TRepository), lifetime));
 
@@ -21,8 +21,8 @@ namespace Deveel.Data {
         }
 
         public static IServiceCollection AddEntityFacadeRepository<TRepository, TEntity, TFacade>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TEntity : class, TFacade, IDataEntity
-            where TFacade : class, IDataEntity
+            where TEntity : class, TFacade
+            where TFacade : class
             where TRepository : EntityRepository<TEntity, TFacade> {
             services
                 .AddRepository<TRepository, TEntity>(lifetime)
@@ -38,8 +38,8 @@ namespace Deveel.Data {
         }
 
         public static IServiceCollection AddEntityFacadeRepository<TEntity, TFacade>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TEntity : class, TFacade, IDataEntity
-            where TFacade : class, IDataEntity
+            where TEntity : class, TFacade
+            where TFacade : class
             => services.AddEntityFacadeRepository<EntityRepository<TEntity, TFacade>, TEntity, TFacade>(lifetime);
     }
 }

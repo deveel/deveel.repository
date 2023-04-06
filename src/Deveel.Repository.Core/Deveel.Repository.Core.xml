@@ -4,24 +4,6 @@
         <name>Deveel.Repository.Core</name>
     </assembly>
     <members>
-        <member name="T:Deveel.Data.DataEntityExtensions">
-            <summary>
-            Extension methods to the <see cref="T:Deveel.Data.IDataEntity"/>
-            </summary>
-        </member>
-        <member name="M:Deveel.Data.DataEntityExtensions.TrySetMemberValue``1(``0,System.String,System.Object)">
-            <summary>
-            Tries to set the given value to a member of the entity instance
-            </summary>
-            <typeparam name="TEntity">The type of entity</typeparam>
-            <param name="entity">The instance of the entity to set a member value</param>
-            <param name="memberName">The name of the member of the entity to be set</param>
-            <param name="value">The value to be set</param>
-            <returns>
-            Returns <c>true</c> that indicates if the member value was set,
-            otherwise returns <c>false</c>.
-            </returns>
-        </member>
         <member name="T:Deveel.Data.DefaultRepositoryController">
             <summary>
             A default implementation of the <see cref="T:Deveel.Data.IRepositoryController"/>
@@ -162,28 +144,6 @@
             <returns>
             Returns a <see cref="T:System.Threading.Tasks.Task"/> that executes the repository destroy command.
             </returns>
-        </member>
-        <member name="T:Deveel.Data.IDataEntity">
-            <summary>
-            A marker contract that declares explicitly an entity
-            that can be managed by a repository
-            </summary>
-            <remarks>
-            The meaning of forcing classes to implement this interface
-            in order to be managed by <see cref="T:Deveel.Data.IRepository"/> instances
-            is to avoid non-intentional usage, that might lead to several
-            issues at runtime (such as serialization, behaviors, etc.)
-            </remarks>
-        </member>
-        <member name="P:Deveel.Data.IDataEntity.Id">
-            <summary>
-            Gets a unique identifier of the entity
-            </summary>
-            <remarks>
-            The returned value of the property might be
-            <c>null</c> or an empty string, when the entity
-            is not established.
-            </remarks>
         </member>
         <member name="T:Deveel.Data.IDataTransaction">
             <summary>
@@ -411,7 +371,7 @@
             Gets the type of the entity managed by the repository
             </summary>
         </member>
-        <member name="M:Deveel.Data.IRepository.CreateAsync(Deveel.Data.IDataEntity,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IRepository.CreateAsync(System.Object,System.Threading.CancellationToken)">
             <summary>
             Creates a new entity in the repository
             </summary>
@@ -427,7 +387,7 @@
             Thrown if the provided <paramref name="entity"/> is <c>null</c>
             </exception>
         </member>
-        <member name="M:Deveel.Data.IRepository.CreateAsync(System.Collections.Generic.IEnumerable{Deveel.Data.IDataEntity},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IRepository.CreateAsync(System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)">
             <summary>
             Creates a list of entities in the repository in one single operation
             </summary>
@@ -439,7 +399,7 @@
             will succeed only if all the items in the list will be created. Anyway, the
             underlying storage system might have persisted some of the items before a
             failure: to prevent the scenario of a partial creation of the set, the
-            callers should consider the <see cref="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{Deveel.Data.IDataEntity},System.Threading.CancellationToken)"/>, 
+            callers should consider the <see cref="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)"/>, 
             where transactions are available.
             </para>
             </remarks>
@@ -453,7 +413,7 @@
             Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
             </exception>
         </member>
-        <member name="M:Deveel.Data.IRepository.DeleteAsync(Deveel.Data.IDataEntity,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IRepository.DeleteAsync(System.Object,System.Threading.CancellationToken)">
             <summary>
             Deletes an entity from the repository
             </summary>
@@ -470,7 +430,7 @@
             Thrown if it an error occurred while deleting the entity
             </exception>
         </member>
-        <member name="M:Deveel.Data.IRepository.UpdateAsync(Deveel.Data.IDataEntity,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IRepository.UpdateAsync(System.Object,System.Threading.CancellationToken)">
             <summary>
             Updates an existing entity in the repository
             </summary>
@@ -656,7 +616,7 @@
             </summary>
             <typeparam name="TStatus">The status code of the states of an entity</typeparam>
         </member>
-        <member name="M:Deveel.Data.IStateRepository`1.GetStatesAsync(Deveel.Data.IDataEntity,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IStateRepository`1.GetStatesAsync(System.Object,System.Threading.CancellationToken)">
             <summary>
             Gets the listing of the states of the entity
             </summary>
@@ -667,7 +627,7 @@
             currently held by the <paramref name="entity"/> given.
             </returns>
         </member>
-        <member name="M:Deveel.Data.IStateRepository`1.AddStateAsync(Deveel.Data.IDataEntity,Deveel.Data.EntityStateInfo{`0},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IStateRepository`1.AddStateAsync(System.Object,Deveel.Data.EntityStateInfo{`0},System.Threading.CancellationToken)">
             <summary>
             Adds a new state to the entity
             </summary>
@@ -676,7 +636,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:Deveel.Data.IStateRepository`1.RemoveStateAsync(Deveel.Data.IDataEntity,Deveel.Data.EntityStateInfo{`0},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IStateRepository`1.RemoveStateAsync(System.Object,Deveel.Data.EntityStateInfo{`0},System.Threading.CancellationToken)">
             <summary>
             Removes a state from the entity
             </summary>
@@ -728,7 +688,7 @@
             transactional contexts
             </summary>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,Deveel.Data.IDataEntity,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Object,System.Threading.CancellationToken)">
             <summary>
             Creates a new entity in the repository
             </summary>
@@ -751,7 +711,7 @@
             </exception>
             <seealso cref="T:Deveel.Data.IDataTransactionFactory"/>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{Deveel.Data.IDataEntity},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)">
             <summary>
             Creates a list of entities in the repository in one single operation, within
             the scope of a given transaction
@@ -769,7 +729,7 @@
             Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
             </exception>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository.DeleteAsync(Deveel.Data.IDataTransaction,Deveel.Data.IDataEntity,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.ITransactionalRepository.DeleteAsync(Deveel.Data.IDataTransaction,System.Object,System.Threading.CancellationToken)">
             <summary>
             Deletes an entity from the repository
             </summary>
@@ -793,7 +753,7 @@
             </exception>
             <seealso cref="T:Deveel.Data.IDataTransactionFactory"/>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository.UpdateAsync(Deveel.Data.IDataTransaction,Deveel.Data.IDataEntity,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.ITransactionalRepository.UpdateAsync(Deveel.Data.IDataTransaction,System.Object,System.Threading.CancellationToken)">
             <summary>
             Updates an existing entity in the repository
             </summary>
@@ -969,7 +929,7 @@
             </summary>
             <seealso cref="!:IRepository.GetPageAsync(RepositoryPageRequest, CancellationToken)"/>
         </member>
-        <member name="M:Deveel.Data.RepositoryPage.#ctor(Deveel.Data.RepositoryPageRequest,System.Int32,System.Collections.Generic.IEnumerable{Deveel.Data.IDataEntity})">
+        <member name="M:Deveel.Data.RepositoryPage.#ctor(Deveel.Data.RepositoryPageRequest,System.Int32,System.Collections.Generic.IEnumerable{System.Object})">
             <summary>
             Constructs the result referencing the original request, a count
             of the items in the repository and optionally a list of items in the page

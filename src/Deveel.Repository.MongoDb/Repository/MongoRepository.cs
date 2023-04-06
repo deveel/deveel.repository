@@ -162,7 +162,7 @@ namespace Deveel.Data {
         }
 
         /// <inheritdoc />
-        Task<string> IRepository.CreateAsync(IDataTransaction session, object entity, CancellationToken cancellationToken) {
+        Task<string> ITransactionalRepository.CreateAsync(IDataTransaction session, object entity, CancellationToken cancellationToken) {
             return CreateAsync(AssertMongoDbSession(session), AssertIsEntity(entity), cancellationToken);
         }
 
@@ -172,7 +172,7 @@ namespace Deveel.Data {
         Task<IList<string>> IRepository.CreateAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
             => base.CreateAsync(entities.Select(AssertIsEntity), cancellationToken);
 
-        Task<IList<string>> IRepository.CreateAsync(IDataTransaction transaction, IEnumerable<object> entities, CancellationToken cancellationToken)
+        Task<IList<string>> ITransactionalRepository.CreateAsync(IDataTransaction transaction, IEnumerable<object> entities, CancellationToken cancellationToken)
             => base.CreateAsync(AssertMongoDbSession(transaction), entities.Select(AssertIsEntity), cancellationToken);
 
         Task<IList<string>> IRepository<TDocument>.CreateAsync(IEnumerable<TDocument> entities, CancellationToken cancellationToken)
@@ -189,15 +189,11 @@ namespace Deveel.Data {
             return await FindByIdAsync(id, cancellationToken);
         }
 
-        Task<object?> IRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken) {
-			throw new NotSupportedException("Mongo repositories not support finding entities within sessions (yet)");
-        }
-
-        async Task<IDataEntity?> ITransactionalRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
-            => await FindByIdAsync((MongoTransaction) transaction, id, cancellationToken);
+        async Task<object?> ITransactionalRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
+            => await FindByIdAsync(id, cancellationToken);
 
         async Task<TDocument?> ITransactionalRepository<TDocument>.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
-            => await FindByIdAsync((MongoTransaction)transaction, id, cancellationToken);
+            => await FindByIdAsync(id, cancellationToken);
 
 
         /// <inheritdoc />
@@ -219,7 +215,7 @@ namespace Deveel.Data {
         }
 
         /// <inheritdoc />
-        Task<bool> IRepository.DeleteAsync(IDataTransaction session, object entity, CancellationToken cancellationToken) {
+        Task<bool> ITransactionalRepository.DeleteAsync(IDataTransaction session, object entity, CancellationToken cancellationToken) {
             return DeleteAsync(AssertMongoDbSession(session), AssertIsEntity(entity), cancellationToken);
         }
 
@@ -232,7 +228,7 @@ namespace Deveel.Data {
         }
 
         /// <inheritdoc />
-        Task<bool> IRepository.UpdateAsync(IDataTransaction session, object entity, CancellationToken cancellationToken) {
+        Task<bool> ITransactionalRepository.UpdateAsync(IDataTransaction session, object entity, CancellationToken cancellationToken) {
             return UpdateAsync(AssertMongoDbSession(session), AssertIsEntity(entity), cancellationToken);
         }
 

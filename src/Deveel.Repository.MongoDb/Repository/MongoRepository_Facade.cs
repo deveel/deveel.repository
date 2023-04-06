@@ -7,7 +7,11 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Deveel.Data {
-    public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>, IFilterableRepository<TFacade>
+    public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, 
+		IRepository<TFacade>, 
+		IPageableRepository<TFacade>, 
+		IFilterableRepository<TFacade>,
+		ITransactionalRepository<TFacade>
         where TEntity : class, TFacade
         where TFacade : class {
         public MongoRepository(IOptions<MongoDbStoreOptions<TEntity>> options, IDocumentFieldMapper<TEntity>? fieldMapper = null, ILogger<MongoStore<TEntity>>? logger = null)
@@ -92,6 +96,6 @@ namespace Deveel.Data {
             => UpdateAsync(AssertMongoDbSession(session), Assert(entity), cancellationToken);
 
         async Task<TFacade?> ITransactionalRepository<TFacade>.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
-            => await FindByIdAsync((MongoTransaction)transaction, id, cancellationToken);
+            => await FindByIdAsync(id, cancellationToken);
     }
 }

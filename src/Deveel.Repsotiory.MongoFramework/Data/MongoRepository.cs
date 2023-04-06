@@ -252,15 +252,6 @@ namespace Deveel.Data {
 		Task<string> IRepository.CreateAsync(object entity, CancellationToken cancellationToken)
 			=> CreateAsync(Assert(entity), cancellationToken);
 
-		Task<string> IRepository.CreateAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transactions not supported");
-
-		Task<IList<string>> IRepository<TEntity>.CreateAsync(IDataTransaction transaction, IEnumerable<TEntity> entities, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transactions not supported");
-
-		Task<IList<string>> IRepository.CreateAsync(IDataTransaction transaction, IEnumerable<object> entities, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transactions not supported");
-
 		Task<IList<string>> IRepository.CreateAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
 			=> CreateAsync(entities.Select(x => Assert(x)), cancellationToken);
 
@@ -312,14 +303,8 @@ namespace Deveel.Data {
 			}
 		}
 
-		Task<bool> IRepository<TEntity>.UpdateAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transactions not supported");
-
 		Task<bool> IRepository.UpdateAsync(object entity, CancellationToken cancellationToken) 
 			=> UpdateAsync(Assert(entity), cancellationToken);
-
-		Task<bool> IRepository.UpdateAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transactions not supported");
 
 		#endregion
 
@@ -351,9 +336,6 @@ namespace Deveel.Data {
 		Task<bool> IRepository.DeleteAsync(object entity, CancellationToken cancellationToken)
 			=> DeleteAsync(Assert(entity), cancellationToken);
 
-		Task<bool> IRepository.DeleteAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken) 
-			=> throw new NotSupportedException("Transactions not supported");
-
 		#endregion
 
 		#region FindById
@@ -370,9 +352,6 @@ namespace Deveel.Data {
 
 		async Task<object?> IRepository.FindByIdAsync(string id, CancellationToken cancellationToken)
 			=> await FindByIdAsync(id, cancellationToken);
-
-		Task<object?> IRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
-			=> throw new NotSupportedException("Transactions not supported");
 
 		#endregion
 
