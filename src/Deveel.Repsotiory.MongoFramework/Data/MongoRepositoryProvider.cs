@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using MongoFramework;
 
 namespace Deveel.Data {
-	public class MongoRepositoryProvider<TEntity> : IRepositoryProvider<TEntity>, IDisposable where TEntity : class, IDataEntity {
+	public class MongoRepositoryProvider<TEntity> : IRepositoryProvider<TEntity>, IDisposable where TEntity : class {
 		private readonly MongoPerTenantConnectionOptions options;
 		private readonly IEnumerable<IMultiTenantStore<MongoTenantInfo>> stores;
 		private readonly ILoggerFactory loggerFactory;

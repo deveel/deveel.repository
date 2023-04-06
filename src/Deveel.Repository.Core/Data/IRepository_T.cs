@@ -6,7 +6,7 @@ namespace Deveel.Data {
     /// for read and write operations
     /// </summary>
     /// <typeparam name="TEntity">The type of entity handled by the repository</typeparam>
-    public interface IRepository<TEntity> : IRepository where TEntity : class, IDataEntity {
+    public interface IRepository<TEntity> : IRepository where TEntity : class {
         /// <summary>
         /// Creates a new entity in the repository
         /// </summary>

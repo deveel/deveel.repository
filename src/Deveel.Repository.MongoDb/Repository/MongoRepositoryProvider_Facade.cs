@@ -3,8 +3,8 @@ using Microsoft.Extensions.Options;
 
 namespace Deveel.Data {
     public class MongoRepositoryProvider<TEntity, TFacade> : MongoRepositoryProvider<TEntity>, IRepositoryProvider<TFacade>
-        where TEntity : class, TFacade, IDataEntity
-        where TFacade : class, IDataEntity
+        where TEntity : class, TFacade
+        where TFacade : class
     {
         public MongoRepositoryProvider(
             IOptions<MongoDbOptions> baseOptions,

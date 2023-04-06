@@ -8,7 +8,7 @@ namespace Deveel.Data {
 		public static bool IsEmpty(this IQueryFilter filter) => Equals(filter, Empty);
 
 		public static ExpressionQueryFilter<TEntity> Where<TEntity>(Expression<Func<TEntity, bool>> exp)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			=> new ExpressionQueryFilter<TEntity>(exp);
 
 		readonly struct EmptyQueryFilter : IQueryFilter {

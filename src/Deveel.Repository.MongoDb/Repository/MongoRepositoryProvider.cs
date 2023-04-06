@@ -2,7 +2,8 @@
 using Microsoft.Extensions.Options;
 
 namespace Deveel.Data {
-    public class MongoRepositoryProvider<TEntity> : MongoStoreProvider<TEntity>, IRepositoryProvider<TEntity> where TEntity : class, IDataEntity
+    public class MongoRepositoryProvider<TEntity> : MongoStoreProvider<TEntity>, 
+		IRepositoryProvider<TEntity> where TEntity : class
     {
         public MongoRepositoryProvider(
             IOptions<MongoDbOptions> baseOptions,

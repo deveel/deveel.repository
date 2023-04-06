@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Deveel.Data {
-    public interface IFilterableRepository<TEntity> : IRepository<TEntity>, IFilterableRepository where TEntity : class, IDataEntity {
+    public interface IFilterableRepository<TEntity> : IRepository<TEntity>, IFilterableRepository where TEntity : class {
         /// <summary>
         /// Finds the first item in the repository that matches the given filtering condition
         /// </summary>

@@ -36,7 +36,7 @@ namespace Deveel.Data {
         }
 
 
-        class MongoTestEntity : IDataEntity {
+        class MongoTestEntity {
             public string Id { get; set; }
         }
 

@@ -1,7 +1,7 @@
 ﻿using Deveel.Data;
 
 namespace Deveel.Repository.TestApi.Data {
-    public class PersonEntity : IDataEntity {
+    public class PersonEntity {
         public string? Id { get; set; }
 
         public string? FirstName { get; set; }

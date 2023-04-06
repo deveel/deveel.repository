@@ -84,7 +84,7 @@ namespace Deveel.Data {
 
 
 		[MultiTenantDocument]
-		class MongoPerson : IDataEntity {
+		class MongoPerson {
 			[BsonId]
 			public string Id { get; set; }
 

@@ -10,7 +10,7 @@ namespace Deveel.Data {
             return filterable;
         }
 
-        private static IFilterableRepository<TEntity> RequireFilterable<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId) where TEntity : class, IDataEntity {
+        private static IFilterableRepository<TEntity> RequireFilterable<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId) where TEntity : class {
             var filterable = provider.GetRepository(tenantId) as IFilterableRepository<TEntity>;
             if (filterable == null)
                 throw new NotSupportedException("The repository is not filterable");
@@ -40,62 +40,62 @@ namespace Deveel.Data {
         #region  Create
 
         public static Task<string> CreateAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, TEntity entity, CancellationToken cancellationToken = default)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => provider.GetRepository(tenantId).CreateAsync(entity, cancellationToken);
 
         public static Task<string> CreateAsync<TEntity>(this IRepositoryProvider<TEntity> provider, IDataTransaction transaction, string tenantId, TEntity entity, CancellationToken cancellationToken = default)
-            where TEntity : class, IDataEntity
-            => provider.RequireTransactional<TEntity>(tenantId).CreateAsync(transaction, entity, cancellationToken);
+            where TEntity : class
+            => provider.GetRepository(tenantId).CreateAsync(transaction, entity, cancellationToken);
 
         public static string Create<TEntity>(this IRepositoryProvider<TEntity> provider, IDataTransaction transaction, string tenantId, TEntity entity)
-            where TEntity : class, IDataEntity
-            => provider.RequireTransactional<TEntity>(tenantId).Create(transaction, entity);
+            where TEntity : class
+            => provider.GetRepository(tenantId).Create(transaction, entity);
 
-        public static Task<string> CreateAsync(this IRepositoryProvider provider, string tenantId, IDataEntity entity, CancellationToken cancellationToken = default)
+        public static Task<string> CreateAsync(this IRepositoryProvider provider, string tenantId, object entity, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).CreateAsync(entity, cancellationToken);
 
-        public static string Create(this IRepositoryProvider provider, string tenantId, IDataEntity entity)
+        public static string Create(this IRepositoryProvider provider, string tenantId, object entity)
             => provider.GetRepository(tenantId).Create(entity);
 
-        public static Task<string> CreateAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, IDataEntity entity, CancellationToken cancellationToken = default)
-            => provider.RequireTransactional(tenantId).CreateAsync(transaction, entity, cancellationToken);
+        public static Task<string> CreateAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity, CancellationToken cancellationToken = default)
+            => provider.GetRepository(tenantId).CreateAsync(transaction, entity, cancellationToken);
 
-        public static string Create(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, IDataEntity entity)
-            => provider.RequireTransactional(tenantId).Create(transaction, entity);
+        public static string Create(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity)
+            => provider.GetRepository(tenantId).Create(transaction, entity);
 
         #endregion
 
         #region  Delete
 
         public static Task<bool> DeleteAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, TEntity entity, CancellationToken cancellationToken = default)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => provider.GetRepository(tenantId).DeleteAsync(entity, cancellationToken);
 
         public static Task<bool> DeleteAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default)
-            where TEntity : class, IDataEntity
-            => provider.RequireTransactional<TEntity>(tenantId).DeleteAsync(transaction, entity, cancellationToken);
+            where TEntity : class
+            => provider.GetRepository(tenantId).DeleteAsync(transaction, entity, cancellationToken);
 
 
         public static bool Delete<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, TEntity entity)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => provider.GetRepository(tenantId).Delete(entity);
 
         public static bool Delete<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IDataTransaction transaction, TEntity entity)
-            where TEntity : class, IDataEntity
-            => provider.RequireTransactional<TEntity>(tenantId).Delete(transaction, entity);
+            where TEntity : class
+            => provider.GetRepository(tenantId).Delete(transaction, entity);
 
 
-        public static Task<bool> DeleteAsync(this IRepositoryProvider provider, string tenantId, IDataEntity entity, CancellationToken cancellationToken = default)
+        public static Task<bool> DeleteAsync(this IRepositoryProvider provider, string tenantId, object entity, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).DeleteAsync(entity, cancellationToken);
 
-        public static Task<bool> DeleteAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, IDataEntity entity, CancellationToken cancellationToken = default)
-            => provider.RequireTransactional(tenantId).DeleteAsync(transaction, entity, cancellationToken);
+        public static Task<bool> DeleteAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity, CancellationToken cancellationToken = default)
+            => provider.GetRepository(tenantId).DeleteAsync(transaction, entity, cancellationToken);
 
-        public static bool Delete(this IRepositoryProvider provider, string tenantId, IDataEntity entity)
+        public static bool Delete(this IRepositoryProvider provider, string tenantId, object entity)
             => provider.GetRepository(tenantId).Delete(entity);
 
-        public static bool Delete(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, IDataEntity entity)
-            => provider.RequireTransactional(tenantId).Delete(transaction, entity);
+        public static bool Delete(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity)
+            => provider.GetRepository(tenantId).Delete(transaction, entity);
 
         public static Task<bool> DeleteByIdAsync(this IRepositoryProvider provider, string tenantId, string id, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).DeleteByIdAsync(id, cancellationToken);
@@ -116,21 +116,21 @@ namespace Deveel.Data {
         #region Find
 
         public static Task<TEntity?> FindAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => provider.RequireFilterable(tenantId).FindAsync(filter, cancellationToken);
 
         public static Task<TEntity?> FindAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => provider.GetRepository(tenantId).FindAsync(filter, cancellationToken);
 
         public static Task<TEntity?> FindAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, CancellationToken cancellationToken = default)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => provider.GetRepository(tenantId).FindAsync(cancellationToken);
 
-        public static Task<IDataEntity?> FindAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
+        public static Task<object?> FindAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
             => provider.RequireFilterable(tenantId).FindAsync(filter, cancellationToken);
 
-        public static Task<IDataEntity?> FindAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
+        public static Task<object?> FindAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).FindAsync(cancellationToken);
 
 		#endregion
@@ -138,10 +138,10 @@ namespace Deveel.Data {
 		#region FindById
 
 		public static Task<TEntity?> FindByIdAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, string id, CancellationToken cancellationToken = default)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			=> provider.GetRepository(tenantId).FindByIdAsync(id, cancellationToken);
 
-		public static Task<IDataEntity?> FindByIdAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
+		public static Task<object?> FindByIdAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
 			=> provider.GetRepository(tenantId).FindAsync(cancellationToken);
 
 		#endregion
@@ -149,21 +149,21 @@ namespace Deveel.Data {
 		#region FindAll
 
 		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => provider.RequireFilterable(tenantId).FindAllAsync(filter, cancellationToken);
 
         public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => provider.GetRepository(tenantId).FindAllAsync(filter, cancellationToken);
 
         public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, CancellationToken cancellationToken = default)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => provider.GetRepository(tenantId).FindAllAsync(cancellationToken);
 
-        public static Task<IList<IDataEntity>> FindAllAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
+        public static Task<IList<object>> FindAllAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
             => provider.RequireFilterable(tenantId).FindAllAsync(filter, cancellationToken);
 
-        public static Task<IList<IDataEntity>> FindAllAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
+        public static Task<IList<object>> FindAllAsync(this IRepositoryProvider provider, string tenantId, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).FindAllAsync(cancellationToken);
 
 		#endregion
@@ -171,11 +171,11 @@ namespace Deveel.Data {
 		#region Count
 
 		public static Task<long> CountAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			=> provider.RequireFilterable(tenantId).CountAsync(filter, cancellationToken);
 
 		public static Task<long> CountAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			=> provider.RequireFilterable(tenantId).CountAsync(filter, cancellationToken);
 
 		public static Task<long> CountAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
@@ -187,7 +187,7 @@ namespace Deveel.Data {
 		#region CountAll
 
 		public static Task<long> CountAllAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			=> provider.RequireFilterable(tenantId).CountAllAsync(cancellationToken);
 
 
@@ -199,11 +199,11 @@ namespace Deveel.Data {
 		#region Exists
 
 		public static Task<bool> ExistsAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			=> provider.RequireFilterable(tenantId).ExistsAsync(filter, cancellationToken);
 
 		public static Task<bool> ExistsAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
-			where TEntity : class, IDataEntity
+			where TEntity : class
 			=> provider.GetRepository(tenantId).ExistsAsync(filter, cancellationToken);
 
 		public static Task<bool> ExistsAsync(this IRepositoryProvider provider, string tenantId, IQueryFilter filter, CancellationToken cancellationToken = default)

@@ -22,7 +22,7 @@ namespace Deveel.Data {
             => new ResultSort(new StringFieldRef(fieldName), ascending);
 
         public static ResultSort Create<TEntity>(Expression<Func<TEntity, object>> fieldSelector, bool ascending = false)
-            where TEntity : class, IDataEntity
+            where TEntity : class
             => new ResultSort(new ExpressionFieldRef<TEntity>(fieldSelector), ascending);
     }
 }

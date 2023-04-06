@@ -1,9 +1,12 @@
 ﻿using System;
 
 namespace Deveel.Data {
-	public class InMemoryRepository<TEntity, TFacade> : InMemoryRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>, IFilterableRepository<TFacade>
-		where TEntity : class, IDataEntity, TFacade
-		where TFacade : class, IDataEntity {
+	public class InMemoryRepository<TEntity, TFacade> : InMemoryRepository<TEntity>, 
+		IRepository<TFacade>, 
+		IPageableRepository<TFacade>, 
+		IFilterableRepository<TFacade>
+		where TEntity : class, TFacade
+		where TFacade : class {
 		public InMemoryRepository() {
 		}
 
