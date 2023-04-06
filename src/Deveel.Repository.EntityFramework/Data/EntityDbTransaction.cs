@@ -49,21 +49,28 @@ namespace Deveel.Data {
         }
 
         private void Dispose(bool disposing) {
-            if (!disposedValue) {
-                if (disposing) {
-                    if (contextTransaction != null)
-                        contextTransaction.Dispose();
-                }
-
-                contextTransaction = null;
-                disposedValue = true;
-            }
+			DisposeAsync(disposing).GetAwaiter().GetResult();
         }
 
-        public void Dispose() {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+		private async ValueTask DisposeAsync(bool disposing) {
+			if (!disposedValue) {
+				if (disposing) {
+					if (contextTransaction != null)
+						await contextTransaction.DisposeAsync();
+				}
+
+				contextTransaction = null;
+				disposedValue = true;
+			}
+		}
+
+		public async ValueTask DisposeAsync() {
+			await DisposeAsync(true);
+			GC.SuppressFinalize(this);
+		}
+
+		public void Dispose() {
+			DisposeAsync(true).GetAwaiter().GetResult();
         }
     }
 }

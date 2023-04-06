@@ -4,6 +4,90 @@
         <name>Deveel.Repository.Core</name>
     </assembly>
     <members>
+        <member name="T:Deveel.Data.DataEntityExtensions">
+            <summary>
+            Extension methods to the <see cref="T:Deveel.Data.IDataEntity"/>
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.DataEntityExtensions.TrySetMemberValue``1(``0,System.String,System.Object)">
+            <summary>
+            Tries to set the given value to a member of the entity instance
+            </summary>
+            <typeparam name="TEntity">The type of entity</typeparam>
+            <param name="entity">The instance of the entity to set a member value</param>
+            <param name="memberName">The name of the member of the entity to be set</param>
+            <param name="value">The value to be set</param>
+            <returns>
+            Returns <c>true</c> that indicates if the member value was set,
+            otherwise returns <c>false</c>.
+            </returns>
+        </member>
+        <member name="T:Deveel.Data.DefaultRepositoryController">
+            <summary>
+            A default implementation of the <see cref="T:Deveel.Data.IRepositoryController"/>
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.DefaultRepositoryController.CreateAllRepositoriesAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.DefaultRepositoryController.CreateTenantRepositoriesAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.DefaultRepositoryController.DropAllRepositoriesAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.DefaultRepositoryController.DropTenantRepositoriesAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.DefaultRepositoryController.CreateRepositoryAsync``1(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.DefaultRepositoryController.CreateTenantRepositoryAsync``1(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.DefaultRepositoryController.DropRepositoryAsync``1(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.DefaultRepositoryController.DropTenantRepositoryAsync``1(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Deveel.Data.EntityStateInfo`1">
+            <summary>
+            A structure that describes the status of an entity
+            </summary>
+            <typeparam name="TStatus">The status type of the state</typeparam>
+        </member>
+        <member name="M:Deveel.Data.EntityStateInfo`1.#ctor(`0,System.String,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Constructs a new entity state structure
+            </summary>
+            <param name="status">The status of the entity</param>
+            <param name="actorId">The actor (user or system) that set 
+            the status to the entity</param>
+            <param name="timeStamp">The exact time-stamp of the state</param>
+            <param name="data">An optional set of metadata that describes the state</param>
+        </member>
+        <member name="P:Deveel.Data.EntityStateInfo`1.ActorId">
+            <summary>
+            Gets the identifier of the actor (user or system)
+            that operated the state
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityStateInfo`1.Data">
+            <summary>
+            Gets an optional set of metadata describing the state
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityStateInfo`1.TimeStamp">
+            <summary>
+            Gets the exact time-stamp of the state
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityStateInfo`1.Status">
+            <summary>
+            Gets the status of the entity
+            </summary>
+        </member>
         <member name="T:Deveel.Data.ExpressionFieldRef`1">
             <summary>
             References a expr of an entity through a selection expression
@@ -33,10 +117,51 @@
             <typeparam name="TEntity">The type of entity to construct
             the expr</typeparam>
         </member>
+        <member name="M:Deveel.Data.ExpressionQueryFilter`1.#ctor(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            Constructs a new query filter with a given expressions
+            </summary>
+            <param name="expr">The LINQ expression that is used to filter</param>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
         <member name="P:Deveel.Data.ExpressionQueryFilter`1.Expression">
             <summary>
-            Gets the filter expression
+            Gets the LINQ expression as filter
             </summary>
+        </member>
+        <member name="T:Deveel.Data.IControllableRepository">
+            <summary>
+            A contract that defines a <see cref="T:Deveel.Data.IRepository"/> as controllable
+            through its lifecycle.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.IControllableRepository.ExistsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Checks if the repository actually exists in the underlying infrastructure
+            </summary>
+            <param name="cancellationToken"></param>
+            <returns>
+            Returns as <see cref="T:System.Threading.Tasks.Task"/> that has a value of <c>true</c> if the repository 
+            actually exists in the underlying infrastructure, otherwise has <c>false</c> value.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IControllableRepository.CreateAsync(System.Threading.CancellationToken)">
+            <summary>
+            Creates the repository in the underlying infrastructure.
+            </summary>
+            <param name="cancellationToken"></param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that executes the repository creation command.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IControllableRepository.DropAsync(System.Threading.CancellationToken)">
+            <summary>
+            Deletes the repository from the underlying infrastructure.
+            </summary>
+            <param name="cancellationToken"></param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that executes the repository destroy command.
+            </returns>
         </member>
         <member name="T:Deveel.Data.IDataEntity">
             <summary>
@@ -66,6 +191,38 @@
             storage of the repository, to isolate operations
             of access to the data
             </summary>
+        </member>
+        <member name="M:Deveel.Data.IDataTransaction.BeginAsync(System.Threading.CancellationToken)">
+            <summary>
+            Starts the transaction asynchronously
+            </summary>
+            <param name="cancellationToken"></param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that encapsulates the transaction
+            start command.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IDataTransaction.CommitAsync(System.Threading.CancellationToken)">
+            <summary>
+            Commits all changes within the scope of this transaction
+            to the underlying repository
+            </summary>
+            <param name="cancellationToken"></param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that encapsulates the transaction
+            commitment command.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IDataTransaction.RollbackAsync(System.Threading.CancellationToken)">
+            <summary>
+            Rollbacks any changes within the scope of this transaction,
+            preventing being reflected to the underlying repository
+            </summary>
+            <param name="cancellationToken"></param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that encapsulates the transaction
+            rollback command.
+            </returns>
         </member>
         <member name="T:Deveel.Data.IDataTransactionFactory">
             <summary>

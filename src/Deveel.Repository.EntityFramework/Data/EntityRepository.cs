@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Globalization;
+using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,7 @@ namespace Deveel.Data {
         IRepository<TEntity>,
         IFilterableRepository<TEntity>,
         IQueryableRepository<TEntity>,
+		IPageableRepository<TEntity>,
         IDisposable
         where TEntity : class, IDataEntity {
         private bool disposedValue;
@@ -39,14 +41,48 @@ namespace Deveel.Data {
                 throw new ObjectDisposedException(GetType().Name); 
         }
 
+		protected virtual object? GetEntityId(string id) {
+			var model = Context.Model.FindEntityType(typeof(TEntity));
+			if (model == null)
+				throw new RepositoryException($"The entity type '{typeof(TEntity)}' was not mapped");
+
+			var key = model.FindPrimaryKey();
+			if (key == null)
+				throw new RepositoryException($"The model of the entity '{typeof(TEntity)}' has no primary key configured");
+
+			var keyType = key.GetKeyType();
+
+			if (keyType == typeof(string))
+				return id;
+			if (keyType == typeof(Guid)) {
+				if (!Guid.TryParse(id, out var guid))
+					throw new ArgumentException($"The string '{id}' is not valid GUID");
+
+				return guid;
+			}
+
+			return Convert.ChangeType(id, keyType, CultureInfo.InvariantCulture);
+		}
+
+		protected virtual object? GetEntityId(TEntity entity) {
+			if (entity == null || String.IsNullOrWhiteSpace(entity.Id))
+				return null;
+
+			return GetEntityId(entity.Id);
+		}
+
         public async Task<string> CreateAsync(TEntity entity, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
             try {
                 Entities.Add(entity);
-                await Context.SaveChangesAsync(cancellationToken);
+                var count = await Context.SaveChangesAsync(cancellationToken);
 
-                return entity.Id;
+				if (count > 1) {
+					// TODO: warn about this...
+				}
+
+				return entity.Id;
             } catch (Exception ex) {
                 Logger.LogUnknownError(ex, typeof(TEntity));
                 throw;
@@ -56,13 +92,18 @@ namespace Deveel.Data {
         public async Task<IList<string>> CreateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
-            foreach (var entity in entities) {
-                Entities.Add(entity);
-            }
+			try {
+				foreach (var entity in entities) {
+					Entities.Add(entity);
+				}
 
-            await Context.SaveChangesAsync(cancellationToken);
+				var count = await Context.SaveChangesAsync(cancellationToken);
 
-            return entities.Select(x => x.Id).ToList();
+				return entities.Select(x => x.Id).ToList();
+			} catch (Exception ex) {
+				Logger.LogUnknownError(ex, typeof(TEntity));
+				throw new RepositoryException("Could not create the entities", ex);
+			}
         }
 
         Task<string> IRepository.CreateAsync(IDataEntity entity, CancellationToken cancellationToken)
@@ -79,33 +120,62 @@ namespace Deveel.Data {
             => CreateAsync(entities.Select(x =>  AssertEntity(x)), cancellationToken);
 
         public async Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default) {
-            ThrowIfDisposed();
+			ThrowIfDisposed();
 
-            var remove = Entities.Remove(entity);
-            if (remove.State != EntityState.Deleted)
-                return false;
+			if (entity is null) throw new ArgumentNullException(nameof(entity));
 
-            await Context.SaveChangesAsync(cancellationToken);
+			if (String.IsNullOrWhiteSpace(entity.Id))
+				throw new ArgumentException(nameof(entity), "The entity has none identifier set");
 
-            return true;
+			try {
+				var existing = await FindByIdAsync(entity.Id, cancellationToken);
+				if (existing == null)
+					return false;
+
+				var entry = Context.Entry(entity);
+				if (entry == null)
+					return false;
+
+				entry.State = EntityState.Deleted;
+
+				var count = await Context.SaveChangesAsync(cancellationToken);
+
+				// It cannot be just one change, when the entity has related entities
+				return count > 0;
+			} catch(DbUpdateConcurrencyException ex) {
+				throw new RepositoryException("Concurrency problem while deleting the entity", ex);
+			} catch (Exception ex) {
+
+				throw new RepositoryException("Unable to delete the entity", ex);
+			}
         }
 
         Task<bool> IRepository.DeleteAsync(IDataEntity entity, CancellationToken cancellationToken)
             => DeleteAsync(AssertEntity(entity), cancellationToken);
 
         public async Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default)
-            => await Entities.FindAsync(id, cancellationToken);
+            => await Entities.FindAsync(new object?[] { GetEntityId(id) }, cancellationToken);
 
         public async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
-            var update = Entities.Update(entity);
+			if (entity == null)
+				throw new ArgumentNullException(nameof(entity));
+
+			if (entity.Id == null)
+				throw new ArgumentException(nameof(entity), "The entity identifier was not set");
+
+			var existing = await FindByIdAsync(entity.Id, cancellationToken);
+			if (existing == null)
+				return false;
+
+			var update = Entities.Update(entity);
             if (update.State != EntityState.Modified)
                 return false;
 
-            await Context.SaveChangesAsync(cancellationToken);
+            var count = await Context.SaveChangesAsync(cancellationToken);
 
-            return true;
+            return count > 0;
         }
 
 
@@ -181,5 +251,35 @@ namespace Deveel.Data {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
-    }
+
+		public async Task<RepositoryPage<TEntity>> GetPageAsync(RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default) {
+			ThrowIfDisposed();
+
+			try {
+				var querySet = Entities.AsNoTracking().AsQueryable();
+				if (request.Filter != null)
+					querySet = querySet.Where(request.Filter);
+
+				var total = await querySet.CountAsync(cancellationToken);
+
+				var items = await querySet.Skip(request.Offset).Take(request.Size).ToListAsync(cancellationToken);
+
+				return new RepositoryPage<TEntity>(request, total, items);
+			} catch (Exception ex) {
+
+				throw new RepositoryException("Could not get the page of entities", ex);
+			}
+		}
+
+		async Task<RepositoryPage> IPageableRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
+			var typedRequest = new RepositoryPageRequest<TEntity>(request.Page, request.Size);
+
+			if (request.Filter != null)
+				typedRequest.Filter = request.Filter.AsLambda<TEntity>();
+			if (request.SortBy != null)
+				typedRequest.SortBy = request.SortBy;
+
+			return await GetPageAsync(typedRequest);
+		}
+	}
 }

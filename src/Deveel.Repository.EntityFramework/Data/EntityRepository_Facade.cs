@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Deveel.Data {
-    public class EntityRepository<TEntity, TFacade> : EntityRepository<TEntity>, IRepository<TFacade>, IFilterableRepository<TFacade> 
+    public class EntityRepository<TEntity, TFacade> : EntityRepository<TEntity>, IRepository<TFacade> 
         where TFacade : class, IDataEntity 
         where TEntity : class, TFacade {
         public EntityRepository(DbContext context, ILogger<EntityRepository<TEntity, TFacade>>? logger = null) : base(context, logger) {
@@ -13,32 +14,26 @@ namespace Deveel.Data {
         protected EntityRepository(DbContext context, ILogger? logger = null) : base(context, logger) {
         }
 
-        Task<string> IRepository<TFacade>.CreateAsync(TFacade entity, CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+		private static TEntity Assert(TFacade facade) {
+			if (!(facade is TEntity entity))
+				throw new ArgumentException($"The object is not an instance of type '{typeof(TEntity)}'");
 
-        Task<IList<string>> IRepository<TFacade>.CreateAsync(IEnumerable<TFacade> entities, CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+			return entity;
+		}
 
-        Task<bool> IRepository<TFacade>.DeleteAsync(TFacade entity, CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+        Task<string> IRepository<TFacade>.CreateAsync(TFacade entity, CancellationToken cancellationToken)
+			=> CreateAsync(Assert(entity), cancellationToken);
 
-        Task<IList<TFacade>> IFilterableRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+		Task<IList<string>> IRepository<TFacade>.CreateAsync(IEnumerable<TFacade> entities, CancellationToken cancellationToken)
+			=> CreateAsync(entities.Select(x => Assert(x)), cancellationToken);
 
-        Task<TFacade?> IFilterableRepository<TFacade>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+        Task<bool> IRepository<TFacade>.DeleteAsync(TFacade entity, CancellationToken cancellationToken)
+			=> DeleteAsync(Assert(entity), cancellationToken);
 
-        Task<TFacade?> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+		async Task<TFacade?> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken)
+			=> await FindByIdAsync(id, cancellationToken);
 
-        Task<bool> IRepository<TFacade>.UpdateAsync(TFacade entity, CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+        Task<bool> IRepository<TFacade>.UpdateAsync(TFacade entity, CancellationToken cancellationToken)
+			=> UpdateAsync(Assert(entity), cancellationToken);
     }
 }
