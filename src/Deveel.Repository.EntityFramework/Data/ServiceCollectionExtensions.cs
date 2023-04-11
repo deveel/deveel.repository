@@ -1,5 +1,6 @@
 ﻿using System;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Deveel.Data {
@@ -41,5 +42,50 @@ namespace Deveel.Data {
             where TEntity : class, TFacade
             where TFacade : class
             => services.AddEntityFacadeRepository<EntityRepository<TEntity, TFacade>, TEntity, TFacade>(lifetime);
+
+
+        public static IServiceCollection AddEntityRepositoryProvider<TContext, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TContext : DbContext
+            where TEntity : class
+            => services.AddEntityRepository<EntityRepository<TEntity>, TEntity>(lifetime);
+
+
+        public static IServiceCollection AddEntityRepositoryProvider<TProvider, TContext, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TContext : DbContext
+            where TProvider : EntityRepositoryProvider<TEntity, TContext>
+            where TEntity : class {
+            services.AddRepositoryProvider<TProvider, TEntity>(lifetime);
+            services.Add(new ServiceDescriptor(typeof(EntityRepositoryProvider<TEntity, TContext>), typeof(TProvider), lifetime));
+
+            if (typeof(TProvider) != typeof(EntityRepositoryProvider<TEntity, TContext>))
+                services.Add(new ServiceDescriptor(typeof(TProvider), typeof(TProvider), lifetime));
+
+            return services;
+        }
+
+        public static IServiceCollection AddEntityFacadeRepositoryProvider<TContext, TEntity, TFacade>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TContext : DbContext
+            where TEntity : class, TFacade
+            where TFacade : class
+            => services.AddEntityFacadeRepositoryProvider<EntityRepositoryProvider<TEntity, TFacade, TContext>, TContext, TEntity, TFacade>(lifetime);
+
+
+        public static IServiceCollection AddEntityFacadeRepositoryProvider<TProvider, TContext, TEntity, TFacade>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+              where TContext : DbContext
+              where TProvider : EntityRepositoryProvider<TEntity, TFacade, TContext>
+              where TEntity : class, TFacade
+              where TFacade : class {
+            services.AddRepositoryProvider<TProvider, TEntity>(lifetime);
+            services.AddRepositoryProvider<TProvider, TFacade>(lifetime);
+
+            services.Add(new ServiceDescriptor(typeof(EntityRepositoryProvider<TEntity, TFacade, TContext>), typeof(TProvider), lifetime));
+            services.Add(new ServiceDescriptor(typeof(EntityRepositoryProvider<TEntity, TContext>), typeof(TProvider), lifetime));
+
+            if (typeof(TProvider) != typeof(EntityRepositoryProvider<TEntity, TFacade, TContext>))
+                services.Add(new ServiceDescriptor(typeof(TProvider), typeof(TProvider), lifetime));
+
+            return services;
+        }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 using Bogus;
 
@@ -6,14 +7,13 @@ using Deveel.Logging;
 
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Sqlite.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-	[Collection(nameof(SqlConnectionCollection))]
+    [Collection(nameof(SqlConnectionCollection))]
     public abstract class EntityFrameworkRepositoryTestBase : IAsyncLifetime {
         private readonly IServiceProvider serviceProvider;
         private readonly SqliteConnection sqliteConnection;
@@ -113,6 +113,7 @@ namespace Deveel.Data {
             }
         }
 
+        [Table("people")]
         protected class PersonEntity : IPerson {
             [Key]
             public Guid Id { get; set; }
@@ -135,6 +136,7 @@ namespace Deveel.Data {
             IEnumerable<IRelationship> IPerson.Relationships => Relationships;
         }
 
+        [Table("person_relationships")]
         protected class PersonRelationship : IRelationship {
             [Key]
             public Guid Id { get; set; }
