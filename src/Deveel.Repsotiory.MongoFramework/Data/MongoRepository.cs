@@ -1,8 +1,6 @@
 ﻿using System.Globalization;
 using System.Linq.Expressions;
 
-using Deveel.Data.Mapping;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -31,15 +29,13 @@ namespace Deveel.Data {
 		protected internal MongoRepository(MongoDbContext context, ILogger? logger = null) {
 			Context = context;
 			Logger = logger ?? NullLogger.Instance;
+
+			if (context is IMongoDbTenantContext tenantContext)
+				TenantId = tenantContext.TenantId;
 		}
 
 		public MongoRepository(MongoDbContext context, ILogger<MongoRepository<TEntity>>? logger = null)
 			: this(context, (ILogger?)logger) {
-		}
-
-		public MongoRepository(MongoPerTenantContext context, ILogger<MongoRepository<TEntity>>? logger = null)
-			: this(context, (ILogger?)logger) {
-			TenantId = context.TenantId;
 		}
 
 
@@ -116,7 +112,7 @@ namespace Deveel.Data {
 			if (idProperty == null)
 				throw new RepositoryException($"The type '{typeof(TEntity)}' has no ID property specified");
 
-			var valueType = idProperty.PropertyType;
+			var valueType = idProperty.PropertyInfo.PropertyType;
 
 			if (valueType == typeof(string))
 				return id;
@@ -155,33 +151,6 @@ namespace Deveel.Data {
 			var body = Expression.PropertyOrField(param, fieldName);
 
 			return Expression.Lambda<Func<TEntity, object>>(body, param);
-		}
-
-		protected virtual object? GetCurrentVersion(TEntity entity) {
-			var definition = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
-
-			var property = definition.GetVersionPropery();
-
-			if (property == null)
-				return null;
-
-			var value = property.GetValue(entity);
-
-			return VersionUtil.Format(value, property.Format);
-		}
-
-		protected virtual void SetNewVersion(TEntity entity) {
-			var definition = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
-
-			var property = definition.GetVersionPropery();
-
-			if (property == null)
-				return;
-
-			var current = property.GetValue(entity);
-			var newVersion = VersionUtil.GetNewVersion(property.Format, property.PropertyType, current);
-
-			property.SetValue(entity, newVersion);
 		}
 
 		#region Controllable
@@ -239,8 +208,6 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				SetNewVersion(entity);
-
 				DbSet.Add(entity);
 				await DbSet.Context.SaveChangesAsync(cancellationToken);
 
@@ -272,10 +239,6 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				foreach (var entity in entities) {
-					SetNewVersion(entity);
-				}
-
 				DbSet.AddRange(entities);
 				await DbSet.Context.SaveChangesAsync(cancellationToken);
 
@@ -295,15 +258,9 @@ namespace Deveel.Data {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 				var filter = entityDef.CreateIdFilterFromEntity(entity);
-				var versionFilter = entityDef.CreateVersionFilterFromEntity(entity);
-
-				if (versionFilter != null)
-					filter = Builders<TEntity>.Filter.And(filter, versionFilter);
 
 				if (!await ExistsAsync(filter, cancellationToken))
 					return false;
-
-				SetNewVersion(entity);
 
 				DbSet.Update(entity);
 				await Context.SaveChangesAsync(cancellationToken);

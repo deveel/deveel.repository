@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="Deveel.Mongo.Store" Version="1.0.2-4362539237" />
+    <PackageReference Include="Finbuckle.MultiTenant" Version="6.10.0" />
   </ItemGroup>
 
 	<ItemGroup>

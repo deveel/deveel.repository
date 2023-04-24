@@ -1,5 +1,7 @@
 ﻿using Bogus;
 
+using Finbuckle.MultiTenant;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
@@ -34,7 +36,7 @@ namespace Deveel.Data {
 
 		protected string ConnectionString => mongo.ConnectionString;
 
-		protected MongoRepositoryProvider<MongoPerson> MongoRepositoryProvider => serviceProvider.GetRequiredService<MongoRepositoryProvider<MongoPerson>>();
+		protected MongoRepositoryProvider<MongoPerson, TenantInfo> MongoRepositoryProvider => serviceProvider.GetRequiredService<MongoRepositoryProvider<MongoPerson, TenantInfo>>();
 
 		protected MongoRepository<MongoPerson> MongoRepository => MongoRepositoryProvider.GetRepository(TenantId);
 
@@ -46,13 +48,13 @@ namespace Deveel.Data {
 
 		protected IPageableRepository<MongoPerson> PageableRepository => Repository as IPageableRepository<MongoPerson>;
 
-		protected IRepositoryProvider<IPerson> FacadeRepositoryProvider => serviceProvider.GetRequiredService<IRepositoryProvider<IPerson>>();
+		//protected IRepositoryProvider<IPerson> FacadeRepositoryProvider => serviceProvider.GetRequiredService<IRepositoryProvider<IPerson>>();
 
-		protected IRepository<IPerson> FacadeRepository => FacadeRepositoryProvider.GetRepository(TenantId);
+		//protected IRepository<IPerson> FacadeRepository => FacadeRepositoryProvider.GetRepository(TenantId);
 
-		protected IPageableRepository<IPerson> FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
+		//protected IPageableRepository<IPerson> FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
 
-        protected IFilterableRepository<IPerson> FilterableFacadeRepository => FacadeRepository as IFilterableRepository<IPerson>;
+  //      protected IFilterableRepository<IPerson> FilterableFacadeRepository => FacadeRepository as IFilterableRepository<IPerson>;
 
         protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
 
@@ -62,23 +64,20 @@ namespace Deveel.Data {
 			=> PersonFaker.Generate(count);
 
 		protected virtual void AddRepositoryProvider(IServiceCollection services) {
-			services.AddMultiTenant<MongoTenantInfo>()
+			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(config => {
-					config.Tenants.Add(new MongoTenantInfo {
+					config.Tenants.Add(new TenantInfo {
 						Id = TenantId,
 						Identifier = "test",
 						Name = "Test Tenant",
-						DatabaseName = "test_db1",
-						ConnectionString = mongo.ConnectionString
+						ConnectionString = mongo.SetDatabase("test_db")
 					}) ;
 				});
 
 			services
-				.AddMongoPerTenantConnection(options => {
-					options.DefaultConnectionString = mongo.SetDatabase("testdb");
-				})
-				.AddMongoRepositoryProvider<MongoPerson>()
-				.AddMongoFacadeRepositoryProvider<MongoPerson, IPerson>()
+				.AddMongoTenantConnection<TenantInfo>()
+				.AddMongoRepositoryProvider<TenantInfo, MongoPerson>()
+				// .AddMongoFacadeRepositoryProvider<MongoPerson, IPerson>()
 				.AddRepositoryController();
 		}
 

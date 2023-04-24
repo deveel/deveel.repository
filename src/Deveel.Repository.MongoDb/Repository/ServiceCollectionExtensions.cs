@@ -2,7 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Deveel.Data {
-    public static class ServiceCollectionExtensions {
+	[Obsolete("This class is obsolete: please use the Deveel.Repository.MongoFramework instead")]
+	public static class ServiceCollectionExtensions {
 
         #region AddMongoRepository<T>
 

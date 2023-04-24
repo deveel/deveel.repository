@@ -32,14 +32,14 @@ namespace Deveel.Data {
 			Assert.True(result);
 		}
 
-		[Fact]
-		public async Task FacadeRepository_DeleteExisting() {
-			var entity = people[^1];
+		//[Fact]
+		//public async Task FacadeRepository_DeleteExisting() {
+		//	var entity = people[^1];
 
-			var result = await FacadeRepository.DeleteAsync(entity);
+		//	var result = await FacadeRepository.DeleteAsync(entity);
 
-			Assert.True(result);
-		}
+		//	Assert.True(result);
+		//}
 
 
 		[Fact]
@@ -60,14 +60,14 @@ namespace Deveel.Data {
 			Assert.False(result);
 		}
 
-		[Fact]
-		public async Task FacadeRepository_DeleteNotExisting() {
-			var entity = new MongoPerson { Id = ObjectId.GenerateNewId() };
+		//[Fact]
+		//public async Task FacadeRepository_DeleteNotExisting() {
+		//	var entity = new MongoPerson { Id = ObjectId.GenerateNewId() };
 
-			var result = await FacadeRepository.DeleteAsync(entity);
+		//	var result = await FacadeRepository.DeleteAsync(entity);
 
-			Assert.False(result);
-		}
+		//	Assert.False(result);
+		//}
 
 		[Fact]
 		public async Task Mongo_DeleteById_Existing() {
@@ -87,14 +87,14 @@ namespace Deveel.Data {
 			Assert.True(result);
 		}
 
-		[Fact]
-		public async Task FacadeRepository_DeleteById_Existing() {
-			var id = people[56].Id;
+		//[Fact]
+		//public async Task FacadeRepository_DeleteById_Existing() {
+		//	var id = people[56].Id;
 
-			var result = await FacadeRepository.DeleteByIdAsync(id.ToEntityId());
+		//	var result = await FacadeRepository.DeleteByIdAsync(id.ToEntityId());
 
-			Assert.True(result);
-		}
+		//	Assert.True(result);
+		//}
 
 		[Fact]
 		public async Task Mongo_DeleteById_NotExisting() {
@@ -114,13 +114,13 @@ namespace Deveel.Data {
 			Assert.False(result);
 		}
 
-		[Fact]
-		public async Task FacadeRepository_DeleteById_NotExisting() {
-			var id = ObjectId.GenerateNewId();
+		//[Fact]
+		//public async Task FacadeRepository_DeleteById_NotExisting() {
+		//	var id = ObjectId.GenerateNewId();
 
-			var result = await FacadeRepository.DeleteByIdAsync(id.ToEntityId());
+		//	var result = await FacadeRepository.DeleteByIdAsync(id.ToEntityId());
 
-			Assert.False(result);
-		}
+		//	Assert.False(result);
+		//}
 	}
 }

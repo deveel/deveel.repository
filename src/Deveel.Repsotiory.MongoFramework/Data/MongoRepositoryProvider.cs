@@ -9,22 +9,22 @@ using Microsoft.Extensions.Options;
 using MongoFramework;
 
 namespace Deveel.Data {
-	public class MongoRepositoryProvider<TEntity> : IRepositoryProvider<TEntity>, IDisposable where TEntity : class {
-		private readonly MongoPerTenantConnectionOptions options;
-		private readonly IEnumerable<IMultiTenantStore<MongoTenantInfo>> stores;
+	public class MongoRepositoryProvider<TEntity, TTenantInfo> : IRepositoryProvider<TEntity>, IDisposable 
+		where TTenantInfo : class, ITenantInfo, new()
+		where TEntity : class {
+		private readonly IEnumerable<IMultiTenantStore<TTenantInfo>> stores;
 		private readonly ILoggerFactory loggerFactory;
 		private bool disposedValue;
 
 		private IDictionary<string, MongoRepository<TEntity>>? repositories;
 
-		public MongoRepositoryProvider(IOptions<MongoPerTenantConnectionOptions> options, 
-			IEnumerable<IMultiTenantStore<MongoTenantInfo>> stores, ILoggerFactory? loggerFactory = null) {
+		public MongoRepositoryProvider(
+			IEnumerable<IMultiTenantStore<TTenantInfo>> stores, ILoggerFactory? loggerFactory = null) {
 			this.stores = stores;
-			this.options = options.Value;
 			this.loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 		}
 
-		protected virtual MongoTenantInfo GetTenantInfo(string tenantId) {
+		protected virtual TTenantInfo GetTenantInfo(string tenantId) {
 			foreach(var store in stores) {
 				// TODO: making the IRepositoryProvider to be async
 				var tenantInfo = store.TryGetAsync(tenantId)
@@ -42,8 +42,9 @@ namespace Deveel.Data {
 			throw new RepositoryException($"Unable to get a context for tenant '{tenantId}'");
 		}
 
-		protected IMongoPerTenantConnection CreateConnection(MongoTenantInfo tenantInfo) {
-			return new MongoPerTenantConnection(tenantInfo, Options.Create(options));
+		protected MongoDbTenantConnection CreateConnection(TTenantInfo tenantInfo) {
+			var context = new MultiTenantContext<TTenantInfo> { TenantInfo = tenantInfo };
+			return new MongoDbTenantConnection(context);
 		}
 
 		protected virtual ILogger CreateLogger() {

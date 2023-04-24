@@ -2,7 +2,8 @@
 using Microsoft.Extensions.Options;
 
 namespace Deveel.Data {
-    public class MongoRepositoryProvider<TEntity, TFacade> : MongoRepositoryProvider<TEntity>, IRepositoryProvider<TFacade>
+	[Obsolete("This class is obsolete: please use the Deveel.Repository.MongoFramework instead")]
+	public class MongoRepositoryProvider<TEntity, TFacade> : MongoRepositoryProvider<TEntity>, IRepositoryProvider<TFacade>
         where TEntity : class, TFacade
         where TFacade : class
     {

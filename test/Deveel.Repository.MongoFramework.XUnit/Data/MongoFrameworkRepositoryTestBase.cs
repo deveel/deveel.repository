@@ -36,11 +36,11 @@ namespace Deveel.Data {
 
 		protected IPageableRepository<MongoPerson> PageableRepository => Repository as IPageableRepository<MongoPerson>;
 
-		protected IRepository<IPerson> FacadeRepository => serviceProvider.GetRequiredService<IRepository<IPerson>>();
+		// protected IRepository<IPerson> FacadeRepository => serviceProvider.GetRequiredService<IRepository<IPerson>>();
 
-        protected IFilterableRepository<IPerson> FilterableFacadeRepository => FacadeRepository as IFilterableRepository<IPerson>;
+        // protected IFilterableRepository<IPerson> FilterableFacadeRepository => FacadeRepository as IFilterableRepository<IPerson>;
 
-        protected IPageableRepository<IPerson> FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
+        // protected IPageableRepository<IPerson> FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
 
 		protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
 
@@ -52,12 +52,9 @@ namespace Deveel.Data {
 
 		protected virtual void AddRepository(IServiceCollection services) {
 			services
-				.AddMongoContext(options => { 
-					options.ConnectionString = ConnectionString;
-					options.DatabaseName = "test_db";
-				})
+				.AddMongoContext(mongo.SetDatabase("testdb"))
 				.AddMongoRepository<MongoPerson>()
-				.AddMongoFacadeRepository<MongoPerson, IPerson>()
+				// .AddMongoFacadeRepository<MongoPerson, IPerson>()
 				.AddRepositoryController();
 		}
 

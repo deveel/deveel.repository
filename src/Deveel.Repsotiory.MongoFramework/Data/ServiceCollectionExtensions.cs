@@ -1,7 +1,10 @@
 ﻿using System;
 
+using Finbuckle.MultiTenant;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using MongoFramework;
 
@@ -9,10 +12,13 @@ namespace Deveel.Data {
 	public static class ServiceCollectionExtensions {
 		#region AddMongoContext
 
-		public static IServiceCollection AddMongoContext<TContext>(this IServiceCollection services) where TContext : MongoDbContext {
-			services.AddSingleton<IMongoDbConnection, MongoDbConfiguredConnection>();
-			services.AddSingleton<MongoDbContext, TContext>();
-			services.AddSingleton<TContext>();
+		public static IServiceCollection AddMongoContext<TContext>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton) 
+			where TContext : MongoDbContext {
+			services.Add(new ServiceDescriptor(typeof(IMongoDbContext), typeof(TContext), lifetime));
+			services.Add(new ServiceDescriptor(typeof(MongoDbContext), typeof(TContext), lifetime));
+
+			if (typeof(TContext) != typeof(MongoDbContext))
+				services.Add(new ServiceDescriptor(typeof(TContext), typeof(TContext), lifetime));
 
 			return services;
 		}
@@ -20,45 +26,86 @@ namespace Deveel.Data {
 		public static IServiceCollection AddMongoContext(this IServiceCollection services)
 			=> services.AddMongoContext<MongoDbContext>();
 
-		public static IServiceCollection AddMongoContext<TContext>(this IServiceCollection services, string sectionName) 
-			where TContext : MongoDbContext {
-			services.AddOptions<MongoDbConnectionOptions>()
-				.Configure<IConfiguration>((options, config) => config.GetSection(sectionName)?.Bind(options));
+		public static IServiceCollection AddMongoContext<TContext>(this IServiceCollection services, string connectionString, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+			where TContext : MongoDbContext
+			=> services.AddMongoContext<TContext>(lifetime).AddMongoConnection(connectionString);
 
-			return services.AddMongoContext<TContext>();
-		}
-
-		public static IServiceCollection AddMongoContext(this IServiceCollection services, string sectionName)
-			=> services.AddMongoContext<MongoDbContext>(sectionName);
-
-		public static IServiceCollection AddMongoContext<TContext>(this IServiceCollection services, Action<MongoDbConnectionOptions> configure)
-			where TContext : MongoDbContext {
-			services.AddOptions<MongoDbConnectionOptions>()
-				.Configure(configure);
-
-			return services.AddMongoContext<TContext>();
-		}
-
-		public static IServiceCollection AddMongoContext(this IServiceCollection services, Action<MongoDbConnectionOptions> configure)
-			=> services.AddMongoContext<MongoDbContext>(configure);
-
+		public static IServiceCollection AddMongoContext(this IServiceCollection services, string connectionString)
+			=> services.AddMongoContext<MongoDbContext>(connectionString);
 
 		#endregion
 
 		#region AddMultiTenantMongoContext
 
-		public static IServiceCollection AddMongoTenantContext<TContext>(this IServiceCollection services)
-			where TContext : MongoPerTenantContext {
+		public static IServiceCollection AddMongoTenantContext<TContext>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+			where TContext : MongoDbTenantContext {
 
-			services.AddScoped<MongoPerTenantContext, TContext>();
-			services.AddScoped<MongoDbTenantContext, TContext>();
-			services.AddScoped<TContext>();
+			if (typeof(TContext) == typeof(MongoDbTenantContext)) {
+				var factory = (IServiceProvider provider) => {
+					var connection = provider.GetRequiredService<IMongoDbTenantConnection>();
+					return new MongoDbTenantContext(connection, connection.TenantInfo.Id);
+				};
+
+				services.Add(new ServiceDescriptor(typeof(IMongoDbContext), factory, lifetime));
+				services.Add(new ServiceDescriptor(typeof(IMongoDbTenantContext), factory, lifetime));
+				services.Add(new ServiceDescriptor(typeof(MongoDbContext), factory, lifetime));
+				services.Add(new ServiceDescriptor(typeof(TContext), factory, lifetime));
+			} else {
+				services.Add(new ServiceDescriptor(typeof(IMongoDbContext), typeof(TContext), lifetime));
+				services.Add(new ServiceDescriptor(typeof(IMongoDbTenantContext), typeof(TContext), lifetime));
+				services.Add(new ServiceDescriptor(typeof(MongoDbContext), typeof(TContext), lifetime));
+				services.Add(new ServiceDescriptor(typeof(TContext), typeof(TContext), lifetime));
+			}
 
 			return services;
 		}
 
 		public static IServiceCollection AddMongoTenantContext(this IServiceCollection services)
-			=> services.AddMongoTenantContext<MongoPerTenantContext>();
+			=> services.AddMongoTenantContext<MongoDbTenantContext>();
+
+		#endregion
+
+		#region AddMongoConnection
+
+		public static IServiceCollection AddMongoConnection<TConnection>(this IServiceCollection services)
+			where TConnection : MongoDbConnection {
+
+			services.AddSingleton<IMongoDbConnection, TConnection>();
+			services.AddSingleton<MongoDbConnection, TConnection>();
+
+			if (typeof(TConnection) != typeof(IMongoDbConnection))
+				services.AddSingleton<TConnection, TConnection>();
+
+			return services;
+		}
+
+		public static IServiceCollection AddMongoConnection(this IServiceCollection services, string connectionString) {
+			if (string.IsNullOrWhiteSpace(connectionString)) 
+				throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or whitespace.", nameof(connectionString));
+
+			var factory = (IServiceProvider provider) =>
+				MongoDbConnection.FromConnectionString(connectionString);
+
+			services.AddSingleton<IMongoDbConnection>(factory);
+			services.AddSingleton<MongoDbConnection>(factory);
+
+			return services;
+		}
+
+		public static IServiceCollection AddMongoTenantConnection<TTenantInfo>(this IServiceCollection services)
+			where TTenantInfo : class, ITenantInfo, new() {
+			services.AddSingleton<MongoDbTenantConnection, MongoDbTenantConnection<TTenantInfo>>();
+			services.AddSingleton<IMongoDbTenantConnection, MongoDbTenantConnection<TTenantInfo>>();
+
+			return services.AddMongoConnection<MongoDbTenantConnection<TTenantInfo>>();
+		}
+
+		public static IServiceCollection AddMongoTenantConnection(this IServiceCollection services) { 
+			services.AddSingleton<MongoDbTenantConnection>();
+			services.AddSingleton<IMongoDbTenantConnection, MongoDbTenantConnection>();
+
+			return services.AddMongoConnection<MongoDbTenantConnection>(); 
+		}
 
 		#endregion
 
@@ -78,65 +125,23 @@ namespace Deveel.Data {
 
 		#endregion
 
-		#region AddMongoFacadeRepository<TEntity,TFacade>
-
-		public static IServiceCollection AddMongoFacadeRepository<TRepository, TEntity, TFacade>(this IServiceCollection services)
-			where TEntity : class, TFacade
-			where TFacade : class
-			where TRepository : MongoRepository<TEntity, TFacade>
-			=> services
-				.AddRepository<TRepository, TEntity>(ServiceLifetime.Singleton)
-				.AddRepository<TRepository, TFacade>(ServiceLifetime.Singleton)
-				.AddSingleton<IRepository, TRepository>()
-				.AddSingleton<IRepository<TEntity>, TRepository>()
-				.AddSingleton<IRepository<TFacade>, TRepository>();
-
-		public static IServiceCollection AddMongoFacadeRepository<TEntity, TFacade>(this IServiceCollection services)
-			where TEntity : class, TFacade
-			where TFacade : class
-			=> services
-				.AddMongoFacadeRepository<MongoRepository<TEntity, TFacade>, TEntity, TFacade>();
-
-
-		#endregion
-
 		#region AddMongoRepositoryProvider<TEntity>
 
-		public static IServiceCollection AddMongoRepositoryProvider<TProvider, TEntity>(this IServiceCollection services)
+		public static IServiceCollection AddMongoRepositoryProvider<TTenantInfo, TProvider, TEntity>(this IServiceCollection services)
+			where TTenantInfo : class, ITenantInfo, new()
 			where TEntity : class
-			where TProvider : MongoRepositoryProvider<TEntity>
+			where TProvider : MongoRepositoryProvider<TEntity, TTenantInfo>
 			=> services
 				.AddRepositoryProvider<TProvider, TEntity>(ServiceLifetime.Singleton)
 				.AddSingleton<IRepositoryProvider, TProvider>()
 				.AddSingleton<IRepositoryProvider<TEntity>, TProvider>();
 
-		public static IServiceCollection AddMongoRepositoryProvider<TEntity>(this IServiceCollection services)
+		public static IServiceCollection AddMongoRepositoryProvider<TTenantInfo, TEntity>(this IServiceCollection services)
+			where TTenantInfo : class, ITenantInfo, new()
 			where TEntity : class
-			=> services.AddMongoRepositoryProvider<MongoRepositoryProvider<TEntity>, TEntity>();
+			=> services.AddMongoRepositoryProvider<TTenantInfo, MongoRepositoryProvider<TEntity, TTenantInfo>, TEntity>();
 
 
 		#endregion
-
-		#region AddMongoFacadeRepositoryProvider<TEntity, TFacade>
-
-		public static IServiceCollection AddMongoFacadeRepositoryProvider<TProvider, TEntity, TFacade>(this IServiceCollection services)
-			where TEntity : class, TFacade
-			where TFacade : class
-			where TProvider : MongoRepositoryProvider<TEntity, TFacade>
-			=> services
-				.AddRepositoryProvider<TProvider, TEntity>()
-				.AddRepositoryProvider<TProvider, TFacade>()
-				.AddSingleton<IRepositoryProvider, TProvider>()
-				.AddSingleton<IRepositoryProvider<TEntity>, TProvider>()
-				.AddSingleton<IRepositoryProvider<TFacade>, TProvider>();
-
-		public static IServiceCollection AddMongoFacadeRepositoryProvider<TEntity, TFacade>(this IServiceCollection services)
-			where TEntity : class, TFacade
-			where TFacade : class
-			=> services.AddMongoFacadeRepositoryProvider<MongoRepositoryProvider<TEntity, TFacade>, TEntity, TFacade>();
-
-		#endregion
-
-
 	}
 }

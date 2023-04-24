@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Deveel.Data {
+	[Obsolete("This class is obsolete: please use the Deveel.Repository.MongoFramework instead")]
     public class MongoRepository<TDocument> : MongoStore<TDocument>, 
         IRepository<TDocument>, 
         IQueryableRepository<TDocument>, 
