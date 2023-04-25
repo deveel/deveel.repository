@@ -18,6 +18,17 @@ namespace Deveel.Data {
             return filterable;
         }
 
+        #region GetRepository
+
+        public static IRepository GetRepository(this IRepositoryProvider provider, string tenantId)
+            => provider.GetRepositoryAsync(tenantId).GetAwaiter().GetResult();
+
+        public static IRepository<TEntity> GetRepository<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId)
+            where TEntity : class
+            =>  provider.GetRepositoryAsync(tenantId).GetAwaiter().GetResult();
+
+        #endregion
+
 
         #region  Create
 

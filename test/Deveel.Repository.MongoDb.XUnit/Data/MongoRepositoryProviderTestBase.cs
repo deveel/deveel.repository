@@ -8,6 +8,7 @@ using Bogus;
 
 namespace Deveel.Data {
 	[Collection("Mongo Single Database")]
+	[Obsolete]
 
 	public abstract class MongoRepositoryProviderTestBase : IAsyncLifetime {
 		private MongoDbTestFixture mongo;
@@ -41,17 +42,17 @@ namespace Deveel.Data {
 
 		protected IRepository<MongoPerson> Repository => RepositoryProvider.GetRepository(TenantId);
 
-		protected IPageableRepository<MongoPerson> PageableRepository => Repository as IPageableRepository<MongoPerson>;
+		protected IPageableRepository<MongoPerson>? PageableRepository => Repository as IPageableRepository<MongoPerson>;
 
-        protected IFilterableRepository<MongoPerson> FilterableRepository => Repository as IFilterableRepository<MongoPerson>;
+        protected IFilterableRepository<MongoPerson> FilterableRepository => (IFilterableRepository<MongoPerson>)Repository;
 
         protected IRepositoryProvider<IPerson> FacadeRepositoryProvider => serviceProvider.GetRequiredService<IRepositoryProvider<IPerson>>();
 
 		protected IRepository<IPerson> FacadeRepository => FacadeRepositoryProvider.GetRepository(TenantId);
 
-		protected IPageableRepository<IPerson> FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
+		protected IPageableRepository<IPerson> FacadePageableRepository => (IPageableRepository<IPerson>)FacadeRepository;
 
-        protected IFilterableRepository<IPerson> FilterableFacadeRepository => FacadeRepository as IFilterableRepository<IPerson>;
+        protected IFilterableRepository<IPerson> FilterableFacadeRepository => (IFilterableRepository<IPerson>)FacadeRepository;
 
         protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
 

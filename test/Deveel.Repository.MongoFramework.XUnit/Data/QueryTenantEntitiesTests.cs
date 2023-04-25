@@ -28,13 +28,13 @@ namespace Deveel.Data {
 			Assert.Equal(people.Count, result);
 		}
 
-		//[Fact]
-		//public async Task FacadeRepository_CountAll() {
-		//	var result = await FilterableFacadeRepository.CountAllAsync();
+		[Fact]
+		public async Task FacadeRepository_CountAll() {
+			var result = await FilterableFacadeRepository.CountAllAsync();
 
-		//	Assert.NotEqual(0, result);
-		//	Assert.Equal(people.Count, result);
-		//}
+			Assert.NotEqual(0, result);
+			Assert.Equal(people.Count, result);
+		}
 
 
 		[Fact]
@@ -78,15 +78,15 @@ namespace Deveel.Data {
 			Assert.Equal(id, result.Id);
 		}
 
-		//[Fact]
-		//public async Task FacadeRepository_FindById() {
-		//	var id = people[people.Count - 1].Id;
+		[Fact]
+		public async Task FacadeRepository_FindById() {
+			var id = people[people.Count - 1].Id;
 
-		//	var result = await FacadeRepository.FindByIdAsync(id.ToEntityId());
+			var result = await FacadeRepository.FindByIdAsync(id.ToEntityId());
 
-		//	Assert.NotNull(result);
-		//	Assert.Equal(id.ToEntityId(), result.Id);
-		//}
+			Assert.NotNull(result);
+			Assert.Equal(id.ToEntityId(), result.Id);
+		}
 
 
 
@@ -145,13 +145,13 @@ namespace Deveel.Data {
 			Assert.Equal(people[0].FirstName, result.FirstName);
 		}
 
-		//[Fact]
-		//public async Task FacadeRepository_FindFirst() {
-		//	var result = await FacadeRepository.FindAsync();
+		[Fact]
+		public async Task FacadeRepository_FindFirst() {
+			var result = await FacadeRepository.FindAsync();
 
-		//	Assert.NotNull(result);
-		//	Assert.Equal(people[0].FirstName, result.FirstName);
-		//}
+			Assert.NotNull(result);
+			Assert.Equal(people[0].FirstName, result.FirstName);
+		}
 
 		[Fact]
 		public async Task Mongo_FindAll() {
@@ -171,14 +171,14 @@ namespace Deveel.Data {
 			Assert.Equal(people.Count, result.Count);
 		}
 
-		//[Fact]
-		//public async Task FacadeRepository_FindAll() {
-		//	var result = await FacadeRepository.FindAllAsync();
+		[Fact]
+		public async Task FacadeRepository_FindAll() {
+			var result = await FacadeRepository.FindAllAsync();
 
-		//	Assert.NotNull(result);
-		//	Assert.NotEmpty(result);
-		//	Assert.Equal(people.Count, result.Count);
-		//}
+			Assert.NotNull(result);
+			Assert.NotEmpty(result);
+			Assert.Equal(people.Count, result.Count);
+		}
 
 
 
@@ -235,19 +235,19 @@ namespace Deveel.Data {
 			Assert.Equal(10, result.Items.Count());
 		}
 
-		//[Fact]
-		//public async Task FacadeRepository_GetPage() {
-		//	var request = new RepositoryPageRequest<MongoPerson>(1, 10);
+		[Fact]
+		public async Task FacadeRepository_GetPage() {
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
 
-		//	var result = await FacadePageableRepository.GetPageAsync(request);
+			var result = await FacadePageableRepository.GetPageAsync(request);
 
-		//	Assert.NotNull(result);
-		//	Assert.Equal(10, result.TotalPages);
-		//	Assert.Equal(100, result.TotalItems);
-		//	Assert.NotNull(result.Items);
-		//	Assert.NotEmpty(result.Items);
-		//	Assert.Equal(10, result.Items.Count());
-		//}
+			Assert.NotNull(result);
+			Assert.Equal(10, result.TotalPages);
+			Assert.Equal(100, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(10, result.Items.Count());
+		}
 
 		[Fact]
 		public async Task Mongo_GetFilteredPage() {

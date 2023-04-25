@@ -69,16 +69,16 @@ namespace Deveel.Data {
 			Assert.True(result);
 		}
 
-		//[Fact]
-		//public async Task FacadeRepository_UpdateExisting() {
-		//	var entity = people[^1];
+		[Fact]
+		public async Task FacadeRepository_UpdateExisting() {
+			var entity = people[^1];
 
-		//	entity.BirthDate = new DateTime(1980, 06, 04);
+			entity.BirthDate = new DateTime(1980, 06, 04);
 
-		//	var result = await FacadeRepository.UpdateAsync(entity);
+			var result = await FacadeRepository.UpdateAsync(entity);
 
-		//	Assert.True(result);
-		//}
+			Assert.True(result);
+		}
 
 		[Fact]
 		public async Task Mongo_UpdateNotExisting() {
@@ -104,16 +104,16 @@ namespace Deveel.Data {
 			Assert.False(result);
 		}
 
-		//[Fact]
-		//public async Task FacadeRepository_UpdateNotExisting() {
-		//	var person = GeneratePerson();
-		//	person.Id = ObjectId.GenerateNewId();
+		[Fact]
+		public async Task FacadeRepository_UpdateNotExisting() {
+			var person = GeneratePerson();
+			person.Id = ObjectId.GenerateNewId();
 
-		//	person.BirthDate = new DateTime(1980, 06, 04);
+			person.BirthDate = new DateTime(1980, 06, 04);
 
-		//	var result = await FacadeRepository.UpdateAsync(person);
+			var result = await FacadeRepository.UpdateAsync(person);
 
-		//	Assert.False(result);
-		//}
+			Assert.False(result);
+		}
 	}
 }

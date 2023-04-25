@@ -24,11 +24,10 @@ namespace Deveel.Data {
 			this.loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 		}
 
-		protected virtual TTenantInfo GetTenantInfo(string tenantId) {
+		protected virtual async Task<TTenantInfo> GetTenantInfoAsync(string tenantId) {
 			foreach(var store in stores) {
 				// TODO: making the IRepositoryProvider to be async
-				var tenantInfo = store.TryGetAsync(tenantId)
-					.ConfigureAwait(false).GetAwaiter().GetResult();
+				var tenantInfo = await store.TryGetAsync(tenantId);
 
 				if (tenantInfo == null)
 					tenantInfo = store.TryGetByIdentifierAsync(tenantId)
@@ -51,17 +50,17 @@ namespace Deveel.Data {
 			return loggerFactory.CreateLogger(typeof(TEntity));
 		}
 
-		IRepository<TEntity> IRepositoryProvider<TEntity>.GetRepository(string tenantId) => GetRepository(tenantId);
+		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId) => await GetRepositoryAsync(tenantId);
 
-		IRepository IRepositoryProvider.GetRepository(string tenantId) => GetRepository(tenantId);
+		async Task<IRepository> IRepositoryProvider.GetRepositoryAsync(string tenantId) => await GetRepositoryAsync(tenantId);
 
-		public MongoRepository<TEntity> GetRepository(string tenantId) {
+		public async Task<MongoRepository<TEntity>> GetRepositoryAsync(string tenantId) {
 			try {
 				if (repositories == null)
 					repositories = new Dictionary<string, MongoRepository<TEntity>>();
 
 				if (!repositories.TryGetValue(tenantId, out var repository)) {
-					var tenantInfo = GetTenantInfo(tenantId);
+					var tenantInfo = await GetTenantInfoAsync(tenantId);
 					var connection = CreateConnection(tenantInfo);
 
 					var logger = CreateLogger();

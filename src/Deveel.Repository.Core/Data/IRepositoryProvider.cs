@@ -26,6 +26,6 @@ namespace Deveel.Data
         /// Thrown if the given <paramref name="tenantId"/> is <c>null</c>
         /// or an empty string.
         /// </exception>
-        IRepository GetRepository(string tenantId);
+        Task<IRepository> GetRepositoryAsync(string tenantId);
     }
 }

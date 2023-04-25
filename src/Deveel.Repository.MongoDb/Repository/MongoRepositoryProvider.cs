@@ -20,12 +20,16 @@ namespace Deveel.Data {
         protected IDocumentFieldMapper<TEntity>? FieldMapper { get; }
 
         /// <inheritdoc />
-        IRepository<TEntity> IRepositoryProvider<TEntity>.GetRepository(string tenantId)
+        Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId)
         {
-            return (MongoRepository<TEntity>)GetStore(tenantId);
+            var store = (MongoRepository<TEntity>)GetStore(tenantId);
+            return Task.FromResult<IRepository<TEntity>>(store);
         }
 
-        IRepository IRepositoryProvider.GetRepository(string tenantId) => (MongoRepository<TEntity>)GetStore(tenantId);
+        Task<IRepository> IRepositoryProvider.GetRepositoryAsync(string tenantId) {
+            var store = (MongoRepository<TEntity>)GetStore(tenantId);
+            return Task.FromResult<IRepository>(store);
+        }
 
         public MongoRepository<TEntity> GetRepository(string tenantId)
             => (MongoRepository<TEntity>)GetStore(tenantId);

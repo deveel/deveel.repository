@@ -11,6 +11,6 @@ namespace Deveel.Data
     public interface IRepositoryProvider<TEntity> : IRepositoryProvider where TEntity : class
     {
         /// <inheritdoc/>
-        new IRepository<TEntity> GetRepository(string tenantId);
+        new Task<IRepository<TEntity>> GetRepositoryAsync(string tenantId);
     }
 }

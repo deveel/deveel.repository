@@ -52,6 +52,7 @@ namespace Deveel.Data {
 			var firstName = people[people.Count - 1].FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
+			Assert.NotNull(FilterableRepository);
 			var count = await FilterableRepository.CountAsync(p => p.FirstName == firstName);
 
 			Assert.Equal(peopleCount, count);
@@ -225,6 +226,7 @@ namespace Deveel.Data {
 		public async Task Repository_GetPage() {
 			var request = new RepositoryPageRequest<Person>(1, 10);
 
+			Assert.NotNull(PageableRepository);
 			var result = await PageableRepository.GetPageAsync(request);
 
 			Assert.NotNull(result);
@@ -239,6 +241,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_GetPage() {
 			var request = new RepositoryPageRequest<Person>(1, 10);
 
+			Assert.NotNull(FacadePageableRepository);
 			var result = await FacadePageableRepository.GetPageAsync(request);
 
 			Assert.NotNull(result);
@@ -282,6 +285,7 @@ namespace Deveel.Data {
 				Filter = x => x.FirstName == firstName
 			};
 
+			Assert.NotNull(PageableRepository);
 			var result = await PageableRepository.GetPageAsync(request);
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);

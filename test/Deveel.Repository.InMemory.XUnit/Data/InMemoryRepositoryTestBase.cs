@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Bogus;
+﻿using Bogus;
 
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Deveel.Data {
-	public class InMemoryRepositoryTestBase : IAsyncLifetime {
+    public class InMemoryRepositoryTestBase : IAsyncLifetime {
 		private readonly IServiceProvider serviceProvider;
 
 		public InMemoryRepositoryTestBase() {
@@ -48,8 +42,7 @@ namespace Deveel.Data {
 
 		protected virtual void AddRepository(IServiceCollection services) {
 			services
-				.AddInMemoryRepository<Person>()
-				.AddInMemoryFacadeRepository<Person, IPerson>()
+				.AddInMemoryRepository<Person>(builder => builder.WithFacade<IPerson>())
 				.AddRepositoryController();
 		}
 

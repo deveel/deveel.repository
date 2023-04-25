@@ -29,15 +29,15 @@ namespace Deveel.Data {
 			Assert.NotEmpty(id);
 		}
 
-		//[Fact]
-		//public async Task FacadeRepository_CreateNewPerson() {
-		//	var person = GeneratePerson();
+		[Fact]
+		public async Task FacadeRepository_CreateNewPerson() {
+			var person = GeneratePerson();
 
-		//	var id = await FacadeRepository.CreateAsync(person);
+			var id = await FacadeRepository.CreateAsync(person);
 
-		//	Assert.NotNull(id);
-		//	Assert.NotEmpty(id);
-		//}
+			Assert.NotNull(id);
+			Assert.NotEmpty(id);
+		}
 
 
 		[Fact]
@@ -59,15 +59,15 @@ namespace Deveel.Data {
 			Assert.NotEmpty(id);
 		}
 
-		//[Fact]
-		//public async Task FacadeRepositoryProvider_CreateNewPerson() {
-		//	var person = GeneratePerson();
+		[Fact]
+		public async Task FacadeRepositoryProvider_CreateNewPerson() {
+			var person = GeneratePerson();
 
-		//	var id = await FacadeRepositoryProvider.CreateAsync(TenantId, person);
+			var id = await FacadeRepositoryProvider.CreateAsync(TenantId, person);
 
-		//	Assert.NotNull(id);
-		//	Assert.NotEmpty(id);
-		//}
+			Assert.NotNull(id);
+			Assert.NotEmpty(id);
+		}
 
 
 
@@ -101,20 +101,20 @@ namespace Deveel.Data {
 			}
 		}
 
-		//[Fact]
-		//public async Task FacadeRepository_CreateNewPersons() {
-		//	var persons = GeneratePersons(100);
+		[Fact]
+		public async Task FacadeRepository_CreateNewPersons() {
+			var persons = GeneratePersons(100);
 
-		//	var results = await FacadeRepository.CreateAsync(persons);
+			var results = await FacadeRepository.CreateAsync(persons);
 
-		//	Assert.NotNull(results);
-		//	Assert.NotEmpty(results);
-		//	Assert.Equal(persons.Count, results.Count);
+			Assert.NotNull(results);
+			Assert.NotEmpty(results);
+			Assert.Equal(persons.Count, results.Count);
 
-		//	for (int i = 0; i < results.Count; i++) {
-		//		Assert.Equal(persons[i].Id, ObjectId.Parse(results[i]));
-		//	}
-		//}
+			for (int i = 0; i < results.Count; i++) {
+				Assert.Equal(persons[i].Id, ObjectId.Parse(results[i]));
+			}
+		}
 
 	}
 }

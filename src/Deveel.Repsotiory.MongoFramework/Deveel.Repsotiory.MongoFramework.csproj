@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<RootNamespace>Deveel</RootNamespace>
-		<VersionPrefix>1.0.5</VersionPrefix>
+		<VersionPrefix>1.1.0</VersionPrefix>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<Authors>Antonello Provenzano</Authors>
 		<Company>Deveel AS</Company>
@@ -18,8 +18,8 @@
 		<PackageLicenseFile>EULA.md</PackageLicenseFile>
 		<PackageIcon>deveel-logo.png</PackageIcon>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>./Deveel.Repository.MongoFramework.xml</DocumentationFile>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<DocumentationFile>./Deveel.Repository.MongoFramework.xml</DocumentationFile>
 	</PropertyGroup>
 
 	<ItemGroup>

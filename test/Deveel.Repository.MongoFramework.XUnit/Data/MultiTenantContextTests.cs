@@ -59,10 +59,7 @@ namespace Deveel.Data {
 				};
 			});
 
-			services
-				.AddMongoTenantConnection()
-				.AddMongoTenantContext()
-				.AddMongoRepository<MongoPerson>();
+			services.AddMongoTenantContext(builder => builder.AddRepository<MongoPerson>());
 		}
 
 		[Fact]
@@ -85,9 +82,9 @@ namespace Deveel.Data {
 				return null;
 
 			if (members[0] is PropertyInfo property)
-				return (TMember?) property.GetValue(obj);
+				return property.GetValue(obj) as TMember;
 			if (members[0] is FieldInfo field)
-				return (TMember?) field.GetValue(obj);
+				return field.GetValue(obj) as TMember;
 
 			return null;
 		}
