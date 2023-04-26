@@ -1,6 +1,10 @@
 ﻿using System;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// Provides a set of options that can be used to control
+	/// the behavior of a <see cref="IRepositoryController"/>.
+	/// </summary>
 	public class RepositoryControllerOptions {
 		/// <summary>
 		/// Instructs the controller to delete pre-existing repositories,
