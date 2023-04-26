@@ -37,16 +37,16 @@ namespace Deveel.Data {
 
 		protected override void GetRouteValues(IDictionary<string, object> routeValues) {
 			var pageParam = GetPageParameterName();
-			if (!string.IsNullOrWhiteSpace(pageParam))
+			if (!string.IsNullOrWhiteSpace(pageParam) && Page != null)
 				routeValues[pageParam] = Page;
 
 			var sizeParam = GetSizeParameterName();
-			if (!string.IsNullOrWhiteSpace(sizeParam))
+			if (!string.IsNullOrWhiteSpace(sizeParam) && Size != null)
 				routeValues[sizeParam] = Size;
 
 			var sortParam = GetSortParameterName();
 			if (!string.IsNullOrEmpty(sortParam) && SortBy != null)
-				routeValues[sortParam] = SortBy?.ToArray();
+				routeValues[sortParam] = SortBy.ToArray();
 
 			base.GetRouteValues(routeValues);
 		}

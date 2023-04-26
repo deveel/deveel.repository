@@ -1,5 +1,7 @@
 ﻿using System;
 
+using MongoDB.Driver;
+
 namespace Deveel.Data {
 	public class QueryEntitiesTests : MongoFrameworkRepositoryTestBase {
 		private readonly IList<MongoPerson> people;
@@ -61,7 +63,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_CountFiltered() {
 			var firstName = people[people.Count - 1].FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
-			
+
 			var count = await FilterableFacadeRepository.CountAsync(p => p.FirstName == firstName);
 
 			Assert.Equal(peopleCount, count);
@@ -212,7 +214,6 @@ namespace Deveel.Data {
 		}
 
 
-
 		[Fact]
 		public async Task Mongo_FindAllFiltered() {
 			var firstName = people[people.Count - 1].FirstName;
@@ -225,7 +226,19 @@ namespace Deveel.Data {
 			Assert.Equal(peopleCount, result.Count);
 		}
 
-		[Fact]
+        [Fact]
+        public async Task Mongo_FindAllMongoQueryFiltered() {
+            var firstName = people[people.Count - 1].FirstName;
+            var peopleCount = people.Count(x => x.FirstName == firstName);
+
+            var result = await MongoRepository.FindAllAsync(new MongoQueryFilter<MongoPerson>(Builders<MongoPerson>.Filter.Where(x => x.FirstName == firstName)));
+
+            Assert.NotNull(result);
+            Assert.NotEmpty(result);
+            Assert.Equal(peopleCount, result.Count);
+        }
+
+        [Fact]
 		public async Task Repository_FindAllFiltered() {
 			var firstName = people[people.Count - 1].FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);

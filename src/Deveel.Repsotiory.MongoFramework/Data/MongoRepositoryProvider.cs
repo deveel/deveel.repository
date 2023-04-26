@@ -9,26 +9,25 @@ using Microsoft.Extensions.Options;
 using MongoFramework;
 
 namespace Deveel.Data {
-	public class MongoRepositoryProvider<TEntity> : IRepositoryProvider<TEntity>, IDisposable where TEntity : class {
-		private readonly MongoPerTenantConnectionOptions options;
-		private readonly IEnumerable<IMultiTenantStore<MongoTenantInfo>> stores;
+	public class MongoRepositoryProvider<TEntity, TTenantInfo> : IRepositoryProvider<TEntity>, IDisposable 
+		where TTenantInfo : class, ITenantInfo, new()
+		where TEntity : class {
+		private readonly IEnumerable<IMultiTenantStore<TTenantInfo>> stores;
 		private readonly ILoggerFactory loggerFactory;
 		private bool disposedValue;
 
 		private IDictionary<string, MongoRepository<TEntity>>? repositories;
 
-		public MongoRepositoryProvider(IOptions<MongoPerTenantConnectionOptions> options, 
-			IEnumerable<IMultiTenantStore<MongoTenantInfo>> stores, ILoggerFactory? loggerFactory = null) {
+		public MongoRepositoryProvider(
+			IEnumerable<IMultiTenantStore<TTenantInfo>> stores, ILoggerFactory? loggerFactory = null) {
 			this.stores = stores;
-			this.options = options.Value;
 			this.loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 		}
 
-		protected virtual MongoTenantInfo GetTenantInfo(string tenantId) {
+		protected virtual async Task<TTenantInfo> GetTenantInfoAsync(string tenantId) {
 			foreach(var store in stores) {
 				// TODO: making the IRepositoryProvider to be async
-				var tenantInfo = store.TryGetAsync(tenantId)
-					.ConfigureAwait(false).GetAwaiter().GetResult();
+				var tenantInfo = await store.TryGetAsync(tenantId);
 
 				if (tenantInfo == null)
 					tenantInfo = store.TryGetByIdentifierAsync(tenantId)
@@ -42,25 +41,26 @@ namespace Deveel.Data {
 			throw new RepositoryException($"Unable to get a context for tenant '{tenantId}'");
 		}
 
-		protected IMongoPerTenantConnection CreateConnection(MongoTenantInfo tenantInfo) {
-			return new MongoPerTenantConnection(tenantInfo, Options.Create(options));
+		protected MongoDbTenantConnection CreateConnection(TTenantInfo tenantInfo) {
+			var context = new MultiTenantContext<TTenantInfo> { TenantInfo = tenantInfo };
+			return new MongoDbTenantConnection(context);
 		}
 
 		protected virtual ILogger CreateLogger() {
 			return loggerFactory.CreateLogger(typeof(TEntity));
 		}
 
-		IRepository<TEntity> IRepositoryProvider<TEntity>.GetRepository(string tenantId) => GetRepository(tenantId);
+		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId) => await GetRepositoryAsync(tenantId);
 
-		IRepository IRepositoryProvider.GetRepository(string tenantId) => GetRepository(tenantId);
+		async Task<IRepository> IRepositoryProvider.GetRepositoryAsync(string tenantId) => await GetRepositoryAsync(tenantId);
 
-		public MongoRepository<TEntity> GetRepository(string tenantId) {
+		public async Task<MongoRepository<TEntity>> GetRepositoryAsync(string tenantId) {
 			try {
 				if (repositories == null)
 					repositories = new Dictionary<string, MongoRepository<TEntity>>();
 
 				if (!repositories.TryGetValue(tenantId, out var repository)) {
-					var tenantInfo = GetTenantInfo(tenantId);
+					var tenantInfo = await GetTenantInfoAsync(tenantId);
 					var connection = CreateConnection(tenantInfo);
 
 					var logger = CreateLogger();

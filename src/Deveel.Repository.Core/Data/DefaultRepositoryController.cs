@@ -4,15 +4,42 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// A default implementation of the <see cref="IRepositoryController"/> interface
+	/// </summary>
     public class DefaultRepositoryController : IRepositoryController {
 		private readonly RepositoryControllerOptions options;
 		private readonly IServiceProvider serviceProvider;
 		private readonly ILogger logger;
 
+		/// <summary>
+		/// Constructs a <see cref="DefaultRepositoryController"/> instance
+		/// </summary>
+		/// <param name="options">
+		/// The options to configure the controller
+		/// </param>
+		/// <param name="serviceProvider">
+		/// The service provider used to resolve the repositories
+		/// </param>
+		/// <param name="logger">
+		/// A logger used to trace the operations
+		/// </param>
 		public DefaultRepositoryController(IOptions<RepositoryControllerOptions> options, IServiceProvider serviceProvider, ILogger<DefaultRepositoryController>? logger = null)
 			: this(options, serviceProvider, (ILogger?) logger) {
 		}
 
+		/// <summary>
+		/// Constructs a <see cref="DefaultRepositoryController"/> instance
+		/// </summary>
+		/// <param name="options">
+		/// The options to configure the controller
+		/// </param>
+		/// <param name="serviceProvider">
+		/// The service provider used to resolve the repositories
+		/// </param>
+		/// <param name="logger">
+		/// A logger used to trace the operations
+		/// </param>
 		protected DefaultRepositoryController(IOptions<RepositoryControllerOptions> options, IServiceProvider serviceProvider, ILogger? logger = null) {
 			this.options = options.Value;
 			this.serviceProvider = serviceProvider;
@@ -163,6 +190,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public virtual async Task CreateAllRepositoriesAsync(CancellationToken cancellationToken = default) {
 			LogTrace("Creating all repositoies registered in the current context");
 
@@ -176,6 +204,7 @@ namespace Deveel.Data {
 			LogTrace("All repositoies registered in the current context were created");
 		}
 
+		/// <inheritdoc/>
 		public virtual async Task CreateTenantRepositoriesAsync(string tenantId, CancellationToken cancellationToken = default) {
 			LogTrace("Creating all repositoies registered in the current context for the tenant '{TenantId}'", tenantId);
 
@@ -189,6 +218,7 @@ namespace Deveel.Data {
 			LogTrace("All repositoies registered in the current context for the tenant '{TenantId}' were created", tenantId);
 		}
 
+		/// <inheritdoc/>
 		public virtual async Task DropAllRepositoriesAsync(CancellationToken cancellationToken = default) {
 			LogTrace("Dropping all repositories registered in the current context");
 
@@ -202,6 +232,7 @@ namespace Deveel.Data {
 			LogTrace("All repositories registered in the current context were dropped");
 		}
 
+		/// <inheritdoc/>
 		public virtual async Task DropTenantRepositoriesAsync(string tenantId, CancellationToken cancellationToken = default) {
 			LogTrace("Dropping all repositories of tenant '{TenantId}'", tenantId);
 
@@ -215,6 +246,7 @@ namespace Deveel.Data {
 			LogTrace("All repositories of tenant '{TenantId}' were dropped", tenantId);
 		}
 
+		/// <inheritdoc/>
 		public virtual async Task CreateRepositoryAsync<TEntity>(CancellationToken cancellationToken = default)
 			where TEntity : class {
 			LogTrace("Creating the repository for type '{EntityType}'", typeof(TEntity).Name);
@@ -226,6 +258,7 @@ namespace Deveel.Data {
 			LogTrace("The creation process for repository for type '{EntityType}' finished", typeof(TEntity).Name);
 		}
 
+		/// <inheritdoc/>
 		public async Task CreateTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			LogTrace("Creating the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
@@ -239,6 +272,7 @@ namespace Deveel.Data {
 			LogTrace("The repository handling the type '{EntityType}' for tenant '{TenantId}' was created", typeof(TEntity).Name, tenantId);
 		}
 
+		/// <inheritdoc/>
 		public virtual async Task DropRepositoryAsync<TEntity>(CancellationToken cancellationToken = default) where TEntity : class {
 			LogTrace("Dropping the repository handling the type '{EntityType}'", typeof(TEntity).Name);
 
@@ -249,6 +283,7 @@ namespace Deveel.Data {
 			LogTrace("The repository handling the type '{EntityType}' was dropped", typeof(TEntity).Name);
 		}
 
+		/// <inheritdoc/>
 		public virtual async Task DropTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			LogTrace("Dropping the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
