@@ -17,21 +17,21 @@ namespace Deveel.Data {
 			return url;
 		}
 
-		private static string? FormatLink<TEntity>(IUrlHelper urlHelper, string? host, string routeName, object? routeValues, RepositoryPageQueryModel<TEntity>? query)
-			where TEntity : class, IEntity {
-			return urlHelper.Link<TEntity>(routeName, routeValues, query).SetHost(host);
+		private static string? FormatLink<TEntity>(IUrlHelper urlHelper, string? host, string routeName, object? routeValues, PageQueryModel<TEntity>? query)
+			where TEntity : class {
+			return urlHelper.Link(routeName, routeValues, query).SetHost(host);
 		}
 
-		private static string? FormatAction<TEntity>(IUrlHelper urlHelper, string? protocol, string? host, string action, string? controller, object? routValues, RepositoryPageQueryModel<TEntity>? query)
-			where TEntity : class, IEntity
+		private static string? FormatAction<TEntity>(IUrlHelper urlHelper, string? protocol, string? host, string action, string? controller, object? routValues, PageQueryModel<TEntity>? query)
+			where TEntity : class
 			=> urlHelper.Action(action, controller, routValues, query, protocol).SetHost(host);
 
-		public static RepositoryPageQueryResultBaseModel<TItem>? SetPageActionLinks<TItem>(this ControllerBase controller, RepositoryPageQueryResultBaseModel<TItem>? result, string action, object? routeValues = null)
-			where TItem : class, IEntity
+		public static PageQueryResultBaseModel<TItem>? SetPageActionLinks<TItem>(this ControllerBase controller, PageQueryResultBaseModel<TItem>? result, string action, object? routeValues = null)
+			where TItem : class
 			=> controller.SetPageActionLinks(result, action, null, routeValues);
 
-		public static RepositoryPageQueryResultBaseModel<TItem>? SetPageActionLinks<TItem>(this ControllerBase controller, RepositoryPageQueryResultBaseModel<TItem>? result, string action, string? controllerName = null, object? routeValues = null)
-			where TItem : class, IEntity {
+		public static PageQueryResultBaseModel<TItem>? SetPageActionLinks<TItem>(this ControllerBase controller, PageQueryResultBaseModel<TItem>? result, string action, string? controllerName = null, object? routeValues = null) 
+			where TItem : class	{
 			if (result == null)
 				return null;
 
@@ -58,8 +58,8 @@ namespace Deveel.Data {
 			return result;
 		}
 
-		public static RepositoryPageQueryResultBaseModel<TItem>? SetPageLinks<TItem>(this ControllerBase controller, RepositoryPageQueryResultBaseModel<TItem>? result, string routeName, object? routeValues = null)
-			where TItem : class, IEntity {
+		public static PageQueryResultBaseModel<TItem>? SetPageLinks<TItem>(this ControllerBase controller, PageQueryResultBaseModel<TItem>? result, string routeName, object? routeValues = null)
+			where TItem : class {
 			var siteConfig = controller.HttpContext?.RequestServices?.GetService<PaginationModelOptions>();
 
 			if (result == null)

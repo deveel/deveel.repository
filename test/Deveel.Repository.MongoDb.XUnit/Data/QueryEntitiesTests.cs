@@ -1,7 +1,5 @@
 ﻿using System;
 
-using Deveel.Filters;
-
 namespace Deveel.Data {
 	public class QueryEntitiesTests : MongoRepositoryTestBase {
 		private readonly IList<MongoPerson> people;

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq.Dynamic.Core;
 
-using Deveel.Filters;
-
 namespace Deveel.Data {
 	public static class RepositoryExtensions {
 		#region Find
@@ -14,15 +12,6 @@ namespace Deveel.Data {
 		public static Task<TEntity?> FindAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindAsync<TEntity>("x", expression, cancellationToken);
-
-
-		public static Task<TEntity?> FindAsync<TEntity>(this IRepository<TEntity> repository, string paramName, IFilter filter, CancellationToken cancellationToken = default)
-			where TEntity : class
-			=> repository.FindAsync<TEntity>(filter.AsLambda<TEntity>(paramName), cancellationToken);
-
-		public static Task<TEntity?> FindAsync<TEntity>(this IRepository<TEntity> repository, IFilter filter, CancellationToken cancellationToken = default)
-			where TEntity : class
-			=> repository.FindAsync<TEntity>("x", filter, cancellationToken);
 
 		#endregion
 
@@ -36,14 +25,6 @@ namespace Deveel.Data {
 			where TEntity : class
 			=> repository.FindAllAsync<TEntity>("x", expression, cancellationToken);
 
-		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, string paramName, IFilter filter, CancellationToken cancellationToken = default)
-			where TEntity : class
-			=> repository.FindAllAsync<TEntity>(filter.AsLambda<TEntity>(paramName), cancellationToken);
-
-		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, IFilter filter, CancellationToken cancellationToken = default)
-			where TEntity : class
-			=> repository.FindAllAsync<TEntity>("x", filter, cancellationToken);
-
 		#endregion
 
 		#region Count
@@ -56,14 +37,6 @@ namespace Deveel.Data {
 			where TEntity : class
 			=> repository.CountAsync("x", expression, cancellationToken);
 
-		public static Task<long> CountAsync<TEntity>(this IFilterableRepository<TEntity> repository, string paramName, IFilter filter, CancellationToken cancellationToken)
-			where TEntity : class
-			=> repository.CountAsync<TEntity>(filter.AsLambda<TEntity>(paramName), cancellationToken);
-
-		public static Task<long> CountAsync<TEntity>(this IFilterableRepository<TEntity> repository, IFilter filter, CancellationToken cancellationToken = default)
-			where TEntity : class
-			=> repository.CountAsync("x", filter, cancellationToken);
-
 		#endregion
 
 		#region Exists
@@ -75,14 +48,6 @@ namespace Deveel.Data {
 		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.ExistsAsync<TEntity>("x", expression, cancellationToken);
-
-		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, string paramName, IFilter filter, CancellationToken cancellationToken = default)
-			where TEntity : class
-			=> repository.ExistsAsync<TEntity>(filter.AsLambda<TEntity>(paramName), cancellationToken);
-
-		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, IFilter filter, CancellationToken cancellationToken = default)
-			where TEntity : class
-			=> repository.ExistsAsync("x", filter, cancellationToken);
 
 		#endregion
 	}

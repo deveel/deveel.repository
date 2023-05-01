@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace Deveel.Data.Models {
-	public class TestPersonModel : IEntity {
+	public class TestPersonModel {
 		public string Id { get; set; }
 
 		[Required]

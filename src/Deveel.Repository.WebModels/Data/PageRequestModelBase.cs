@@ -5,14 +5,13 @@ using Deveel.Data;
 using Microsoft.AspNetCore.Routing;
 
 namespace Deveel.Data {
-	public abstract class RepositoryPageRequestModelBase
-	{
-		protected RepositoryPageRequestModelBase(int page, int size) {
+	public abstract class PageRequestModelBase {
+		protected PageRequestModelBase(int page, int size) {
 			Page = page;
 			Size = size;
 		}
 
-		protected RepositoryPageRequestModelBase() {
+		protected PageRequestModelBase() {
 		}
 
 		[MinValue(1)]

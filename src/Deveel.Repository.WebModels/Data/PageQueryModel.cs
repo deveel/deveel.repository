@@ -1,16 +1,15 @@
-﻿using System.Linq.Expressions;
-using System.Reflection;
+﻿using System.Reflection;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Deveel.Data {
-    public class RepositoryPageQueryModel<TEntity> : RepositoryPageRequestModelBase 
-		where TEntity : class, IEntity {
-		public RepositoryPageQueryModel(int page, int size)
-		: base(page, size) {
+    public abstract class PageQueryModel : PageRequestModelBase {
+		public PageQueryModel(int page, int size)
+			: base(page, size) {
 		}
 
-		public RepositoryPageQueryModel() {
+		public PageQueryModel() {
 		}
 
 		[MinValue(1), FromQuery(Name = "p")]
@@ -39,23 +38,23 @@ namespace Deveel.Data {
 
 		protected override void GetRouteValues(IDictionary<string, object> routeValues) {
 			var pageParam = GetPageParameterName();
-			if (!string.IsNullOrWhiteSpace(pageParam) && Page != null)
-				routeValues[pageParam] = Page.Value;
+			if (!string.IsNullOrWhiteSpace(pageParam))
+				routeValues[pageParam] = Page;
 
 			var sizeParam = GetSizeParameterName();
-			if (!string.IsNullOrWhiteSpace(sizeParam) && Size != null)
+			if (!string.IsNullOrWhiteSpace(sizeParam))
 				routeValues[sizeParam] = Size;
 
 			var sortParam = GetSortParameterName();
 			if (!string.IsNullOrEmpty(sortParam) && SortBy != null)
-				routeValues[sortParam] = SortBy.ToArray();
+				routeValues[sortParam] = SortBy?.ToArray();
 
 			base.GetRouteValues(routeValues);
 		}
 
-		protected override IEnumerable<IResultSort>? GetResultSort() => SortBy?.Select(WebResultSortUtil.ParseSort);
+		public IEnumerable<IResultSort>? GetResultSorts() => SortBy?.Select(WebResultSortUtil.ParseSort);
 
-		public virtual void CopyTo(RepositoryPageQueryModel<TEntity>? page) {
+		public virtual void CopyTo(PageQueryModel page) {
 			if (page == null)
 				return;
 
@@ -67,36 +66,31 @@ namespace Deveel.Data {
 			foreach (var property in properties) {
 				var otherProperty = page.GetType()
 					.GetProperty(property.Name, property.PropertyType);
-
 				if (otherProperty != null && otherProperty.CanWrite)
 					otherProperty.SetValue(page, property.GetValue(this, null));
 			}
 		}
 
-		protected virtual Expression<Func<TResult, bool>>? GetAggregatedFilter<TResult>(IEnumerable<IQueryFilter> filters) where TResult : class {
-			if (filters != null && filters.Any()) {
-				Expression<Func<TResult, bool>>? result = null;
-				foreach (var filter in filters) {
-					var exp = filter.AsLambda<TResult>();
+		protected IQueryFilter GetAggregatedFilter(Func<IEnumerable<IQueryFilter>, IQueryFilter>? filterAggregator = null) {
+			var pageFilters = PageFilters();
+			if (pageFilters != null && pageFilters.Any()) {
+				var filterList = pageFilters.ToList();
+				if (filterList.Count == 1) {
+					return filterList[0];
+				} else {
+					if (filterAggregator == null)
+						throw new ArgumentNullException(nameof(filterAggregator), "The filter aggregator is required when the query has more than one filter");
 
-					if (result== null) {
-						result = exp;
-					} else {
-						var param = result.Parameters[0];
-						var body = Expression.AndAlso(result.Body, exp.Body);
-						result = Expression.Lambda<Func<TResult, bool>>(body, param);
-					}
+					return filterAggregator(pageFilters);
 				}
-
-				return result;
 			}
 
-			return null;
+			return QueryFilter.Empty;
 		}
 
-		public virtual RepositoryPageRequest<TResult> ToPageRequest<TResult>() where TResult : class {
-			return new RepositoryPageRequest<TResult>(Page ?? 1, GetPageSize()) {
-				Filter = GetAggregatedFilter<TResult>(PageFilters()),
+		public virtual RepositoryPageRequest ToPageRequest(Func<IEnumerable<IQueryFilter>, IQueryFilter>? filterAggregator = null) {
+			return new RepositoryPageRequest(Page ?? 1, GetPageSize()) {
+				Filter = GetAggregatedFilter(filterAggregator),
 				SortBy = PageSort()
 			};
 		}

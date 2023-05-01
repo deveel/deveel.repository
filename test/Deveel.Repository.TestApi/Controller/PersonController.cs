@@ -6,7 +6,7 @@ using Deveel.Repository.TestApi.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Deveel.Repository.TestApi.Controller {
-    [Route("[controller]")]
+	[Route("[controller]")]
 	[ApiController]
 	public class PersonController : ControllerBase {
 		private readonly IRepository<PersonEntity> repository;
@@ -20,12 +20,16 @@ namespace Deveel.Repository.TestApi.Controller {
 			var request = query.ToPageRequest<PersonEntity>();
 			var page = await ((IPageableRepository<PersonEntity>)repository).GetPageAsync(request, HttpContext.RequestAborted);
 
-			var response = new RepositoryPageQueryResultModel<TestPersonModel>(query, page.TotalItems, page.Items?.Select(person =>  new TestPersonModel {
-				Id = person.Id,
-				FirstName = person.FirstName,
-				LastName = person.LastName,
-				BirthDate = person.BirthDate
-			}));
+			var response = new PersonPageModel{
+				Query = query,
+				TotalItems = page.TotalItems,
+				Items = page.Items?.Select(person => new TestPersonModel {
+					Id = person.Id,
+					FirstName = person.FirstName,
+					LastName = person.LastName,
+					BirthDate = person.BirthDate
+				}).ToList()
+			};
 
 			response.SetActionLinks(this, "Query");
 

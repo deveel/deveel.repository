@@ -1,18 +1,19 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
+using Microsoft.AspNetCore.Routing;
+
 namespace Deveel.Data {
-	public abstract class RepositoryPageQueryResultBaseModel<TItem> : RepositoryPageModel<TItem>
-		where TItem : class, IEntity {
-		protected RepositoryPageQueryResultBaseModel(RepositoryPageQueryModel<TItem> pageRequest, int totalItems, IEnumerable<TItem>? items = null)
+	public abstract class PageQueryResultBaseModel<TItem> : PageResultModel<TItem> where TItem : class {
+		protected PageQueryResultBaseModel(PageQueryModel<TItem> pageRequest, int totalItems, IEnumerable<TItem>? items = null)
 			: base(pageRequest, totalItems, items) {
 		}
 
-		protected RepositoryPageQueryResultBaseModel() {
+		protected PageQueryResultBaseModel() {
 		}
 
-		protected internal RepositoryPageQueryModel<TItem>? PageQuery {
-			get => (RepositoryPageQueryModel<TItem>?)PageRequest;
+		protected internal PageQueryModel<TItem>? PageQuery {
+			get => (PageQueryModel<TItem>?)PageRequest;
 			set => PageRequest = value;
 		}
 
@@ -46,8 +47,8 @@ namespace Deveel.Data {
 		[Url]
 		public string? Last { get; set; }
 
-		private RepositoryPageQueryModel<TItem> MakePage(int number) {
-			var page = (RepositoryPageQueryModel<TItem>)Activator.CreateInstance(PageQuery.GetType());
+		private PageQueryModel<TItem> MakePage(int number) {
+			var page = (PageQueryModel<TItem>)Activator.CreateInstance(PageQuery.GetType());
 			PageQuery.CopyTo(page);
 			page.Page = number;
 			return page;
@@ -55,25 +56,24 @@ namespace Deveel.Data {
 
 		public bool HasNext() => (PageQuery?.Page ?? 1) < TotalPages;
 
-		public RepositoryPageQueryModel<TItem>? NextPage() {
+		public PageQueryModel<TItem>? NextPage() {
 			return HasNext() ? MakePage((PageQuery?.Page ?? 1) + 1) : null;
 		}
 
 		public bool HasPrevious() => (PageQuery?.Page ?? 1) > 1;
 
-		public RepositoryPageQueryModel<TItem>? PreviousPage() {
+		public PageQueryModel<TItem>? PreviousPage() {
 			return HasPrevious() ? MakePage((PageQuery?.Page ?? 1) - 1) : null;
 		}
 
 		public bool HasPages() => TotalPages > 0;
 
-		public RepositoryPageQueryModel<TItem>? LastPage() {
+		public PageQueryModel<TItem>? LastPage() {
 			return HasPages() ? MakePage(TotalPages) : null;
 		}
 
-		public RepositoryPageQueryModel<TItem>? FirstPage() {
+		public PageQueryModel<TItem>? FirstPage() {
 			return HasPages() ? MakePage(1) : null;
 		}
-
 	}
 }

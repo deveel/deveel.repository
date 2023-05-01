@@ -4,8 +4,8 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Routing;
 
 namespace Deveel.Data {
-	public class RepositoryPageModel<TITem> where TITem : class, IEntity {
-		public RepositoryPageModel(RepositoryPageRequestModelBase pageRequest, int totalItems, IEnumerable<TITem>? items = null) {
+	public class PageResultModel<TITem> where TITem : class {
+		public PageResultModel(PageRequestModelBase pageRequest, int totalItems, IEnumerable<TITem>? items = null) {
 			if (totalItems < 0)
 				throw new ArgumentException("The total items must be greater than or equal to zero", nameof(totalItems));
 
@@ -14,10 +14,10 @@ namespace Deveel.Data {
 			Items = items?.ToList();
 		}
 
-		public RepositoryPageModel() {
+		public PageResultModel() {
 		}
 
-        protected RepositoryPageRequestModelBase? PageRequest { get; set; }
+        protected PageRequestModelBase? PageRequest { get; set; }
 
 		/// <summary>
 		/// The total number of items available

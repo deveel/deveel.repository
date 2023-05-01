@@ -5,14 +5,14 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Routing;
 
 namespace Deveel.Data {
-	public abstract class RepositoryPageModelBase {
-		protected RepositoryPageModelBase(RepositoryPageRequestModelBase pageRequest, int totalItems, IList items) {
+	public abstract class PageResultModelBase {
+		protected PageResultModelBase(PageRequestModelBase pageRequest, int totalItems, IList items) {
 			PageRequest = pageRequest ?? throw new ArgumentNullException(nameof(pageRequest));
 			TotalItems = totalItems;
 			Items = items?.Cast<object>().ToList().AsReadOnly();
 		}
 
-		protected RepositoryPageRequestModelBase PageRequest { get; }
+		protected PageRequestModelBase PageRequest { get; }
 
 		/// <summary>
 		/// The total number of items available

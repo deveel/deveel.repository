@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Deveel</RootNamespace>
-    <VersionPrefix>0.8.5</VersionPrefix>
+    <VersionPrefix>0.9.0</VersionPrefix>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Antonello Provenzano</Authors>
     <Company>Deveel AS</Company>
@@ -22,7 +22,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Deveel.Model.Web" Version="1.1.0-4365273015" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
   </ItemGroup>
