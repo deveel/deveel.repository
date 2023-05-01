@@ -1,8 +1,12 @@
-﻿using System.Net.Http.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http.Json;
+using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 
 using Bogus;
-
 using Deveel.Repository.TestApi.Data;
 
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -10,15 +14,17 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Deveel.Data {
-    public class RepositoryPageQueryTests : IDisposable {
+	public abstract class PageQueryTestBase : IDisposable {
 		private readonly WebApplicationFactory<Program> webApp;
 
-		public RepositoryPageQueryTests() {
+		protected PageQueryTestBase() {
 			webApp = new WebApplicationFactory<Program>()
 				.WithWebHostBuilder(builder => builder.ConfigureTestServices(services => {
 					services.AddSingleton<IRepository<PersonEntity>>(_ => CreateTestRepository());
 				}));
 		}
+
+		protected abstract string RouteName { get; }
 
 		private static InMemoryRepository<PersonEntity> CreateTestRepository() {
 			var faker = new Faker<PersonEntity>()
@@ -46,7 +52,7 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task SimplePageQuery() {
 			var client = webApp.CreateClient();
-			var response = await client.GetFromJsonAsync<TestPersonPage>("/person/page?p=1&c=10");
+			var response = await client.GetFromJsonAsync<TestPersonPage>($"/person/{RouteName}?p=1&c=10");
 
 			Assert.NotNull(response);
 			Assert.Equal(120, response.TotalItems);
@@ -68,7 +74,7 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task SortedPageQuery() {
 			var client = webApp.CreateClient();
-			var response = await client.GetFromJsonAsync<TestPersonPage>("/person/page?p=1&c=10&s=lastName");
+			var response = await client.GetFromJsonAsync<TestPersonPage>($"/person/{RouteName}?p=1&c=10&s=lastName");
 
 			Assert.NotNull(response);
 			Assert.Equal(120, response.TotalItems);
@@ -97,7 +103,7 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task FilteredByAgeQuery() {
 			var client = webApp.CreateClient();
-			var response = await client.GetFromJsonAsync<TestPersonPage>("/person/page?p=1&c=10&maxAge=23");
+			var response = await client.GetFromJsonAsync<TestPersonPage>($"/person/{RouteName}?p=1&c=10&maxAge=23");
 
 			Assert.NotNull(response);
 			Assert.Equal(120, response.TotalItems);
@@ -128,7 +134,7 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task DefaultPageSizeQuery() {
 			var client = webApp.CreateClient();
-			var response = await client.GetFromJsonAsync<TestPersonPage>("/person/page");
+			var response = await client.GetFromJsonAsync<TestPersonPage>($"/person/{RouteName}");
 
 			Assert.NotNull(response);
 			Assert.Equal(120, response.TotalItems);
@@ -158,10 +164,10 @@ namespace Deveel.Data {
 			var lastName = inMemoryRepo.Entities.Select(x => x.LastName).First();
 			var persons = inMemoryRepo.Entities.Where(x => x.LastName == lastName);
 			var totalPersons = persons.Count();
-			var totalPages = (int)Math.Ceiling((double) totalPersons / 10);
+			var totalPages = (int)Math.Ceiling((double)totalPersons / 10);
 
 			var client = webApp.CreateClient();
-			var response = await client.GetFromJsonAsync<TestPersonPage>($"/person/page?p=1&c=10&lastName={lastName}");
+			var response = await client.GetFromJsonAsync<TestPersonPage>($"/person/{RouteName}?p=1&c=10&lastName={lastName}");
 
 			Assert.NotNull(response);
 			Assert.Equal(totalPersons, response.TotalItems);
@@ -170,6 +176,7 @@ namespace Deveel.Data {
 			Assert.NotEmpty(response.Items);
 			Assert.Null(response.Next);
 		}
+
 
 		class TestPersonPage {
 			public int? TotalItems { get; set; }
@@ -194,7 +201,7 @@ namespace Deveel.Data {
 
 			public string FirstName { get; set; }
 
-			public string LastName { get; set; }	
+			public string LastName { get; set; }
 
 			public DateTime? BirthDate { get; set; }
 		}

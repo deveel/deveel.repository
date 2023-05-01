@@ -15,7 +15,7 @@ namespace Deveel.Repository.TestApi.Controller {
 			this.repository = repository;
 		}
 
-		[HttpGet("page", Name = "GetPage")]
+		[HttpGet("page")]
 		public async Task<IActionResult> Query([FromQuery] PersonPageQueryModel query) {
 			var request = query.ToPageRequest<PersonEntity>();
 			var page = await ((IPageableRepository<PersonEntity>)repository).GetPageAsync(request, HttpContext.RequestAborted);
@@ -35,5 +35,27 @@ namespace Deveel.Repository.TestApi.Controller {
 
 			return Ok(response);
 		}
+
+		[HttpGet("pageByRoute", Name = "GetPage")]
+		public async Task<IActionResult> Get([FromQuery] PersonPageQueryModel query) {
+			var request = query.ToPageRequest<PersonEntity>();
+			var page = await ((IPageableRepository<PersonEntity>)repository).GetPageAsync(request, HttpContext.RequestAborted);
+
+			var response = new PersonPageModel {
+				Query = query,
+				TotalItems = page.TotalItems,
+				Items = page.Items?.Select(person => new TestPersonModel {
+					Id = person.Id,
+					FirstName = person.FirstName,
+					LastName = person.LastName,
+					BirthDate = person.BirthDate
+				}).ToList()
+			};
+
+			response.SetLinks(this, "GetPage");
+
+			return Ok(response);
+		}
+
 	}
 }

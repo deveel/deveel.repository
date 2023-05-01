@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace Deveel.Data {
@@ -48,35 +42,6 @@ namespace Deveel.Data {
 
 			if (result == null)
 				return null;
-
-			//result.First = urlHelper.Link(routeName, new RouteValueDictionary(routeValues) {
-			//	{ pageParamName, 1},
-			//	{sizeParamName, result.Request.Size}
-			//});
-
-			//result.Last = urlHelper.Link(routeName, new RouteValueDictionary(routeValues) {
-			//	{pageParamName, result.TotalPages},
-			//	{sizeParamName, result.Request.Size}
-			//});
-
-			//result.Self = urlHelper.Link(routeName, new RouteValueDictionary(routeValues) {
-			//	{pageParamName, result.Request.Page},
-			//	{sizeParamName, result.Request.Size}
-			//});
-
-			//if (result.Request.Page > 1) {
-			//	result.Previous = urlHelper.Link(routeName, new RouteValueDictionary(routeValues) {
-			//		{pageParamName, result.Request.Page - 1},
-			//		{sizeParamName, result.Request.Size}
-			//	});
-			//}
-
-			//if (result.Request.Page < result.TotalPages) {
-			//	result.Next = urlHelper.Link(routeName, new RouteValueDictionary(routeValues) {
-			//		{ pageParamName, result.Request.Page + 1},
-			//		{ sizeParamName, result.Request.Size}
-			//	});
-			//}
 
 			result.Self = urlHelper.Link(routeName, result);
 
