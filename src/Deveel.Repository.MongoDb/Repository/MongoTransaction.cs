@@ -1,7 +1,8 @@
 ﻿using MongoDB.Driver;
 
 namespace Deveel.Data {
-    public sealed class MongoTransaction : IDataTransaction {
+	[Obsolete("This class is obsolete: please use the Deveel.Repository.MongoFramework instead")]
+	public sealed class MongoTransaction : IDataTransaction {
         internal MongoTransaction(IClientSessionHandle sessionHandle) {
             SessionHandle = sessionHandle;
         }

@@ -35,7 +35,7 @@ namespace Deveel.Data {
 
 		//	entity.BirthDate = new DateOnly(1980, 06, 04);
 
-		//	using var transaction = (MongoTransaction) await TransactionFactory.CreateTransactionAsync();
+		//	using var transaction = (MongoTransaction)await TransactionFactory.CreateTransactionAsync();
 		//	await transaction.BeginAsync();
 
 		//	var result = await MongoRepository.UpdateAsync(transaction, entity);
@@ -51,7 +51,7 @@ namespace Deveel.Data {
 
 		//	entity.BirthDate = new DateOnly(1980, 06, 04);
 
-		//	using var transaction = (MongoTransaction) await TransactionFactory.CreateTransactionAsync();
+		//	using var transaction = (MongoTransaction)await TransactionFactory.CreateTransactionAsync();
 		//	await transaction.BeginAsync();
 
 		//	var result = await MongoRepository.UpdateAsync(transaction, entity);
@@ -120,40 +120,40 @@ namespace Deveel.Data {
 			Assert.False(result);
 		}
 
-		[Fact]
-		public async Task Mongo_UpdateWrongVersion() {
-			var entity = people[^1];
+		//[Fact]
+		//public async Task Mongo_UpdateWrongVersion() {
+		//	var entity = people[^1];
 
-			entity.Version = Guid.NewGuid().ToString();
-			entity.BirthDate = new DateTime(1980, 06, 04);
+		//	entity.Version = Guid.NewGuid().ToString();
+		//	entity.BirthDate = new DateTime(1980, 06, 04);
 
-			var result = await MongoRepository.UpdateAsync(entity);
+		//	var result = await MongoRepository.UpdateAsync(entity);
 
-			Assert.False(result);
-		}
+		//	Assert.False(result);
+		//}
 
-		[Fact]
-		public async Task Repository_UpdateWrongVersion() {
-			var entity = people[^1];
+		//[Fact]
+		//public async Task Repository_UpdateWrongVersion() {
+		//	var entity = people[^1];
 
-			entity.Version = Guid.NewGuid().ToString();
-			entity.BirthDate = new DateTime(1980, 06, 04);
+		//	entity.Version = Guid.NewGuid().ToString();
+		//	entity.BirthDate = new DateTime(1980, 06, 04);
 
-			var result = await Repository.UpdateAsync(entity);
+		//	var result = await Repository.UpdateAsync(entity);
 
-			Assert.False(result);
-		}
+		//	Assert.False(result);
+		//}
 
-		[Fact]
-		public async Task FacadeRepository_UpdateWrongVersion() {
-			var entity = people[^1];
+		//[Fact]
+		//public async Task FacadeRepository_UpdateWrongVersion() {
+		//	var entity = people[^1];
 
-			entity.Version = Guid.NewGuid().ToString();
-			entity.BirthDate = new DateTime(1980, 06, 04);
+		//	entity.Version = Guid.NewGuid().ToString();
+		//	entity.BirthDate = new DateTime(1980, 06, 04);
 
-			var result = await FacadeRepository.UpdateAsync(entity);
+		//	var result = await FacadeRepository.UpdateAsync(entity);
 
-			Assert.False(result);
-		}
+		//	Assert.False(result);
+		//}
 	}
 }

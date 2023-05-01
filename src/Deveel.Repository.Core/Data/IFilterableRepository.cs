@@ -1,6 +1,10 @@
 ﻿using System;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// Represents a repository that can be filtered to retrieve a subset of
+	/// the entities it contains.
+	/// </summary>
     public interface IFilterableRepository : IRepository {
         /// <summary>
         /// Determines if at least one item in the repository exists for the
@@ -18,7 +22,6 @@ namespace Deveel.Data {
         /// <exception cref="ArgumentException">
         /// Throw if the <paramref name="filter"/> is not supported by the repository
         /// </exception>
-        /// <seealso cref="SupportsFilters" />
         Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -41,7 +44,6 @@ namespace Deveel.Data {
         /// <exception cref="ArgumentException">
         /// Throw if the <paramref name="filter"/> is not supported by the repository
         /// </exception>
-        /// <seealso cref="SupportsFilters" />
         Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -64,7 +66,6 @@ namespace Deveel.Data {
         /// <exception cref="ArgumentException">
         /// Throw if the <paramref name="filter"/> is not supported by the repository
         /// </exception>
-        /// <seealso cref="SupportsFilters" />
         Task<object?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -82,7 +83,6 @@ namespace Deveel.Data {
         /// <exception cref="ArgumentException">
         /// Throw if the <paramref name="filter"/> is not supported by the repository
         /// </exception>
-        /// <seealso cref="SupportsFilters" />
         Task<IList<object>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
     }
 }

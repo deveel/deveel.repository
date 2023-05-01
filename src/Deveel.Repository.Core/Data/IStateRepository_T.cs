@@ -15,7 +15,7 @@ namespace Deveel.Data {
 		/// <param name="entity">The entity that holds the states</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns>
-		/// Returns a list of <see cref="StateInfo{TStatus}"/> that are the states
+		/// Returns a list of <see cref="EntityStateInfo{TStatus}"/> that are the states
 		/// currently held by the <paramref name="entity"/> given.
 		/// </returns>
 		Task<IList<EntityStateInfo<TStatus>>> GetStatesAsync(TEntity entity, CancellationToken cancellationToken = default);
@@ -27,7 +27,7 @@ namespace Deveel.Data {
 		/// <param name="stateInfo">The new state to be added</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		Task AddStateAsync(TEntity entity, EntityStateInfo<TStatus> state, CancellationToken cancellationToken = default);
+		Task AddStateAsync(TEntity entity, EntityStateInfo<TStatus> stateInfo, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Removes a state from the entity
@@ -36,6 +36,6 @@ namespace Deveel.Data {
 		/// <param name="stateInfo">The state to be removed</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		Task RemoveStateAsync(TEntity entity, EntityStateInfo<TStatus> state, CancellationToken cancellationToken = default);
+		Task RemoveStateAsync(TEntity entity, EntityStateInfo<TStatus> stateInfo, CancellationToken cancellationToken = default);
 	}
 }

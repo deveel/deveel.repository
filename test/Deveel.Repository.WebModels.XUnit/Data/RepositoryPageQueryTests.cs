@@ -3,7 +3,6 @@ using System.Web;
 
 using Bogus;
 
-using Deveel.Data.Models;
 using Deveel.Repository.TestApi.Data;
 
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -11,7 +10,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Deveel.Data {
-	public class RepositoryPageQueryTests : IDisposable {
+    public class RepositoryPageQueryTests : IDisposable {
 		private readonly WebApplicationFactory<Program> webApp;
 
 		public RepositoryPageQueryTests() {

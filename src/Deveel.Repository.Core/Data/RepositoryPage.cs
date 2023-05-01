@@ -4,7 +4,7 @@ namespace Deveel.Data {
 	/// <summary>
 	/// A page of entities from a repository, obtained from a query
 	/// </summary>
-	/// <seealso cref="IRepository.GetPageAsync(RepositoryPageRequest, CancellationToken)"/>
+	/// <seealso cref="IPageableRepository.GetPageAsync(RepositoryPageRequest, CancellationToken)"/>
 	public class RepositoryPage {
 		/// <summary>
 		/// Constructs the result referencing the original request, a count
@@ -51,6 +51,13 @@ namespace Deveel.Data {
 		/// </summary>
 		public int TotalPages => (int)Math.Ceiling((double)TotalItems / Request.Size);
 
+		/// <summary>
+		/// Converts this page result to a page result of a specific type
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to be returned in the page
+		/// </typeparam>
+		/// <returns></returns>
 		public RepositoryPage<TEntity> As<TEntity>() where TEntity : class
 			=> new RepositoryPage<TEntity>(Request, TotalItems, Items?.Cast<TEntity>());
 

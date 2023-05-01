@@ -18,11 +18,14 @@
 		<PackageLicenseFile>EULA.md</PackageLicenseFile>
 		<PackageIcon>deveel-logo.png</PackageIcon>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<DocumentationFile>./Deveel.Repository.MongoFramework.xml</DocumentationFile>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Finbuckle.MultiTenant.MongoFramework" Version="0.5.1" />
-		<PackageReference Include="MongoFramework" Version="0.27.0" />
+		<PackageReference Include="Finbuckle.MultiTenant" Version="6.10.0" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+		<PackageReference Include="MongoFramework" Version="0.28.1" />
 	</ItemGroup>
 
 	<ItemGroup>

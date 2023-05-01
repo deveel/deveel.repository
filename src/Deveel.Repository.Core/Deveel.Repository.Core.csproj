@@ -18,6 +18,8 @@
     <PackageLicenseFile>EULA.md</PackageLicenseFile>
     <PackageIcon>deveel-logo.png</PackageIcon>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <DocumentationFile>./Deveel.Repository.Core.xml</DocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
