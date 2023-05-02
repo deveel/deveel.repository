@@ -48,7 +48,7 @@ namespace Deveel.Data {
 				})
 				.WithStaticStrategy("test-tenant");
 
-			services.AddSingleton<IMultiTenantContext>(_ => {
+			services.AddSingleton<IMultiTenantContext<TenantInfo>>(_ => {
 				return new MultiTenantContext<TenantInfo> {
 					TenantInfo = new TenantInfo {
 						Id = tenantId,
