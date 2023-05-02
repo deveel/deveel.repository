@@ -41,9 +41,9 @@ namespace Deveel.Data {
 			throw new RepositoryException($"Unable to get a context for tenant '{tenantId}'");
 		}
 
-		protected MongoDbTenantConnection CreateConnection(TTenantInfo tenantInfo) {
+		protected MongoDbTenantConnection<MongoDbTenantContext, TTenantInfo> CreateConnection(TTenantInfo tenantInfo) {
 			var context = new MultiTenantContext<TTenantInfo> { TenantInfo = tenantInfo };
-			return new MongoDbTenantConnection(context);
+			return new MongoDbTenantConnection<MongoDbTenantContext, TTenantInfo>(context);
 		}
 
 		protected virtual ILogger CreateLogger() {

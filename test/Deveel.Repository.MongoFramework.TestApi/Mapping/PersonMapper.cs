@@ -8,6 +8,7 @@ namespace Deveel.Data.Mapping {
     public static partial class PersonMapper {
         public static partial PersonModel ToModel(this PersonEntity person);
 
-        public static partial PersonEntity ToEntity(this PersonModel model);
+		[MapperIgnoreSource(nameof(PersonModel.Id))]
+		public static partial PersonEntity ToEntity(this PersonModel model);
     }
 }

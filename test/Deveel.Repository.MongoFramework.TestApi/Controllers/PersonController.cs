@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Deveel.Data.Controllers {
-    [Route("")]
+    [Route("person")]
     [ApiController]
     [Authorize]
+	[Produces("application/json")]
+	[Consumes("application/json")]
     public class PersonController : ControllerBase {
         private readonly PersonRepository repository;
 
@@ -25,13 +27,15 @@ namespace Deveel.Data.Controllers {
         }
 
         [HttpPost]
+		[ProducesResponseType(201, Type = typeof(PersonModel))]
         public async Task<IActionResult> Create([FromBody] PersonModel model) {
             var person = model.ToEntity();
             person.TenantId = GetTenantId();
 
-            var result = await repository.CreateAsync(person, HttpContext.RequestAborted);
+            var id = await repository.CreateAsync(person, HttpContext.RequestAborted);
+			var result = person.ToModel();
 
-            return CreatedAtAction(nameof(Get), new {id = result}, person.ToModel());
+            return CreatedAtAction(nameof(Get), new {id}, result);
         }
 
         [HttpGet("{id}")]
@@ -40,7 +44,7 @@ namespace Deveel.Data.Controllers {
             if (person == null)
                 return NotFound();
 
-            return Ok(person);
+            return Ok(person.ToModel());
         }
     }
 }

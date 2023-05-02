@@ -2,7 +2,7 @@
 
 namespace Deveel.Data.Entities {
     public class TenantPersonsDbContext : MongoDbTenantContext {
-        public TenantPersonsDbContext(IMongoDbTenantConnection connection) 
+        public TenantPersonsDbContext(IMongoDbTenantConnection<TenantPersonsDbContext> connection) 
             : base(connection, connection.TenantInfo.Id) {
         }
 

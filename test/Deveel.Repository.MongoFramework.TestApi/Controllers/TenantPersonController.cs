@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Deveel.Data.Controllers {
     [ApiController]
-    [Route("{tenantId}")]
+    [Route("tenant")]
     public class TenantPersonController : ControllerBase {
         private readonly TenantPersonRepository repository;
 
@@ -14,15 +14,34 @@ namespace Deveel.Data.Controllers {
             this.repository = repository;
         }
 
-        [HttpPost]
+		[HttpPost("person")]
+		[ProducesResponseType(201, Type = typeof(PersonModel))]
+		public async Task<IActionResult> Create([FromBody] PersonModel model) {
+			var person = model.ToEntity();
+			var id = await repository.CreateAsync(person, HttpContext.RequestAborted);
+			var result = person.ToModel();
+			return CreatedAtAction(nameof(Get), new { id }, result);
+		}
+
+		[HttpGet("person/{id}")]
+		public async Task<IActionResult> Get(string id) {
+			var person = await repository.FindByIdAsync(id, HttpContext.RequestAborted);
+			if (person == null)
+				return NotFound();
+
+			return Ok(person);
+		}
+
+        [HttpPost("{tenantId}/person", Name = "createTenantPerson")]
         public async Task<IActionResult> Create(string tenantId, [FromBody] PersonModel model) {
             var person = model.ToEntity();
             person.TenantId = tenantId;
-            var result = await repository.CreateAsync(person, HttpContext.RequestAborted);
-            return CreatedAtAction(nameof(Get), new {id = result}, person.ToModel());
+            var id = await repository.CreateAsync(person, HttpContext.RequestAborted);
+			var result = person.ToModel();
+            return CreatedAtAction(nameof(Get), new {tenantId, id }, result);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{tenantId}/person/{id}", Name = "getTenantPerson")]
         public async Task<IActionResult> Get(string tenantId, string id) {
             var person = await repository.FindByIdAsync(id, HttpContext.RequestAborted);
             if (person == null)
