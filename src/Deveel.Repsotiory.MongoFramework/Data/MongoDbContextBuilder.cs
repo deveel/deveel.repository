@@ -79,6 +79,9 @@ namespace Deveel.Data {
             Services.Add(new ServiceDescriptor(typeof(IMongoDbConnection), typeof(TConnection), defaultLifetime));
             Services.Add(new ServiceDescriptor(typeof(MongoDbConnection), typeof(TConnection), defaultLifetime));
 
+			if (typeof(IMongoDbConnection<TContext>).IsAssignableFrom(typeof(TConnection)))
+				Services.Add(new ServiceDescriptor(typeof(IMongoDbConnection<TContext>), typeof(TConnection), defaultLifetime));
+
             if (typeof(TConnection) != typeof(IMongoDbConnection))
                 Services.Add(new ServiceDescriptor(typeof(TConnection), typeof(TConnection), defaultLifetime));
 
@@ -96,6 +99,7 @@ namespace Deveel.Data {
 
             Services.AddSingleton<IMongoDbConnection>(factory);
             Services.AddSingleton<MongoDbConnection>(factory);
+			Services.AddSingleton<IMongoDbConnection<TContext>>(_ => MongoDbConnection<TContext>.FromConnectionString(connectionString));
 
             return this;
         }
@@ -123,5 +127,5 @@ namespace Deveel.Data {
         public MongoRepositoryBuilder<TEntity> AddRepository<TEntity>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
             where TEntity : class
             => new MongoRepositoryBuilder<TEntity>(Services, lifetime);
-    }
+	}
 }
