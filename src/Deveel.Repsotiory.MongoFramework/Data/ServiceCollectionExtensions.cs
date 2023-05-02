@@ -31,12 +31,12 @@ namespace Deveel.Data {
 
         #region AddMongoTenantContext
 
-        public static MongoDbContextBuilder<TContext> AddMongoTenantContext<TContext>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        public static MongoDbContextBuilder<TContext> AddMongoTenantContext<TContext>(this IServiceCollection services)
 			where TContext : class, IMongoDbTenantContext
-			=> services.AddMongoContext<TContext>(lifetime);
+			=> services.AddMongoContext<TContext>(ServiceLifetime.Scoped);
 
-		public static MongoDbContextBuilder<MongoDbTenantContext> AddMongoTenantContext(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			=> services.AddMongoTenantContext<MongoDbTenantContext>(lifetime);
+		public static MongoDbContextBuilder<MongoDbTenantContext> AddMongoTenantContext(this IServiceCollection services)
+			=> services.AddMongoTenantContext<MongoDbTenantContext>();
 
 		public static IServiceCollection AddMongoTenantContext<TContext>(this IServiceCollection services, Action<MongoDbContextBuilder<TContext>> configure)
             where TContext : class, IMongoDbTenantContext

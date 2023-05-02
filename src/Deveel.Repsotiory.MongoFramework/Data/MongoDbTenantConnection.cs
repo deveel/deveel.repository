@@ -5,12 +5,14 @@ using MongoDB.Driver;
 using MongoFramework;
 
 namespace Deveel.Data {
-	public class MongoDbTenantConnection : MongoDbConnection, IMongoDbTenantConnection {
-		public MongoDbTenantConnection(IMultiTenantContext tenantContext) 
+	public class MongoDbTenantConnection<TContext, TTenantInfo> : MongoDbConnection, IMongoDbTenantConnection<TContext>
+		where TContext : class, IMongoDbContext 
+		where TTenantInfo : class, ITenantInfo, new() {
+		public MongoDbTenantConnection(IMultiTenantContext<TTenantInfo> tenantContext) 
 			: this(tenantContext?.TenantInfo ?? throw new ArgumentNullException("Unable to resolve the tenant")) {
 		}
 
-		protected MongoDbTenantConnection(ITenantInfo tenantInfo) {
+		protected MongoDbTenantConnection(TTenantInfo tenantInfo) {
 			TenantInfo = tenantInfo ?? throw new ArgumentNullException(nameof(tenantInfo));
 
 			var connectionString = TenantInfo.ConnectionString;
@@ -20,6 +22,8 @@ namespace Deveel.Data {
 			Url = MongoUrl.Create(connectionString);
 		}
 
-		public ITenantInfo TenantInfo { get; }
+		public TTenantInfo TenantInfo { get; }
+
+		ITenantInfo IMongoDbTenantConnection<TContext>.TenantInfo => TenantInfo;
 	}
 }

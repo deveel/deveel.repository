@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.EntityMod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.DynamicLinq", "src\Deveel.Repository.DynamicLinq\Deveel.Repository.DynamicLinq.csproj", "{8B09EBB3-F8D5-483D-AFD6-FCCC5F186324}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.MongoFramework.TestApi", "test\Deveel.Repository.MongoFramework.TestApi\Deveel.Repository.MongoFramework.TestApi.csproj", "{9B43B5FA-4990-4A34-B7A3-4996D9E93504}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{8B09EBB3-F8D5-483D-AFD6-FCCC5F186324}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B09EBB3-F8D5-483D-AFD6-FCCC5F186324}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B09EBB3-F8D5-483D-AFD6-FCCC5F186324}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B43B5FA-4990-4A34-B7A3-4996D9E93504}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B43B5FA-4990-4A34-B7A3-4996D9E93504}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B43B5FA-4990-4A34-B7A3-4996D9E93504}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B43B5FA-4990-4A34-B7A3-4996D9E93504}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +115,7 @@ Global
 		{066409E0-EFF5-4A08-94B7-D769D4E1A63B} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 		{3FA3BC1F-56DC-4173-B538-8C964916FAC9} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 		{8B09EBB3-F8D5-483D-AFD6-FCCC5F186324} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
+		{9B43B5FA-4990-4A34-B7A3-4996D9E93504} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01FD9B16-84B3-4D99-80C1-11B2F3D65B56}
