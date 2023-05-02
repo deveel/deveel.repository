@@ -1,5 +1,8 @@
 using Finbuckle.MultiTenant;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.JsonWebTokens;
+
 using MongoDB.Driver;
 
 public class Program {
@@ -9,6 +12,16 @@ public class Program {
         // Add services to the container.
 
         builder.Services.AddControllers();
+
+        builder.Services.AddAuthentication(options => {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+            .AddJwtBearer(options => {
+                options.Audience = "api.deveel.com";
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters {
+                };
+            });
 
         var connectionString = builder.Configuration.GetConnectionString("Mongo");
         var urlBulder = new MongoUrlBuilder(connectionString);

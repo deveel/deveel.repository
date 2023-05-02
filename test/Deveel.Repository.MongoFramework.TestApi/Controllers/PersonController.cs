@@ -16,9 +16,19 @@ namespace Deveel.Data.Controllers {
             this.repository = repository;
         }
 
+        private string GetTenantId() {
+            var tenant = User.FindFirst("tenant")?.Value;
+            if (String.IsNullOrWhiteSpace(tenant))
+                throw new InvalidOperationException("Tenant not found");
+
+            return tenant;
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] PersonModel model) {
             var person = model.ToEntity();
+            person.TenantId = GetTenantId();
+
             var result = await repository.CreateAsync(person, HttpContext.RequestAborted);
 
             return CreatedAtAction(nameof(Get), new {id = result}, person.ToModel());

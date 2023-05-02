@@ -4,9 +4,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
+using MongoFramework;
+
 namespace Deveel.Data.Entities {
     [Table("persons")]
-    public class PersonEntity {
+    public class PersonEntity : IHaveTenantId {
         [BsonId, Key]
         public ObjectId Id { get; set; }
 
@@ -18,5 +20,8 @@ namespace Deveel.Data.Entities {
 
         [Column("birth_date")]
         public DateTime? BirthDate { get; set; }
+
+        [Column("tenant_id")]
+        public string TenantId { get; set; }
     }
 }
