@@ -16,8 +16,8 @@ namespace Deveel.Data {
             return (IRepository<TFacade>) await GetRepositoryAsync(tenantId);
         }
 
-        protected override MongoRepository<TEntity> CreateRepository(MongoDbTenantContext context, ILogger logger) {
-            return new MongoRepository<TEntity, TFacade>(context, logger);
+        protected override MongoRepository<MongoDbTenantContext, TEntity> CreateRepository(MongoDbTenantContext context, ILogger logger) {
+            return new MongoRepository<MongoDbTenantContext, TEntity, TFacade>(context, logger);
         }
     }
 }

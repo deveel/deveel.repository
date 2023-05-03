@@ -67,7 +67,7 @@ namespace Deveel.Data {
 			// emulate the middleware in ASP.NET
 			await ResolveTenant();
 
-			var repository = serviceProvider.GetService<MongoRepository<MongoPerson>>();
+			var repository = serviceProvider.GetService<MongoRepository<MongoDbTenantContext, MongoPerson>>();
 
 			Assert.NotNull(repository);
 

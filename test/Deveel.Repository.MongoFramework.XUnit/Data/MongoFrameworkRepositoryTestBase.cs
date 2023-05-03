@@ -31,7 +31,7 @@ namespace Deveel.Data {
 
 		protected IServiceProvider Services { get; }
 
-		protected MongoRepository<MongoPerson> MongoRepository => Services.GetRequiredService<MongoRepository<MongoPerson>>();
+		protected MongoRepository<MongoDbContext, MongoPerson> MongoRepository => Services.GetRequiredService<MongoRepository<MongoDbContext, MongoPerson>>();
 
 		protected IRepository<MongoPerson> Repository => Services.GetRequiredService<IRepository<MongoPerson>>();
 
@@ -66,7 +66,7 @@ namespace Deveel.Data {
             builder.AddRepository<MongoPerson>().WithFacade<IPerson>();
         }
 
-		protected virtual Task SeedAsync(MongoRepository<MongoPerson> repository) {
+		protected virtual Task SeedAsync(MongoRepository<MongoDbContext, MongoPerson> repository) {
 			return Task.CompletedTask;
 		}
 

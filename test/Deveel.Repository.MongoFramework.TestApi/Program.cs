@@ -68,7 +68,7 @@ public class Program {
 		builder.Services.AddMongoContext<PersonsDbContext>()
 			.UseConnection(urlBuilder.ToString());
 
-		builder.Services.AddMongoContext<UsersDbContext>()
+		builder.Services.AddMongoTenantContext<UsersDbContext>()
 			.UseConnection(urlBuilder.ToString())
 			.AddRepository<UserEntity>(ServiceLifetime.Scoped);
 

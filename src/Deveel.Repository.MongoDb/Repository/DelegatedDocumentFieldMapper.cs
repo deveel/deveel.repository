@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Deveel.Data {
-	public sealed class DelegatedDocumentFieldMapper<TDocument> : IDocumentFieldMapper<TDocument> where TDocument : class {
-		private readonly Func<string, string> mapper;
+namespace Deveel.Data
+{
+    [Obsolete("This class is deprecated and will be removed in future versions of the library. Use the new DocumentFieldMapper instead.")]
+    public sealed class DelegatedDocumentFieldMapper<TDocument> : IDocumentFieldMapper<TDocument> where TDocument : class
+    {
+        private readonly Func<string, string> mapper;
 
-		public DelegatedDocumentFieldMapper(Func<string, string> mapper) {
-			this.mapper = mapper;
-		}
+        public DelegatedDocumentFieldMapper(Func<string, string> mapper)
+        {
+            this.mapper = mapper;
+        }
 
-		public string MapField(string fieldName) => mapper(fieldName);
-	}
+        public string MapField(string fieldName) => mapper(fieldName);
+    }
 }

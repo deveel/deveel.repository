@@ -1,22 +1,19 @@
-﻿using System;
-
-using Finbuckle.MultiTenant;
+﻿using Finbuckle.MultiTenant;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 using MongoFramework;
 
 namespace Deveel.Data {
-	public class MongoRepositoryProvider<TEntity, TTenantInfo> : IRepositoryProvider<TEntity>, IDisposable 
+    public class MongoRepositoryProvider<TEntity, TTenantInfo> : IRepositoryProvider<TEntity>, IDisposable 
 		where TTenantInfo : class, ITenantInfo, new()
 		where TEntity : class {
 		private readonly IEnumerable<IMultiTenantStore<TTenantInfo>> stores;
 		private readonly ILoggerFactory loggerFactory;
 		private bool disposedValue;
 
-		private IDictionary<string, MongoRepository<TEntity>>? repositories;
+		private IDictionary<string, MongoRepository<MongoDbTenantContext, TEntity>>? repositories;
 
 		public MongoRepositoryProvider(
 			IEnumerable<IMultiTenantStore<TTenantInfo>> stores, ILoggerFactory? loggerFactory = null) {
@@ -54,10 +51,10 @@ namespace Deveel.Data {
 
 		async Task<IRepository> IRepositoryProvider.GetRepositoryAsync(string tenantId) => await GetRepositoryAsync(tenantId);
 
-		public async Task<MongoRepository<TEntity>> GetRepositoryAsync(string tenantId) {
+		public async Task<MongoRepository<MongoDbTenantContext, TEntity>> GetRepositoryAsync(string tenantId) {
 			try {
 				if (repositories == null)
-					repositories = new Dictionary<string, MongoRepository<TEntity>>();
+					repositories = new Dictionary<string, MongoRepository<MongoDbTenantContext, TEntity>>();
 
 				if (!repositories.TryGetValue(tenantId, out var repository)) {
 					var tenantInfo = await GetTenantInfoAsync(tenantId);
@@ -78,8 +75,8 @@ namespace Deveel.Data {
 			}
 		}
 
-		protected virtual MongoRepository<TEntity> CreateRepository(MongoDbTenantContext context, ILogger logger) {
-			return new MongoRepository<TEntity>(context, logger);
+		protected virtual MongoRepository<MongoDbTenantContext, TEntity> CreateRepository(MongoDbTenantContext context, ILogger logger) {
+			return new MongoRepository<MongoDbTenantContext, TEntity>(context, logger);
 		}
 
 		protected virtual void Dispose(bool disposing) {

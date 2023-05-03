@@ -13,7 +13,7 @@ using MongoFramework.Infrastructure.Mapping;
 using MongoFramework.Linq;
 
 namespace Deveel.Data {
-	public class MongoRepository<TEntity> : IRepository<TEntity>, 
+	public class MongoRepository<TContext, TEntity> : IRepository<TEntity>, 
 		IQueryableRepository<TEntity>, 
 		IPageableRepository<TEntity>, 
 		IFilterableRepository<TEntity>,
@@ -21,12 +21,13 @@ namespace Deveel.Data {
 		IControllableRepository, 
 		IAsyncDisposable, 
 		IDisposable
+		where TContext : class, IMongoDbContext
 		where TEntity : class 
 	{
 		private IMongoDbSet<TEntity>? _dbSet;
 		private bool disposed;
 
-		protected internal MongoRepository(MongoDbContext context, ILogger? logger = null) {
+		protected internal MongoRepository(TContext context, ILogger? logger = null) {
 			Context = context;
 			Logger = logger ?? NullLogger.Instance;
 
@@ -34,12 +35,12 @@ namespace Deveel.Data {
 				TenantId = tenantContext.TenantId;
 		}
 
-		public MongoRepository(MongoDbContext context, ILogger<MongoRepository<TEntity>>? logger = null)
+		public MongoRepository(TContext context, ILogger<MongoRepository<TContext, TEntity>>? logger = null)
 			: this(context, (ILogger?)logger) {
 		}
 
 
-		protected MongoDbContext Context { get; }
+		protected TContext Context { get; }
 
 		protected IMongoDbSet<TEntity> DbSet => GetEntitySet();
 

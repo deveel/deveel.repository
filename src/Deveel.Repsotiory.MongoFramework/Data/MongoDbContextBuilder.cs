@@ -41,8 +41,8 @@ namespace Deveel.Data {
         }
 
         private void RegisterTenantConnection() {
-            Services.TryAddScoped<MongoDbTenantConnection<TContext>, MongoDbTenantConnection<TContext>>();
-            Services.TryAddScoped<IMongoDbTenantConnection<TContext>, MongoDbTenantConnection<TContext>>();
+            Services.TryAdd(new ServiceDescriptor(typeof(MongoDbTenantConnection<TContext>), typeof(MongoDbTenantConnection<TContext>), defaultLifetime));
+            Services.TryAdd(new ServiceDescriptor(typeof(IMongoDbTenantConnection<TContext>), typeof(MongoDbTenantConnection<TContext>), defaultLifetime));
         }
 
         private void RegisterTenantContext() {
@@ -76,14 +76,13 @@ namespace Deveel.Data {
         public MongoDbContextBuilder<TContext> UseConnection<TConnection>()
             where TConnection : MongoDbConnection {
 
-            Services.Add(new ServiceDescriptor(typeof(IMongoDbConnection), typeof(TConnection), defaultLifetime));
-            Services.Add(new ServiceDescriptor(typeof(MongoDbConnection), typeof(TConnection), defaultLifetime));
+            Services.Add(new ServiceDescriptor(typeof(IMongoDbConnection<TContext>), typeof(TConnection), defaultLifetime));
+            Services.Add(new ServiceDescriptor(typeof(MongoDbConnection<TContext>), typeof(TConnection), defaultLifetime));
 
-			if (typeof(IMongoDbConnection<TContext>).IsAssignableFrom(typeof(TConnection)))
-				Services.Add(new ServiceDescriptor(typeof(IMongoDbConnection<TContext>), typeof(TConnection), defaultLifetime));
-
-            if (typeof(TConnection) != typeof(IMongoDbConnection))
+            if (typeof(TConnection) != typeof(MongoDbConnection<TContext>))
                 Services.Add(new ServiceDescriptor(typeof(TConnection), typeof(TConnection), defaultLifetime));
+
+            Services.TryAdd(new ServiceDescriptor(typeof(IMongoDbConnection), typeof(TConnection), defaultLifetime));
 
             return this;
         }
@@ -95,11 +94,12 @@ namespace Deveel.Data {
                 throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or whitespace.", nameof(connectionString));
 
             var factory = (IServiceProvider provider) =>
-                MongoDbConnection.FromConnectionString(connectionString);
+                MongoDbConnection<TContext>.FromConnectionString(connectionString);
 
-            Services.AddSingleton<IMongoDbConnection>(factory);
-            Services.AddSingleton<MongoDbConnection>(factory);
-			Services.AddSingleton<IMongoDbConnection<TContext>>(_ => MongoDbConnection<TContext>.FromConnectionString(connectionString));
+            Services.TryAdd(new ServiceDescriptor(typeof(IMongoDbConnection), factory, defaultLifetime));
+            Services.Add(new ServiceDescriptor(typeof(IMongoDbConnection<TContext>), factory, defaultLifetime));
+            Services.Add(new ServiceDescriptor(typeof(MongoDbConnection<TContext>), factory, defaultLifetime));
+            // Services.Add(new ServiceDescriptor(typeof(IMongoDbConnection<TContext>), _ => MongoDbConnection<TContext>.FromConnectionString(connectionString), defaultLifetime));
 
             return this;
         }
@@ -108,24 +108,30 @@ namespace Deveel.Data {
         public MongoDbContextBuilder<TContext> UseTenantConnection<TTenantInfo>()
             where TTenantInfo : class, ITenantInfo, new() {
 
-            Services.AddScoped<MongoDbTenantConnection<TContext, TTenantInfo>, MongoDbTenantConnection<TContext, TTenantInfo>>();
-            Services.AddScoped<IMongoDbTenantConnection<TContext>, MongoDbTenantConnection<TContext, TTenantInfo>>();
+            Services.Add(new ServiceDescriptor(typeof(MongoDbTenantConnection<TContext, TTenantInfo>), typeof(MongoDbTenantConnection<TContext, TTenantInfo>), defaultLifetime));
+            Services.Add(new ServiceDescriptor(typeof(IMongoDbTenantConnection<TContext>), typeof(MongoDbTenantConnection<TContext, TTenantInfo>), defaultLifetime));
 
-            UseConnection<MongoDbTenantConnection<TContext, TTenantInfo>>();
+            Services.TryAdd(new ServiceDescriptor(typeof(IMongoDbConnection), typeof(MongoDbTenantConnection<TContext, TTenantInfo>), defaultLifetime));
+
+            // UseConnection<MongoDbTenantConnection<TContext, TTenantInfo>>();
 
             return this;
         }
 
         public MongoDbContextBuilder<TContext> UseTenantConnection() {
 
-            Services.AddScoped<MongoDbTenantConnection<TContext>>();
-            Services.AddScoped<IMongoDbTenantConnection<TContext>, MongoDbTenantConnection<TContext>>();
+            Services.Add(new ServiceDescriptor(typeof(MongoDbTenantConnection<TContext>), typeof(MongoDbTenantConnection<TContext>), defaultLifetime));
+            Services.Add(new ServiceDescriptor(typeof(IMongoDbTenantConnection<TContext>), typeof(MongoDbTenantConnection<TContext>), defaultLifetime));
 
-            return UseConnection<MongoDbTenantConnection<TContext>>();
+            Services.TryAdd(new ServiceDescriptor(typeof(IMongoDbConnection), typeof(MongoDbTenantConnection<TContext>), defaultLifetime));
+
+            // UseConnection<MongoDbTenantConnection<TContext>>();
+
+            return this;
         }
 
-        public MongoRepositoryBuilder<TEntity> AddRepository<TEntity>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        public MongoRepositoryBuilder<TContext, TEntity> AddRepository<TEntity>(ServiceLifetime? lifetime = null)
             where TEntity : class
-            => new MongoRepositoryBuilder<TEntity>(Services, lifetime);
+            => new MongoRepositoryBuilder<TContext, TEntity>(Services, lifetime ?? defaultLifetime);
 	}
 }

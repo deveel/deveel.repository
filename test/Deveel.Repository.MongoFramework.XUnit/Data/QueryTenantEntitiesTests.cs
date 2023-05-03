@@ -1,5 +1,7 @@
 ﻿using System;
 
+using MongoFramework;
+
 namespace Deveel.Data {
 	public class QueryTenantEntitiesTests : MongoRepositoryProviderTestBase {
 		private readonly IList<MongoPerson> people;
@@ -8,7 +10,7 @@ namespace Deveel.Data {
 			people = GeneratePersons(100);
 		}
 
-		protected override async Task SeedAsync(MongoRepository<MongoPerson> repository) {
+		protected override async Task SeedAsync(MongoRepository<MongoDbTenantContext, MongoPerson> repository) {
 			await repository.CreateAsync(people);
 		}
 

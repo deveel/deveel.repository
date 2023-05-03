@@ -26,7 +26,10 @@ namespace Deveel.Data {
 			services.Add(new ServiceDescriptor(typeof(IRepository), repositoryType, lifetime));
 
 			if (repositoryType.GenericTypeArguments.Length > 0) {
-				var argType = repositoryType.GenericTypeArguments[0];
+				var argType = GetConceteType(repositoryType.GenericTypeArguments);
+
+				if (argType == null)
+					throw new ArgumentException($"Could not determine the entity type in '{repositoryType}'");
 				
 				// TODO: should we set any constraints here?
 				//if (!typeof(IDataEntity).IsAssignableFrom(argType))
@@ -43,6 +46,24 @@ namespace Deveel.Data {
 			services.Add(new ServiceDescriptor(repositoryType, repositoryType, lifetime));
 			
 			return services;
+		}
+
+		private static Type? GetConceteType(Type[] genericTypes) {
+			if (genericTypes.Length == 1 && genericTypes[0].IsClass)
+				return genericTypes[0];
+
+			var intefaces = genericTypes.Where(x => x.IsInterface);
+			var classes = genericTypes.Where(x => x.IsClass);
+
+			var inheritedTypes = classes.Where(x => intefaces.Any(y => y.IsAssignableFrom(x))).ToList();
+
+			if (inheritedTypes.Count == 0)
+				return null;
+
+			if (inheritedTypes.Count > 1)
+				throw new InvalidOperationException("Ambiguous reference in the definition of the repository");
+
+			return inheritedTypes[0];
 		}
 
         public static IServiceCollection AddRepositoryProvider<TProvider>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)

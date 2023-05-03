@@ -8,16 +8,20 @@ using MongoFramework;
 using MongoFramework.Linq;
 
 namespace Deveel.Data {
-    public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>, IFilterableRepository<TFacade>
+    public class MongoRepository<TContext, TEntity, TFacade> : MongoRepository<TContext, TEntity>, 
+		IRepository<TFacade>, 
+		IPageableRepository<TFacade>, 
+		IFilterableRepository<TFacade>
+		where TContext : class, IMongoDbContext
 		where TEntity : class, TFacade
 		where TFacade : class {
 
-		public MongoRepository(MongoDbContext context, ILogger<MongoRepository<TEntity, TFacade>>? logger = null)
+		public MongoRepository(TContext context, ILogger<MongoRepository<TContext, TEntity, TFacade>>? logger = null)
 			: this(context, (ILogger?) logger) {
 
 		}
 
-		protected internal MongoRepository(MongoDbContext context, ILogger? logger = null) : base(context, logger) {
+		protected internal MongoRepository(TContext context, ILogger? logger = null) : base(context, logger) {
 		}
 
 		Type IRepository.EntityType => typeof(TFacade);

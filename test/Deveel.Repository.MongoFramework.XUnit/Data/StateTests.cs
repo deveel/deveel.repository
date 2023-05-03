@@ -120,7 +120,7 @@ namespace Deveel.Data {
 
         #region StateRepository
 
-        class MongoStateRepository : MongoRepository<MongoPersonWithStatus>, IStateRepository<MongoPersonWithStatus, PersonStatus> {
+        class MongoStateRepository : MongoRepository<MongoDbContext, MongoPersonWithStatus>, IStateRepository<MongoPersonWithStatus, PersonStatus> {
             public MongoStateRepository(MongoDbContext context, ILogger<MongoStateRepository>? logger = null) 
                 : base(context, logger) {
             }

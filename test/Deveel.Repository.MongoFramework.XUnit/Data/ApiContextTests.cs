@@ -18,7 +18,6 @@ namespace Deveel.Data {
 	[Collection("Mongo Single Database")]
     public class ApiContextTests : IAsyncLifetime {
         private readonly WebApplicationFactory<Program> api;
-        private readonly MongoFrameworkTestFixture mongo;
 
 		private readonly JwtTokenGenerator jwt;
 
@@ -36,8 +35,6 @@ namespace Deveel.Data {
 			Environment.SetEnvironmentVariable("JWT:SecretKey", secretKey);
 
 			jwt = new JwtTokenGenerator(secretKey, "deveel");
-
-			this.mongo = mongo;
 
             Environment.SetEnvironmentVariable("ConnectionStrings:Mongo", mongo.ConnectionString);
 
