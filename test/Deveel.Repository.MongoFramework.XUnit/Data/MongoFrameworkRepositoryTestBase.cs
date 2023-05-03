@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 using Bogus;
 
@@ -82,23 +83,25 @@ namespace Deveel.Data {
 			await controller.DropRepositoryAsync<MongoPerson>();
 		}
 
+		[Table("persons")]
 		protected class MongoPerson : IPerson {
-			[Key]
+			[Key, Column("_id")]
 			public ObjectId Id { get; set; }
 
 
 			string? IPerson.Id => Id.ToEntityId();
 
+			[Column("first_name")]
 			public string FirstName { get; set; }
 
+			[Column("last_name")]
 			public string LastName { get; set; }
 
+			[Column("birth_date")]
 			public DateTime? BirthDate { get; set; }
 
+			[Column("description")]
 			public string? Description { get; set; }
-
-			[Version]
-			public string Version { get; set; }
 		}
 
 		protected interface IPerson {

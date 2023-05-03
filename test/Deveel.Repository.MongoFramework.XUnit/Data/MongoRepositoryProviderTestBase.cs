@@ -1,5 +1,7 @@
 ﻿using Bogus;
 
+using Deveel.Data.Entities;
+
 using Finbuckle.MultiTenant;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +38,7 @@ namespace Deveel.Data {
 
 		protected string ConnectionString => mongo.ConnectionString;
 
-		protected MongoRepositoryProvider<MongoPerson, TenantInfo> MongoRepositoryProvider => serviceProvider.GetRequiredService<MongoRepositoryProvider<MongoPerson, TenantInfo>>();
+		protected MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo> MongoRepositoryProvider => serviceProvider.GetRequiredService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>();
 
 		protected MongoRepository<MongoDbTenantContext, MongoPerson> MongoRepository => MongoRepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -74,18 +76,26 @@ namespace Deveel.Data {
 					}) ;
 				});
 
-			services
-				.AddMongoContext(builder => {
-					builder.UseTenantConnection();
-					builder.AddRepository<MongoPerson>()
-						.WithDefaultProvider()
-						.WithFacade<IPerson>()
-						.WithDefaultFacadeProvider<IPerson>();
-				})
-				.AddRepositoryController();
+			AddMongoDbContext(services);
+			
+			services.AddRepositoryController();
 		}
 
-		public virtual async Task InitializeAsync() {
+		protected virtual void AddMongoDbContext(IServiceCollection services) {
+			var builder = services.AddMongoTenantContext();
+			AddRepository(builder);
+		}
+
+		protected virtual void AddRepository<TContext>(MongoDbContextBuilder<TContext> builder)
+			where TContext : class, IMongoDbContext {
+            builder.UseTenantConnection();
+            builder.AddRepository<MongoPerson>()
+                .WithDefaultProvider()
+                .WithFacade<IPerson>()
+                .WithDefaultFacadeProvider<IPerson>();
+        }
+
+        public virtual async Task InitializeAsync() {
 			var controller = serviceProvider.GetRequiredService<IRepositoryController>();
 			await controller.CreateTenantRepositoryAsync<MongoPerson>(TenantId);
 
@@ -104,11 +114,11 @@ namespace Deveel.Data {
 			//await repository.DropAsync();
 		}
 
-		protected virtual Task SeedAsync(MongoRepository<MongoDbTenantContext, MongoPerson> repository) {
+		protected virtual Task SeedAsync(IRepository<MongoPerson> repository) {
 			return Task.CompletedTask;
 		}
 
-		[MultiTenant]
+		[MultiTenant, Entity]
 		protected class MongoPerson : IPerson, IHaveTenantId {
 			[BsonId]
 			public ObjectId Id { get; set; }

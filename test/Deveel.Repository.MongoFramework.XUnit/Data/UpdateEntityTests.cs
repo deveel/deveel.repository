@@ -11,9 +11,6 @@ namespace Deveel.Data {
 		public UpdateEntityTests(MongoFrameworkTestFixture mongo) 
 			: base(mongo) {
 			people = GeneratePersons(100);
-			foreach (var person in people) {
-				person.Version = Guid.NewGuid().ToString();
-			}
 		}
 
 		protected override async Task SeedAsync(MongoRepository<MongoDbContext, MongoPerson> repository) {

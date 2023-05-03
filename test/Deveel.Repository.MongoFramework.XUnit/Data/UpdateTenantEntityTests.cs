@@ -12,7 +12,7 @@ namespace Deveel.Data {
 			people = GeneratePersons(100);
 		}
 
-		protected override async Task SeedAsync(MongoRepository<MongoDbTenantContext, MongoPerson> repository) {
+		protected override async Task SeedAsync(IRepository<MongoPerson> repository) {
 			await repository.CreateAsync(people);
 		}
 

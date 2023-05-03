@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Deveel.Data {
@@ -26,15 +28,11 @@ namespace Deveel.Data {
 			services.Add(new ServiceDescriptor(typeof(IRepository), repositoryType, lifetime));
 
 			if (repositoryType.GenericTypeArguments.Length > 0) {
-				var argType = GetConceteType(repositoryType.GenericTypeArguments);
+				var argType = GetEntityType(repositoryType);
 
 				if (argType == null)
 					throw new ArgumentException($"Could not determine the entity type in '{repositoryType}'");
 				
-				// TODO: should we set any constraints here?
-				//if (!typeof(IDataEntity).IsAssignableFrom(argType))
-				//	throw new ArgumentException($"The argument type '{argType}' of the provided repository is not an entity", nameof(repositoryType));
-
 				var compareType = typeof(IRepository<>).MakeGenericType(argType);
 
 				if (!compareType.IsAssignableFrom(repositoryType))
@@ -48,7 +46,19 @@ namespace Deveel.Data {
 			return services;
 		}
 
-		private static Type? GetConceteType(Type[] genericTypes) {
+		private static Type? GetEntityType(Type serviceType) {
+			var entityTypeAttr = serviceType.GetCustomAttribute<EntityTypeAttribute>(true);
+			if (entityTypeAttr != null)
+				return entityTypeAttr.EntityType;
+
+			var genericTypes = serviceType.GenericTypeArguments;
+
+			var entityTypes = genericTypes.Where(x => Attribute.IsDefined(x, typeof(EntityAttribute))).ToList();
+			if (entityTypes.Count > 1)
+				throw new RepositoryException($"Ambigous entity type specifications: {serviceType} has multiple 'Entity' types as type argument '{String.Join(", ", entityTypes)}'");
+			if (entityTypes.Count == 1)
+				return entityTypes[0];
+
 			if (genericTypes.Length == 1 && genericTypes[0].IsClass)
 				return genericTypes[0];
 
@@ -86,13 +96,13 @@ namespace Deveel.Data {
 			if (!typeof(IRepositoryProvider).IsAssignableFrom(providerType))
 				throw new ArgumentException($"The type '{providerType}' is not assignable from '{typeof(IRepositoryProvider)}'", nameof(providerType));
 
-			services.Add(new ServiceDescriptor(typeof(IRepositoryProvider), providerType, lifetime));
+			services.TryAddEnumerable(new ServiceDescriptor(typeof(IRepositoryProvider), providerType, lifetime));
 
 			if (providerType.GenericTypeArguments.Length > 0) {
-				var argType = providerType.GenericTypeArguments[0];
-				// TODO: should we set any constraints here?
-				//if (!typeof(IDataEntity).IsAssignableFrom(argType))
-				//	throw new ArgumentException($"The argument type '{argType}' of the provided repository is not an entity", nameof(providerType));
+				var argType = GetEntityType(providerType);
+
+				if (argType == null)
+					throw new RepositoryException($"Unable to determine the entity of the provider '{providerType}'");
 
 				var compareType = typeof(IRepositoryProvider<>).MakeGenericType(argType);
 
