@@ -1,11 +1,20 @@
-﻿using MongoDB.Driver;
+﻿using System.Reflection;
+
+using MongoDB.Driver;
 
 using MongoFramework;
 using MongoFramework.Infrastructure.Diagnostics;
 
 namespace Deveel.Data {
     public static class MongoDbConnectionExtensions {
-        public static IMongoDbConnection<TContext> ForContext<TContext>(this IMongoDbConnection connection)
+		public static MongoUrl? GetUrl(this IMongoDbConnection connection) {
+			var connectionType = connection.GetType();
+			var urlProperty = connectionType.GetProperty("Url", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+			return urlProperty == null ? null : (MongoUrl?)urlProperty.GetValue(connection);
+		}
+
+		public static IMongoDbConnection<TContext> ForContext<TContext>(this IMongoDbConnection connection)
             where TContext : class, IMongoDbContext {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 

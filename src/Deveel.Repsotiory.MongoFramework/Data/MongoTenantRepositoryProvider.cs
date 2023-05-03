@@ -112,7 +112,7 @@ namespace Deveel.Data {
 			} catch (RepositoryException) {
 				throw;
 			} catch (Exception ex) {
-				throw new RepositoryException($"Unabe to create tje repository for tenant '{tenantId}'", ex);
+				throw new RepositoryException($"Unabe to create the repository for tenant '{tenantId}'", ex);
 			}
 		}
 

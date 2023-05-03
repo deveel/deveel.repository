@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Finbuckle.MultiTenant;
+
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using MongoFramework;
@@ -32,11 +34,28 @@ namespace Deveel.Data {
 			if (typeof(TContext) == typeof(MongoDbContext))
 				return new MongoDbContext(Connection) as TContext;
 
-			var ctor2 = typeof(TContext).GetConstructor(new Type[] { typeof(IMongoDbConnection<TContext>), typeof(string) });
-			if (ctor2 != null)
+			var ctor1 = typeof(TContext).GetConstructor(new Type[] { typeof(IMongoDbConnection<TContext>), typeof(string) });
+			if (ctor1 != null)
 				return Activator.CreateInstance(typeof(TContext), new object[] { Connection.ForContext<TContext>(), tenantId }) as TContext;
 
+			var ctor2 = typeof(TContext).GetConstructor(new Type[] { typeof(IMongoDbTenantConnection<TContext>) });
+			if (ctor2 != null)
+				return Activator.CreateInstance(typeof(TContext), new[] { CreateTenantConnection(tenantId) }) as TContext;
+
 			throw new NotSupportedException($"Cannot create '{typeof(TContext)}' MongoDB Context");
+		}
+
+		private IMongoDbTenantConnection<TContext> CreateTenantConnection(string tenantId) {
+			var connectionString = Connection.GetUrl()?.ToString();
+
+			var tenantContext = new MultiTenantContext<TenantInfo> {
+				TenantInfo = new TenantInfo { 
+					Id = tenantId,
+					ConnectionString = connectionString
+				}
+			};
+
+			return new MongoDbTenantConnection<TContext>(tenantContext);
 		}
 
 		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId) => await GetRepositoryAsync(tenantId);
@@ -63,7 +82,7 @@ namespace Deveel.Data {
 			} catch (RepositoryException) {
 				throw;
 			} catch (Exception ex) {
-				throw new RepositoryException($"Unabe to create tje repository for tenant '{tenantId}'", ex);
+				throw new RepositoryException($"Unabe to create the repository for tenant '{tenantId}'", ex);
 			}
 		}
 
