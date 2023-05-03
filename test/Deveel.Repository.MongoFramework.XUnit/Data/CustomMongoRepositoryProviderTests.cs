@@ -42,7 +42,7 @@ namespace Deveel.Data {
 
         protected string ConnectionString => mongo.ConnectionString;
 
-        protected MongoRepositoryProvider<PersonsDbContext, MongoPerson, TenantInfo> MongoRepositoryProvider => serviceProvider.GetRequiredService<MongoRepositoryProvider<PersonsDbContext, MongoPerson, TenantInfo>>();
+        protected MongoTenantRepositoryProvider<PersonsDbContext, MongoPerson, TenantInfo> MongoRepositoryProvider => serviceProvider.GetRequiredService<MongoTenantRepositoryProvider<PersonsDbContext, MongoPerson, TenantInfo>>();
 
         protected MongoRepository<PersonsDbContext, MongoPerson> MongoRepository => MongoRepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -93,10 +93,10 @@ namespace Deveel.Data {
         protected virtual void AddRepository(MongoDbContextBuilder<PersonsDbContext> builder) {
             builder.UseTenantConnection();
             builder.AddRepository<MongoPerson>()
-                .Use<PersonRepository>()
-                .WithProvider<PersonRepositoryProvider>()
+                .OfType<PersonRepository>()
+                .WithTenantProvider<PersonRepositoryProvider>()
                 .WithFacade<IPerson>()
-                .WithFacadeProvider<IPerson, PersonRepositoryProvider>();
+                .WithTenantFacadeProvider<IPerson, PersonRepositoryProvider>();
         }
 
         public virtual async Task InitializeAsync() {
@@ -152,7 +152,7 @@ namespace Deveel.Data {
             string? Description { get; }
         }
 
-        protected class PersonRepositoryProvider : MongoRepositoryProvider<PersonsDbContext, MongoPerson, IPerson, TenantInfo> {
+        protected class PersonRepositoryProvider : MongoTenantRepositoryProvider<PersonsDbContext, MongoPerson, IPerson, TenantInfo> {
             public PersonRepositoryProvider(IEnumerable<IMultiTenantStore<TenantInfo>> stores, ILoggerFactory? loggerFactory = null)
                 : base(stores, loggerFactory) {
             }

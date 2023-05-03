@@ -38,7 +38,7 @@ namespace Deveel.Data {
 
 		protected string ConnectionString => mongo.ConnectionString;
 
-		protected MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo> MongoRepositoryProvider => serviceProvider.GetRequiredService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>();
+		protected MongoTenantRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo> MongoRepositoryProvider => serviceProvider.GetRequiredService<MongoTenantRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>();
 
 		protected MongoRepository<MongoDbTenantContext, MongoPerson> MongoRepository => MongoRepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -90,9 +90,9 @@ namespace Deveel.Data {
 			where TContext : class, IMongoDbContext {
             builder.UseTenantConnection();
             builder.AddRepository<MongoPerson>()
-                .WithDefaultProvider()
+                .WithDefaultTenantProvider()
                 .WithFacade<IPerson>()
-                .WithDefaultFacadeProvider<IPerson>();
+                .WithDefaultFacadeTenantProvider<IPerson>();
         }
 
         public virtual async Task InitializeAsync() {

@@ -51,7 +51,7 @@ namespace Deveel.Data {
 
         protected virtual void AddRepository(MongoDbContextBuilder<MongoDbContext> builder) {
             builder.AddRepository<MongoPersonWithStatus>()
-                .Use<MongoStateRepository>();
+                .OfType<MongoStateRepository>();
         }
 
         public async Task InitializeAsync() {
