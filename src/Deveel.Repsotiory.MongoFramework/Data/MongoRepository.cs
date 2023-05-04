@@ -388,14 +388,20 @@ namespace Deveel.Data {
 			try {
 				var idValue = GetIdValue(id);
 
+				var entry = Context.ChangeTracker.GetEntryById<TEntity>(idValue);
+				if (entry != null && entry.State == EntityEntryState.Deleted)
+					return null;
+
 				var result = await DbSet.FindAsync(idValue);
 
-				if (result != null) {
-					if (!String.IsNullOrWhiteSpace(TenantId)) {
-						Logger.TraceFoundByIdForTenant(TenantId, id);
-					} else {
-						Logger.TraceFoundById(id);
-					}
+				if (result == null)
+					return null;
+
+
+				if (!String.IsNullOrWhiteSpace(TenantId)) {
+					Logger.TraceFoundByIdForTenant(TenantId, id);
+				} else {
+					Logger.TraceFoundById(id);
 				}
 
 				return result;
