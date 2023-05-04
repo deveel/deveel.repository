@@ -10,7 +10,7 @@ namespace Deveel.Data {
 		private MongoDbRunner mongo;
 
 		public MongoFrameworkTestFixture() {
-			mongo = MongoDbRunner.Start(logger: NullLogger.Instance, singleNodeReplSet: true);
+			mongo = MongoDbRunner.Start(logger: NullLogger.Instance, singleNodeReplSet: false);
 		}
 
 		public string ConnectionString => mongo.ConnectionString;

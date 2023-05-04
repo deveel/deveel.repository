@@ -17,6 +17,8 @@ namespace Deveel.Data {
 			await repository.CreateAsync(people);
 		}
 
+		private MongoPerson NextRandom() => people[Random.Shared.Next(0, people.Count - 1)];
+
 		[Fact]
 		public async Task Mongo_UpdateExisting() {
 			var entity = people[^1];
@@ -63,7 +65,9 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_UpdateExisting() {
-			var entity = people[^1];
+			var person = NextRandom();
+
+			var entity = await Repository.FindByIdAsync(person.Id.ToString());
 
 			entity.BirthDate = new DateTime(1980, 06, 04);
 
@@ -74,9 +78,13 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_UpdateExisting() {
-			var entity = people[^1];
+			var person = NextRandom();
 
-			entity.BirthDate = new DateTime(1980, 06, 04);
+			var entity = await FacadeRepository.FindByIdAsync(person.Id.ToString());
+
+			Assert.NotNull(entity);
+
+			((MongoPerson) entity).BirthDate = new DateTime(1980, 06, 04);
 
 			var result = await FacadeRepository.UpdateAsync(entity);
 

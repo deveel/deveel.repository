@@ -276,19 +276,44 @@ namespace Deveel.Data {
 		#region Update
 
 		public async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
-			try {
-				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
-				var filter = entityDef.CreateIdFilterFromEntity(entity);
+			if (entity is null) 
+				throw new ArgumentNullException(nameof(entity));
 
-				if (!await ExistsAsync(filter, cancellationToken))
+			ThrowIfDisposed();
+			cancellationToken.ThrowIfCancellationRequested();
+
+			var id = GetIdValue(entity);
+
+			if (id == null)
+				throw new ArgumentException(nameof(entity), "Cannot determine the identifier of the entity");
+
+			if (!String.IsNullOrWhiteSpace(TenantId)) {
+				Logger.TraceUpdatingForTenant(TenantId, id.ToString()!);
+			} else {
+				Logger.TraceUpdating(id.ToString()!);
+			}
+
+			try {
+				var entry = Context.ChangeTracker.GetEntryById<TEntity>(id);
+				if (entry == null || entry.State == EntityEntryState.Deleted)
 					return false;
 
 				DbSet.Update(entity);
+				var updated = entry.State == EntityEntryState.Updated;
+
 				await Context.SaveChangesAsync(cancellationToken);
 
-				return true;
-			} catch (Exception ex) {
+				if (updated) {
+					if (!String.IsNullOrWhiteSpace(TenantId)) {
+						Logger.TraceUpdatedForTenant(TenantId, id.ToString()!);
+					} else {
+						Logger.TraceUpdated(id.ToString()!);
+					}
+				}
 
+				return updated;
+			} catch (Exception ex) {
+				Logger.LogUnknownEntityError(ex, id.ToString()!);
 				throw new RepositoryException("Unable to update the entity", ex);
 			}
 		}
@@ -303,6 +328,9 @@ namespace Deveel.Data {
 		public async Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			if (entity is null) 
 				throw new ArgumentNullException(nameof(entity));
+
+			ThrowIfDisposed();
+			cancellationToken.ThrowIfCancellationRequested();
 
 			var entityId = GetIdValue(entity);
 			if (entityId == null)
@@ -321,12 +349,6 @@ namespace Deveel.Data {
 				if (entry == null)
 					return false;
 
-				//var toDelete = await DbSet.FindAsync(entityId);
-				//if (toDelete == null)
-				//	return false;
-
-				//DbSet.Remove(toDelete);
-
 				DbSet.Remove(entity);
 				await Context.SaveChangesAsync(cancellationToken);
 
@@ -336,7 +358,7 @@ namespace Deveel.Data {
 					Logger.TraceDeleted(id);
 				}
 
-				return true;
+				return entry.State == EntityEntryState.Deleted;
 			} catch (Exception ex) {
 				Logger.LogUnknownEntityError(ex, id);
 
@@ -353,11 +375,32 @@ namespace Deveel.Data {
 		#region FindById
 
 		public async Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default) {
+			ThrowIfDisposed();
+			cancellationToken.ThrowIfCancellationRequested();
+
+
+			if (!String.IsNullOrWhiteSpace(TenantId)) {
+				Logger.TraceFindingByIdForTenant(TenantId, id);
+			} else {
+				Logger.TraceFindingById(id);
+			}
+
 			try {
 				var idValue = GetIdValue(id);
 
-				return await DbSet.FindAsync(idValue);
+				var result = await DbSet.FindAsync(idValue);
+
+				if (result != null) {
+					if (!String.IsNullOrWhiteSpace(TenantId)) {
+						Logger.TraceFoundByIdForTenant(TenantId, id);
+					} else {
+						Logger.TraceFoundById(id);
+					}
+				}
+
+				return result;
 			} catch (Exception ex) {
+				Logger.LogUnknownEntityError(ex, id);
 				throw new RepositoryException("Unable to find the entity", ex);
 			}
 		}

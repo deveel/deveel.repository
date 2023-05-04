@@ -16,6 +16,22 @@ namespace Deveel.Data {
 						Message = "Unknown error while operating on the repository for entity {EntityId}")]
 		public static partial void LogUnknownEntityError(this ILogger logger, Exception ex, string entityId);
 
+		[LoggerMessage(EventId = 1000231, Level = LogLevel.Debug, 
+			Message = "Trying to find entity with ID {EntityId}")]
+		public static partial void TraceFindingById(this ILogger logger, string entityId);
+
+		[LoggerMessage(EventId = 1000232, Level = LogLevel.Debug, 
+			Message = "Trying to find entity with ID {EntityId} for tenant {TenantId}")]
+		public static partial void TraceFindingByIdForTenant(this ILogger logger, string tenantId, string entityId);
+
+		[LoggerMessage(EventId = 1000233, Level = LogLevel.Debug, 
+			Message = "An entity with ID {EntityId} found")]
+		public static partial void TraceFoundById(this ILogger logger, string entityId);
+
+		[LoggerMessage(EventId = 1000234, Level = LogLevel.Debug, 
+			Message = "An entity with ID {EntityId} found for tenant {TenantId}")]
+		public static partial void TraceFoundByIdForTenant(this ILogger logger, string tenantId, string entityId);
+
 		[LoggerMessage(EventId = 100024, Level = LogLevel.Debug, Message = "Deleting entity {EntityId}")]
 		public static partial void TraceDeleting(this ILogger logger, string entityId);
 
@@ -32,7 +48,7 @@ namespace Deveel.Data {
 		[LoggerMessage(EventId = 100023, Level = LogLevel.Debug, Message = "Creating new entity")]
 		public static partial void TraceCreating(this ILogger logger);
 
-		[LoggerMessage(EventId = 1000231, Level = LogLevel.Debug, Message = "Creating new entity for tenant {TenantId}")]
+		[LoggerMessage(EventId = 1000236, Level = LogLevel.Debug, Message = "Creating new entity for tenant {TenantId}")]
 		public static partial void TraceCreatingForTenant(this ILogger logger, string tenantId);
 
 		[LoggerMessage(EventId = 100022, Level = LogLevel.Debug, Message = "Entity {EntityId} created")]
@@ -41,5 +57,16 @@ namespace Deveel.Data {
 		[LoggerMessage(EventId = 1000221, Level = LogLevel.Debug, Message = "Entity {EntityId} created for tenant {TenantId}")]
 		public static partial void TraceCreatedForTenant(this ILogger logger, string tenantId, string entityId);
 
+		[LoggerMessage(EventId = 100021, Level = LogLevel.Debug, Message = "Updating entity {EntityId}")]
+		public static partial void TraceUpdating(this ILogger logger, string entityId);
+
+		[LoggerMessage(EventId = 1000211, Level = LogLevel.Debug, Message = "Updating entity {EntityId} for tenant {TenantId}")]
+		public static partial void TraceUpdatingForTenant(this ILogger logger, string tenantId, string entityId);
+
+		[LoggerMessage(EventId = 100020, Level = LogLevel.Debug, Message = "Entity {EntityId} updated")]
+		public static partial void TraceUpdated(this ILogger logger, string entityId);
+
+		[LoggerMessage(EventId = 1000201, Level = LogLevel.Debug, Message = "Entity {EntityId} updated for tenant {TenantId}")]
+		public static partial void TraceUpdatedForTenant(this ILogger logger, string tenantId, string entityId);
 	}
 }
