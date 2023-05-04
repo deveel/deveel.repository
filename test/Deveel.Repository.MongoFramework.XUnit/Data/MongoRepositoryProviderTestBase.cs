@@ -40,17 +40,27 @@ namespace Deveel.Data {
 			.GetDatabase(DatabaseName)
 			.GetCollection<MongoPerson>("persons");
 
+		protected async Task<MongoPerson?> FindPerson(ObjectId id) {
+			var collection = MongoCollection;
+			var result = await collection.FindAsync(x => x.Id == id);
+
+			return await result.FirstOrDefaultAsync();
+		}
+
 		protected Faker<MongoPerson> PersonFaker { get; }
 
 		protected string TenantId { get; } = Guid.NewGuid().ToString("N");
 
 		protected string ConnectionString => mongo.ConnectionString;
 
-		protected MongoTenantRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo> MongoRepositoryProvider => serviceProvider.GetRequiredService<MongoTenantRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>();
+		protected MongoTenantRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo> MongoRepositoryProvider 
+			=> serviceProvider.GetRequiredService<MongoTenantRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>();
 
-		protected MongoRepository<MongoDbTenantContext, MongoPerson> MongoRepository => MongoRepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
+		protected MongoRepository<MongoDbTenantContext, MongoPerson> MongoRepository => 
+			MongoRepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
 
-		protected IRepositoryProvider<MongoPerson> RepositoryProvider => serviceProvider.GetRequiredService<IRepositoryProvider<MongoPerson>>();
+		protected IRepositoryProvider<MongoPerson> RepositoryProvider => 
+			serviceProvider.GetRequiredService<IRepositoryProvider<MongoPerson>>();
 
 		protected IRepository<MongoPerson> Repository => RepositoryProvider.GetRepository(TenantId);
 

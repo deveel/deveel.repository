@@ -3,6 +3,8 @@ using MongoDB.Driver;
 
 using MongoFramework;
 
+using SharpCompress.Common;
+
 namespace Deveel.Data {
 	public sealed class DeleteTenantEntityTests : MongoRepositoryProviderTestBase {
 		private readonly IList<MongoPerson> people;
@@ -25,7 +27,7 @@ namespace Deveel.Data {
 
 			Assert.True(result);
 
-			var found = await (await MongoCollection.FindAsync(x => x.Id == entity.Id)).FirstOrDefaultAsync();
+			var found = await FindPerson(entity.Id);
 			Assert.Null(found);
 		}
 
@@ -37,7 +39,7 @@ namespace Deveel.Data {
 
 			Assert.True(result);
 
-			var found = await (await MongoCollection.FindAsync(x => x.Id == entity.Id)).FirstOrDefaultAsync();
+			var found = await FindPerson(entity.Id);
 			Assert.Null(found);
 		}
 
@@ -48,7 +50,9 @@ namespace Deveel.Data {
 			var result = await FacadeRepository.DeleteAsync(entity);
 
 			Assert.True(result);
-			var found = await (await MongoCollection.FindAsync(x => x.Id == entity.Id)).FirstOrDefaultAsync();
+
+
+			var found = await FindPerson(entity.Id);
 			Assert.Null(found);
 
 		}
@@ -84,29 +88,37 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_DeleteById_Existing() {
-			var id = people[56].Id;
+			var id = NextRandom().Id;
 
 			var result = await MongoRepository.DeleteByIdAsync(id.ToEntityId());
-
 			Assert.True(result);
+
+			var found = await FindPerson(id);
+			Assert.Null(found);
 		}
 
 		[Fact]
 		public async Task Repository_DeleteById_Existing() {
-			var id = people[56].Id;
+			var id = NextRandom().Id;
 
 			var result = await Repository.DeleteByIdAsync(id.ToEntityId());
 
 			Assert.True(result);
+
+			var found = await FindPerson(id);
+			Assert.Null(found);
 		}
 
 		[Fact]
 		public async Task FacadeRepository_DeleteById_Existing() {
-			var id = people[56].Id;
+			var id = NextRandom().Id;
 
 			var result = await FacadeRepository.DeleteByIdAsync(id.ToEntityId());
 
 			Assert.True(result);
+
+			var found = await FindPerson(id);
+			Assert.Null(found);
 		}
 
 		[Fact]

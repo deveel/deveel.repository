@@ -64,6 +64,8 @@ namespace Deveel.Data {
 		private static string RequireString(object value) {
 			if (value is string s)
 				return s;
+			if (value is ObjectId id)
+				return id.ToString();
 
 			var result = Convert.ToString(value, CultureInfo.InvariantCulture);
 			if (String.IsNullOrWhiteSpace(result))
@@ -184,7 +186,7 @@ namespace Deveel.Data {
 
 				return list.Any();
 			} catch (Exception ex) {
-
+				Logger.LogUnknownError(ex);
 				throw new RepositoryException("Unable to determine the existence of the repository", ex);
 			}
 		}
@@ -196,7 +198,7 @@ namespace Deveel.Data {
 				// TODO: should we also create the indices here?
 				await Context.Connection.GetDatabase().CreateCollectionAsync(entityDef.CollectionName, null, cancellationToken);
 			} catch (Exception ex) {
-
+				Logger.LogUnknownError(ex);
 				throw new RepositoryException("Unable to create the repository", ex);
 			}
 		}
@@ -207,7 +209,7 @@ namespace Deveel.Data {
 
 				await Context.Connection.GetDatabase().DropCollectionAsync(entityDef.CollectionName, cancellationToken);
 			} catch (Exception ex) {
-
+				Logger.LogUnknownError(ex);
 				throw new RepositoryException("Unable to drop the repository", ex);
 			}
 		}
@@ -220,14 +222,28 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
+			if (!String.IsNullOrWhiteSpace(TenantId)) {
+				Logger.TraceCreatingForTenant(TenantId);
+			} else {
+				Logger.TraceCreating();
+			}
+
 			try {
 				DbSet.Add(entity);
 				await DbSet.Context.SaveChangesAsync(cancellationToken);
 
 				// TODO: this is UGLY! change the IRepository to use object keys instead?
-				return RequireString(GetIdValue(entity));
+				var id = RequireString(GetIdValue(entity));
+
+				if (!String.IsNullOrWhiteSpace(TenantId)) {
+					Logger.TraceCreatedForTenant(TenantId, id);
+				} else {
+					Logger.TraceCreated(id);
+				}
+
+				return id;
 			} catch (Exception ex) {
-				Logger.LogError(ex, "Error creating an entity");
+				Logger.LogUnknownError(ex);
 				throw new RepositoryException("Unable to create the entity", ex);
 			}
 		}
@@ -249,7 +265,7 @@ namespace Deveel.Data {
 				// TODO: this is UGLY! Change the IRepository to work with object keys
 				return entities.Select(x => RequireString(GetIdValue(x))).ToList();
 			} catch (Exception ex) {
-
+				Logger.LogUnknownError(ex);
 				throw new RepositoryException("Could not add the list of entities", ex);
 			}
 		}
@@ -287,10 +303,18 @@ namespace Deveel.Data {
 			if (entity is null) 
 				throw new ArgumentNullException(nameof(entity));
 
+			var entityId = GetIdValue(entity);
+			if (entityId == null)
+				throw new ArgumentException("The entity does not have an ID", nameof(entity));
+
+			var id = RequireString(entityId);
+
 			try {
-				var entityId = GetIdValue(entity);
-				if (entityId == null)
-					return false;
+				if (!String.IsNullOrWhiteSpace(TenantId)) {
+					Logger.TraceDeletingForTenant(TenantId, id);
+				} else {
+					Logger.TraceDeleting(id);
+				}
 
 				var toDelete = await DbSet.FindAsync(entityId);
 				if (toDelete == null)
@@ -301,8 +325,16 @@ namespace Deveel.Data {
 				DbSet.Remove(entity);
 				await Context.SaveChangesAsync(cancellationToken);
 
+				if (!String.IsNullOrWhiteSpace(TenantId)) {
+					Logger.TraceDeletedForTenant(TenantId, id);
+				} else {
+					Logger.TraceDeleted(id);
+				}
+
 				return true;
 			} catch (Exception ex) {
+				Logger.LogUnknownEntityError(ex, id);
+
 				throw new RepositoryException("Unable to delete the entity", ex);
 			}
 		}
