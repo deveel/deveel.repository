@@ -8,6 +8,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 
 using MongoFramework;
+using MongoFramework.Infrastructure;
 using MongoFramework.Infrastructure.Commands;
 using MongoFramework.Infrastructure.Mapping;
 using MongoFramework.Linq;
@@ -316,9 +317,13 @@ namespace Deveel.Data {
 					Logger.TraceDeleting(id);
 				}
 
-				var toDelete = await DbSet.FindAsync(entityId);
-				if (toDelete == null)
+				var entry = Context.ChangeTracker.GetEntry(entity);
+				if (entry == null)
 					return false;
+
+				//var toDelete = await DbSet.FindAsync(entityId);
+				//if (toDelete == null)
+				//	return false;
 
 				//DbSet.Remove(toDelete);
 

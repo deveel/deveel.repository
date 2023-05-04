@@ -33,26 +33,37 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_DeleteExisting() {
-			var entity = NextRandom();
+			var person = NextRandom();
+
+			var entity = await Repository.FindByIdAsync(person.Id.ToEntityId());
+			Assert.NotNull(entity);
 
 			var result = await Repository.DeleteAsync(entity);
 
 			Assert.True(result);
 
-			var found = await FindPerson(entity.Id);
+			var found = await FindPerson(person.Id);
 			Assert.Null(found);
+
+			var repo = RepositoryProvider.GetRepository(TenantId);
+			var found2 = await repo.FindByIdAsync(person.Id.ToEntityId());
+
+			Assert.Null(found2);
 		}
 
 		[Fact]
 		public async Task FacadeRepository_DeleteExisting() {
-			var entity = NextRandom();
+			var person = NextRandom();
+
+			var entity = await FacadeRepository.FindByIdAsync(person.Id.ToEntityId());
+			Assert.NotNull(entity);
 
 			var result = await FacadeRepository.DeleteAsync(entity);
 
 			Assert.True(result);
 
 
-			var found = await FindPerson(entity.Id);
+			var found = await FindPerson(ObjectId.Parse(entity.Id));
 			Assert.Null(found);
 
 		}

@@ -10,5 +10,8 @@
         <member name="T:Deveel.Data.LoggerExtensions.__TraceDeletedForTenantStruct">
             <summary> This API supports the logging infrastructure and is not intended to be used directly from your code. It is subject to change in the future. </summary>
         </member>
+        <member name="T:Deveel.Data.LoggerExtensions.__TraceCreatedForTenantStruct">
+            <summary> This API supports the logging infrastructure and is not intended to be used directly from your code. It is subject to change in the future. </summary>
+        </member>
     </members>
 </doc>
