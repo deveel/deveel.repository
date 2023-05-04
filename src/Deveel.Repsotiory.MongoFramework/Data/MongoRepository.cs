@@ -296,7 +296,9 @@ namespace Deveel.Data {
 				if (toDelete == null)
 					return false;
 
-				DbSet.Remove(toDelete);
+				//DbSet.Remove(toDelete);
+
+				DbSet.Remove(entity);
 				await Context.SaveChangesAsync(cancellationToken);
 
 				return true;

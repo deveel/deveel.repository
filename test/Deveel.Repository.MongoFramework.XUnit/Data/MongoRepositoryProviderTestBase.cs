@@ -1,6 +1,7 @@
-﻿using Bogus;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-using Deveel.Data.Entities;
+using Bogus;
 
 using Finbuckle.MultiTenant;
 
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
 
 using MongoFramework;
 
@@ -31,6 +33,12 @@ namespace Deveel.Data {
 				.RuleFor(x => x.LastName, f => f.Name.LastName())
 				.RuleFor(x => x.BirthDate, f => f.Date.Past(20));
 		}
+
+		protected virtual string DatabaseName { get; } = "test_db";
+
+		protected IMongoCollection<MongoPerson> MongoCollection => new MongoClient(mongo.ConnectionString)
+			.GetDatabase(DatabaseName)
+			.GetCollection<MongoPerson>("persons");
 
 		protected Faker<MongoPerson> PersonFaker { get; }
 
@@ -72,7 +80,7 @@ namespace Deveel.Data {
 						Id = TenantId,
 						Identifier = "test",
 						Name = "Test Tenant",
-						ConnectionString = mongo.SetDatabase("test_db")
+						ConnectionString = mongo.SetDatabase(DatabaseName)
 					}) ;
 				});
 
@@ -118,21 +126,26 @@ namespace Deveel.Data {
 			return Task.CompletedTask;
 		}
 
-		[MultiTenant, Entity]
+		[MultiTenant, Entity, Table("persons")]
 		protected class MongoPerson : IPerson, IHaveTenantId {
-			[BsonId]
+			[BsonId, Key]
 			public ObjectId Id { get; set; }
 
 			string? IPerson.Id => Id.ToEntityId();
 
+			[Column("first_name")]
 			public string FirstName { get; set; }
 
+			[Column("last_name")]
 			public string LastName { get; set; }
 
+			[Column("birth_date")]
 			public DateTime? BirthDate { get; set; }
 
+			[Column("description")]
 			public string? Description { get; set; }
 
+			[Column("tenant")]
 			public string TenantId { get; set; }
 		}
 
