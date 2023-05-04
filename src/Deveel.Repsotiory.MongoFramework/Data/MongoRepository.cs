@@ -219,6 +219,10 @@ namespace Deveel.Data {
 
 		#region Create
 
+		protected virtual TEntity OnCreating(TEntity entity) {
+			return entity;
+		}
+
 		public async Task<string> CreateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
@@ -230,6 +234,8 @@ namespace Deveel.Data {
 			}
 
 			try {
+				entity = OnCreating(entity);
+
 				DbSet.Add(entity);
 				await DbSet.Context.SaveChangesAsync(cancellationToken);
 
@@ -260,6 +266,8 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
+				entities = entities.Select(OnCreating);
+
 				DbSet.AddRange(entities);
 				await DbSet.Context.SaveChangesAsync(cancellationToken);
 
@@ -274,6 +282,10 @@ namespace Deveel.Data {
 		#endregion
 
 		#region Update
+
+		protected TEntity OnUpdating(TEntity entity) {
+			return entity;
+		}
 
 		public async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			if (entity is null) 
@@ -297,6 +309,8 @@ namespace Deveel.Data {
 				var entry = Context.ChangeTracker.GetEntryById<TEntity>(id);
 				if (entry == null || entry.State == EntityEntryState.Deleted)
 					return false;
+
+				entity = OnUpdating(entity);
 
 				DbSet.Update(entity);
 				var updated = entry.State == EntityEntryState.Updated;
