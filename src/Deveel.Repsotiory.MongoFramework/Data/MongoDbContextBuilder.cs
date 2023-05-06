@@ -14,8 +14,8 @@ namespace Deveel.Data {
         public MongoDbContextBuilder(IServiceCollection services, ServiceLifetime defaultLifetime = ServiceLifetime.Singleton) {
             Services = services ?? throw new ArgumentNullException(nameof(services));
 
-            Guard.IsTrue(typeof(IMultiTenantContext).IsAssignableFrom(typeof(TContext)) && defaultLifetime == ServiceLifetime.Singleton,
-                nameof(defaultLifetime), "Multi-tenant context can only be scoped or transient");
+            if (typeof(IMultiTenantContext).IsAssignableFrom(typeof(TContext)) && defaultLifetime == ServiceLifetime.Singleton)
+				throw new ArgumentException("Multi-tenant context can only be scoped or transient", nameof(defaultLifetime));
 
             this.defaultLifetime = defaultLifetime;
 
@@ -90,7 +90,7 @@ namespace Deveel.Data {
         public MongoDbContextBuilder<TContext> UseConnection(string connectionString) {
             ThrowIfMultiTenant();
 
-            Guard.IsNullOrWhiteSpace(connectionString, nameof(connectionString));
+            Guard.IsNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
             var factory = (IServiceProvider provider) =>
                 MongoDbConnection<TContext>.FromConnectionString(connectionString);

@@ -53,7 +53,7 @@ namespace Deveel.Data {
 			Guard.IsNotNull(tenantInfo);
             var connectionString = tenantInfo.ConnectionString;
 
-            Guard.IsNullOrWhiteSpace(connectionString, nameof(tenantInfo.ConnectionString));
+            Guard.IsNotNullOrWhiteSpace(connectionString, nameof(tenantInfo.ConnectionString));
 
             TenantInfo = tenantInfo;
 			Url = MongoUrl.Create(connectionString);
