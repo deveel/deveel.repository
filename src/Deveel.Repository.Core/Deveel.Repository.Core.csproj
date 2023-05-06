@@ -42,8 +42,4 @@
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Deveel.Repository.EntityModel\Deveel.Repository.EntityModel.csproj" />
-  </ItemGroup>
 </Project>

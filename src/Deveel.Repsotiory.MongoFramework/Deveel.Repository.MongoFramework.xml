@@ -25,5 +25,96 @@
         <member name="T:Deveel.Data.LoggerExtensions.__TraceUpdatedForTenantStruct">
             <summary> This API supports the logging infrastructure and is not intended to be used directly from your code. It is subject to change in the future. </summary>
         </member>
+        <member name="T:Deveel.Data.MongoRepository`2">
+            <summary>
+            An implementation of <see cref="T:Deveel.Data.IRepository`1"/> contract
+            that uses the MongoDB system to store and retrieve data.
+            </summary>
+            <typeparam name="TContext">
+            The type of the <see cref="T:MongoFramework.IMongoDbContext"/> that is used to
+            handling the connection to the MongoDB server.
+            </typeparam>
+            <typeparam name="TEntity">
+            The type of the entity that is stored in the repository.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`2.#ctor(`0,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Constructs the repository with the given context and logger.
+            </summary>
+            <param name="context">
+            The context that is used to handle the connection to the MongoDB server.
+            </param>
+            <param name="logger">
+            A logger instance that is used to log messages from the repository.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`2.#ctor(`0,Microsoft.Extensions.Logging.ILogger{Deveel.Data.MongoRepository{`0,`1}})">
+            <summary>
+            Constructs the repository with the given context and logger.
+            </summary>
+            <param name="context">
+            The context that is used to handle the connection to the MongoDB server.
+            </param>
+            <param name="logger">
+            A logger instance that is used to log messages from the repository.
+            </param>
+        </member>
+        <member name="P:Deveel.Data.MongoRepository`2.Context">
+            <summary>
+            Gets the context that is used to handle the connection to the MongoDB server.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.MongoRepository`2.DbSet">
+            <summary>
+            Gets the <see cref="T:MongoFramework.IMongoDbSet`1"/> that is used to handle the
+            repository operations.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.MongoRepository`2.Logger">
+            <summary>
+            Gets the <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance that is used to log messages
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.MongoRepository`2.TenantId">
+            <summary>
+            When the underlying context is a <see cref="T:MongoFramework.IMongoDbTenantContext"/>,
+            this property returns the tenant identifier that is used to filter
+            the data in the repository.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.MongoRepository`2.Collection">
+            <summary>
+            Gets the <see cref="T:MongoDB.Driver.IMongoCollection`1"/> instance that is used
+            to handle the data in the repository.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`2.ThrowIfDisposed">
+            <summary>
+            Throws an exception if the repository has been disposed.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            Thrown when the repository has been disposed.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`2.MakeEntitySet">
+            <summary>
+            Constructs a new <see cref="T:MongoFramework.IMongoDbSet`1"/> that is
+            coherent with the context and the entity type.
+            </summary>
+            <returns></returns>
+            <exception cref="T:Deveel.Data.RepositoryException"></exception>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`2.GetEntityId(`1)">
+            <summary>
+            Gets the value of the ID property of the given entity.
+            </summary>
+            <param name="entity">
+            The entity whose ID property value is to be retrieved.
+            </param>
+            <returns>
+            Returns the value of the ID property of the given entity.
+            </returns>
+        </member>
     </members>
 </doc>

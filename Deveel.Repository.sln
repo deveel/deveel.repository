@@ -33,7 +33,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.EntityMod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.DynamicLinq", "src\Deveel.Repository.DynamicLinq\Deveel.Repository.DynamicLinq.csproj", "{8B09EBB3-F8D5-483D-AFD6-FCCC5F186324}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.MongoFramework.TestApi", "test\Deveel.Repository.MongoFramework.TestApi\Deveel.Repository.MongoFramework.TestApi.csproj", "{9B43B5FA-4990-4A34-B7A3-4996D9E93504}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.MongoFramework.TestApi", "test\Deveel.Repository.MongoFramework.TestApi\Deveel.Repository.MongoFramework.TestApi.csproj", "{9B43B5FA-4990-4A34-B7A3-4996D9E93504}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{603E47A0-B1D9-4B4D-AEA7-2E9272CE5C87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

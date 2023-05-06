@@ -9,11 +9,21 @@ using MongoDB.Driver;
 
 using MongoFramework;
 using MongoFramework.Infrastructure;
-using MongoFramework.Infrastructure.Commands;
 using MongoFramework.Infrastructure.Mapping;
 using MongoFramework.Linq;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// An implementation of <see cref="IRepository{TEntity}"/> contract
+	/// that uses the MongoDB system to store and retrieve data.
+	/// </summary>
+	/// <typeparam name="TContext">
+	/// The type of the <see cref="IMongoDbContext"/> that is used to
+	/// handling the connection to the MongoDB server.
+	/// </typeparam>
+	/// <typeparam name="TEntity">
+	/// The type of the entity that is stored in the repository.
+	/// </typeparam>
 	public class MongoRepository<TContext, TEntity> : IRepository<TEntity>, 
 		IQueryableRepository<TEntity>, 
 		IPageableRepository<TEntity>, 
@@ -28,6 +38,15 @@ namespace Deveel.Data {
 		private IMongoDbSet<TEntity>? _dbSet;
 		private bool disposed;
 
+		/// <summary>
+		/// Constructs the repository with the given context and logger.
+		/// </summary>
+		/// <param name="context">
+		/// The context that is used to handle the connection to the MongoDB server.
+		/// </param>
+		/// <param name="logger">
+		/// A logger instance that is used to log messages from the repository.
+		/// </param>
 		protected internal MongoRepository(TContext context, ILogger? logger = null) {
 			Context = context;
 			Logger = logger ?? NullLogger.Instance;
@@ -36,17 +55,40 @@ namespace Deveel.Data {
 				TenantId = tenantContext.TenantId;
 		}
 
+		/// <summary>
+		/// Constructs the repository with the given context and logger.
+		/// </summary>
+		/// <param name="context">
+		/// The context that is used to handle the connection to the MongoDB server.
+		/// </param>
+		/// <param name="logger">
+		/// A logger instance that is used to log messages from the repository.
+		/// </param>
 		public MongoRepository(TContext context, ILogger<MongoRepository<TContext, TEntity>>? logger = null)
 			: this(context, (ILogger?)logger) {
 		}
 
-
+		/// <summary>
+		/// Gets the context that is used to handle the connection to the MongoDB server.
+		/// </summary>
 		protected TContext Context { get; }
 
+		/// <summary>
+		/// Gets the <see cref="IMongoDbSet{TEntity}"/> that is used to handle the
+		/// repository operations.
+		/// </summary>
 		protected IMongoDbSet<TEntity> DbSet => GetEntitySet();
 
+		/// <summary>
+		/// Gets the <see cref="ILogger"/> instance that is used to log messages
+		/// </summary>
 		protected ILogger Logger { get; }
 
+		/// <summary>
+		/// When the underlying context is a <see cref="IMongoDbTenantContext"/>,
+		/// this property returns the tenant identifier that is used to filter
+		/// the data in the repository.
+		/// </summary>
 		protected string? TenantId { get; }
 
 		string? IMultiTenantRepository.TenantId => TenantId;
@@ -55,6 +97,10 @@ namespace Deveel.Data {
 
 		Type IRepository.EntityType => typeof(TEntity);
 
+		/// <summary>
+		/// Gets the <see cref="IMongoCollection{TEntity}"/> instance that is used
+		/// to handle the data in the repository.
+		/// </summary>
 		protected IMongoCollection<TEntity> Collection {
 			get {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
@@ -75,13 +121,25 @@ namespace Deveel.Data {
 			return result;
 		}
 
+		/// <summary>
+		/// Throws an exception if the repository has been disposed.
+		/// </summary>
+		/// <exception cref="ObjectDisposedException">
+		/// Thrown when the repository has been disposed.
+		/// </exception>
 		protected void ThrowIfDisposed() {
 			if (disposed)
 				throw new ObjectDisposedException(GetType().Name);
 		}
 
+		/// <summary>
+		/// Constructs a new <see cref="IMongoDbSet{TEntity}"/> that is
+		/// coherent with the context and the entity type.
+		/// </summary>
+		/// <returns></returns>
+		/// <exception cref="RepositoryException"></exception>
 		protected virtual IMongoDbSet<TEntity> MakeEntitySet() {
-			if (Context is MongoDbTenantContext tenantContext &&
+			if (Context is IMongoDbTenantContext tenantContext &&
 				typeof(IHaveTenantId).IsAssignableFrom(typeof(TEntity))) {
 				var dbSetType = typeof(MongoDbTenantSet<>).MakeGenericType(typeof(TEntity));
 				var result = (IMongoDbSet<TEntity>?)Activator.CreateInstance(dbSetType, new object[] { Context });
@@ -105,7 +163,8 @@ namespace Deveel.Data {
 		string? IRepository.GetEntityId(object entity) => ((IRepository<TEntity>)this).GetEntityId(Assert(entity));
 
 		string? IRepository<TEntity>.GetEntityId(TEntity entity) {
-			var value = GetIdValue(entity);
+			var value = GetEntityId(entity);
+
 			if (value == null)
 				return null;
 
@@ -117,10 +176,46 @@ namespace Deveel.Data {
 			return Convert.ToString(value, CultureInfo.InvariantCulture);
 		}
 
-		protected virtual object? GetIdValue(TEntity entity) 
-			=> entity.TryGetId(out var id) ? GetIdValue(id) : null;
+		/// <summary>
+		/// Gets the value of the ID property of the given entity.
+		/// </summary>
+		/// <param name="entity">
+		/// The entity whose ID property value is to be retrieved.
+		/// </param>
+		/// <returns>
+		/// Returns the value of the ID property of the given entity.
+		/// </returns>
+		protected virtual object? GetEntityId(TEntity entity) {
+			var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
-		protected virtual object? GetIdValue(string? id) {
+			var idProperty = entityDef.GetIdProperty();
+
+			if (idProperty == null)
+				throw new RepositoryException($"The type '{typeof(TEntity)}' has no ID property specified");
+
+			return idProperty.PropertyInfo.GetValue(entity);
+		}
+
+		/// <summary>
+		/// Converts the given string value to the type of the ID property of the
+		/// entity managed by this repository.
+		/// </summary>
+		/// <param name="id">
+		/// The string representation of the ID value.
+		/// </param>
+		/// <returns>
+		/// Returns the value converted accordingly to the type of the ID property
+		/// of the entity managed by this repository, or <c>null</c> if the given
+		/// string is <c>null</c> or empty.
+		/// </returns>
+		/// <exception cref="RepositoryException">
+		/// Thrown if the entity managed by this repository has no ID property
+		/// </exception>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the value cannot be converted to the type of the ID
+		/// property of the entity managed by this repository.
+		/// </exception>
+		protected virtual object? ConvertIdValue(string? id) {
 			if (String.IsNullOrWhiteSpace(id))
 				return null;
 
@@ -145,6 +240,20 @@ namespace Deveel.Data {
 			throw new NotSupportedException($"It is not possible to convert the ID to '{valueType}'");
 		}
 
+		/// <summary>
+		/// Asserts that the given entity is of the type managed by this repository.
+		/// </summary>
+		/// <param name="entity">
+		/// The object that has to be asserted.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of the object casted to the type managed by this
+		/// repository.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the given entity is not of the type managed by this
+		/// repository
+		/// </exception>
 		protected static TEntity Assert(object entity) {
 			if (!(entity is TEntity entityObj))
 				throw new ArgumentException($"The type '{entity.GetType()}' is not assignable from '{typeof(TEntity)}'");
@@ -152,6 +261,19 @@ namespace Deveel.Data {
 			return entityObj;
 		}
 
+		/// <summary>
+		/// Gets the MongoDB filter definition for the given query filter.
+		/// </summary>
+		/// <param name="filter">
+		/// The query filter to be converted to a MongoDB filter definition.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="FilterDefinition{TEntity}"/> that
+		/// is mapped from the given query filter.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the given query filter is not supported by this repository.
+		/// </exception>
 		protected virtual FilterDefinition<TEntity> GetFilterDefinition(IQueryFilter? filter) {
 			if (filter == null || filter.IsEmpty())
 				return Builders<TEntity>.Filter.Empty;
@@ -174,6 +296,20 @@ namespace Deveel.Data {
 
 		#region Controllable
 
+		/// <summary>
+		/// Verifies if the repository exists in the underlying database.
+		/// </summary>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the repository exists in the underlying
+		/// database, otherwise <c>false</c>.
+		/// </returns>
+		/// <exception cref="RepositoryException">
+		/// Thrown when an error occurs while verifying the existence of the
+		/// collection in the underlying database.
+		/// </exception>
 		public async Task<bool> ExistsAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
@@ -219,10 +355,35 @@ namespace Deveel.Data {
 
 		#region Create
 
+		/// <summary>
+		/// A callback method that is invoked before the entity is created.
+		/// </summary>
+		/// <param name="entity">
+		/// The entity that is about to be created.
+		/// </param>
+		/// <returns>
+		/// Returns the entity that is about to be created.
+		/// </returns>
 		protected virtual TEntity OnCreating(TEntity entity) {
 			return entity;
 		}
 
+		/// <summary>
+		/// Creates a new entity in the repository.
+		/// </summary>
+		/// <param name="entity">
+		/// The entity to be created in the repository.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the unique identifier of the created entity.
+		/// </returns>
+		/// <exception cref="RepositoryException">
+		/// Thrown when an error occurs while creating the entity in the
+		/// underlying database.
+		/// </exception>
 		public async Task<string> CreateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
@@ -240,7 +401,7 @@ namespace Deveel.Data {
 				await DbSet.Context.SaveChangesAsync(cancellationToken);
 
 				// TODO: this is UGLY! change the IRepository to use object keys instead?
-				var id = RequireString(GetIdValue(entity));
+				var id = RequireString(GetEntityId(entity));
 
 				if (!String.IsNullOrWhiteSpace(TenantId)) {
 					Logger.TraceCreatedForTenant(TenantId, id);
@@ -272,7 +433,7 @@ namespace Deveel.Data {
 				await DbSet.Context.SaveChangesAsync(cancellationToken);
 
 				// TODO: this is UGLY! Change the IRepository to work with object keys
-				return entities.Select(x => RequireString(GetIdValue(x))).ToList();
+				return entities.Select(x => RequireString(GetEntityId(x))).ToList();
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex);
 				throw new RepositoryException("Could not add the list of entities", ex);
@@ -283,7 +444,7 @@ namespace Deveel.Data {
 
 		#region Update
 
-		protected TEntity OnUpdating(TEntity entity) {
+		protected virtual TEntity OnUpdating(TEntity entity) {
 			return entity;
 		}
 
@@ -294,7 +455,7 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
-			var id = GetIdValue(entity);
+			var id = GetEntityId(entity);
 
 			if (id == null)
 				throw new ArgumentException(nameof(entity), "Cannot determine the identifier of the entity");
@@ -346,7 +507,7 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
-			var entityId = GetIdValue(entity);
+			var entityId = GetEntityId(entity);
 			if (entityId == null)
 				throw new ArgumentException("The entity does not have an ID", nameof(entity));
 
@@ -400,7 +561,7 @@ namespace Deveel.Data {
 			}
 
 			try {
-				var idValue = GetIdValue(id);
+				var idValue = ConvertIdValue(id);
 
 				var entry = Context.ChangeTracker.GetEntryById<TEntity>(idValue);
 				if (entry != null && entry.State == EntityEntryState.Deleted)
