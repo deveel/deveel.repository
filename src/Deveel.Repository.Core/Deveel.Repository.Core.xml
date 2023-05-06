@@ -107,6 +107,36 @@
             Gets the status of the entity, which can be an enumeration or a string
             </summary>
         </member>
+        <member name="T:Deveel.Data.EntityTypeAttribute">
+            <summary>
+            Defines a class as an entity of a repository.
+            </summary>
+            <remarks>
+            This marker attribute is used to fix issues in the discovery
+            of entities managed by a repository, when the repository is
+            generic and multiple types are used as entities (eg. facades,
+            depdendencies, etc.).
+            </remarks>
+        </member>
+        <member name="M:Deveel.Data.EntityTypeAttribute.#ctor(System.Type)">
+            <summary>
+            Constructs the attribute for the given entity type.
+            </summary>
+            <param name="entityType">
+            The type of the repository entity.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the given <paramref name="entityType"/> is <c>null</c>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            If the given <paramref name="entityType"/> is not a class or is abstract.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.EntityTypeAttribute.EntityType">
+            <summary>
+            Gets the type of the entity.
+            </summary>
+        </member>
         <member name="T:Deveel.Data.ExpressionFieldRef`1">
             <summary>
             References a field of an entity through a selection expression

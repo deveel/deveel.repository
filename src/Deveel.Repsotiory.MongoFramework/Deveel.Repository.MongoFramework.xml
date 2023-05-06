@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>Deveel.Repsotiory.MongoFramework</name>
+        <name>Deveel.Repository.MongoFramework</name>
     </assembly>
     <members>
         <member name="T:Deveel.Data.LoggerExtensions.__TraceFindingByIdForTenantStruct">
@@ -24,6 +24,53 @@
         </member>
         <member name="T:Deveel.Data.LoggerExtensions.__TraceUpdatedForTenantStruct">
             <summary> This API supports the logging infrastructure and is not intended to be used directly from your code. It is subject to change in the future. </summary>
+        </member>
+        <member name="T:Deveel.Data.MongoDbTenantConnection`2">
+            <summary>
+            Defines a connection to a MongoDB database for a specific tenant
+            </summary>
+            <typeparam name="TContext">
+            The type of <see cref="T:MongoFramework.IMongoDbContext"/> for which this connection is
+            specifically defined.
+            </typeparam>
+            <typeparam name="TTenantInfo">
+            The type of <see cref="T:Finbuckle.MultiTenant.ITenantInfo"/> that defines the information
+            of the tenant's connection.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.MongoDbTenantConnection`2.#ctor(Finbuckle.MultiTenant.IMultiTenantContext{`1})">
+            <summary>
+            Constructs the connection to the MongoDB database for the tenant
+            resolved by the given context.
+            </summary>
+            <param name="tenantContext">
+            The context used to resolve the tenant information.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when the given <paramref name="tenantContext"/> is <c>null</c>.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.MongoDbTenantConnection`2.#ctor(`1)">
+            <summary>
+            Constructs the connection to the MongoDB database for the given tenant 
+            </summary>
+            <param name="tenantInfo">
+            The <see cref="T:Finbuckle.MultiTenant.ITenantInfo"/> that defines the information on the
+            connection to the tenant's database.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the given <paramref name="tenantInfo"/> is <c>null</c>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            Thrown if the given <paramref name="tenantInfo"/> does not define
+            any connection string.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.MongoDbTenantConnection`2.TenantInfo">
+            <summary>
+            Gets the <see cref="T:Finbuckle.MultiTenant.ITenantInfo"/> that defines the information
+            on the tenant's connection.
+            </summary>
         </member>
         <member name="T:Deveel.Data.MongoRepository`2">
             <summary>
@@ -115,6 +162,103 @@
             <returns>
             Returns the value of the ID property of the given entity.
             </returns>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`2.ConvertIdValue(System.String)">
+            <summary>
+            Converts the given string value to the type of the ID property of the
+            entity managed by this repository.
+            </summary>
+            <param name="id">
+            The string representation of the ID value.
+            </param>
+            <returns>
+            Returns the value converted accordingly to the type of the ID property
+            of the entity managed by this repository, or <c>null</c> if the given
+            string is <c>null</c> or empty.
+            </returns>
+            <exception cref="T:Deveel.Data.RepositoryException">
+            Thrown if the entity managed by this repository has no ID property
+            </exception>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the value cannot be converted to the type of the ID
+            property of the entity managed by this repository.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`2.Assert(System.Object)">
+            <summary>
+            Asserts that the given entity is of the type managed by this repository.
+            </summary>
+            <param name="entity">
+            The object that has to be asserted.
+            </param>
+            <returns>
+            Returns an instance of the object casted to the type managed by this
+            repository.
+            </returns>
+            <exception cref="T:System.ArgumentException">
+            Thrown when the given entity is not of the type managed by this
+            repository
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`2.GetFilterDefinition(Deveel.Data.IQueryFilter)">
+            <summary>
+            Gets the MongoDB filter definition for the given query filter.
+            </summary>
+            <param name="filter">
+            The query filter to be converted to a MongoDB filter definition.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:MongoDB.Driver.FilterDefinition`1"/> that
+            is mapped from the given query filter.
+            </returns>
+            <exception cref="T:System.ArgumentException">
+            Thrown when the given query filter is not supported by this repository.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`2.ExistsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Verifies if the repository exists in the underlying database.
+            </summary>
+            <param name="cancellationToken">
+            A cancellation token that can be used to cancel the operation.
+            </param>
+            <returns>
+            Returns <c>true</c> if the repository exists in the underlying
+            database, otherwise <c>false</c>.
+            </returns>
+            <exception cref="T:Deveel.Data.RepositoryException">
+            Thrown when an error occurs while verifying the existence of the
+            collection in the underlying database.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`2.OnCreating(`1)">
+            <summary>
+            A callback method that is invoked before the entity is created.
+            </summary>
+            <param name="entity">
+            The entity that is about to be created.
+            </param>
+            <returns>
+            Returns the entity that is about to be created.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`2.CreateAsync(`1,System.Threading.CancellationToken)">
+            <summary>
+            Creates a new entity in the repository.
+            </summary>
+            <param name="entity">
+            The entity to be created in the repository.
+            </param>
+            <param name="cancellationToken">
+            A cancellation token that can be used to cancel the operation.
+            </param>
+            <returns>
+            Returns the unique identifier of the created entity.
+            </returns>
+            <exception cref="T:Deveel.Data.RepositoryException">
+            Thrown when an error occurs while creating the entity in the
+            underlying database.
+            </exception>
         </member>
     </members>
 </doc>

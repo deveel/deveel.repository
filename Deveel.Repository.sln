@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.InMemory"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.InMemory.XUnit", "test\Deveel.Repository.InMemory.XUnit\Deveel.Repository.InMemory.XUnit.csproj", "{7D4BA787-5ACB-45D1-A792-0464BFC7BA3F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repsotiory.MongoFramework", "src\Deveel.Repsotiory.MongoFramework\Deveel.Repsotiory.MongoFramework.csproj", "{84B44852-631C-453C-8CCD-9C649814DC79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.MongoFramework", "src\Deveel.Repsotiory.MongoFramework\Deveel.Repository.MongoFramework.csproj", "{84B44852-631C-453C-8CCD-9C649814DC79}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.MongoFramework.XUnit", "test\Deveel.Repository.MongoFramework.XUnit\Deveel.Repository.MongoFramework.XUnit.csproj", "{DE6078FD-4A73-4819-B505-EA4871F40991}"
 EndProject

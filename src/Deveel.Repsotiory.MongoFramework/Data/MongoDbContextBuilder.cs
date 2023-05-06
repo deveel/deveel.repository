@@ -1,4 +1,6 @@
-﻿using Finbuckle.MultiTenant;
+﻿using CommunityToolkit.Diagnostics;
+
+using Finbuckle.MultiTenant;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -12,10 +14,8 @@ namespace Deveel.Data {
         public MongoDbContextBuilder(IServiceCollection services, ServiceLifetime defaultLifetime = ServiceLifetime.Singleton) {
             Services = services ?? throw new ArgumentNullException(nameof(services));
 
-			if (typeof(IMultiTenantContext).IsAssignableFrom(typeof(TContext)) &&
-				defaultLifetime == ServiceLifetime.Singleton) {
-				throw new ArgumentException(nameof(defaultLifetime), "Multi-tenant context can only be scoped or transient");
-			}
+            Guard.IsTrue(typeof(IMultiTenantContext).IsAssignableFrom(typeof(TContext)) && defaultLifetime == ServiceLifetime.Singleton,
+                nameof(defaultLifetime), "Multi-tenant context can only be scoped or transient");
 
             this.defaultLifetime = defaultLifetime;
 
@@ -90,8 +90,7 @@ namespace Deveel.Data {
         public MongoDbContextBuilder<TContext> UseConnection(string connectionString) {
             ThrowIfMultiTenant();
 
-            if (string.IsNullOrWhiteSpace(connectionString))
-                throw new ArgumentException($"'{nameof(connectionString)}' cannot be null or whitespace.", nameof(connectionString));
+            Guard.IsNullOrWhiteSpace(connectionString, nameof(connectionString));
 
             var factory = (IServiceProvider provider) =>
                 MongoDbConnection<TContext>.FromConnectionString(connectionString);
