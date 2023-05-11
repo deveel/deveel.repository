@@ -372,9 +372,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_GetSortedPage() {
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
-				SortBy = new[] { ResultSort.Create<MongoPerson>(x => x.FirstName, false) }
-			};
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+				.OrderByDescending(x => x.LastName);
 
 			var result = await MongoRepository.GetPageAsync(request);
 			Assert.NotNull(result);
@@ -387,9 +386,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_GetSortedPage() {
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
-				SortBy = new[] { ResultSort.Create<MongoPerson>(x => x.FirstName, false) }
-			};
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+				.OrderByDescending(x => x.LastName);
 
 			var result = await PageableRepository.GetPageAsync(request);
 			Assert.NotNull(result);

@@ -83,8 +83,8 @@ namespace Deveel.Data {
 					Limit = page.Size
 				};
 
-				if (page.SortBy != null) {
-					foreach (var sort in page.SortBy) {
+				if (page.ResultSorts != null) {
+					foreach (var sort in page.ResultSorts) {
 						SortDefinition<TEntity> sortDef;
 
 						if (sort.Field is StringFieldRef stringRef) {

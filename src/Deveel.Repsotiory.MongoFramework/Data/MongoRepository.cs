@@ -667,8 +667,8 @@ namespace Deveel.Data {
 
 				entitySet = entitySet.Skip(request.Offset).Take(request.Size);
 
-				if (request.SortBy != null) {
-					foreach (var sort in request.SortBy) {
+				if (request.ResultSorts != null) {
+					foreach (var sort in request.ResultSorts) {
 						Expression<Func<TEntity, object>> keySelector;
 
 						if (sort.Field is StringFieldRef stringRef) {
@@ -698,7 +698,7 @@ namespace Deveel.Data {
 		async Task<RepositoryPage> IPageableRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
 			var newRequest = new RepositoryPageRequest<TEntity>(request.Page, request.Size) {
 				Filter = request.Filter?.AsLambda<TEntity>(),
-				SortBy = request.SortBy
+				ResultSorts = request.ResultSorts
 			};
 
 			var result = await GetPageAsync(newRequest, cancellationToken);

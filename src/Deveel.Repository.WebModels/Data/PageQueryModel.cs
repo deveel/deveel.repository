@@ -52,7 +52,7 @@ namespace Deveel.Data {
 			base.GetRouteValues(routeValues);
 		}
 
-		public IEnumerable<IResultSort>? GetResultSorts() => SortBy?.Select(WebResultSortUtil.ParseSort);
+		public IEnumerable<IResultSort>? GetResultSorts() => SortBy?.Select(QueryStringResultSort.ParseSort);
 
 		public virtual void CopyTo(PageQueryModel page) {
 			if (page == null)
@@ -91,7 +91,7 @@ namespace Deveel.Data {
 		public virtual RepositoryPageRequest ToPageRequest(Func<IEnumerable<IQueryFilter>, IQueryFilter>? filterAggregator = null) {
 			return new RepositoryPageRequest(Page ?? 1, GetPageSize()) {
 				Filter = GetAggregatedFilter(filterAggregator),
-				SortBy = PageSort()
+				ResultSorts = PageSort()
 			};
 		}
 

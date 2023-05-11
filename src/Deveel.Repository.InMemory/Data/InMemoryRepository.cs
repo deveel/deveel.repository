@@ -221,8 +221,8 @@ namespace Deveel.Data {
 				if (request.Filter != null)
 					entitySet = entitySet.Where(request.Filter);
 
-				if (request.SortBy != null) {
-					foreach (var sort in request.SortBy) {
+				if (request.ResultSorts != null) {
+					foreach (var sort in request.ResultSorts) {
 						if (sort.Ascending) {
 							entitySet = entitySet.OrderBy(MapField(sort.Field));
 						} else {

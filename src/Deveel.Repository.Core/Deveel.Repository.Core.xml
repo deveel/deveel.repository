@@ -182,6 +182,68 @@
             Gets the lambda filter expression
             </summary>
         </member>
+        <member name="T:Deveel.Data.ExpressionResultSort`1">
+            <summary>
+            Describes a sorting rule that uses an expression to 
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity that is the target of the sorting and that
+            defines the field to select.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.ExpressionResultSort`1.#ctor(System.Linq.Expressions.Expression{System.Func{`0,System.Object}},System.Boolean)">
+            <summary>
+            Constructs the sorting rule using the given expression
+            to select the field to sort.
+            </summary>
+            <param name="fieldSelector">
+            The expression that selects the field to sort.
+            </param>
+            <param name="ascending">
+            Whether the sorting is ascending or descending.
+            </param>
+        </member>
+        <member name="P:Deveel.Data.ExpressionResultSort`1.FieldSelector">
+            <summary>
+            Gets the expression that selects the field to sort.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.ExpressionResultSort`1.Ascending">
+            <summary>
+            Gets a flag indicating whether the result should
+            be sorted ascending or descending.
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.FieldResultSort">
+            <summary>
+            Describes a sorting rule using a string filter reference
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.FieldResultSort.#ctor(System.String,System.Boolean)">
+            <summary>
+            Constructs the sorting rule using the given field name
+            </summary>
+            <param name="fieldName">
+            The name of the field to sort the results
+            </param>
+            <param name="ascending">
+            Whether the results should be sorted ascending
+            </param>
+            <exception cref="T:System.ArgumentException">
+            Thrown if the given <paramref name="fieldName"/> is <c>null</c> or empty.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.FieldResultSort.FieldName">
+            <summary>
+            Gets the name of the field used to sort the results
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.FieldResultSort.Ascending">
+            <summary>
+            Gets a flag indicating whether the results should be
+            sorted ascending
+            </summary>
+        </member>
         <member name="T:Deveel.Data.IControllableRepository">
             <summary>
             A repository whose lifecycle can be controlled by the user
@@ -1541,11 +1603,20 @@
             Gets or sets a filter to restrict the context of the query
             </summary>
         </member>
-        <member name="P:Deveel.Data.RepositoryPageRequest.SortBy">
+        <member name="P:Deveel.Data.RepositoryPageRequest.ResultSorts">
             <summary>
             Gets or sets an optional set of orders to sort the
             result of the request
             </summary>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequest.OrderBy(Deveel.Data.IResultSort)">
+            <summary>
+            Appends the given sort order to the request
+            </summary>
+            <param name="resultSort">
+            The 
+            </param>
+            <returns></returns>
         </member>
         <member name="T:Deveel.Data.RepositoryPageRequest`1">
             <summary>
@@ -1553,7 +1624,21 @@
             from a repository
             </summary>
             <typeparam name="TEntity"></typeparam>
-            <seealso cref="!:IRepository&lt;TEntity&gt;.GetPageAsync(RepositoryPageRequest&lt;TEntity&gt;, CancellationToken)"/>
+            <seealso cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.RepositoryPageRequest{`0},System.Threading.CancellationToken)"/>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequest`1.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructs a new page request with the given page number and size
+            </summary>
+            <param name="page">
+            The number of the page to request
+            </param>
+            <param name="size">
+            The maximum size of the page to return.
+            </param>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            If either the page number or the page size are smaller than 1.
+            </exception>
         </member>
         <member name="P:Deveel.Data.RepositoryPageRequest`1.Filter">
             <summary>
@@ -1573,6 +1658,33 @@
             Thrown if the <paramref name="expression"/> is <c>null</c>.
             </exception>
         </member>
+        <member name="M:Deveel.Data.RepositoryPageRequest`1.OrderBy(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
+            <summary>
+            Appends an ascending sort rule to the page request
+            </summary>
+            <param name="selector">
+            The expression that selects the field to sort by.
+            </param>
+            <returns>
+            Returns this instance of the page request with the
+            appended sort rule.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequest`1.OrderByDescending(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
+            <summary>
+            Appends a descending sort rule to the page request
+            </summary>
+            <param name="selector">
+            The expression that selects the field to sort by.
+            </param>
+            <returns>
+            Returns this instance of the page request with the
+            appended sort rule.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequest`1.OrderBy(Deveel.Data.IResultSort)">
+            <inheritdoc/>
+        </member>
         <member name="T:Deveel.Data.RepositoryPage`1">
             <summary>
             The strongly typed page from a repository, obtained from a query
@@ -1589,15 +1701,36 @@
         </member>
         <member name="T:Deveel.Data.ResultSort">
             <summary>
-            Provides a default implementation of the result sort
+            Provides factory methods to create instances of sorting rules.
             </summary>
             <seealso cref="T:Deveel.Data.IResultSort"/>
         </member>
-        <member name="P:Deveel.Data.ResultSort.Field">
-            <inheritdoc/>
+        <member name="M:Deveel.Data.ResultSort.Create(System.String,System.Boolean)">
+            <summary>
+            Creates a new sorting rule for the given field
+            </summary>
+            <param name="fieldName">
+            The name of the field to sort the results
+            </param>
+            <param name="ascending">
+            The flag indicating whether the results should be
+            </param>
+            <returns>
+            Returns a new instance of <see cref="T:Deveel.Data.IResultSort"/> that
+            sorts by the <paramref name="fieldName"/> given.
+            </returns>
         </member>
-        <member name="P:Deveel.Data.ResultSort.Ascending">
-            <inheritdoc/>
+        <member name="M:Deveel.Data.ResultSort.Create``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Boolean)">
+            <summary>
+            Creates a new sorting rule for the given field
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity that defines the field
+            to be used to sort the results.
+            </typeparam>
+            <param name="fieldSelector"></param>
+            <param name="ascending"></param>
+            <returns></returns>
         </member>
         <member name="T:Deveel.Data.StringFieldRef">
             <summary>

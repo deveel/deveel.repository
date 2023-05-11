@@ -88,14 +88,19 @@ namespace Deveel.Data {
 			Assert.NotNull(response.Last);
 			Assert.Null(response.Previous);
 
-			var queryParams = HttpUtility.ParseQueryString(response.Self.Query);
-			Assert.NotNull(queryParams["s"]);
-			Assert.Equal("lastName", queryParams["s"]);
+			var hasSorts = QueryStringResultSort.TryParseQueryString(response.Self.Query, "s", out var sorts);
+			Assert.True(hasSorts);
+			Assert.NotNull(sorts);
+			Assert.NotEmpty(sorts);
+			Assert.Single(sorts);
+
+			var fieldSort = Assert.IsType<FieldResultSort>(sorts[0]);
+			Assert.Equal("lastName", fieldSort.FieldName);
 
 			var repository = webApp.Services.GetRequiredService<IRepository<PersonEntity>>();
 			var inMemoryRepo = Assert.IsType<InMemoryRepository<PersonEntity>>(repository);
 
-			var surnames = inMemoryRepo.Entities.OrderByDescending(x => x.LastName).Take(10).Select(x => x.LastName);
+			var surnames = inMemoryRepo.Entities.OrderBy(x => x.LastName).Take(10).Select(x => x.LastName);
 
 			Assert.True(surnames.SequenceEqual(response.Items.Select(x => x.LastName)));
 		}
