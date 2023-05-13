@@ -73,27 +73,6 @@ namespace Deveel.Data {
 			}
 		}
 
-		//protected virtual Expression<Func<TResult, bool>>? GetAggregatedFilter<TResult>(IEnumerable<IQueryFilter> filters) where TResult : class {
-		//	if (filters != null && filters.Any()) {
-		//		Expression<Func<TResult, bool>>? result = null;
-		//		foreach (var filter in filters) {
-		//			var exp = filter.AsLambda<TResult>();
-
-		//			if (result== null) {
-		//				result = exp;
-		//			} else {
-		//				var param = result.Parameters[0];
-		//				var body = Expression.AndAlso(result.Body, exp.Body);
-		//				result = Expression.Lambda<Func<TResult, bool>>(body, param);
-		//			}
-		//		}
-
-		//		return result;
-		//	}
-
-		//	return null;
-		//}
-
 		public virtual RepositoryPageRequest<TResult> ToPageRequest<TResult>() where TResult : class {
 			return new RepositoryPageRequest<TResult>(Page ?? 1, GetPageSize()) {
 				Filter = QueryFilter.Combine(PageFilters()),

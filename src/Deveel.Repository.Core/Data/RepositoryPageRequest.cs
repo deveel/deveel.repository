@@ -73,5 +73,11 @@ namespace Deveel.Data {
 
 			return this;
 		}
+
+		public RepositoryPageRequest OrderBy(string fieldName, bool ascending = true) {
+			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
+
+			return OrderBy(new FieldResultSort(fieldName, ascending));
+		}
 	}
 }

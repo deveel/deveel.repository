@@ -88,6 +88,10 @@ namespace Deveel.Data {
 			return (RepositoryPageRequest<TEntity>) base.OrderBy(resultSort);
 		}
 
+		public new RepositoryPageRequest<TEntity> OrderBy(string fieldName, bool ascending = true) {
+			return (RepositoryPageRequest<TEntity>) base.OrderBy(fieldName, ascending);
+		}
+
 		public RepositoryPageRequest<TTarget> As<TTarget>() where TTarget : class {
 			var page = new RepositoryPageRequest<TTarget>(Page, Size);
 
