@@ -219,7 +219,7 @@ namespace Deveel.Data {
 			try {
 				var entitySet = entities.AsQueryable();
 				if (request.Filter != null)
-					entitySet = entitySet.Where(request.Filter);
+					entitySet = request.Filter.Apply(entitySet);
 
 				if (request.ResultSorts != null) {
 					foreach (var sort in request.ResultSorts) {
@@ -244,7 +244,7 @@ namespace Deveel.Data {
 
 		async Task<RepositoryPage> IPageableRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
 			var pageRequest = new RepositoryPageRequest<TEntity>(request.Page, request.Size) {
-				Filter = request.Filter?.AsLambda<TEntity>()
+				Filter = request.Filter != null ? QueryFilter.Where(request.Filter?.AsLambda<TEntity>()) : QueryFilter.Empty
 			};
 
 			var result = await GetPageAsync(pageRequest, cancellationToken);

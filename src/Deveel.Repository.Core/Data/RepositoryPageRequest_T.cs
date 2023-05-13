@@ -27,15 +27,6 @@ namespace Deveel.Data {
 		}
 
 		/// <summary>
-		/// Gets or sets a filter expression that restricts the
-		/// context of the page request
-		/// </summary>
-		public new Expression<Func<TEntity, bool>>? Filter {
-			get => (base.Filter as ExpressionQueryFilter<TEntity>)?.Expression;
-			set => base.Filter = value == null ? null : new ExpressionQueryFilter<TEntity>(value);
-		}
-
-		/// <summary>
 		/// Sets or appends a new filter
 		/// </summary>
 		/// <param name="expression">The filter expression to add</param>
@@ -48,15 +39,14 @@ namespace Deveel.Data {
 		public RepositoryPageRequest<TEntity> Where(Expression<Func<TEntity, bool>> expression) {
 			Guard.IsNotNull(expression, nameof(expression));
 
-			var expr = Filter;
-			if (expr == null) {
-				expr = expression;
+			var filter = Filter;
+			if (filter == null) {
+				filter = QueryFilter.Where(expression);
 			} else {
-				var body = Expression.AndAlso(expr.Body, expression.Body);
-				expr = Expression.Lambda<Func<TEntity, bool>>(body, expr.Parameters[0]);
+				filter = QueryFilter.Combine(filter, QueryFilter.Where(expression));
 			}
 
-			Filter = expr;
+			Filter = filter;
 
 			return this;
 		}
@@ -102,7 +92,7 @@ namespace Deveel.Data {
 			var page = new RepositoryPageRequest<TTarget>(Page, Size);
 
 			if (Filter != null) {
-				page.Filter = Filter.As<TTarget>();
+				page.Filter = QueryFilter.Where(Filter.AsLambda<TEntity>().As<TTarget>());
 			}
 			if (ResultSorts != null)
 				page.ResultSorts = ResultSorts;

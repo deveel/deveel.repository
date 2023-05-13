@@ -73,7 +73,7 @@ namespace Deveel.Data {
 			try {
 				var filter = Builders<TEntity>.Filter.Empty;
 				if (page.Filter != null) {
-					filter = page.Filter.AsMongoFilter<TEntity>();
+					filter = page.Filter.AsLambda<TFacade>().AsMongoFilter<TEntity>();
 				}
 
 				var totalCount = await Collection.CountDocumentsAsync(filter, null, cancellationToken);

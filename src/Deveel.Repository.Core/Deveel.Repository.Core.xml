@@ -4,6 +4,47 @@
         <name>Deveel.Repository.Core</name>
     </assembly>
     <members>
+        <member name="T:Deveel.Data.CombinedQueryFilter">
+            <summary>
+            An object that combines multiple <see cref="T:Deveel.Data.IQueryFilter"/> objects
+            into a single one.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.CombinedQueryFilter.#ctor(System.Collections.Generic.ICollection{Deveel.Data.IQueryFilter})">
+            <summary>
+            Constructs the filter by combining the given list of filters.
+            </summary>
+            <param name="filters">
+            The list of filters to combine.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            If the given list of filters is <c>null</c>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            Thrown if the given list of filters is empty.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.CombinedQueryFilter.Filters">
+            <summary>
+            Gets the list of filters that are combined into this object.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.CombinedQueryFilter.Combine(Deveel.Data.IQueryFilter)">
+            <summary>
+            Creates a new combination between the filters
+            of this object and the given one.
+            </summary>
+            <param name="filter">
+            The filter to combine with this object.
+            </param>
+            <returns>
+            Returns a new <see cref="T:Deveel.Data.CombinedQueryFilter"/> that combines
+            the filters of this object and the given one.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the given filter is <c>null</c>.
+            </exception>
+        </member>
         <member name="T:Deveel.Data.DefaultRepositoryController">
             <summary>
             A default implementation of the <see cref="T:Deveel.Data.IRepositoryController"/> interface
@@ -1368,6 +1409,70 @@
             wrapping the given expression.
             </returns>
         </member>
+        <member name="M:Deveel.Data.QueryFilter.Apply``1(Deveel.Data.IQueryFilter,System.Linq.IQueryable{``0})">
+            <summary>
+            Applies the filter to the given queryable object, producing
+            a result that is the filtered query.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity that is the target of the filter.
+            </typeparam>
+            <param name="filter">
+            The filter to apply to the query.
+            </param>
+            <param name="queryable">
+            The queryable object to filter.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:System.Linq.IQueryable`1"/> that is
+            the result of the application of the given filter to the queryable.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.QueryFilter.Combine(System.Collections.Generic.IEnumerable{Deveel.Data.IQueryFilter})">
+            <summary>
+            Combines the list of filters into a single one.
+            </summary>
+            <param name="filters">
+            The list of filters to combine.
+            </param>
+            <returns>
+            Returns a <see cref="T:Deveel.Data.IQueryFilter"/> that is the result of the
+            combination of the given filters.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.QueryFilter.Combine(Deveel.Data.IQueryFilter[])">
+            <summary>
+            Combines the list of filters into a single one.
+            </summary>
+            <param name="filters">
+            The list of filters to combine.
+            </param>
+            <returns>
+            Returns a <see cref="T:Deveel.Data.IQueryFilter"/> that is the result of the
+            combination of the given filters.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the given list of filters is <c>null</c>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            Thrown if the given list of filters is empty.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.QueryFilter.Combine(Deveel.Data.IQueryFilter,Deveel.Data.IQueryFilter)">
+            <summary>
+            Combines the two filters into a single one.
+            </summary>
+            <param name="filter1">
+            The first filter to combine.
+            </param>
+            <param name="filter2">
+            The second filter to combine.
+            </param>
+            <returns></returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if either of the given filters is <c>null</c>.
+            </exception>
+        </member>
         <member name="T:Deveel.Data.RepositoryControllerOptions">
             <summary>
             Provides a set of options that can be used to control
@@ -1639,12 +1744,6 @@
             <exception cref="T:System.ArgumentOutOfRangeException">
             If either the page number or the page size are smaller than 1.
             </exception>
-        </member>
-        <member name="P:Deveel.Data.RepositoryPageRequest`1.Filter">
-            <summary>
-            Gets or sets a filter expression that restricts the
-            context of the page request
-            </summary>
         </member>
         <member name="M:Deveel.Data.RepositoryPageRequest`1.Where(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
             <summary>

@@ -261,9 +261,8 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<Person>(1, 10) {
-				Filter = x => x.FirstName == firstName
-			};
+			var request = new RepositoryPageRequest<Person>(1, 10)
+				.Where(x => x.FirstName == firstName);
 
 			var result = await InMemoryRepository.GetPageAsync(request);
 			Assert.NotNull(result);
@@ -281,9 +280,8 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<Person>(1, 10) {
-				Filter = x => x.FirstName == firstName
-			};
+			var request = new RepositoryPageRequest<Person>(1, 10)
+				.Where(x => x.FirstName == firstName);
 
 			Assert.NotNull(PageableRepository);
 			var result = await PageableRepository.GetPageAsync(request);

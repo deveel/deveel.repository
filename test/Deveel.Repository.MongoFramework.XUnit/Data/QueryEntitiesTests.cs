@@ -316,9 +316,30 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
-				Filter = x => x.FirstName == firstName
-			};
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+				.Where(x => x.FirstName == firstName);
+
+			var result = await MongoRepository.GetPageAsync(request);
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(peopleCount, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(perPage, result.Items.Count());
+		}
+
+		[Fact]
+		public async Task Mongo_GetMultiFilteredPage() {
+			var firstName = people[people.Count - 1].FirstName;
+			var lastName = people[people.Count - 1].LastName;
+
+			var peopleCount = people.Count(x => x.FirstName == firstName && x.LastName == lastName);
+			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
+			var perPage = Math.Min(peopleCount, 10);
+
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+				.Where(x => x.FirstName == firstName)
+				.Where(x => x.LastName == lastName);
 
 			var result = await MongoRepository.GetPageAsync(request);
 			Assert.NotNull(result);
@@ -336,9 +357,30 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
-				Filter = x => x.FirstName == firstName
-			};
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+				.Where(x => x.FirstName == firstName);
+
+			var result = await PageableRepository.GetPageAsync(request);
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(peopleCount, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(perPage, result.Items.Count());
+		}
+
+		[Fact]
+		public async Task Repository_GetMultiFilteredPage() {
+			var firstName = people[people.Count - 1].FirstName;
+			var lastName = people[people.Count - 1].LastName;
+
+			var peopleCount = people.Count(x => x.FirstName == firstName && x.LastName == lastName);
+			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
+			var perPage = Math.Min(peopleCount, 10);
+
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+				.Where(x => x.FirstName == firstName)
+				.Where(x => x.LastName == lastName);
 
 			var result = await PageableRepository.GetPageAsync(request);
 			Assert.NotNull(result);
@@ -356,9 +398,8 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<IPerson>(1, 10) {
-				Filter = x => x.FirstName == firstName
-			};
+			var request = new RepositoryPageRequest<IPerson>(1, 10)
+				.Where(x => x.FirstName == firstName);
 
 			var result = await FacadePageableRepository.GetPageAsync(request);
 			Assert.NotNull(result);

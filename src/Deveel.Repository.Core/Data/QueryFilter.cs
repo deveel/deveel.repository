@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
 
+using CommunityToolkit.Diagnostics;
+
 namespace Deveel.Data {
 	/// <summary>
 	/// A utility class that provides a set of static methods to create
@@ -88,6 +90,122 @@ namespace Deveel.Data {
 		public static ExpressionQueryFilter<TEntity> Where<TEntity>(Expression<Func<TEntity, bool>> exp)
 			where TEntity : class
 			=> new ExpressionQueryFilter<TEntity>(exp);
+
+		/// <summary>
+		/// Applies the filter to the given queryable object, producing
+		/// a result that is the filtered query.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity that is the target of the filter.
+		/// </typeparam>
+		/// <param name="filter">
+		/// The filter to apply to the query.
+		/// </param>
+		/// <param name="queryable">
+		/// The queryable object to filter.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="IQueryable{TEntity}"/> that is
+		/// the result of the application of the given filter to the queryable.
+		/// </returns>
+		public static IQueryable<TEntity> Apply<TEntity>(this IQueryFilter filter, IQueryable<TEntity> queryable) where TEntity : class {
+			Guard.IsNotNull(filter, nameof(filter));
+
+			if (filter.IsEmpty())
+				return queryable;
+
+			if (filter is ExpressionQueryFilter<TEntity> filterExpr)
+				return queryable.Where(filterExpr.Expression);
+
+			var result = queryable;
+			if (filter is CombinedQueryFilter combined) {
+				foreach (var f in combined.Filters) {
+					result = f.Apply(queryable);
+				}
+			}
+
+			return result;
+		}
+
+		/// <summary>
+		/// Combines the list of filters into a single one.
+		/// </summary>
+		/// <param name="filters">
+		/// The list of filters to combine.
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="IQueryFilter"/> that is the result of the
+		/// combination of the given filters.
+		/// </returns>
+		public static IQueryFilter Combine(IEnumerable<IQueryFilter> filters) {
+			IQueryFilter? result = null;
+
+			foreach (var filter in filters) {
+				if (result  == null)
+					result = filter;
+				else
+					result = Combine(result, filter);
+			}
+
+			return result == null ? Empty : result;
+		}
+
+		/// <summary>
+		/// Combines the list of filters into a single one.
+		/// </summary>
+		/// <param name="filters">
+		/// The list of filters to combine.
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="IQueryFilter"/> that is the result of the
+		/// combination of the given filters.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the given list of filters is <c>null</c>.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// Thrown if the given list of filters is empty.
+		/// </exception>
+		public static IQueryFilter Combine(params IQueryFilter[] filters) {
+			Guard.IsNotNull(filters, nameof(filters));
+			Guard.IsNotEmpty(filters, nameof(filters));
+
+			return Combine((IEnumerable<IQueryFilter>)filters);
+		}
+
+		/// <summary>
+		/// Combines the two filters into a single one.
+		/// </summary>
+		/// <param name="filter1">
+		/// The first filter to combine.
+		/// </param>
+		/// <param name="filter2">
+		/// The second filter to combine.
+		/// </param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if either of the given filters is <c>null</c>.
+		/// </exception>
+		public static CombinedQueryFilter Combine(IQueryFilter filter1, IQueryFilter filter2) {
+			Guard.IsNotNull(filter1, nameof(filter1));
+			Guard.IsNotNull(filter2, nameof(filter2));
+
+			var filters = new List<IQueryFilter>();
+
+			if (filter1 is CombinedQueryFilter combined1) {
+				filters.AddRange(combined1.Filters);
+			} else {
+				filters.Add(filter1);
+			}
+
+			if (filter2 is CombinedQueryFilter combined2) {
+				filters.AddRange(combined2.Filters);
+			} else {
+				filters.Add(filter2);
+			}
+
+			return new CombinedQueryFilter(filters);
+		}
 
 		readonly struct EmptyQueryFilter : IQueryFilter {
 		}
