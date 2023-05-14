@@ -676,7 +676,7 @@ namespace Deveel.Data {
 						} else if (sort.Field is ExpressionFieldRef<TEntity> exprRef) {
 							keySelector = exprRef.Expression;
 						} else {
-							throw new NotSupportedException();
+							throw new NotSupportedException($"The sort of type {sort.GetType()} is not supported");
 						}
 
 						if (sort.Ascending) {

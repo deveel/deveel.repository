@@ -412,7 +412,8 @@ namespace Deveel.Data {
 
 
 		[Fact]
-		public async Task Mongo_GetSortedPage() {
+		public async Task Mongo_GetDescendingSortedPage() {
+			var sorted = people.Skip(0).Take(10).OrderByDescending(x => x.LastName).ToList();
 			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
 				.OrderByDescending(x => x.LastName);
 
@@ -423,10 +424,35 @@ namespace Deveel.Data {
 			Assert.NotNull(result.Items);
 			Assert.NotEmpty(result.Items);
 			Assert.Equal(10, result.Items.Count());
+
+			for (int i = 0; i < sorted.Count; i++) {
+				Assert.Equal(sorted[i].LastName, result.Items.ElementAt(i).LastName);
+			}
 		}
 
 		[Fact]
-		public async Task Repository_GetSortedPage() {
+		public async Task Mongo_GetSortedPage() {
+			var sorted = people.Skip(0).Take(10).OrderBy(x => x.LastName).ToList();
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+				.OrderBy(x => x.LastName);
+
+			var result = await MongoRepository.GetPageAsync(request);
+			Assert.NotNull(result);
+			Assert.Equal(10, result.TotalPages);
+			Assert.Equal(100, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(10, result.Items.Count());
+
+			for (int i = 0; i < sorted.Count; i++) {
+				Assert.Equal(sorted[i].LastName, result.Items.ElementAt(i).LastName);
+			}
+		}
+
+
+		[Fact]
+		public async Task Repository_GetDescendingSortedPage() {
+			var sorted = people.Skip(0).Take(10).OrderByDescending(x => x.LastName).ToList();
 			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
 				.OrderByDescending(x => x.LastName);
 
@@ -437,7 +463,10 @@ namespace Deveel.Data {
 			Assert.NotNull(result.Items);
 			Assert.NotEmpty(result.Items);
 			Assert.Equal(10, result.Items.Count());
-		}
 
+			for (int i = 0; i < sorted.Count; i++) {
+				Assert.Equal(sorted[i].LastName, result.Items.ElementAt(i).LastName);
+			}
+		}
 	}
 }
