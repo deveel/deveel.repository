@@ -24,6 +24,16 @@ namespace Deveel.Data {
 			var result = await MongoRepository.UpdateAsync(entity);
 
 			Assert.True(result);
+
+			var updated = await MongoRepository.FindByIdAsync(entity.Id.ToEntityId());
+
+			Assert.NotNull(updated);
+			Assert.NotNull(entity.BirthDate);
+			Assert.NotNull(updated.BirthDate);
+			Assert.Equal(entity.BirthDate.Value, updated.BirthDate.Value);
+
+			Assert.Equal(entity.FirstName, updated.FirstName);
+			Assert.Equal(entity.LastName, updated.LastName);
 		}
 
 		[Fact]

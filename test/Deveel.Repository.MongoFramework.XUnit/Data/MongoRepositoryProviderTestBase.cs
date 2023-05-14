@@ -137,7 +137,7 @@ namespace Deveel.Data {
 		}
 
 		[MultiTenant, Entity, Table("persons")]
-		protected class MongoPerson : IPerson, IHaveTenantId {
+		protected class MongoPerson : IPerson, IHaveTenantId, IHaveTimeStamp {
 			[BsonId, Key]
 			public ObjectId Id { get; set; }
 
@@ -157,6 +157,12 @@ namespace Deveel.Data {
 
 			[Column("tenant")]
 			public string TenantId { get; set; }
+
+			[Column("created_at")]
+			public DateTimeOffset? CreatedAtUtc { get; set; }
+
+			[Column("updated_at")]
+			public DateTimeOffset? UpdatedAtUtc { get; set; }
 		}
 
 		protected interface IPerson {

@@ -1,5 +1,7 @@
 ﻿using System;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using MongoDB.Bson;
 
 using MongoFramework;
@@ -7,10 +9,17 @@ using MongoFramework;
 namespace Deveel.Data {
 	public class UpdateEntityTests : MongoFrameworkRepositoryTestBase {
 		private readonly IList<MongoPerson> people;
+		private readonly ISystemTime testTime = new TestTime();
 
 		public UpdateEntityTests(MongoFrameworkTestFixture mongo) 
 			: base(mongo) {
 			people = GeneratePersons(100);
+		}
+
+		protected override void AddRepository(IServiceCollection services) {
+			services.AddSystemTime(testTime);
+
+			base.AddRepository(services);
 		}
 
 		protected override async Task SeedAsync(MongoRepository<MongoDbContext, MongoPerson> repository) {
@@ -21,13 +30,25 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_UpdateExisting() {
-			var entity = people[^1];
+			var entity = NextRandom();
 
-			entity.BirthDate = new DateTime(1980, 06, 04);
+			entity.BirthDate = new DateTime(1980, 06, 04).ToUniversalTime();
 
 			var result = await MongoRepository.UpdateAsync(entity);
 
 			Assert.True(result);
+
+			var updated = await FindPerson(entity.Id);
+
+			Assert.NotNull(updated);
+			Assert.NotNull(entity.BirthDate);
+			Assert.NotNull(updated.BirthDate);
+			Assert.Equal(entity.BirthDate.Value, updated.BirthDate.Value);
+
+			Assert.Equal(entity.FirstName, updated.FirstName);
+			Assert.Equal(entity.LastName, updated.LastName);
+			Assert.NotNull(updated.UpdatedAtUtc);
+			Assert.Equal(testTime.UtcNow, updated.UpdatedAtUtc.Value);
 		}
 
 		//[Fact]
@@ -69,6 +90,7 @@ namespace Deveel.Data {
 
 			var entity = await Repository.FindByIdAsync(person.Id.ToString());
 
+			Assert.NotNull(entity);
 			entity.BirthDate = new DateTime(1980, 06, 04);
 
 			var result = await Repository.UpdateAsync(entity);

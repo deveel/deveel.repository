@@ -93,5 +93,47 @@
             Thrown if the given string is not a valid list of sorting rules
             </exception>
         </member>
+        <member name="T:Deveel.Data.RepositoryPageRequestExtensions">
+            <summary>
+            Extends the <see cref="T:Deveel.Data.RepositoryPageRequest"/> to provide
+            helper functions to order by a set of fields coming from 
+            a query string
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequestExtensions.OrderByQueryString(Deveel.Data.RepositoryPageRequest,System.Collections.Generic.IList{System.String})">
+            <summary>
+            Requests the page to be sorted by the given 
+            set of fields coming from a query string
+            </summary>
+            <param name="request">
+            The page request to the repository.
+            </param>
+            <param name="sort">
+            The list of fields to sort the result by.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.RepositoryPageRequest"/> that has
+            the result sort applied.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequestExtensions.OrderByQueryString``1(Deveel.Data.RepositoryPageRequest{``0},System.Collections.Generic.IList{System.String},System.Func{System.String,System.Linq.Expressions.Expression{System.Func{``0,System.Object}}})">
+            <summary>
+            Requests the page to be sorted by the given 
+            set of fields coming from a query string
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity to sort.
+            </typeparam>
+            <param name="request">
+            The page request to the repository.
+            </param>
+            <param name="sort">
+            The list of fields to sort the result by.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.RepositoryPageRequest`1"/> that has
+            the result sort applied.
+            </returns>
+        </member>
     </members>
 </doc>

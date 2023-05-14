@@ -122,7 +122,7 @@ namespace Deveel.Data {
 
         class MongoStateRepository : MongoRepository<MongoDbContext, MongoPersonWithStatus>, IStateRepository<MongoPersonWithStatus, PersonStatus> {
             public MongoStateRepository(MongoDbContext context, ILogger<MongoStateRepository>? logger = null) 
-                : base(context, logger) {
+                : base(context, null, logger) {
             }
 
             public Task AddStateAsync(MongoPersonWithStatus entity, EntityStateInfo<PersonStatus> state, CancellationToken cancellationToken = default) {

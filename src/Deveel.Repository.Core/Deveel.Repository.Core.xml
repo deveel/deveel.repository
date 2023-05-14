@@ -513,6 +513,22 @@
             or an empty list if none of the items matches the condition.
             </returns>
         </member>
+        <member name="T:Deveel.Data.IHaveTimeStamp">
+            <summary>
+            A contract for an object that has timestamps on the
+            creation and update.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.IHaveTimeStamp.CreatedAtUtc">
+            <summary>
+            Gets or sets the timestamp of the creation of the object.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.IHaveTimeStamp.UpdatedAtUtc">
+            <summary>
+            Gets or sets the timestamp of the last update of the object.
+            </summary>
+        </member>
         <member name="T:Deveel.Data.IMultiTenantRepository">
             <summary>
             Represents a repository that is capable of segregating the
@@ -1121,6 +1137,21 @@
             <param name="stateInfo">The state to be removed</param>
             <param name="cancellationToken"></param>
             <returns></returns>
+        </member>
+        <member name="T:Deveel.Data.ISystemTime">
+            <summary>
+            A service that provides the current system time.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.ISystemTime.UtcNow">
+            <summary>
+            Gets the current system time in UTC.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.ISystemTime.Now">
+            <summary>
+            Gets the current local system time.
+            </summary>
         </member>
         <member name="T:Deveel.Data.ITransactionalRepository">
             <summary>
@@ -1831,6 +1862,70 @@
             <param name="ascending"></param>
             <returns></returns>
         </member>
+        <member name="T:Deveel.Data.ServiceCollectionExtensions">
+            <summary>
+            Extensions for the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to register
+            repositories and providers.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddRepository``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers a repository of the given type in the service collection.
+            </summary>
+            <typeparam name="TRepository">
+            The type of the repository to register.
+            </typeparam>
+            <param name="services">
+            The service collection to register the repository.
+            </param>
+            <param name="lifetime">
+            The lifetime of the repository in the service collection.
+            </param>
+            <returns>
+            Returns the same <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to allow chaining.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddSystemTime``1(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers a singleton <see cref="T:Deveel.Data.ISystemTime"/> service of the
+            given <typeparamref name="TTime"/> type.
+            </summary>
+            <typeparam name="TTime">
+            The type of the <see cref="T:Deveel.Data.ISystemTime"/> implementation.
+            </typeparam>
+            <param name="services">
+            The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to add the service to.
+            </param>
+            <returns>
+            Returns the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> so that additional calls can be chained.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddSystemTime``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,``0)">
+            <summary>
+            Registers a singleton instance of <see cref="T:Deveel.Data.ISystemTime"/> of the
+            given <typeparamref name="TTime"/> type.
+            </summary>
+            <typeparam name="TTime">
+            The type of the <see cref="T:Deveel.Data.ISystemTime"/> implementation.
+            </typeparam>
+            <param name="services">
+            The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to add the service to.
+            </param>
+            <returns>
+            Returns the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> so that additional calls can be chained.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddSystemTime(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers the default <see cref="T:Deveel.Data.ISystemTime"/> service implementation
+            </summary>
+            <param name="services">
+            The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to add the service to.
+            </param>
+            <returns>
+            Returns the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> so that additional calls can be chained.
+            </returns>
+        </member>
         <member name="T:Deveel.Data.StringFieldRef">
             <summary>
             References a field of an entity by its name
@@ -1848,6 +1943,23 @@
         <member name="P:Deveel.Data.StringFieldRef.FieldName">
             <summary>
             Gets the name of the field referenced
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.SystemTime">
+            <summary>
+            A default implementation of <see cref="T:Deveel.Data.ISystemTime"/> that
+            uses the <see cref="T:System.DateTimeOffset"/> of the current system.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.SystemTime.UtcNow">
+            <inheritdoc/>
+        </member>
+        <member name="P:Deveel.Data.SystemTime.Now">
+            <inheritdoc/>
+        </member>
+        <member name="P:Deveel.Data.SystemTime.Default">
+            <summary>
+            Gets the default instance of the system time.
             </summary>
         </member>
     </members>

@@ -6,6 +6,8 @@ using Bogus;
 using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
 
 using MongoFramework;
 
@@ -29,6 +31,11 @@ namespace Deveel.Data {
 		}
 
 		protected string ConnectionString => mongo.ConnectionString;
+
+		protected IMongoCollection<MongoPerson> MongoCollection => new MongoClient(mongo.ConnectionString)
+			.GetDatabase("testdb")
+			.GetCollection<MongoPerson>("persons");
+
 
 		protected IServiceProvider Services { get; }
 
@@ -71,6 +78,14 @@ namespace Deveel.Data {
 			return Task.CompletedTask;
 		}
 
+		protected async Task<MongoPerson?> FindPerson(ObjectId id) {
+			var collection = MongoCollection;
+			var result = await collection.FindAsync(x => x.Id == id);
+
+			return await result.FirstOrDefaultAsync();
+		}
+
+
 		public virtual async Task InitializeAsync() {
 			var controller = Services.GetRequiredService<IRepositoryController>();
 			await controller.CreateRepositoryAsync<MongoPerson>();
@@ -84,7 +99,7 @@ namespace Deveel.Data {
 		}
 
 		[Table("persons")]
-		protected class MongoPerson : IPerson {
+		protected class MongoPerson : IPerson, IHaveTimeStamp {
 			[Key, Column("_id")]
 			public ObjectId Id { get; set; }
 
@@ -102,6 +117,12 @@ namespace Deveel.Data {
 
 			[Column("description")]
 			public string? Description { get; set; }
+
+			[Column("created_at")]
+			public DateTimeOffset? CreatedAtUtc { get; set; }
+
+			[Column("updated_at")]
+			public DateTimeOffset? UpdatedAtUtc { get; set; }
 		}
 
 		protected interface IPerson {

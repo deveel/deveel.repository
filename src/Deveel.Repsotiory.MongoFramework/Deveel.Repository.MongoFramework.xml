@@ -85,23 +85,29 @@
             The type of the entity that is stored in the repository.
             </typeparam>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.#ctor(`0,Microsoft.Extensions.Logging.ILogger)">
+        <member name="M:Deveel.Data.MongoRepository`2.#ctor(`0,Deveel.Data.ISystemTime,Microsoft.Extensions.Logging.ILogger)">
             <summary>
             Constructs the repository with the given context and logger.
             </summary>
             <param name="context">
             The context that is used to handle the connection to the MongoDB server.
+            </param>
+            <param name="systemTime">
+            A service that provides the current system time.
             </param>
             <param name="logger">
             A logger instance that is used to log messages from the repository.
             </param>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.#ctor(`0,Microsoft.Extensions.Logging.ILogger{Deveel.Data.MongoRepository{`0,`1}})">
+        <member name="M:Deveel.Data.MongoRepository`2.#ctor(`0,Deveel.Data.ISystemTime,Microsoft.Extensions.Logging.ILogger{Deveel.Data.MongoRepository{`0,`1}})">
             <summary>
             Constructs the repository with the given context and logger.
             </summary>
             <param name="context">
             The context that is used to handle the connection to the MongoDB server.
+            </param>
+            <param name="systemTime">
+            A service that provides the current system time.
             </param>
             <param name="logger">
             A logger instance that is used to log messages from the repository.
@@ -116,6 +122,11 @@
             <summary>
             Gets the <see cref="T:MongoFramework.IMongoDbSet`1"/> that is used to handle the
             repository operations.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.MongoRepository`2.SystemTime">
+            <summary>
+            Gets a service that provides the current system time.
             </summary>
         </member>
         <member name="P:Deveel.Data.MongoRepository`2.Logger">
@@ -215,7 +226,7 @@
             Thrown when the given query filter is not supported by this repository.
             </exception>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.ExistsAsync(System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.MongoRepository`2.CollectionExistsAsync(System.Threading.CancellationToken)">
             <summary>
             Verifies if the repository exists in the underlying database.
             </summary>

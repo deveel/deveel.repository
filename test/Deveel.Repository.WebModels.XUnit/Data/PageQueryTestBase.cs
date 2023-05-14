@@ -42,7 +42,7 @@ namespace Deveel.Data {
 				};
 			});
 
-			return new InMemoryRepository<PersonEntity>(faker.Generate(120), mapper);
+			return new InMemoryRepository<PersonEntity>(faker.Generate(120), SystemTime.Default, mapper);
 		}
 
 		public void Dispose() {

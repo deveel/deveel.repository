@@ -95,6 +95,7 @@ namespace Deveel.Data {
 
             public string LastName { get; set; }
 
+			[BsonDateTimeOptions(Kind = DateTimeKind.Local)]
             public DateTime? BirthDate { get; set; }
 
             public string? Description { get; set; }

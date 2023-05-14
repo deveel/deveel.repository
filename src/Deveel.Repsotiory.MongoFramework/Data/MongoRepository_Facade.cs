@@ -16,12 +16,13 @@ namespace Deveel.Data {
 		where TEntity : class, TFacade
 		where TFacade : class {
 
-		public MongoRepository(TContext context, ILogger<MongoRepository<TContext, TEntity, TFacade>>? logger = null)
-			: this(context, (ILogger?) logger) {
+		public MongoRepository(TContext context, ISystemTime? systemTime = null, ILogger<MongoRepository<TContext, TEntity, TFacade>>? logger = null)
+			: this(context, systemTime, (ILogger?) logger) {
 
 		}
 
-		protected internal MongoRepository(TContext context, ILogger? logger = null) : base(context, logger) {
+		protected internal MongoRepository(TContext context, ISystemTime? systemTime = null, ILogger? logger = null) 
+			: base(context, systemTime, logger) {
 		}
 
 		Type IRepository.EntityType => typeof(TFacade);

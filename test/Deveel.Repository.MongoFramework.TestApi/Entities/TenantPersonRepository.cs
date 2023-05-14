@@ -3,7 +3,7 @@
 namespace Deveel.Data.Entities {
     public class TenantPersonRepository : MongoRepository<TenantPersonsDbContext, PersonEntity> {
         public TenantPersonRepository(TenantPersonsDbContext context, ILogger<TenantPersonRepository>? logger = null) 
-            : base(context, logger) {
+            : base(context, null, logger) {
         }
     }
 }

@@ -13,13 +13,14 @@ namespace Deveel.Data {
 		private readonly List<TEntity> entities;
 		private readonly IEntityFieldMapper<TEntity>? fieldMapper;
 
-		public InMemoryRepository(IEnumerable<TEntity>? list = null, IEntityFieldMapper<TEntity>? fieldMapper = null) {
+		public InMemoryRepository(IEnumerable<TEntity>? list = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null) {
 			entities = list == null ? new List<TEntity>() : new List<TEntity>(list);
+			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
 			this.fieldMapper = fieldMapper;
 		}
 
-		internal InMemoryRepository(string tenantId, IEnumerable<TEntity>? list = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
-			: this(list, fieldMapper) {
+		internal InMemoryRepository(string tenantId, IEnumerable<TEntity>? list = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
+			: this(list, systemTime, fieldMapper) {
 			TenantId = tenantId;
 		}
 
@@ -32,6 +33,8 @@ namespace Deveel.Data {
 		string? IMultiTenantRepository.TenantId => TenantId;
 
 		protected virtual string? TenantId { get; }
+
+		protected ISystemTime SystemTime { get; }
 
 		private static TEntity Assert(object entity) {
 			if (entity == null)
@@ -84,6 +87,9 @@ namespace Deveel.Data {
 				if (!entity.TrySetMemberValue("Id", id))
 					throw new RepositoryException("Unable to set the ID of the entity");
 
+				if (entity is IHaveTimeStamp hasTime)
+					hasTime.CreatedAtUtc = SystemTime.UtcNow;
+
 				entities.Add(entity);
 
 				return Task.FromResult(id);
@@ -105,6 +111,9 @@ namespace Deveel.Data {
 					var id = Guid.NewGuid().ToString();
 					if (!item.TrySetMemberValue("Id", id))
 						throw new RepositoryException("Unable to set the ID of the entity");
+
+					if (item is IHaveTimeStamp hasTime)
+						hasTime.CreatedAtUtc = SystemTime.UtcNow;
 
 					this.entities.Add(item);
 
@@ -262,6 +271,9 @@ namespace Deveel.Data {
 				var oldIndex = entities.FindIndex(x => x.TryGetMemberValue<string>("Id", out var id) && id == entityId);
 				if (oldIndex < 0)
 					return Task.FromResult(false);
+
+				if (entity is IHaveTimeStamp hasTime)
+					hasTime.UpdatedAtUtc = SystemTime.UtcNow;
 
 				entities[oldIndex] = entity;
 				return Task.FromResult(true);

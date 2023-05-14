@@ -14,13 +14,13 @@ namespace Deveel.Data {
 		where TContext : class, IMongoDbContext
 		where TEntity : class, TFacade
 		where TFacade : class {
-		public MongoRepositoryProvider(IMongoDbConnection<TContext> connection, ILoggerFactory? loggerFactory = null) 
-			: base(connection, loggerFactory) {
+		public MongoRepositoryProvider(IMongoDbConnection<TContext> connection, ISystemTime? systemTime = null, ILoggerFactory? loggerFactory = null) 
+			: base(connection, systemTime, loggerFactory) {
 		}
 
 		protected override MongoRepository<TContext, TEntity> CreateRepository(TContext context) {
 			var logger = LoggerFactory.CreateLogger<MongoRepository<TContext, TEntity, TFacade>>();
-			return new MongoRepository<TContext, TEntity, TFacade>(context, logger);
+			return new MongoRepository<TContext, TEntity, TFacade>(context, SystemTime, logger);
 		}
 
 		async Task<IRepository<TFacade>> IRepositoryProvider<TFacade>.GetRepositoryAsync(string tenantId) 

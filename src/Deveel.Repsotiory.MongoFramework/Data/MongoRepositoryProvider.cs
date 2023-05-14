@@ -15,14 +15,18 @@ namespace Deveel.Data {
 
 		public MongoRepositoryProvider(
 			IMongoDbConnection<TContext> connection,
+			ISystemTime? systemTime = null,
 			ILoggerFactory? loggerFactory = null) {
 			Connection = connection;
+			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
 			LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 		}
 
 		protected ILoggerFactory LoggerFactory { get; }
 
 		public IMongoDbConnection<TContext> Connection { get; }
+
+		public ISystemTime SystemTime { get; }
 
 		protected virtual ILogger CreateLogger() {
 			return LoggerFactory.CreateLogger(typeof(MongoRepository<TContext, TEntity>));
@@ -87,7 +91,7 @@ namespace Deveel.Data {
 		}
 
 		protected virtual MongoRepository<TContext, TEntity> CreateRepository(TContext context, ILogger logger) {
-			return new MongoRepository<TContext, TEntity>(context, logger);
+			return new MongoRepository<TContext, TEntity>(context, SystemTime, logger);
 		}
 
 		protected virtual MongoRepository<TContext, TEntity> CreateRepository(TContext context) {

@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Linq.Expressions;
 
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -44,11 +45,15 @@ namespace Deveel.Data {
 		/// <param name="context">
 		/// The context that is used to handle the connection to the MongoDB server.
 		/// </param>
+		/// <param name="systemTime">
+		/// A service that provides the current system time.
+		/// </param>
 		/// <param name="logger">
 		/// A logger instance that is used to log messages from the repository.
 		/// </param>
-		protected internal MongoRepository(TContext context, ILogger? logger = null) {
+		protected internal MongoRepository(TContext context, ISystemTime? systemTime = null, ILogger? logger = null) {
 			Context = context;
+			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
 			Logger = logger ?? NullLogger.Instance;
 
 			if (context is IMongoDbTenantContext tenantContext)
@@ -61,11 +66,14 @@ namespace Deveel.Data {
 		/// <param name="context">
 		/// The context that is used to handle the connection to the MongoDB server.
 		/// </param>
+		/// <param name="systemTime">
+		/// A service that provides the current system time.
+		/// </param>
 		/// <param name="logger">
 		/// A logger instance that is used to log messages from the repository.
 		/// </param>
-		public MongoRepository(TContext context, ILogger<MongoRepository<TContext, TEntity>>? logger = null)
-			: this(context, (ILogger?)logger) {
+		public MongoRepository(TContext context, ISystemTime? systemTime = null, ILogger<MongoRepository<TContext, TEntity>>? logger = null)
+			: this(context, systemTime, (ILogger?)logger) {
 		}
 
 		/// <summary>
@@ -78,6 +86,11 @@ namespace Deveel.Data {
 		/// repository operations.
 		/// </summary>
 		protected IMongoDbSet<TEntity> DbSet => GetEntitySet();
+
+		/// <summary>
+		/// Gets a service that provides the current system time.
+		/// </summary>
+		protected ISystemTime SystemTime { get; }
 
 		/// <summary>
 		/// Gets the <see cref="ILogger"/> instance that is used to log messages
@@ -296,6 +309,9 @@ namespace Deveel.Data {
 
 		#region Controllable
 
+		Task<bool> IControllableRepository.ExistsAsync(CancellationToken cancellationToken)
+			=> CollectionExistsAsync(cancellationToken);
+
 		/// <summary>
 		/// Verifies if the repository exists in the underlying database.
 		/// </summary>
@@ -310,7 +326,7 @@ namespace Deveel.Data {
 		/// Thrown when an error occurs while verifying the existence of the
 		/// collection in the underlying database.
 		/// </exception>
-		public async Task<bool> ExistsAsync(CancellationToken cancellationToken = default) {
+		public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
@@ -328,7 +344,11 @@ namespace Deveel.Data {
 			}
 		}
 
-		public async Task CreateAsync(CancellationToken cancellationToken = default) {
+		Task IControllableRepository.CreateAsync(CancellationToken cancellationToken) {
+			return CreateCollectionAsync(cancellationToken);
+		}
+
+		public async Task CreateCollectionAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
@@ -340,7 +360,11 @@ namespace Deveel.Data {
 			}
 		}
 
-		public async Task DropAsync(CancellationToken cancellationToken = default) {
+		Task IControllableRepository.DropAsync(CancellationToken cancellationToken) {
+			return DropCollectionAsync(cancellationToken);
+		}
+
+		public async Task DropCollectionAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
@@ -365,6 +389,9 @@ namespace Deveel.Data {
 		/// Returns the entity that is about to be created.
 		/// </returns>
 		protected virtual TEntity OnCreating(TEntity entity) {
+			if (entity is IHaveTimeStamp hasTime)
+				hasTime.CreatedAtUtc = SystemTime.UtcNow;
+
 			return entity;
 		}
 
@@ -445,6 +472,9 @@ namespace Deveel.Data {
 		#region Update
 
 		protected virtual TEntity OnUpdating(TEntity entity) {
+			if (entity is IHaveTimeStamp hasTime)
+				hasTime.UpdatedAtUtc = SystemTime.UtcNow;
+
 			return entity;
 		}
 
