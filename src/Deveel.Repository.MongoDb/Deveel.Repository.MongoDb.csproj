@@ -1,43 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<RootNamespace>Deveel</RootNamespace>
-		<VersionPrefix>1.1.0</VersionPrefix>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<Authors>Antonello Provenzano</Authors>
-		<Company>Deveel AS</Company>
-		<Copyright>(C) 2022-2023 Deveel AS</Copyright>
-		<PackageProjectUrl>https://github.com/deveel/deveel.data.repository</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/deveel/deveel.data.repository</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
 		<PackageTags>data core framework repository mongo mongodb</PackageTags>
 		<Description>Provides an implementation of the repository pattern that is backed by MongoDB infrastructures</Description>
-		<PackageLicenseFile>EULA.md</PackageLicenseFile>
-		<PackageIcon>deveel-logo.png</PackageIcon>
-		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 	</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Deveel.Mongo.Store" Version="1.0.2-4362539237" />
-    <PackageReference Include="Finbuckle.MultiTenant" Version="6.10.0" />
+    <PackageReference Include="Finbuckle.MultiTenant" Version="6.12.0" />
   </ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="..\..\deveel-logo.png">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-		<None Include="..\..\EULA.md">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
 	</ItemGroup>
 
 </Project>

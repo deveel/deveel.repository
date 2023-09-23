@@ -1,23 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>Deveel</RootNamespace>
-    <VersionPrefix>1.1.0</VersionPrefix>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Authors>Antonello Provenzano</Authors>
-    <Company>Deveel AS</Company>
-    <Copyright>(C) 2022-2023 Deveel</Copyright>
-    <PackageProjectUrl>https://github.com/deveel/deveel.data.repository</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/deveel/deveel.data.repository</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>data framework repository filter dynamic linq filters</PackageTags>
+    <PackageTags>data;framework;repository;filter;dynamic;linq;filters</PackageTags>
     <Description>Extenrions to the of repository model to provide filtering capabilities using Dynamic LINQ</Description>
-    <PackageLicenseFile>EULA.md</PackageLicenseFile>
-    <PackageIcon>deveel-logo.png</PackageIcon>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,17 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\deveel-logo.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="..\..\EULA.md">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.3.2" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.3.5" />
   </ItemGroup>
 </Project>
