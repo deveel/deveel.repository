@@ -60,19 +60,19 @@ namespace Deveel.Data {
 
         public static string Create<TEntity>(this IRepositoryProvider<TEntity> provider, IDataTransaction transaction, string tenantId, TEntity entity)
             where TEntity : class
-            => provider.RequireTransactional<TEntity>(tenantId).Create(transaction, entity);
+            => provider.RequireTransactional<TEntity>(tenantId).Add(transaction, entity);
 
         public static Task<string> CreateAsync(this IRepositoryProvider provider, string tenantId, object entity, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).AddAsync(entity, cancellationToken);
 
         public static string Create(this IRepositoryProvider provider, string tenantId, object entity)
-            => provider.GetRepository(tenantId).Create(entity);
+            => provider.GetRepository(tenantId).Add(entity);
 
         public static Task<string> CreateAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity, CancellationToken cancellationToken = default)
             => provider.RequireTransactional(tenantId).AddAsync(transaction, entity, cancellationToken);
 
         public static string Create(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity)
-            => provider.RequireTransactional(tenantId).Create(transaction, entity);
+            => provider.RequireTransactional(tenantId).Add(transaction, entity);
 
         #endregion
 
@@ -89,11 +89,11 @@ namespace Deveel.Data {
 
         public static bool Delete<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, TEntity entity)
             where TEntity : class
-            => provider.GetRepository(tenantId).Delete(entity);
+            => provider.GetRepository(tenantId).Remove(entity);
 
         public static bool Delete<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IDataTransaction transaction, TEntity entity)
             where TEntity : class
-            => provider.RequireTransactional<TEntity>(tenantId).Delete(transaction, entity);
+            => provider.RequireTransactional<TEntity>(tenantId).Remove(transaction, entity);
 
 
         public static Task<bool> DeleteAsync(this IRepositoryProvider provider, string tenantId, object entity, CancellationToken cancellationToken = default)
@@ -103,23 +103,23 @@ namespace Deveel.Data {
             => provider.RequireTransactional(tenantId).RemoveAsync(transaction, entity, cancellationToken);
 
         public static bool Delete(this IRepositoryProvider provider, string tenantId, object entity)
-            => provider.GetRepository(tenantId).Delete(entity);
+            => provider.GetRepository(tenantId).Remove(entity);
 
         public static bool Delete(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity)
-            => provider.RequireTransactional(tenantId).Delete(transaction, entity);
+            => provider.RequireTransactional(tenantId).Remove(transaction, entity);
 
         public static Task<bool> DeleteByIdAsync(this IRepositoryProvider provider, string tenantId, string id, CancellationToken cancellationToken = default)
-            => provider.GetRepository(tenantId).DeleteByIdAsync(id, cancellationToken);
+            => provider.GetRepository(tenantId).RemoveByIdAsync(id, cancellationToken);
 
         public static Task<bool> DeleteByIdAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, string id, CancellationToken cancellationToken = default)
-            => provider.RequireTransactional(tenantId).DeleteByIdAsync(transaction, id, cancellationToken);
+            => provider.RequireTransactional(tenantId).RemoveByIdAsync(transaction, id, cancellationToken);
 
 
         public static bool DeleteById(this IRepositoryProvider provider, string tenantId, string id)
-            => provider.GetRepository(tenantId).DeleteById(id);
+            => provider.GetRepository(tenantId).RemoveById(id);
 
         public static bool DeleteById(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, string id)
-            => provider.RequireTransactional(tenantId).DeleteById(transaction, id);
+            => provider.RequireTransactional(tenantId).RemoveById(transaction, id);
 
 
         #endregion
