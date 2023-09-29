@@ -654,16 +654,16 @@
             identified
             </returns>
         </member>
-        <member name="M:Deveel.Data.IRepository.CreateAsync(System.Object,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IRepository.AddAsync(System.Object,System.Threading.CancellationToken)">
             <summary>
-            Creates a new entity in the repository
+            Adds an entity in the repository
             </summary>
-            <param name="entity">The entity to create</param>
+            <param name="entity">The entity to be added</param>
             <param name="cancellationToken">
             A token used to cancel the operation
             </param>
             <returns>
-            Returns the unique identifier of the entity created.
+            Returns the unique identifier of the entity added.
             </returns>
             <exception cref="T:Deveel.Data.RepositoryException">
             Thrown if it an error occurred while creating the entity
@@ -672,11 +672,11 @@
             Thrown if the provided <paramref name="entity"/> is <c>null</c>
             </exception>
         </member>
-        <member name="M:Deveel.Data.IRepository.CreateAsync(System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IRepository.AddRangeAsync(System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)">
             <summary>
-            Creates a list of entities in the repository in one single operation
+            Adds a list of entities in the repository in one single operation
             </summary>
-            <param name="entities">The enumeration of the entities to be created</param>
+            <param name="entities">The list of the entities to be added</param>
             <param name="cancellationToken"></param>
             <remarks>
             <para>
@@ -685,7 +685,7 @@
             underlying storage system might have persisted some of the items before a
             failure: to prevent the scenario of a partial creation of the set, the
             callers should consider the 
-            <see cref="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)"/>
+            <see cref="M:Deveel.Data.ITransactionalRepository.AddRangeAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)"/>
             overload, where transactions are available.
             </para>
             </remarks>
@@ -693,17 +693,17 @@
             Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be used to await the operation
             </returns>
             <exception cref="T:Deveel.Data.RepositoryException">
-            Thrown if it an error occurred while creating one or more entities
+            Thrown if it an error occurred while adding one or more entities
             </exception>
             <exception cref="T:System.ArgumentNullException">
             Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
             </exception>
         </member>
-        <member name="M:Deveel.Data.IRepository.DeleteAsync(System.Object,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IRepository.RemoveAsync(System.Object,System.Threading.CancellationToken)">
             <summary>
-            Deletes an entity from the repository
+            Removes an entity from the repository
             </summary>
-            <param name="entity">The entity to be deleted</param>
+            <param name="entity">The entity to be removed</param>
             <param name="cancellationToken">
             A token used to cancel the operation
             </param>
@@ -926,27 +926,27 @@
             identified.
             </returns>
         </member>
-        <member name="M:Deveel.Data.IRepository`1.CreateAsync(`0,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IRepository`1.AddAsync(`0,System.Threading.CancellationToken)">
             <summary>
-            Creates a new entity in the repository
+            Adds a new entity into the repository
             </summary>
-            <param name="entity">The entity to create</param>
+            <param name="entity">The entity to be added</param>
             <param name="cancellationToken"></param>
             <returns>
-            Returns the unique identifier of the entity created.
+            Returns the unique identifier of the entity added.
             </returns>
             <exception cref="T:Deveel.Data.RepositoryException">
-            Thrown if it an error occurred while creating the entity
+            Thrown if it an error occurred while adding the entity
             </exception>
             <exception cref="T:System.ArgumentNullException">
             Thrown if the provided <paramref name="entity"/> is <c>null</c>
             </exception>
         </member>
-        <member name="M:Deveel.Data.IRepository`1.CreateAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IRepository`1.AddRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
             <summary>
-            Creates a list of entities in the repository in one single operation
+            Adds a list of entities in the repository in one single operation
             </summary>
-            <param name="entities">The enumeration of the entities to be created</param>
+            <param name="entities">The enumeration of the entities to be added</param>
             <param name="cancellationToken"></param>
             <remarks>
             <para>
@@ -955,7 +955,7 @@
             underlying storage system might have persisted some of the items before a
             failure: to prevent the scenario of a partial creation of the set, the
             callers should consider the 
-            <see cref="M:Deveel.Data.ITransactionalRepository`1.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)"/>
+            <see cref="!:ITransactionalRepository&lt;TEntity&gt;.AddRangeAsync(IDataTransaction, IEnumerable&lt;TEntity&gt;, CancellationToken)"/>
             overload, where transactions are available.
             </para>
             </remarks>
@@ -963,7 +963,7 @@
             Returns an ordered list of the unique identifiers of the entiies created
             </returns>
             <exception cref="T:Deveel.Data.RepositoryException">
-            Thrown if it an error occurred while creating one or more entities
+            Thrown if it an error occurred while adding one or more entities
             </exception>
             <exception cref="T:System.ArgumentNullException">
             Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
@@ -986,9 +986,9 @@
             Thrown if it an error occurred while updating the entity
             </exception>
         </member>
-        <member name="M:Deveel.Data.IRepository`1.DeleteAsync(`0,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IRepository`1.RemoveAsync(`0,System.Threading.CancellationToken)">
             <summary>
-            Deletes an entity from the repository
+            Removes an entity from the repository
             </summary>
             <param name="entity">The entity to be deleted</param>
             <param name="cancellationToken"></param>
@@ -1159,7 +1159,7 @@
             to execute CRUD operations within the scope of a transaction
             </summary>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.ITransactionalRepository.AddRangeAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)">
             <summary>
             Creates a list of entities in the repository in one single operation, within
             the scope of a given transaction
@@ -1177,7 +1177,7 @@
             Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
             </exception>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Object,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.ITransactionalRepository.AddAsync(Deveel.Data.IDataTransaction,System.Object,System.Threading.CancellationToken)">
             <summary>
             Creates a new entity in the repository
             </summary>
@@ -1202,13 +1202,13 @@
             </exception>
             <seealso cref="T:Deveel.Data.IDataTransactionFactory"/>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository.DeleteAsync(Deveel.Data.IDataTransaction,System.Object,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.ITransactionalRepository.RemoveAsync(Deveel.Data.IDataTransaction,System.Object,System.Threading.CancellationToken)">
             <summary>
-            Deletes an entity from the repository
+            Removes an entity from the repository
             </summary>
             <param name="transaction">A transaction that isolates the access
             to the data store used by the repository</param>
-            <param name="entity">The entity to be deleted</param>
+            <param name="entity">The entity to be removed</param>
             <param name="cancellationToken">
             A token used to cancel the operation
             </param>

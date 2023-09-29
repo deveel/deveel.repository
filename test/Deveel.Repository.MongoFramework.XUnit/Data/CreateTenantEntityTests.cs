@@ -24,7 +24,7 @@ namespace Deveel.Data {
 		public async Task Mongo_CreateNewPerson() {
 			var person = GeneratePerson();
 
-			var id = await MongoRepository.CreateAsync(person);
+			var id = await MongoRepository.AddAsync(person);
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
@@ -44,7 +44,7 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task Repository_CreateNewPerson() {
 			var person = GeneratePerson();
-			var id = await Repository.CreateAsync(person);
+			var id = await Repository.AddAsync(person);
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
@@ -65,7 +65,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_CreateNewPerson() {
 			var person = GeneratePerson();
 
-			var id = await FacadeRepository.CreateAsync(person);
+			var id = await FacadeRepository.AddAsync(person);
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
@@ -120,7 +120,7 @@ namespace Deveel.Data {
 		public async Task Mongo_CreateNewPersons() {
 			var persons = GeneratePersons(100);
 
-			var results = await MongoRepository.CreateAsync(persons);
+			var results = await MongoRepository.AddRangeAsync(persons);
 
 			Assert.NotNull(results);
 			Assert.NotEmpty(results);
@@ -135,7 +135,7 @@ namespace Deveel.Data {
 		public async Task Repository_CreateNewPersons() {
 			var persons = GeneratePersons(100);
 
-			var results = await Repository.CreateAsync(persons);
+			var results = await Repository.AddRangeAsync(persons);
 
 			Assert.NotNull(results);
 			Assert.NotEmpty(results);
@@ -150,7 +150,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_CreateNewPersons() {
 			var persons = GeneratePersons(100);
 
-			var results = await FacadeRepository.CreateAsync(persons);
+			var results = await FacadeRepository.AddRangeAsync(persons);
 
 			Assert.NotNull(results);
 			Assert.NotEmpty(results);

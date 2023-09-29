@@ -9,7 +9,7 @@ namespace Deveel.Data {
 		}
 
 		protected override async Task SeedAsync(IRepository repository) {
-			await repository.CreateAsync(people);
+			await repository.AddRangeAsync(people);
 		}
 
 		[Fact]

@@ -58,14 +58,14 @@ namespace Deveel.Data {
 		async Task<TFacade?> IFilterableRepository<TFacade>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
 			=> await FindAsync(GetFilterDefinition(filter), cancellationToken);
 
-		Task<string> IRepository<TFacade>.CreateAsync(TFacade entity, CancellationToken cancellationToken)
-			=> CreateAsync(Assert(entity), cancellationToken);
+		Task<string> IRepository<TFacade>.AddAsync(TFacade entity, CancellationToken cancellationToken)
+			=> AddAsync(Assert(entity), cancellationToken);
 
-		Task<IList<string>> IRepository<TFacade>.CreateAsync(IEnumerable<TFacade> entities, CancellationToken cancellationToken)
-			=> base.CreateAsync(entities.Select(Assert), cancellationToken);
+		Task<IList<string>> IRepository<TFacade>.AddRangeAsync(IEnumerable<TFacade> entities, CancellationToken cancellationToken)
+			=> base.AddRangeAsync(entities.Select(Assert), cancellationToken);
 
-		Task<bool> IRepository<TFacade>.DeleteAsync(TFacade entity, CancellationToken cancellationToken)
-			=> DeleteAsync(Assert(entity), cancellationToken);
+		Task<bool> IRepository<TFacade>.RemoveAsync(TFacade entity, CancellationToken cancellationToken)
+			=> RemoveAsync(Assert(entity), cancellationToken);
 
 		async Task<TFacade?> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken)
 			=> await FindByIdAsync(id, cancellationToken);

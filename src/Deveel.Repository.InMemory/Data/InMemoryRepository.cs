@@ -79,7 +79,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		public Task<string> CreateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
@@ -101,7 +101,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		public Task<IList<string>> CreateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
@@ -129,13 +129,13 @@ namespace Deveel.Data {
 			}
 		}
 
-		Task<string> IRepository.CreateAsync(object entity, CancellationToken cancellationToken)
-			=> CreateAsync(Assert(entity), cancellationToken);
+		Task<string> IRepository.AddAsync(object entity, CancellationToken cancellationToken)
+			=> AddAsync(Assert(entity), cancellationToken);
 
-		Task<IList<string>> IRepository.CreateAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
-			=> CreateAsync(entities.Select(Assert), cancellationToken);
+		Task<IList<string>> IRepository.AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
+			=> AddRangeAsync(entities.Select(Assert), cancellationToken);
 
-		public Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			if (entity is null) 
 				throw new ArgumentNullException(nameof(entity));
 
@@ -151,8 +151,8 @@ namespace Deveel.Data {
 			}
 		}
 
-		Task<bool> IRepository.DeleteAsync(object entity, CancellationToken cancellationToken) 
-			=> DeleteAsync(Assert(entity), cancellationToken);
+		Task<bool> IRepository.RemoveAsync(object entity, CancellationToken cancellationToken) 
+			=> RemoveAsync(Assert(entity), cancellationToken);
 
 		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();

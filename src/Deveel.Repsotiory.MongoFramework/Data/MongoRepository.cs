@@ -411,7 +411,7 @@ namespace Deveel.Data {
 		/// Thrown when an error occurs while creating the entity in the
 		/// underlying database.
 		/// </exception>
-		public async Task<string> CreateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public async Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -443,13 +443,13 @@ namespace Deveel.Data {
 			}
 		}
 
-		Task<string> IRepository.CreateAsync(object entity, CancellationToken cancellationToken)
-			=> CreateAsync(Assert(entity), cancellationToken);
+		Task<string> IRepository.AddAsync(object entity, CancellationToken cancellationToken)
+			=> AddAsync(Assert(entity), cancellationToken);
 
-		Task<IList<string>> IRepository.CreateAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
-			=> CreateAsync(entities.Select(x => Assert(x)), cancellationToken);
+		Task<IList<string>> IRepository.AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
+			=> AddRangeAsync(entities.Select(x => Assert(x)), cancellationToken);
 
-		public async Task<IList<string>> CreateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public async Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -530,7 +530,7 @@ namespace Deveel.Data {
 
 		#region Delete
 
-		public async Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			if (entity is null) 
 				throw new ArgumentNullException(nameof(entity));
 
@@ -572,8 +572,8 @@ namespace Deveel.Data {
 		}
 
 
-		Task<bool> IRepository.DeleteAsync(object entity, CancellationToken cancellationToken)
-			=> DeleteAsync(Assert(entity), cancellationToken);
+		Task<bool> IRepository.RemoveAsync(object entity, CancellationToken cancellationToken)
+			=> RemoveAsync(Assert(entity), cancellationToken);
 
 		#endregion
 

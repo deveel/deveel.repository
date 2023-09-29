@@ -14,7 +14,7 @@ namespace Deveel.Data {
 		}
 
 		protected override Task SeedAsync(IRepository<MongoPerson> repository) {
-			return repository.CreateAsync(people);
+			return repository.AddRangeAsync(people);
 		}
 
 		private MongoPerson NextRandom() => people[Random.Shared.Next(0, people.Count - 1)];
@@ -23,7 +23,7 @@ namespace Deveel.Data {
 		public async Task Mongo_DeleteExisting() {
 			var entity = NextRandom();
 
-			var result = await MongoRepository.DeleteAsync(entity);
+			var result = await MongoRepository.RemoveAsync(entity);
 
 			Assert.True(result);
 
@@ -38,7 +38,7 @@ namespace Deveel.Data {
 			var entity = await Repository.FindByIdAsync(person.Id.ToEntityId());
 			Assert.NotNull(entity);
 
-			var result = await Repository.DeleteAsync(entity);
+			var result = await Repository.RemoveAsync(entity);
 
 			Assert.True(result);
 
@@ -58,7 +58,7 @@ namespace Deveel.Data {
 			var entity = await FacadeRepository.FindByIdAsync(person.Id.ToEntityId());
 			Assert.NotNull(entity);
 
-			var result = await FacadeRepository.DeleteAsync(entity);
+			var result = await FacadeRepository.RemoveAsync(entity);
 
 			Assert.True(result);
 
@@ -73,7 +73,7 @@ namespace Deveel.Data {
 		public async Task Mongo_DeleteNotExisting() {
 			var entity = new MongoPerson { Id = ObjectId.GenerateNewId(), TenantId = TenantId };
 
-			var result = await MongoRepository.DeleteAsync(entity);
+			var result = await MongoRepository.RemoveAsync(entity);
 
 			Assert.False(result);
 
@@ -83,7 +83,7 @@ namespace Deveel.Data {
 		public async Task Repository_DeleteNotExisting() {
 			var entity = new MongoPerson { Id = ObjectId.GenerateNewId(), TenantId = TenantId };
 
-			var result = await Repository.DeleteAsync(entity);
+			var result = await Repository.RemoveAsync(entity);
 
 			Assert.False(result);
 		}
@@ -92,7 +92,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_DeleteNotExisting() {
 			var entity = new MongoPerson { Id = ObjectId.GenerateNewId(), TenantId = TenantId };
 
-			var result = await FacadeRepository.DeleteAsync(entity);
+			var result = await FacadeRepository.RemoveAsync(entity);
 
 			Assert.False(result);
 		}

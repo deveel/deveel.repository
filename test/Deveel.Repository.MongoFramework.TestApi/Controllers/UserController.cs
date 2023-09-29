@@ -28,7 +28,7 @@ namespace Deveel.Data.Controllers {
 
 			var entity = model.ToEntity();
 			entity.TenantId = User.FindFirstValue("tenant");
-			var id = await repository.CreateAsync(entity);
+			var id = await repository.AddAsync(entity);
 			var result = entity.ToModel();
 
 			return CreatedAtAction(nameof(Get), new { id }, entity.ToModel());

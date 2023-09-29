@@ -18,7 +18,7 @@ namespace Deveel.Data.Controllers {
 		[ProducesResponseType(201, Type = typeof(PersonModel))]
 		public async Task<IActionResult> Create([FromBody] PersonModel model) {
 			var person = model.ToEntity();
-			var id = await repository.CreateAsync(person, HttpContext.RequestAborted);
+			var id = await repository.AddAsync(person, HttpContext.RequestAborted);
 			var result = person.ToModel();
 			return CreatedAtAction(nameof(Get), new { id }, result);
 		}
@@ -36,7 +36,7 @@ namespace Deveel.Data.Controllers {
         public async Task<IActionResult> Create(string tenantId, [FromBody] PersonModel model) {
             var person = model.ToEntity();
             person.TenantId = tenantId;
-            var id = await repository.CreateAsync(person, HttpContext.RequestAborted);
+            var id = await repository.AddAsync(person, HttpContext.RequestAborted);
 			var result = person.ToModel();
             return CreatedAtAction(nameof(Get), new {tenantId, id }, result);
         }

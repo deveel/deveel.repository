@@ -32,7 +32,7 @@ namespace Deveel.Data.Controllers {
             var person = model.ToEntity();
             person.TenantId = GetTenantId();
 
-            var id = await repository.CreateAsync(person, HttpContext.RequestAborted);
+            var id = await repository.AddAsync(person, HttpContext.RequestAborted);
 			var result = person.ToModel();
 
             return CreatedAtAction(nameof(Get), new {id}, result);

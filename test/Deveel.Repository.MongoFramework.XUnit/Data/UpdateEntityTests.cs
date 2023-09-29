@@ -23,7 +23,7 @@ namespace Deveel.Data {
 		}
 
 		protected override async Task SeedAsync(MongoRepository<MongoDbContext, MongoPerson> repository) {
-			await repository.CreateAsync(people);
+			await repository.AddRangeAsync(people);
 		}
 
 		private MongoPerson NextRandom() => people[Random.Shared.Next(0, people.Count - 1)];
