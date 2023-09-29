@@ -1,22 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-using Bogus;
+﻿using Bogus;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
 using MongoFramework;
 
 namespace Deveel.Data {
-	[Collection("Mongo Single Database")]
+	[Collection(nameof(MongoSingleDatabaseCollection))]
 	public abstract class MongoFrameworkRepositoryTestBase : IAsyncLifetime {
-		private MongoFrameworkTestFixture mongo;
+		private MongoSingleDatabase mongo;
 
-		protected MongoFrameworkRepositoryTestBase(MongoFrameworkTestFixture mongo) {
+		protected MongoFrameworkRepositoryTestBase(MongoSingleDatabase mongo) {
 			this.mongo = mongo;
 
 			var services = new ServiceCollection();
@@ -24,10 +20,7 @@ namespace Deveel.Data {
 
 			Services = services.BuildServiceProvider();
 
-			PersonFaker = new Faker<MongoPerson>()
-				.RuleFor(x => x.FirstName, f => f.Name.FirstName())
-				.RuleFor(x => x.LastName, f => f.Name.LastName())
-				.RuleFor(x => x.BirthDate, f => f.Date.Past(20));
+			PersonFaker = new MongoPersonFaker();
 		}
 
 		protected string ConnectionString => mongo.ConnectionString;
@@ -96,45 +89,6 @@ namespace Deveel.Data {
 		public virtual async Task DisposeAsync() {
 			var controller = Services.GetRequiredService<IRepositoryController>();
 			await controller.DropRepositoryAsync<MongoPerson>();
-		}
-
-		[Table("persons")]
-		protected class MongoPerson : IPerson, IHaveTimeStamp {
-			[Key, Column("_id")]
-			public ObjectId Id { get; set; }
-
-
-			string? IPerson.Id => Id.ToEntityId();
-
-			[Column("first_name")]
-			public string FirstName { get; set; }
-
-			[Column("last_name")]
-			public string LastName { get; set; }
-
-			[Column("birth_date")]
-			public DateTime? BirthDate { get; set; }
-
-			[Column("description")]
-			public string? Description { get; set; }
-
-			[Column("created_at")]
-			public DateTimeOffset? CreatedAtUtc { get; set; }
-
-			[Column("updated_at")]
-			public DateTimeOffset? UpdatedAtUtc { get; set; }
-		}
-
-		protected interface IPerson {
-			string? Id { get; }
-
-			public string FirstName { get; }
-
-			public string LastName { get; }
-
-			public DateTime? BirthDate { get; }
-
-			public string? Description { get; }
 		}
 	}
 }

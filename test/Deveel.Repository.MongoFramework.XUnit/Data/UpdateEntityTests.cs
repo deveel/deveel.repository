@@ -11,7 +11,7 @@ namespace Deveel.Data {
 		private readonly IList<MongoPerson> people;
 		private readonly ISystemTime testTime = new TestTime();
 
-		public UpdateEntityTests(MongoFrameworkTestFixture mongo) 
+		public UpdateEntityTests(MongoSingleDatabase mongo) 
 			: base(mongo) {
 			people = GeneratePersons(100);
 		}
@@ -26,11 +26,9 @@ namespace Deveel.Data {
 			await repository.AddRangeAsync(people);
 		}
 
-		private MongoPerson NextRandom() => people[Random.Shared.Next(0, people.Count - 1)];
-
 		[Fact]
 		public async Task Mongo_UpdateExisting() {
-			var entity = NextRandom();
+			var entity = people.Random()!;
 
 			entity.BirthDate = new DateTime(1980, 06, 04).ToUniversalTime();
 
@@ -86,7 +84,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_UpdateExisting() {
-			var person = NextRandom();
+			var person = people.Random()!;
 
 			var entity = await Repository.FindByIdAsync(person.Id.ToString());
 
@@ -100,7 +98,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_UpdateExisting() {
-			var person = NextRandom();
+			var person = people.Random()!;
 
 			var entity = await FacadeRepository.FindByIdAsync(person.Id.ToString());
 

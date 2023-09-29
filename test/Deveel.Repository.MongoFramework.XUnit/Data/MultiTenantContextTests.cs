@@ -9,14 +9,14 @@ using Microsoft.Extensions.DependencyInjection;
 using MongoFramework;
 
 namespace Deveel.Data {
-	[Collection("Mongo Single Database")]
+	[Collection(nameof(MongoSingleDatabaseCollection))]
 	public class MultiTenantContextTests {
-		private readonly MongoFrameworkTestFixture mongo;
+		private readonly MongoSingleDatabase mongo;
 		private readonly IServiceProvider serviceProvider;
 
 		private readonly string tenantId = Guid.NewGuid().ToString();
 
-		public MultiTenantContextTests(MongoFrameworkTestFixture mongo) {
+		public MultiTenantContextTests(MongoSingleDatabase mongo) {
 			this.mongo = mongo;
 
 			var services = new ServiceCollection();

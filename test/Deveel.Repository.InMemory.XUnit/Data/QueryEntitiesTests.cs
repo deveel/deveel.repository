@@ -49,7 +49,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CountFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			Assert.NotNull(FilterableRepository);
@@ -60,7 +60,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Memory_FindById() {
-			var id = people[people.Count - 1].Id;
+			var id = people.Random()!.Id;
 
 			var result = await InMemoryRepository.FindByIdAsync(id);
 
@@ -71,7 +71,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_FindById() {
-			var id = people[people.Count - 1].Id;
+			var id = people.Random()!.Id;
 
 			var result = await Repository.FindByIdAsync(id);
 
@@ -81,7 +81,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_FindById() {
-			var id = people[people.Count - 1].Id;
+			var id = people.Random()!.Id;
 
 			var result = await FacadeRepository.FindByIdAsync(id);
 
@@ -93,7 +93,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Memory_FindFirstFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await InMemoryRepository.FindAsync(x => x.FirstName == firstName);
 
@@ -103,7 +103,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_FindFirstFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await Repository.FindAsync(x => x.FirstName == firstName);
 
@@ -113,7 +113,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Memory_ExistsFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await InMemoryRepository.ExistsAsync(x => x.FirstName == firstName);
 
@@ -122,7 +122,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_ExistsFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await Repository.ExistsAsync(x => x.FirstName == firstName);
 
@@ -185,7 +185,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Memory_FindAllFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var result = await InMemoryRepository.FindAllAsync(x => x.FirstName == firstName);
@@ -197,7 +197,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_FindAllFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var result = await Repository.FindAllAsync(x => x.FirstName == firstName);
@@ -256,7 +256,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Memory_GetFilteredPage() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
@@ -275,7 +275,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_GetFilteredPage() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);

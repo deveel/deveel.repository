@@ -48,77 +48,77 @@ namespace Deveel.Data {
         #endregion
 
 
-        #region  Create
+        #region  Add
 
-        public static Task<string> CreateAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, TEntity entity, CancellationToken cancellationToken = default)
+        public static Task<string> AddAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, TEntity entity, CancellationToken cancellationToken = default)
             where TEntity : class
             => provider.GetRepository(tenantId).AddAsync(entity, cancellationToken);
 
-        public static Task<string> CreateAsync<TEntity>(this IRepositoryProvider<TEntity> provider, IDataTransaction transaction, string tenantId, TEntity entity, CancellationToken cancellationToken = default)
+        public static Task<string> AddAsync<TEntity>(this IRepositoryProvider<TEntity> provider, IDataTransaction transaction, string tenantId, TEntity entity, CancellationToken cancellationToken = default)
             where TEntity : class
-            => provider.RequireTransactional<TEntity>(tenantId).CreateAsync(transaction, entity, cancellationToken);
+            => provider.RequireTransactional<TEntity>(tenantId).AddAsync(transaction, entity, cancellationToken);
 
-        public static string Create<TEntity>(this IRepositoryProvider<TEntity> provider, IDataTransaction transaction, string tenantId, TEntity entity)
+        public static string Add<TEntity>(this IRepositoryProvider<TEntity> provider, IDataTransaction transaction, string tenantId, TEntity entity)
             where TEntity : class
             => provider.RequireTransactional<TEntity>(tenantId).Add(transaction, entity);
 
-        public static Task<string> CreateAsync(this IRepositoryProvider provider, string tenantId, object entity, CancellationToken cancellationToken = default)
+        public static Task<string> AddAsync(this IRepositoryProvider provider, string tenantId, object entity, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).AddAsync(entity, cancellationToken);
 
-        public static string Create(this IRepositoryProvider provider, string tenantId, object entity)
-            => provider.GetRepository(tenantId).Add(entity);
+        public static string Add(this IRepositoryProvider provider, string tenantId, object entity)
+            => provider.GetRepository(tenantId).Create(entity);
 
-        public static Task<string> CreateAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity, CancellationToken cancellationToken = default)
+        public static Task<string> AddAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity, CancellationToken cancellationToken = default)
             => provider.RequireTransactional(tenantId).AddAsync(transaction, entity, cancellationToken);
 
-        public static string Create(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity)
-            => provider.RequireTransactional(tenantId).Add(transaction, entity);
+        public static string Add(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity)
+            => provider.RequireTransactional(tenantId).Create(transaction, entity);
 
         #endregion
 
-        #region  Delete
+        #region  Remove
 
-        public static Task<bool> DeleteAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, TEntity entity, CancellationToken cancellationToken = default)
+        public static Task<bool> RemoveAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, TEntity entity, CancellationToken cancellationToken = default)
             where TEntity : class
             => provider.GetRepository(tenantId).RemoveAsync(entity, cancellationToken);
 
-        public static Task<bool> DeleteAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default)
+        public static Task<bool> RemoveAsync<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default)
             where TEntity : class
-            => provider.RequireTransactional<TEntity>(tenantId).DeleteAsync(transaction, entity, cancellationToken);
+            => provider.RequireTransactional<TEntity>(tenantId).RemoveAsync(transaction, entity, cancellationToken);
 
 
-        public static bool Delete<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, TEntity entity)
+        public static bool Remove<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, TEntity entity)
             where TEntity : class
             => provider.GetRepository(tenantId).Remove(entity);
 
-        public static bool Delete<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IDataTransaction transaction, TEntity entity)
+        public static bool Remove<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IDataTransaction transaction, TEntity entity)
             where TEntity : class
             => provider.RequireTransactional<TEntity>(tenantId).Remove(transaction, entity);
 
 
-        public static Task<bool> DeleteAsync(this IRepositoryProvider provider, string tenantId, object entity, CancellationToken cancellationToken = default)
+        public static Task<bool> RemoveAsync(this IRepositoryProvider provider, string tenantId, object entity, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).RemoveAsync(entity, cancellationToken);
 
-        public static Task<bool> DeleteAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity, CancellationToken cancellationToken = default)
+        public static Task<bool> RemoveAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity, CancellationToken cancellationToken = default)
             => provider.RequireTransactional(tenantId).RemoveAsync(transaction, entity, cancellationToken);
 
-        public static bool Delete(this IRepositoryProvider provider, string tenantId, object entity)
+        public static bool Remove(this IRepositoryProvider provider, string tenantId, object entity)
             => provider.GetRepository(tenantId).Remove(entity);
 
-        public static bool Delete(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity)
+        public static bool Remove(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity)
             => provider.RequireTransactional(tenantId).Remove(transaction, entity);
 
-        public static Task<bool> DeleteByIdAsync(this IRepositoryProvider provider, string tenantId, string id, CancellationToken cancellationToken = default)
+        public static Task<bool> RemoveByIdAsync(this IRepositoryProvider provider, string tenantId, string id, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).RemoveByIdAsync(id, cancellationToken);
 
-        public static Task<bool> DeleteByIdAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, string id, CancellationToken cancellationToken = default)
+        public static Task<bool> RemoveByIdAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, string id, CancellationToken cancellationToken = default)
             => provider.RequireTransactional(tenantId).RemoveByIdAsync(transaction, id, cancellationToken);
 
 
-        public static bool DeleteById(this IRepositoryProvider provider, string tenantId, string id)
+        public static bool RemoveById(this IRepositoryProvider provider, string tenantId, string id)
             => provider.GetRepository(tenantId).RemoveById(id);
 
-        public static bool DeleteById(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, string id)
+        public static bool RemoveById(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, string id)
             => provider.RequireTransactional(tenantId).RemoveById(transaction, id);
 
 

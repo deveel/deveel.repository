@@ -8,13 +8,13 @@ using MongoDB.Bson;
 using MongoFramework;
 
 namespace Deveel.Data {
-    [Collection("Mongo Single Database")]
+    [Collection(nameof(MongoSingleDatabaseCollection))]
     public class StateTests : IAsyncLifetime {
         private Faker<MongoPersonWithStatus> personFaker;
         private IList<MongoPersonWithStatus> persons;
-        private readonly MongoFrameworkTestFixture mongo;
+        private readonly MongoSingleDatabase mongo;
 
-        public StateTests(MongoFrameworkTestFixture mongo) {
+        public StateTests(MongoSingleDatabase mongo) {
             this.mongo = mongo;
 
             var services = new ServiceCollection();

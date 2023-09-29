@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Deveel.Repsotiory.MongoFramework\Deveel.Repository.MongoFramework.csproj" />
-    <ProjectReference Include="..\Deveel.Repository.MongoFramework.TestApi\Deveel.Repository.MongoFramework.TestApi.csproj" />
+    <ProjectReference Include="..\Deveel.Repository.Test.Utils\Deveel.Repository.Test.Utils.csproj" />
   </ItemGroup>
 
 </Project>

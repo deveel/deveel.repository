@@ -1,7 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <PackageTags>data;core;framework;repository;domain-driven;entity</PackageTags>
-    <Description>Abstractions for the definition of entity models to be handled in repositories</Description>
-  </PropertyGroup>
-</Project>

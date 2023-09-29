@@ -6,21 +6,19 @@ using MongoFramework;
 
 namespace Deveel.Data {
 	public class UpdateTenantEntityTests : MongoRepositoryProviderTestBase {
-		private readonly IList<MongoPerson> people;
+		private readonly IList<MongoTenantPerson> people;
 
-		public UpdateTenantEntityTests(MongoFrameworkTestFixture mongo) : base(mongo) {
+		public UpdateTenantEntityTests(MongoSingleDatabase mongo) : base(mongo) {
 			people = GeneratePersons(100);
 		}
 
-		protected override async Task SeedAsync(IRepository<MongoPerson> repository) {
+		protected override async Task SeedAsync(IRepository<MongoTenantPerson> repository) {
 			await repository.AddRangeAsync(people);
 		}
 
-		private MongoPerson NextRandom() => people[Random.Shared.Next(0, people.Count - 1)];
-
 		[Fact]
 		public async Task Mongo_UpdateExisting() {
-			var entity = people[^1];
+			var entity = people.Random()!;
 
 			entity.BirthDate = new DateTime(1980, 06, 04);
 
@@ -64,7 +62,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_UpdateExisting() {
-			var person = NextRandom();
+			var person = people.Random()!;
 
 			var entity = await Repository.FindByIdAsync(person.Id.ToEntityId());
 
@@ -84,13 +82,13 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_UpdateExisting() {
-			var person = NextRandom();
+			var person = people.Random()!;
 
 			var entity = await FacadeRepository.FindByIdAsync(person.Id.ToEntityId());
 
 			Assert.NotNull(entity);
 
-			((MongoPerson) entity).BirthDate = new DateTime(1980, 06, 04);
+			((MongoTenantPerson) entity).BirthDate = new DateTime(1980, 06, 04);
 
 			var result = await FacadeRepository.UpdateAsync(entity);
 
