@@ -10,7 +10,7 @@ namespace Deveel.Data {
 		}
 
 		protected override async Task SeedAsync(EntityRepository<PersonEntity> repository) {
-			await repository.CreateAsync(people);
+			await repository.AddRangeAsync(people);
 		}
 
 		private PersonEntity GetRandomPerson() => people[Random.Shared.Next(0, people.Count)];

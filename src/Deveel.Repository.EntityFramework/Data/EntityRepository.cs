@@ -121,7 +121,7 @@ namespace Deveel.Data {
 			return id;
 		}
 
-		public async Task<string> CreateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public async Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
             if (entity is null) throw new ArgumentNullException(nameof(entity));
@@ -147,7 +147,7 @@ namespace Deveel.Data {
             }
         }
 
-        public async Task<IList<string>> CreateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+        public async Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
 			try {
@@ -164,8 +164,8 @@ namespace Deveel.Data {
 			}
         }
 
-        Task<string> IRepository.CreateAsync(object entity, CancellationToken cancellationToken)
-            => CreateAsync(AssertEntity(entity), cancellationToken);
+        Task<string> IRepository.AddAsync(object entity, CancellationToken cancellationToken)
+            => AddAsync(AssertEntity(entity), cancellationToken);
 
         private static TEntity AssertEntity(object entity) {
             if (!(entity is TEntity dataEntity))
@@ -174,10 +174,10 @@ namespace Deveel.Data {
             return dataEntity;
         }
 
-        Task<IList<string>> IRepository.CreateAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
-            => CreateAsync(entities.Select(x =>  AssertEntity(x)), cancellationToken);
+        Task<IList<string>> IRepository.AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
+            => AddRangeAsync(entities.Select(x =>  AssertEntity(x)), cancellationToken);
 
-        public async Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default) {
+        public async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			if (entity is null) throw new ArgumentNullException(nameof(entity));
@@ -221,8 +221,8 @@ namespace Deveel.Data {
 			}
         }
 
-        Task<bool> IRepository.DeleteAsync(object entity, CancellationToken cancellationToken)
-            => DeleteAsync(AssertEntity(entity), cancellationToken);
+        Task<bool> IRepository.RemoveAsync(object entity, CancellationToken cancellationToken)
+            => RemoveAsync(AssertEntity(entity), cancellationToken);
 
         public async Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default)
             => await Entities.FindAsync(new object?[] { GetEntityId(id) }, cancellationToken);

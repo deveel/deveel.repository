@@ -12,7 +12,7 @@ namespace Deveel.Data {
         public async Task Eentity_CreateNewPerson() {
             var person = GeneratePerson();
 
-            var id = await EntityRepository.CreateAsync(person);
+            var id = await EntityRepository.AddAsync(person);
 
             Assert.NotNull(id);
             Assert.NotEmpty(id);
@@ -24,7 +24,7 @@ namespace Deveel.Data {
         public async Task Repository_CreateNewPerson() {
             var person = GeneratePerson();
 
-            var id = await Repository.CreateAsync(person);
+            var id = await Repository.AddAsync(person);
 
             Assert.NotNull(id);
             Assert.NotEmpty(id);

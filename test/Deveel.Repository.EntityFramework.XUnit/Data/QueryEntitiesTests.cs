@@ -16,7 +16,7 @@ namespace Deveel.Data {
 			=> people[Random.Shared.Next(0, people.Count)];
 
 		protected override async Task SeedAsync(EntityRepository<PersonEntity> repository) {
-			await repository.CreateAsync(people);
+			await repository.AddRangeAsync(people);
 		}
 
 		[Fact]

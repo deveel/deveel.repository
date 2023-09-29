@@ -66,13 +66,13 @@ namespace Deveel.Data {
             => provider.GetRepository(tenantId).AddAsync(entity, cancellationToken);
 
         public static string Add(this IRepositoryProvider provider, string tenantId, object entity)
-            => provider.GetRepository(tenantId).Create(entity);
+            => provider.GetRepository(tenantId).Add(entity);
 
         public static Task<string> AddAsync(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity, CancellationToken cancellationToken = default)
             => provider.RequireTransactional(tenantId).AddAsync(transaction, entity, cancellationToken);
 
         public static string Add(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity)
-            => provider.RequireTransactional(tenantId).Create(transaction, entity);
+            => provider.RequireTransactional(tenantId).Add(transaction, entity);
 
         #endregion
 
