@@ -11,7 +11,7 @@ namespace Deveel.Data {
 		}
 
 		protected override async Task SeedAsync(IRepository<MongoPerson> repository) {
-			await repository.CreateAsync(people);
+			await repository.AddRangeAsync(people);
 		}
 
 		[Fact]

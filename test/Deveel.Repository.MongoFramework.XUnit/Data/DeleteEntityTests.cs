@@ -13,14 +13,14 @@ namespace Deveel.Data {
 		}
 
 		protected override async Task SeedAsync(MongoRepository<MongoDbContext, MongoPerson> repository) {
-			await repository.CreateAsync(people);
+			await repository.AddRangeAsync(people);
 		}
 
 		[Fact]
 		public async Task Mongo_DeleteExisting() {
 			var entity = people[^1];
 
-			var result = await MongoRepository.DeleteAsync(entity);
+			var result = await MongoRepository.RemoveAsync(entity);
 
 			Assert.True(result);
 		}
@@ -29,7 +29,7 @@ namespace Deveel.Data {
 		public async Task Repository_DeleteExisting() {
 			var entity = people[^1];
 
-			var result = await Repository.DeleteAsync(entity);
+			var result = await Repository.RemoveAsync(entity);
 
 			Assert.True(result);
 		}
@@ -38,7 +38,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_DeleteExisting() {
 			var entity = people[^1];
 
-			var result = await FacadeRepository.DeleteAsync(entity);
+			var result = await FacadeRepository.RemoveAsync(entity);
 
 			Assert.True(result);
 		}
@@ -48,7 +48,7 @@ namespace Deveel.Data {
 		public async Task Mongo_DeleteNotExisting() {
 			var entity = new MongoPerson { Id = ObjectId.GenerateNewId() };
 
-			var result = await MongoRepository.DeleteAsync(entity);
+			var result = await MongoRepository.RemoveAsync(entity);
 
 			Assert.False(result);
 		}
@@ -57,7 +57,7 @@ namespace Deveel.Data {
 		public async Task Repository_DeleteNotExisting() {
 			var entity = new MongoPerson { Id = ObjectId.GenerateNewId() };
 
-			var result = await Repository.DeleteAsync(entity);
+			var result = await Repository.RemoveAsync(entity);
 
 			Assert.False(result);
 		}
@@ -66,7 +66,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_DeleteNotExisting() {
 			var entity = new MongoPerson { Id = ObjectId.GenerateNewId() };
 
-			var result = await FacadeRepository.DeleteAsync(entity);
+			var result = await FacadeRepository.RemoveAsync(entity);
 
 			Assert.False(result);
 		}

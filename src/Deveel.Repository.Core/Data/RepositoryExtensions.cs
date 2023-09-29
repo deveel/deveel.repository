@@ -43,7 +43,7 @@ namespace Deveel.Data {
 		/// </returns>
         public static string Create<TEntity>(this IRepository<TEntity> repository, TEntity entity)
             where TEntity : class
-            => repository.CreateAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.AddAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		/// <summary>
 		/// Creates a new entity in the repository synchronously
@@ -82,7 +82,7 @@ namespace Deveel.Data {
 		/// within the underlying storage.
 		/// </returns>
         public static string Create(this IRepository repository, object entity)
-            => repository.CreateAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.AddAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		/// <summary>
 		/// Creates a new entity in the repository synchronously
@@ -100,7 +100,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// </returns>
         public static string Create(this ITransactionalRepository repository, IDataTransaction transaction, object entity)
-            => repository.CreateAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.AddAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
 
         #endregion
@@ -109,7 +109,7 @@ namespace Deveel.Data {
 
         public static bool Delete<TEntity>(this IRepository<TEntity> repository, TEntity entity)
             where TEntity : class
-            => repository.DeleteAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.RemoveAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
         public static bool Delete<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, TEntity entity)
             where TEntity : class
@@ -121,7 +121,7 @@ namespace Deveel.Data {
             if (entity == null)
                 return false;
 
-            return await repository.DeleteAsync(entity, cancellationToken);
+            return await repository.RemoveAsync(entity, cancellationToken);
         }
 
         public static async Task<bool> DeleteByIdAsync<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, string id, CancellationToken cancellationToken = default)
@@ -139,7 +139,7 @@ namespace Deveel.Data {
             if (entity == null)
                 return false;
 
-            return await repository.DeleteAsync(entity, cancellationToken);
+            return await repository.RemoveAsync(entity, cancellationToken);
         }
 
         public static async Task<bool> DeleteByIdAsync(this ITransactionalRepository repository, IDataTransaction transaction, string id, CancellationToken cancellationToken = default) {
@@ -148,7 +148,7 @@ namespace Deveel.Data {
             if (entity == null)
                 return false;
 
-            return await repository.DeleteAsync(transaction, entity, cancellationToken);
+            return await repository.RemoveAsync(transaction, entity, cancellationToken);
         }
 
         public static bool DeleteById<TEntity>(this IRepository<TEntity> repository, string id)
@@ -168,10 +168,10 @@ namespace Deveel.Data {
 
 
         public static bool Delete(this IRepository repository, object entity)
-            => repository.DeleteAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.RemoveAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
         public static bool Delete(this ITransactionalRepository repository, IDataTransaction transaction, object entity)
-            => repository.DeleteAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.RemoveAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion
 

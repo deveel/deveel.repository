@@ -69,7 +69,7 @@ namespace Deveel.Data {
 
         protected virtual async Task SeedAsync(IRepository<MongoPersonWithStatus> repository) {
             foreach (var person in persons) {
-                await repository.CreateAsync(person);
+                await repository.AddAsync(person);
             }
         }
 

@@ -253,7 +253,7 @@
             Returns the entity that is about to be created.
             </returns>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.CreateAsync(`1,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.MongoRepository`2.AddAsync(`1,System.Threading.CancellationToken)">
             <summary>
             Creates a new entity in the repository.
             </summary>

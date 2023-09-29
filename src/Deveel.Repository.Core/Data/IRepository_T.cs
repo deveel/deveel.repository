@@ -21,25 +21,25 @@ namespace Deveel.Data {
 		string? GetEntityId(TEntity entity);
 
         /// <summary>
-        /// Creates a new entity in the repository
+        /// Adds a new entity into the repository
         /// </summary>
-        /// <param name="entity">The entity to create</param>
+        /// <param name="entity">The entity to be added</param>
         /// <param name="cancellationToken"></param>
         /// <returns>
-        /// Returns the unique identifier of the entity created.
+        /// Returns the unique identifier of the entity added.
         /// </returns>
         /// <exception cref="RepositoryException">
-        /// Thrown if it an error occurred while creating the entity
+        /// Thrown if it an error occurred while adding the entity
         /// </exception>
         /// <exception cref="ArgumentNullException">
         /// Thrown if the provided <paramref name="entity"/> is <c>null</c>
         /// </exception>
-        Task<string> CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Creates a list of entities in the repository in one single operation
+		/// Adds a list of entities in the repository in one single operation
 		/// </summary>
-		/// <param name="entities">The enumeration of the entities to be created</param>
+		/// <param name="entities">The enumeration of the entities to be added</param>
 		/// <param name="cancellationToken"></param>
 		/// <remarks>
 		/// <para>
@@ -48,7 +48,7 @@ namespace Deveel.Data {
 		/// underlying storage system might have persisted some of the items before a
 		/// failure: to prevent the scenario of a partial creation of the set, the
 		/// callers should consider the 
-		/// <see cref="ITransactionalRepository{TEntity}.CreateAsync(IDataTransaction, IEnumerable{TEntity}, CancellationToken)"/>
+		/// <see cref="ITransactionalRepository{TEntity}.AddRangeAsync(IDataTransaction, IEnumerable{TEntity}, CancellationToken)"/>
 		/// overload, where transactions are available.
 		/// </para>
 		/// </remarks>
@@ -56,12 +56,12 @@ namespace Deveel.Data {
 		/// Returns an ordered list of the unique identifiers of the entiies created
 		/// </returns>
 		/// <exception cref="RepositoryException">
-		/// Thrown if it an error occurred while creating one or more entities
+		/// Thrown if it an error occurred while adding one or more entities
 		/// </exception>
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
 		/// </exception>
-		Task<IList<string>> CreateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+		Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Deveel.Data {
         Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Deletes an entity from the repository
+        /// Removes an entity from the repository
         /// </summary>
         /// <param name="entity">The entity to be deleted</param>
         /// <param name="cancellationToken"></param>
@@ -96,7 +96,7 @@ namespace Deveel.Data {
         /// <exception cref="RepositoryException">
         /// Thrown if it an error occurred while deleting the entity
         /// </exception>
-        Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Attempts to find in the repository an entity with the 

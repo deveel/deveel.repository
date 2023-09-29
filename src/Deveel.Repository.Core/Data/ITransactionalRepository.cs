@@ -26,7 +26,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
 		/// </exception>
-		Task<IList<string>> CreateAsync(IDataTransaction transaction, IEnumerable<object> entities, CancellationToken cancellationToken = default);
+		Task<IList<string>> AddRangeAsync(IDataTransaction transaction, IEnumerable<object> entities, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Creates a new entity in the repository
@@ -51,14 +51,14 @@ namespace Deveel.Data {
 		/// with the underlying storage of the repository
 		/// </exception>
 		/// <seealso cref="IDataTransactionFactory"/>
-		Task<string> CreateAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken = default);
+		Task<string> AddAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Deletes an entity from the repository
+		/// Removes an entity from the repository
 		/// </summary>
 		/// <param name="transaction">A transaction that isolates the access
 		/// to the data store used by the repository</param>
-		/// <param name="entity">The entity to be deleted</param>
+		/// <param name="entity">The entity to be removed</param>
 		/// <param name="cancellationToken">
 		/// A token used to cancel the operation
 		/// </param>
@@ -77,7 +77,7 @@ namespace Deveel.Data {
 		/// with the underlying storage of the repository
 		/// </exception>
 		/// <seealso cref="IDataTransactionFactory"/>
-		Task<bool> DeleteAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken = default);
+		Task<bool> RemoveAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Updates an existing entity in the repository

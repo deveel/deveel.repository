@@ -9,14 +9,14 @@ namespace Deveel.Data {
 		}
 
 		protected override async Task SeedAsync(IRepository repository) {
-			await repository.CreateAsync(people);
+			await repository.AddRangeAsync(people);
 		}
 
 		[Fact]
 		public async Task Memory_DeleteExisting() {
 			var entity = people[^1];
 
-			var result = await InMemoryRepository.DeleteAsync(entity);
+			var result = await InMemoryRepository.RemoveAsync(entity);
 
 			Assert.True(result);
 		}
@@ -25,7 +25,7 @@ namespace Deveel.Data {
 		public async Task Repository_DeleteExisting() {
 			var entity = people[^1];
 
-			var result = await Repository.DeleteAsync(entity);
+			var result = await Repository.RemoveAsync(entity);
 
 			Assert.True(result);
 		}
@@ -34,7 +34,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_DeleteExisting() {
 			var entity = people[^1];
 
-			var result = await FacadeRepository.DeleteAsync(entity);
+			var result = await FacadeRepository.RemoveAsync(entity);
 
 			Assert.True(result);
 		}
@@ -44,7 +44,7 @@ namespace Deveel.Data {
 		public async Task Memory_DeleteNotExisting() {
 			var entity = new Person { Id = Guid.NewGuid().ToString() };
 
-			var result = await InMemoryRepository.DeleteAsync(entity);
+			var result = await InMemoryRepository.RemoveAsync(entity);
 
 			Assert.False(result);
 		}
@@ -53,7 +53,7 @@ namespace Deveel.Data {
 		public async Task Repository_DeleteNotExisting() {
 			var entity = new Person { Id = Guid.NewGuid().ToString() };
 
-			var result = await Repository.DeleteAsync(entity);
+			var result = await Repository.RemoveAsync(entity);
 
 			Assert.False(result);
 		}
@@ -62,7 +62,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_DeleteNotExisting() {
 			var entity = new Person { Id = Guid.NewGuid().ToString() };
 
-			var result = await FacadeRepository.DeleteAsync(entity);
+			var result = await FacadeRepository.RemoveAsync(entity);
 
 			Assert.False(result);
 		}
