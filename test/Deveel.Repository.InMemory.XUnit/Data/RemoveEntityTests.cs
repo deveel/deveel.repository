@@ -1,10 +1,10 @@
 ﻿using System;
 
 namespace Deveel.Data {
-	public class DeleteEntityTests : InMemoryRepositoryTestBase {
+	public class RemoveEntityTests : InMemoryRepositoryTestBase {
 		private readonly IList<Person> people;
 
-		public DeleteEntityTests() {
+		public RemoveEntityTests() {
 			people = GeneratePersons(100);
 		}
 
@@ -14,7 +14,9 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Memory_DeleteExisting() {
-			var entity = people[^1];
+			var entity = people.Random();
+
+			Assert.NotNull(entity);
 
 			var result = await InMemoryRepository.RemoveAsync(entity);
 
@@ -23,7 +25,9 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_DeleteExisting() {
-			var entity = people[^1];
+			var entity = people.Random();
+
+			Assert.NotNull(entity);
 
 			var result = await Repository.RemoveAsync(entity);
 
@@ -32,7 +36,9 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_DeleteExisting() {
-			var entity = people[^1];
+			var entity = people.Random();
+
+			Assert.NotNull(entity);
 
 			var result = await FacadeRepository.RemoveAsync(entity);
 
@@ -42,7 +48,9 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Memory_DeleteNotExisting() {
-			var entity = new Person { Id = Guid.NewGuid().ToString() };
+			var entity = new PersonFaker()
+				.RuleFor(x => x.Id, f => f.Random.Guid().ToString())
+				.Generate();
 
 			var result = await InMemoryRepository.RemoveAsync(entity);
 
@@ -51,7 +59,9 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_DeleteNotExisting() {
-			var entity = new Person { Id = Guid.NewGuid().ToString() };
+			var entity = new PersonFaker()
+				.RuleFor(x => x.Id, f => f.Random.Guid().ToString())
+				.Generate();
 
 			var result = await Repository.RemoveAsync(entity);
 
@@ -60,7 +70,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_DeleteNotExisting() {
-			var entity = new Person { Id = Guid.NewGuid().ToString() };
+			var entity = new PersonFaker()
+				.RuleFor(x => x.Id, f => f.Random.Guid().ToString()).Generate();
 
 			var result = await FacadeRepository.RemoveAsync(entity);
 
@@ -69,27 +80,33 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Memory_DeleteById_Existing() {
-			var id = people[56].Id;
+			var id = people.Random()?.Id;
 
-			var result = await InMemoryRepository.DeleteByIdAsync(id);
+			Assert.NotNull(id);
+
+			var result = await InMemoryRepository.RemoveByIdAsync(id);
 
 			Assert.True(result);
 		}
 
 		[Fact]
 		public async Task Repository_DeleteById_Existing() {
-			var id = people[56].Id;
+			var id = people.Random()?.Id;
 
-			var result = await Repository.DeleteByIdAsync(id);
+			Assert.NotNull(id);
+
+			var result = await Repository.RemoveByIdAsync(id);
 
 			Assert.True(result);
 		}
 
 		[Fact]
 		public async Task FacadeRepository_DeleteById_Existing() {
-			var id = people[56].Id;
+			var id = people.Random()?.Id;
 
-			var result = await FacadeRepository.DeleteByIdAsync(id);
+			Assert.NotNull(id);
+
+			var result = await FacadeRepository.RemoveByIdAsync(id);
 
 			Assert.True(result);
 		}
@@ -98,7 +115,7 @@ namespace Deveel.Data {
 		public async Task Memory_DeleteById_NotExisting() {
 			var id = Guid.NewGuid().ToString();
 
-			var result = await InMemoryRepository.DeleteByIdAsync(id);
+			var result = await InMemoryRepository.RemoveByIdAsync(id);
 
 			Assert.False(result);
 		}
@@ -107,7 +124,7 @@ namespace Deveel.Data {
 		public async Task Repository_DeleteById_NotExisting() {
 			var id = Guid.NewGuid().ToString();
 
-			var result = await Repository.DeleteByIdAsync(id);
+			var result = await Repository.RemoveByIdAsync(id);
 
 			Assert.False(result);
 		}
@@ -116,7 +133,7 @@ namespace Deveel.Data {
 		public async Task FacadeRepository_DeleteById_NotExisting() {
 			var id = Guid.NewGuid().ToString();
 
-			var result = await FacadeRepository.DeleteByIdAsync(id);
+			var result = await FacadeRepository.RemoveByIdAsync(id);
 
 			Assert.False(result);
 		}

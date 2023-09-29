@@ -3,19 +3,14 @@
 using MongoDB.Bson;
 
 namespace Deveel.Data {
-	public class CreateEntityTests : MongoFrameworkRepositoryTestBase {
-		private readonly Faker<MongoPerson> personFaker;
+	public class AddEntityTests : MongoFrameworkRepositoryTestBase {
 
-		public CreateEntityTests(MongoFrameworkTestFixture mongo) : base(mongo) {
-			personFaker = new Faker<MongoPerson>()
-				.RuleFor(x => x.FirstName, f => f.Name.FirstName())
-				.RuleFor(x => x.LastName, f => f.Name.LastName())
-				.RuleFor(x => x.BirthDate, f => f.Date.Past(20));
+		public AddEntityTests(MongoSingleDatabase mongo) : base(mongo) {
 		}
 
 		[Fact]
 		public async Task Mongo_CreateNewPerson() {
-			var person = personFaker.Generate();
+			var person = GeneratePerson();
 
 			var id = await MongoRepository.AddAsync(person);
 
@@ -25,7 +20,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CreateNewPerson() {
-			var person = personFaker.Generate();
+			var person = GeneratePerson();
 
 			var id = await Repository.AddAsync(person);
 
@@ -35,7 +30,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_CreateNewPerson() {
-			var person = personFaker.Generate();
+			var person = GeneratePerson();
 
 			var id = await FacadeRepository.AddAsync(person);
 
@@ -47,7 +42,7 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task Mongo_CreateNewPersons() {
 			var persons = Enumerable.Range(0, 100)
-				.Select(x => personFaker.Generate())
+				.Select(x => GeneratePerson())
 				.ToList();
 
 			var results = await MongoRepository.AddRangeAsync(persons);
@@ -64,7 +59,7 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task Repository_CreateNewPersons() {
 			var persons = Enumerable.Range(0, 100)
-				.Select(x => personFaker.Generate())
+				.Select(x => GeneratePerson())
 				.ToList();
 
 			var results = await Repository.AddRangeAsync(persons);
@@ -81,7 +76,7 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task FacadeRepository_CreateNewPersons() {
 			var persons = Enumerable.Range(0, 100)
-				.Select(x => personFaker.Generate())
+				.Select(x => GeneratePerson())
 				.ToList();
 
 			var results = await FacadeRepository.AddRangeAsync(persons);

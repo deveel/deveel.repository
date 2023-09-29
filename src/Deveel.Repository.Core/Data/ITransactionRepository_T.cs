@@ -27,7 +27,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
 		/// </exception>
-		Task<IList<string>> CreateAsync(IDataTransaction transaction, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+		Task<IList<string>> AddRangeAsync(IDataTransaction transaction, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Creates a new entity in the repository
@@ -50,7 +50,7 @@ namespace Deveel.Data {
 		/// with the underlying storage of the repository
 		/// </exception>
 		/// <seealso cref="IDataTransactionFactory"/>
-		Task<string> CreateAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
+		Task<string> AddAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Updates an existing entity in the repository
@@ -98,6 +98,6 @@ namespace Deveel.Data {
 		/// with the underlying storage of the repository
 		/// </exception>
 		/// <seealso cref="IDataTransactionFactory"/>
-		Task<bool> DeleteAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
+		Task<bool> RemoveAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
 	}
 }

@@ -1,26 +1,22 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-using Bogus;
+﻿using Bogus;
 
 using Finbuckle.MultiTenant;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
 using MongoFramework;
 
 namespace Deveel.Data {
-	[Collection("Mongo Single Database")]
+	[Collection(nameof(MongoSingleDatabaseCollection))]
 
 	public abstract class MongoRepositoryProviderTestBase : IAsyncLifetime {
-		private MongoFrameworkTestFixture mongo;
+		private MongoSingleDatabase mongo;
 		private readonly IServiceProvider serviceProvider;
 
-		protected MongoRepositoryProviderTestBase(MongoFrameworkTestFixture mongo) {
+		protected MongoRepositoryProviderTestBase(MongoSingleDatabase mongo) {
 			this.mongo = mongo;
 
 			var services = new ServiceCollection();
@@ -28,45 +24,42 @@ namespace Deveel.Data {
 
 			serviceProvider = services.BuildServiceProvider();
 
-			PersonFaker = new Faker<MongoPerson>()
-				.RuleFor(x => x.FirstName, f => f.Name.FirstName())
-				.RuleFor(x => x.LastName, f => f.Name.LastName())
-				.RuleFor(x => x.BirthDate, f => f.Date.Past(20));
+			PersonFaker = new MongoTenantPersonFaker(TenantId);
 		}
 
 		protected virtual string DatabaseName { get; } = "test_db";
 
-		protected IMongoCollection<MongoPerson> MongoCollection => new MongoClient(mongo.ConnectionString)
+		protected IMongoCollection<MongoTenantPerson> MongoCollection => new MongoClient(mongo.ConnectionString)
 			.GetDatabase(DatabaseName)
-			.GetCollection<MongoPerson>("persons");
+			.GetCollection<MongoTenantPerson>("persons");
 
-		protected async Task<MongoPerson?> FindPerson(ObjectId id) {
+		protected async Task<MongoTenantPerson?> FindPerson(ObjectId id) {
 			var collection = MongoCollection;
 			var result = await collection.FindAsync(x => x.Id == id);
 
 			return await result.FirstOrDefaultAsync();
 		}
 
-		protected Faker<MongoPerson> PersonFaker { get; }
+		protected Faker<MongoTenantPerson> PersonFaker { get; }
 
 		protected string TenantId { get; } = Guid.NewGuid().ToString("N");
 
 		protected string ConnectionString => mongo.ConnectionString;
 
-		protected MongoTenantRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo> MongoRepositoryProvider 
-			=> serviceProvider.GetRequiredService<MongoTenantRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>();
+		protected MongoTenantRepositoryProvider<MongoDbTenantContext, MongoTenantPerson, TenantInfo> MongoRepositoryProvider 
+			=> serviceProvider.GetRequiredService<MongoTenantRepositoryProvider<MongoDbTenantContext, MongoTenantPerson, TenantInfo>>();
 
-		protected MongoRepository<MongoDbTenantContext, MongoPerson> MongoRepository => 
+		protected MongoRepository<MongoDbTenantContext, MongoTenantPerson> MongoRepository => 
 			MongoRepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
 
-		protected IRepositoryProvider<MongoPerson> RepositoryProvider => 
-			serviceProvider.GetRequiredService<IRepositoryProvider<MongoPerson>>();
+		protected IRepositoryProvider<MongoTenantPerson> RepositoryProvider => 
+			serviceProvider.GetRequiredService<IRepositoryProvider<MongoTenantPerson>>();
 
-		protected IRepository<MongoPerson> Repository => RepositoryProvider.GetRepository(TenantId);
+		protected IRepository<MongoTenantPerson> Repository => RepositoryProvider.GetRepository(TenantId);
 
-		protected IFilterableRepository<MongoPerson> FilterableRepository => (IFilterableRepository<MongoPerson>)Repository;
+		protected IFilterableRepository<MongoTenantPerson> FilterableRepository => (IFilterableRepository<MongoTenantPerson>)Repository;
 
-		protected IPageableRepository<MongoPerson> PageableRepository => (IPageableRepository<MongoPerson>)Repository;
+		protected IPageableRepository<MongoTenantPerson> PageableRepository => (IPageableRepository<MongoTenantPerson>)Repository;
 
 		protected IRepositoryProvider<IPerson> FacadeRepositoryProvider => serviceProvider.GetRequiredService<IRepositoryProvider<IPerson>>();
 
@@ -78,9 +71,9 @@ namespace Deveel.Data {
 
 		protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
 
-		protected MongoPerson GeneratePerson() => PersonFaker.Generate();
+		protected MongoTenantPerson GeneratePerson() => PersonFaker.Generate();
 
-		protected IList<MongoPerson> GeneratePersons(int count)
+		protected IList<MongoTenantPerson> GeneratePersons(int count)
 			=> PersonFaker.Generate(count);
 
 		protected virtual void AddRepositoryProvider(IServiceCollection services) {
@@ -107,7 +100,7 @@ namespace Deveel.Data {
 		protected virtual void AddRepository<TContext>(MongoDbContextBuilder<TContext> builder)
 			where TContext : class, IMongoDbContext {
             builder.UseTenantConnection();
-            builder.AddRepository<MongoPerson>()
+            builder.AddRepository<MongoTenantPerson>()
                 .WithDefaultTenantProvider()
                 .WithFacade<IPerson>()
                 .WithDefaultFacadeTenantProvider<IPerson>();
@@ -115,7 +108,7 @@ namespace Deveel.Data {
 
         public virtual async Task InitializeAsync() {
 			var controller = serviceProvider.GetRequiredService<IRepositoryController>();
-			await controller.CreateTenantRepositoryAsync<MongoPerson>(TenantId);
+			await controller.CreateTenantRepositoryAsync<MongoTenantPerson>(TenantId);
 
 			var repository = await MongoRepositoryProvider.GetRepositoryAsync(TenantId);
 			
@@ -126,55 +119,14 @@ namespace Deveel.Data {
 
 		public virtual async Task DisposeAsync() {
 			var controller = serviceProvider.GetRequiredService<IRepositoryController>();
-			await controller.DropTenantRepositoryAsync<MongoPerson>(TenantId);
+			await controller.DropTenantRepositoryAsync<MongoTenantPerson>(TenantId);
 
 			//var repository = MongoRepositoryProvider.GetRepository(TenantId);
 			//await repository.DropAsync();
 		}
 
-		protected virtual Task SeedAsync(IRepository<MongoPerson> repository) {
+		protected virtual Task SeedAsync(IRepository<MongoTenantPerson> repository) {
 			return Task.CompletedTask;
-		}
-
-		[MultiTenant, Entity, Table("persons")]
-		protected class MongoPerson : IPerson, IHaveTenantId, IHaveTimeStamp {
-			[BsonId, Key]
-			public ObjectId Id { get; set; }
-
-			string? IPerson.Id => Id.ToEntityId();
-
-			[Column("first_name")]
-			public string FirstName { get; set; }
-
-			[Column("last_name")]
-			public string LastName { get; set; }
-
-			[Column("birth_date")]
-			public DateTime? BirthDate { get; set; }
-
-			[Column("description")]
-			public string? Description { get; set; }
-
-			[Column("tenant")]
-			public string TenantId { get; set; }
-
-			[Column("created_at")]
-			public DateTimeOffset? CreatedAtUtc { get; set; }
-
-			[Column("updated_at")]
-			public DateTimeOffset? UpdatedAtUtc { get; set; }
-		}
-
-		protected interface IPerson {
-			string? Id { get; }
-
-			string FirstName { get; }
-
-			string LastName { get; }
-
-			DateTime? BirthDate { get; }
-
-			string? Description { get; }
 		}
 	}
 }

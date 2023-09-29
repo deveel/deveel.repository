@@ -1,12 +1,12 @@
 ﻿namespace Deveel.Data {
     public class QueryCustomProviderEntities : CustomMongoRepositoryProviderTests {
-        private readonly IList<MongoPerson> people;
+        private readonly IList<MongoTenantPerson> people;
 
-        public QueryCustomProviderEntities(MongoFrameworkTestFixture mongo) : base(mongo) {
+        public QueryCustomProviderEntities(MongoSingleDatabase mongo) : base(mongo) {
             people = GeneratePersons(100);
         }
 
-        protected override async Task SeedAsync(IRepository<MongoPerson> repository) {
+        protected override async Task SeedAsync(IRepository<MongoTenantPerson> repository) {
             await repository.AddRangeAsync(people);
         }
 
@@ -45,7 +45,7 @@
 
         [Fact]
         public async Task Mongo_CountFiltered() {
-            var firstName = people[people.Count - 1].FirstName;
+            var firstName = people.Random()!.FirstName;
             var peopleCount = people.Count(x => x.FirstName == firstName);
 
             var count = await MongoRepository.CountAsync(p => p.FirstName == firstName);
@@ -55,7 +55,7 @@
 
         [Fact]
         public async Task Repository_CountFiltered() {
-            var firstName = people[people.Count - 1].FirstName;
+            var firstName = people.Random()!.FirstName;
             var peopleCount = people.Count(x => x.FirstName == firstName);
 
             var count = await FilterableRepository.CountAsync(p => p.FirstName == firstName);

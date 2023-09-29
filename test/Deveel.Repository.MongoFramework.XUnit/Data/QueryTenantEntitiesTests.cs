@@ -4,13 +4,13 @@ using MongoFramework;
 
 namespace Deveel.Data {
 	public class QueryTenantEntitiesTests : MongoRepositoryProviderTestBase {
-		private readonly IList<MongoPerson> people;
+		private readonly IList<MongoTenantPerson> people;
 
-		public QueryTenantEntitiesTests(MongoFrameworkTestFixture mongo) : base(mongo) {
+		public QueryTenantEntitiesTests(MongoSingleDatabase mongo) : base(mongo) {
 			people = GeneratePersons(100);
 		}
 
-		protected override async Task SeedAsync(IRepository<MongoPerson> repository) {
+		protected override async Task SeedAsync(IRepository<MongoTenantPerson> repository) {
 			await repository.AddRangeAsync(people);
 		}
 
@@ -41,7 +41,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_CountFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var count = await MongoRepository.CountAsync(p => p.FirstName == firstName);
@@ -51,7 +51,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CountFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var count = await FilterableRepository.CountAsync(p => p.FirstName == firstName);
@@ -61,7 +61,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_FindById() {
-			var id = people[people.Count - 1].Id;
+			var id = people.Random()!.Id;
 
 			var result = await MongoRepository.FindByIdAsync(id.ToEntityId());
 
@@ -72,7 +72,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_FindById() {
-			var id = people[people.Count - 1].Id;
+			var id = people.Random()!.Id;
 
 			var result = await Repository.FindByIdAsync(id.ToEntityId());
 
@@ -82,7 +82,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_FindById() {
-			var id = people[people.Count - 1].Id;
+			var id = people.Random()!.Id;
 
 			var result = await FacadeRepository.FindByIdAsync(id.ToEntityId());
 
@@ -94,7 +94,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_FindFirstFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await MongoRepository.FindAsync(x => x.FirstName == firstName);
 
@@ -104,7 +104,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_FindFirstFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await Repository.FindAsync(x => x.FirstName == firstName);
 
@@ -114,7 +114,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_ExistsFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await MongoRepository.ExistsAsync(x => x.FirstName == firstName);
 
@@ -123,7 +123,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_ExistsFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await Repository.ExistsAsync(x => x.FirstName == firstName);
 
@@ -186,7 +186,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_FindAllFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var result = await MongoRepository.FindAllAsync(x => x.FirstName == firstName);
@@ -198,7 +198,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_FindAllFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var result = await Repository.FindAllAsync(x => x.FirstName == firstName);
@@ -211,7 +211,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_GetPage() {
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
+			var request = new RepositoryPageRequest<MongoTenantPerson>(1, 10);
 
 			var result = await MongoRepository.GetPageAsync(request);
 
@@ -225,7 +225,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_GetPage() {
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
+			var request = new RepositoryPageRequest<MongoTenantPerson>(1, 10);
 
 			var result = await PageableRepository.GetPageAsync(request);
 
@@ -239,7 +239,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_GetPage() {
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10);
+			var request = new RepositoryPageRequest<MongoTenantPerson>(1, 10);
 
 			var result = await FacadePageableRepository.GetPageAsync(request);
 
@@ -253,12 +253,12 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_GetFilteredPage() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+			var request = new RepositoryPageRequest<MongoTenantPerson>(1, 10)
 				.Where(x => x.FirstName == firstName);
 
 			var result = await MongoRepository.GetPageAsync(request);
@@ -272,12 +272,12 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_GetFilteredPage() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+			var request = new RepositoryPageRequest<MongoTenantPerson>(1, 10)
 				.Where(x => x.FirstName == firstName);
 
 			var result = await PageableRepository.GetPageAsync(request);

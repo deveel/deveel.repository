@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Deveel.Repository.InMemory\Deveel.Repository.InMemory.csproj" />
+    <ProjectReference Include="..\Deveel.Repository.Test.Utils\Deveel.Repository.Test.Utils.csproj" />
   </ItemGroup>
 
 </Project>

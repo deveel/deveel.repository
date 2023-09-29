@@ -12,10 +12,7 @@ namespace Deveel.Data {
 
 			serviceProvider = services.BuildServiceProvider();
 
-			PersonFaker = new Faker<Person>()
-				.RuleFor(x => x.FirstName, f => f.Name.FirstName())
-				.RuleFor(x => x.LastName, f => f.Name.LastName())
-				.RuleFor(x => x.BirthDate, f => f.Date.Past(20));
+			PersonFaker = new PersonFaker();
 		}
 
 		protected InMemoryRepository<Person> InMemoryRepository => serviceProvider.GetRequiredService<InMemoryRepository<Person>>();
@@ -39,7 +36,6 @@ namespace Deveel.Data {
 		protected IList<Person> GeneratePersons(int count)
 			=> PersonFaker.Generate(count);
 
-
 		protected virtual void AddRepository(IServiceCollection services) {
 			services
 				.AddInMemoryRepository<Person>(builder => builder.WithFacade<IPerson>())
@@ -58,26 +54,6 @@ namespace Deveel.Data {
 
 		protected virtual Task SeedAsync(IRepository repository) {
 			return Task.CompletedTask;
-		}
-
-		protected interface IPerson {
-			string? Id { get; }
-
-			string FirstName { get; }
-
-			string LastName { get; }
-
-			DateTime? BirthDate { get; }
-		}
-
-		protected class Person : IPerson {
-			public string FirstName { get; set; }
-
-			public string LastName { get; set; }
-
-			public DateTime? BirthDate { set; get; }
-
-			public string Id { get; set; }
 		}
 	}
 }

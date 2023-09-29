@@ -1,15 +1,13 @@
 ﻿
 using EphemeralMongo;
 
-using Microsoft.Extensions.Logging.Abstractions;
-
 using MongoDB.Driver;
 
 namespace Deveel.Data {
-    public class MongoFrameworkTestFixture : IDisposable {
+	public class MongoSingleDatabase : IDisposable {
 		private IMongoRunner mongo;
 
-		public MongoFrameworkTestFixture() {
+		public MongoSingleDatabase() {
 			mongo = MongoRunner.Run(new MongoRunnerOptions {
 				UseSingleNodeReplicaSet = true,
 				KillMongoProcessesWhenCurrentProcessExits = true

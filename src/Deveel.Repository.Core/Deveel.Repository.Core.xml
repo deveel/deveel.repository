@@ -955,7 +955,7 @@
             underlying storage system might have persisted some of the items before a
             failure: to prevent the scenario of a partial creation of the set, the
             callers should consider the 
-            <see cref="!:ITransactionalRepository&lt;TEntity&gt;.AddRangeAsync(IDataTransaction, IEnumerable&lt;TEntity&gt;, CancellationToken)"/>
+            <see cref="M:Deveel.Data.ITransactionalRepository`1.AddRangeAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)"/>
             overload, where transactions are available.
             </para>
             </remarks>
@@ -1276,7 +1276,7 @@
             </summary>
             <typeparam name="TEntity"></typeparam>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository`1.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.ITransactionalRepository`1.AddRangeAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
             <summary>
             Creates a list of entities in the repository in one single operation, within
             the scope of a given transaction
@@ -1294,7 +1294,7 @@
             Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
             </exception>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository`1.CreateAsync(Deveel.Data.IDataTransaction,`0,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.ITransactionalRepository`1.AddAsync(Deveel.Data.IDataTransaction,`0,System.Threading.CancellationToken)">
             <summary>
             Creates a new entity in the repository
             </summary>
@@ -1341,7 +1341,7 @@
             </exception>
             <seealso cref="T:Deveel.Data.IDataTransactionFactory"/>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository`1.DeleteAsync(Deveel.Data.IDataTransaction,`0,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.ITransactionalRepository`1.RemoveAsync(Deveel.Data.IDataTransaction,`0,System.Threading.CancellationToken)">
             <summary>
             Deletes an entity from the repository
             </summary>

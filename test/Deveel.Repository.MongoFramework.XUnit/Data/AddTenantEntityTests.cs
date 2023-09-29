@@ -7,10 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 
 namespace Deveel.Data {
-	public class CreateTenantEntityTests : MongoRepositoryProviderTestBase {
+	public class AddTenantEntityTests : MongoRepositoryProviderTestBase {
 		private ISystemTime testTime = new TestTime();
 
-		public CreateTenantEntityTests(MongoFrameworkTestFixture mongo) 
+		public AddTenantEntityTests(MongoSingleDatabase mongo) 
 			: base(mongo) {
 		}
 
@@ -21,7 +21,7 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task Mongo_CreateNewPerson() {
+		public async Task Mongo_AddNewPerson() {
 			var person = GeneratePerson();
 
 			var id = await MongoRepository.AddAsync(person);
@@ -42,7 +42,7 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task Repository_CreateNewPerson() {
+		public async Task Repository_AddNewPerson() {
 			var person = GeneratePerson();
 			var id = await Repository.AddAsync(person);
 
@@ -62,7 +62,7 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FacadeRepository_CreateNewPerson() {
+		public async Task FacadeRepository_AddNewPerson() {
 			var person = GeneratePerson();
 
 			var id = await FacadeRepository.AddAsync(person);
@@ -84,9 +84,9 @@ namespace Deveel.Data {
 
 
 		[Fact]
-		public async Task MongoProvider_CreateNewPerson() {
+		public async Task MongoProvider_AddNewPerson() {
 			var person = GeneratePerson();
-			var id = await MongoRepositoryProvider.CreateAsync(TenantId, person);
+			var id = await MongoRepositoryProvider.AddAsync(TenantId, person);
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
@@ -95,29 +95,27 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task RepositoryProvider_CreateNewPerson() {
+		public async Task RepositoryProvider_AddNewPerson() {
 			var person = GeneratePerson();
 
-			var id = await RepositoryProvider.CreateAsync(TenantId, person);
+			var id = await RepositoryProvider.AddAsync(TenantId, person);
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
 		}
 
 		[Fact]
-		public async Task FacadeRepositoryProvider_CreateNewPerson() {
+		public async Task FacadeRepositoryProvider_AddNewPerson() {
 			var person = GeneratePerson();
 
-			var id = await FacadeRepositoryProvider.CreateAsync(TenantId, person);
+			var id = await FacadeRepositoryProvider.AddAsync(TenantId, person);
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
 		}
 
-
-
 		[Fact]
-		public async Task Mongo_CreateNewPersons() {
+		public async Task Mongo_AddNewPersons() {
 			var persons = GeneratePersons(100);
 
 			var results = await MongoRepository.AddRangeAsync(persons);
@@ -132,7 +130,7 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task Repository_CreateNewPersons() {
+		public async Task Repository_AddNewPersons() {
 			var persons = GeneratePersons(100);
 
 			var results = await Repository.AddRangeAsync(persons);
@@ -147,7 +145,7 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FacadeRepository_CreateNewPersons() {
+		public async Task FacadeRepository_AddNewPersons() {
 			var persons = GeneratePersons(100);
 
 			var results = await FacadeRepository.AddRangeAsync(persons);

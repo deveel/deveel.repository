@@ -8,7 +8,7 @@ namespace Deveel.Data {
 	public class QueryEntitiesTests : MongoFrameworkRepositoryTestBase {
 		private readonly IList<MongoPerson> people;
 
-		public QueryEntitiesTests(MongoFrameworkTestFixture mongo) : base(mongo) {
+		public QueryEntitiesTests(MongoSingleDatabase mongo) : base(mongo) {
 			people = GeneratePersons(100);
 		}
 
@@ -43,7 +43,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_CountFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var count = await MongoRepository.CountAsync(p => p.FirstName == firstName);
@@ -53,7 +53,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CountFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var count = await FilterableRepository.CountAsync(p => p.FirstName == firstName);
@@ -63,7 +63,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_CountFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var count = await FilterableFacadeRepository.CountAsync(p => p.FirstName == firstName);
@@ -74,7 +74,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_FindById() {
-			var id = people[people.Count - 1].Id;
+			var id = people.Random()!.Id;
 
 			var result = await MongoRepository.FindByIdAsync(id.ToEntityId());
 
@@ -85,7 +85,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_FindById() {
-			var id = people[people.Count - 1].Id;
+			var id = people.Random()!.Id;
 
 			var result = await Repository.FindByIdAsync(id.ToEntityId());
 
@@ -95,7 +95,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_FindById() {
-			var id = people[people.Count - 1].Id;
+			var id = people.Random()!.Id;
 
 			var result = await FacadeRepository.FindByIdAsync(id.ToEntityId());
 
@@ -107,7 +107,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_FindFirstFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await MongoRepository.FindAsync(x => x.FirstName == firstName);
 
@@ -117,7 +117,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_FindFirstFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await Repository.FindAsync(x => x.FirstName == firstName);
 
@@ -127,7 +127,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_FindFirstFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await FacadeRepository.FindAsync(x => x.FirstName == firstName);
 
@@ -138,7 +138,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_ExistsFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await MongoRepository.ExistsAsync(x => x.FirstName == firstName);
 
@@ -147,7 +147,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_ExistsFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await Repository.ExistsAsync(x => x.FirstName == firstName);
 
@@ -156,7 +156,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_ExistsFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 
 			var result = await FacadeRepository.ExistsAsync(x => x.FirstName == firstName);
 
@@ -218,7 +218,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_FindAllFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var result = await MongoRepository.FindAllAsync(x => x.FirstName == firstName);
@@ -230,7 +230,7 @@ namespace Deveel.Data {
 
         [Fact]
         public async Task Mongo_FindAllMongoQueryFiltered() {
-            var firstName = people[people.Count - 1].FirstName;
+            var firstName = people.Random()!.FirstName;
             var peopleCount = people.Count(x => x.FirstName == firstName);
 
             var result = await MongoRepository.FindAllAsync(new MongoQueryFilter<MongoPerson>(Builders<MongoPerson>.Filter.Where(x => x.FirstName == firstName)));
@@ -242,7 +242,7 @@ namespace Deveel.Data {
 
         [Fact]
 		public async Task Repository_FindAllFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var result = await Repository.FindAllAsync(x => x.FirstName == firstName);
@@ -254,7 +254,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_FindAllFiltered() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 
 			var result = await FacadeRepository.FindAllAsync(x => x.FirstName == firstName);
@@ -311,7 +311,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_GetFilteredPage() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
@@ -330,8 +330,9 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Mongo_GetMultiFilteredPage() {
-			var firstName = people[people.Count - 1].FirstName;
-			var lastName = people[people.Count - 1].LastName;
+			var person = people.Random(x => x.LastName != null)!;
+			var firstName = person.FirstName;
+			var lastName = person.LastName;
 
 			var peopleCount = people.Count(x => x.FirstName == firstName && x.LastName == lastName);
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
@@ -352,7 +353,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_GetFilteredPage() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
@@ -371,8 +372,9 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_GetMultiFilteredPage() {
-			var firstName = people[people.Count - 1].FirstName;
-			var lastName = people[people.Count - 1].LastName;
+			var person = people.Random(x => x.LastName != null)!;
+			var firstName = person.FirstName;
+			var lastName = person.LastName;
 
 			var peopleCount = people.Count(x => x.FirstName == firstName && x.LastName == lastName);
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
@@ -393,7 +395,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FacadeRepository_GetFilteredPage() {
-			var firstName = people[people.Count - 1].FirstName;
+			var firstName = people.Random()!.FirstName;
 			var peopleCount = people.Count(x => x.FirstName == firstName);
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);

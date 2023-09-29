@@ -66,7 +66,7 @@ namespace Deveel.Data {
 		/// </returns>
         public static string Create<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, TEntity entity)
             where TEntity : class
-            => repository.CreateAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.AddAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		/// <summary>
 		/// Creates a new entity in the repository synchronously
@@ -105,17 +105,17 @@ namespace Deveel.Data {
 
         #endregion
 
-        #region Delete
+        #region Remove
 
-        public static bool Delete<TEntity>(this IRepository<TEntity> repository, TEntity entity)
+        public static bool Remove<TEntity>(this IRepository<TEntity> repository, TEntity entity)
             where TEntity : class
             => repository.RemoveAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public static bool Delete<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, TEntity entity)
+        public static bool Remove<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, TEntity entity)
             where TEntity : class
-            => repository.DeleteAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.RemoveAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public static async Task<bool> DeleteByIdAsync<TEntity>(this IRepository<TEntity> repository, string id, CancellationToken cancellationToken = default)
+        public static async Task<bool> RemoveByIdAsync<TEntity>(this IRepository<TEntity> repository, string id, CancellationToken cancellationToken = default)
             where TEntity : class {
             var entity = await repository.FindByIdAsync(id, cancellationToken);
             if (entity == null)
@@ -124,17 +124,17 @@ namespace Deveel.Data {
             return await repository.RemoveAsync(entity, cancellationToken);
         }
 
-        public static async Task<bool> DeleteByIdAsync<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, string id, CancellationToken cancellationToken = default)
+        public static async Task<bool> RemoveByIdAsync<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, string id, CancellationToken cancellationToken = default)
             where TEntity : class {
             // TODO: find within a transaction ...
             var entity = await repository.FindByIdAsync(id, cancellationToken);
             if (entity == null)
                 return false;
 
-            return await repository.DeleteAsync(transaction, entity, cancellationToken);
+            return await repository.RemoveAsync(transaction, entity, cancellationToken);
         }
 
-        public static async Task<bool> DeleteByIdAsync(this IRepository repository, string id, CancellationToken cancellationToken = default) {
+        public static async Task<bool> RemoveByIdAsync(this IRepository repository, string id, CancellationToken cancellationToken = default) {
             var entity = await repository.FindByIdAsync(id, cancellationToken);
             if (entity == null)
                 return false;
@@ -142,7 +142,7 @@ namespace Deveel.Data {
             return await repository.RemoveAsync(entity, cancellationToken);
         }
 
-        public static async Task<bool> DeleteByIdAsync(this ITransactionalRepository repository, IDataTransaction transaction, string id, CancellationToken cancellationToken = default) {
+        public static async Task<bool> RemoveByIdAsync(this ITransactionalRepository repository, IDataTransaction transaction, string id, CancellationToken cancellationToken = default) {
             // TODO: find within a transaction ...
             var entity = await repository.FindByIdAsync(transaction, id, cancellationToken);
             if (entity == null)
@@ -151,26 +151,26 @@ namespace Deveel.Data {
             return await repository.RemoveAsync(transaction, entity, cancellationToken);
         }
 
-        public static bool DeleteById<TEntity>(this IRepository<TEntity> repository, string id)
+        public static bool RemoveById<TEntity>(this IRepository<TEntity> repository, string id)
             where TEntity : class
-            => repository.DeleteByIdAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.RemoveByIdAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public static bool DeleteById<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, string id)
+        public static bool RemoveById<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, string id)
             where TEntity : class
-            => repository.DeleteByIdAsync(transaction, id).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.RemoveByIdAsync(transaction, id).ConfigureAwait(false).GetAwaiter().GetResult();
 
 
-        public static bool DeleteById(this IRepository repository, string id)
-            => repository.DeleteByIdAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static bool RemoveById(this IRepository repository, string id)
+            => repository.RemoveByIdAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public static bool DeleteById(this ITransactionalRepository repository, IDataTransaction transaction, string id)
-            => repository.DeleteByIdAsync(transaction, id).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static bool RemoveById(this ITransactionalRepository repository, IDataTransaction transaction, string id)
+            => repository.RemoveByIdAsync(transaction, id).ConfigureAwait(false).GetAwaiter().GetResult();
 
 
-        public static bool Delete(this IRepository repository, object entity)
+        public static bool Remove(this IRepository repository, object entity)
             => repository.RemoveAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public static bool Delete(this ITransactionalRepository repository, IDataTransaction transaction, object entity)
+        public static bool Remove(this ITransactionalRepository repository, IDataTransaction transaction, object entity)
             => repository.RemoveAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion
