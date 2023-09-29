@@ -1,16 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 using Bogus;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
+
+using MongoFramework;
 
 namespace Deveel.Data {
 	[Collection("Mongo Single Database")]
 	public abstract class MongoFrameworkRepositoryTestBase : IAsyncLifetime {
 		private MongoFrameworkTestFixture mongo;
-		private readonly IServiceProvider serviceProvider;
 
 		protected MongoFrameworkRepositoryTestBase(MongoFrameworkTestFixture mongo) {
 			this.mongo = mongo;
@@ -18,7 +22,7 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 			AddRepository(services);
 
-			serviceProvider = services.BuildServiceProvider();
+			Services = services.BuildServiceProvider();
 
 			PersonFaker = new Faker<MongoPerson>()
 				.RuleFor(x => x.FirstName, f => f.Name.FirstName())
@@ -28,21 +32,28 @@ namespace Deveel.Data {
 
 		protected string ConnectionString => mongo.ConnectionString;
 
-		protected MongoRepository<MongoPerson> MongoRepository => serviceProvider.GetRequiredService<MongoRepository<MongoPerson>>();
+		protected IMongoCollection<MongoPerson> MongoCollection => new MongoClient(mongo.ConnectionString)
+			.GetDatabase("testdb")
+			.GetCollection<MongoPerson>("persons");
 
-		protected IRepository<MongoPerson> Repository => serviceProvider.GetRequiredService<IRepository<MongoPerson>>();
 
-		protected IFilterableRepository<MongoPerson> FilterableRepository => Repository as IFilterableRepository<MongoPerson>;
+		protected IServiceProvider Services { get; }
 
-		protected IPageableRepository<MongoPerson> PageableRepository => Repository as IPageableRepository<MongoPerson>;
+		protected MongoRepository<MongoDbContext, MongoPerson> MongoRepository => Services.GetRequiredService<MongoRepository<MongoDbContext, MongoPerson>>();
 
-		protected IRepository<IPerson> FacadeRepository => serviceProvider.GetRequiredService<IRepository<IPerson>>();
+		protected IRepository<MongoPerson> Repository => Services.GetRequiredService<IRepository<MongoPerson>>();
 
-        protected IFilterableRepository<IPerson> FilterableFacadeRepository => FacadeRepository as IFilterableRepository<IPerson>;
+		protected IFilterableRepository<MongoPerson> FilterableRepository => (IFilterableRepository<MongoPerson>)Repository;
 
-        protected IPageableRepository<IPerson> FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
+		protected IPageableRepository<MongoPerson> PageableRepository => (IPageableRepository<MongoPerson>)Repository;
 
-		protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
+		protected IRepository<IPerson> FacadeRepository => Services.GetRequiredService<IRepository<IPerson>>();
+
+		protected IFilterableRepository<IPerson> FilterableFacadeRepository => (IFilterableRepository<IPerson>)FacadeRepository;
+
+		protected IPageableRepository<IPerson> FacadePageableRepository => (IPageableRepository<IPerson>)FacadeRepository;
+
+		protected IDataTransactionFactory TransactionFactory => Services.GetRequiredService<IDataTransactionFactory>();
 
 		protected Faker<MongoPerson> PersonFaker { get; }
 
@@ -52,48 +63,66 @@ namespace Deveel.Data {
 
 		protected virtual void AddRepository(IServiceCollection services) {
 			services
-				.AddMongoContext(options => { 
-					options.ConnectionString = ConnectionString;
-					options.DatabaseName = "test_db";
+				.AddMongoContext(builder => { 
+					builder.UseConnection(mongo.SetDatabase("testdb"));
+					AddRepository(builder);
 				})
-				.AddMongoRepository<MongoPerson>()
-				.AddMongoFacadeRepository<MongoPerson, IPerson>()
 				.AddRepositoryController();
 		}
 
-		protected virtual Task SeedAsync(MongoRepository<MongoPerson> repository) {
+		protected virtual void AddRepository(MongoDbContextBuilder<MongoDbContext> builder) {
+            builder.AddRepository<MongoPerson>().WithFacade<IPerson>();
+        }
+
+		protected virtual Task SeedAsync(MongoRepository<MongoDbContext, MongoPerson> repository) {
 			return Task.CompletedTask;
 		}
 
+		protected async Task<MongoPerson?> FindPerson(ObjectId id) {
+			var collection = MongoCollection;
+			var result = await collection.FindAsync(x => x.Id == id);
+
+			return await result.FirstOrDefaultAsync();
+		}
+
+
 		public virtual async Task InitializeAsync() {
-			var controller = serviceProvider.GetRequiredService<IRepositoryController>();
+			var controller = Services.GetRequiredService<IRepositoryController>();
 			await controller.CreateRepositoryAsync<MongoPerson>();
 
 			await SeedAsync(MongoRepository);
 		}
 
 		public virtual async Task DisposeAsync() {
-			var controller = serviceProvider.GetRequiredService<IRepositoryController>();
+			var controller = Services.GetRequiredService<IRepositoryController>();
 			await controller.DropRepositoryAsync<MongoPerson>();
 		}
 
-		protected class MongoPerson : IPerson {
-			[Key]
+		[Table("persons")]
+		protected class MongoPerson : IPerson, IHaveTimeStamp {
+			[Key, Column("_id")]
 			public ObjectId Id { get; set; }
 
 
 			string? IPerson.Id => Id.ToEntityId();
 
+			[Column("first_name")]
 			public string FirstName { get; set; }
 
+			[Column("last_name")]
 			public string LastName { get; set; }
 
+			[Column("birth_date")]
 			public DateTime? BirthDate { get; set; }
 
+			[Column("description")]
 			public string? Description { get; set; }
 
-			[Version]
-			public string Version { get; set; }
+			[Column("created_at")]
+			public DateTimeOffset? CreatedAtUtc { get; set; }
+
+			[Column("updated_at")]
+			public DateTimeOffset? UpdatedAtUtc { get; set; }
 		}
 
 		protected interface IPerson {

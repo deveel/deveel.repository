@@ -5,17 +5,41 @@ using Microsoft.Extensions.Options;
 
 namespace Deveel.Data {
 	/// <summary>
-	/// A default implementation of the <see cref="IRepositoryController"/>
+	/// A default implementation of the <see cref="IRepositoryController"/> interface
 	/// </summary>
     public class DefaultRepositoryController : IRepositoryController {
 		private readonly RepositoryControllerOptions options;
 		private readonly IServiceProvider serviceProvider;
 		private readonly ILogger logger;
 
+		/// <summary>
+		/// Constructs a <see cref="DefaultRepositoryController"/> instance
+		/// </summary>
+		/// <param name="options">
+		/// The options to configure the controller
+		/// </param>
+		/// <param name="serviceProvider">
+		/// The service provider used to resolve the repositories
+		/// </param>
+		/// <param name="logger">
+		/// A logger used to trace the operations
+		/// </param>
 		public DefaultRepositoryController(IOptions<RepositoryControllerOptions> options, IServiceProvider serviceProvider, ILogger<DefaultRepositoryController>? logger = null)
 			: this(options, serviceProvider, (ILogger?) logger) {
 		}
 
+		/// <summary>
+		/// Constructs a <see cref="DefaultRepositoryController"/> instance
+		/// </summary>
+		/// <param name="options">
+		/// The options to configure the controller
+		/// </param>
+		/// <param name="serviceProvider">
+		/// The service provider used to resolve the repositories
+		/// </param>
+		/// <param name="logger">
+		/// A logger used to trace the operations
+		/// </param>
 		protected DefaultRepositoryController(IOptions<RepositoryControllerOptions> options, IServiceProvider serviceProvider, ILogger? logger = null) {
 			this.options = options.Value;
 			this.serviceProvider = serviceProvider;

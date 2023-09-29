@@ -1,8 +1,29 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// Extensions for the <see cref="IServiceCollection"/> to register
+	/// repositories and providers.
+	/// </summary>
     public static class ServiceCollectionExtensions {
+		/// <summary>
+		/// Registers a repository of the given type in the service collection.
+		/// </summary>
+		/// <typeparam name="TRepository">
+		/// The type of the repository to register.
+		/// </typeparam>
+		/// <param name="services">
+		/// The service collection to register the repository.
+		/// </param>
+		/// <param name="lifetime">
+		/// The lifetime of the repository in the service collection.
+		/// </param>
+		/// <returns>
+		/// Returns the same <see cref="IServiceCollection"/> to allow chaining.
+		/// </returns>
 		public static IServiceCollection AddRepository<TRepository>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
 			where TRepository : class, IRepository
 			=> services.AddRepository(typeof(TRepository), lifetime);
@@ -26,12 +47,11 @@ namespace Deveel.Data {
 			services.Add(new ServiceDescriptor(typeof(IRepository), repositoryType, lifetime));
 
 			if (repositoryType.GenericTypeArguments.Length > 0) {
-				var argType = repositoryType.GenericTypeArguments[0];
-				
-				// TODO: should we set any constraints here?
-				//if (!typeof(IDataEntity).IsAssignableFrom(argType))
-				//	throw new ArgumentException($"The argument type '{argType}' of the provided repository is not an entity", nameof(repositoryType));
+				var argType = GetEntityType(repositoryType);
 
+				if (argType == null)
+					throw new ArgumentException($"Could not determine the entity type in '{repositoryType}'");
+				
 				var compareType = typeof(IRepository<>).MakeGenericType(argType);
 
 				if (!compareType.IsAssignableFrom(repositoryType))
@@ -43,6 +63,36 @@ namespace Deveel.Data {
 			services.Add(new ServiceDescriptor(repositoryType, repositoryType, lifetime));
 			
 			return services;
+		}
+
+		private static Type? GetEntityType(Type serviceType) {
+			var entityTypeAttr = serviceType.GetCustomAttribute<EntityTypeAttribute>(true);
+			if (entityTypeAttr != null)
+				return entityTypeAttr.EntityType;
+
+			var genericTypes = serviceType.GenericTypeArguments;
+
+			var entityTypes = genericTypes.Where(x => Attribute.IsDefined(x, typeof(EntityAttribute))).ToList();
+			if (entityTypes.Count > 1)
+				throw new RepositoryException($"Ambigous entity type specifications: {serviceType} has multiple 'Entity' types as type argument '{String.Join(", ", entityTypes)}'");
+			if (entityTypes.Count == 1)
+				return entityTypes[0];
+
+			if (genericTypes.Length == 1 && genericTypes[0].IsClass)
+				return genericTypes[0];
+
+			var intefaces = genericTypes.Where(x => x.IsInterface);
+			var classes = genericTypes.Where(x => x.IsClass);
+
+			var inheritedTypes = classes.Where(x => intefaces.Any(y => y.IsAssignableFrom(x))).ToList();
+
+			if (inheritedTypes.Count == 0)
+				return null;
+
+			if (inheritedTypes.Count > 1)
+				throw new InvalidOperationException("Ambiguous reference in the definition of the repository");
+
+			return inheritedTypes[0];
 		}
 
         public static IServiceCollection AddRepositoryProvider<TProvider>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
@@ -65,13 +115,13 @@ namespace Deveel.Data {
 			if (!typeof(IRepositoryProvider).IsAssignableFrom(providerType))
 				throw new ArgumentException($"The type '{providerType}' is not assignable from '{typeof(IRepositoryProvider)}'", nameof(providerType));
 
-			services.Add(new ServiceDescriptor(typeof(IRepositoryProvider), providerType, lifetime));
+			services.TryAddEnumerable(new ServiceDescriptor(typeof(IRepositoryProvider), providerType, lifetime));
 
 			if (providerType.GenericTypeArguments.Length > 0) {
-				var argType = providerType.GenericTypeArguments[0];
-				// TODO: should we set any constraints here?
-				//if (!typeof(IDataEntity).IsAssignableFrom(argType))
-				//	throw new ArgumentException($"The argument type '{argType}' of the provided repository is not an entity", nameof(providerType));
+				var argType = GetEntityType(providerType);
+
+				if (argType == null)
+					throw new RepositoryException($"Unable to determine the entity of the provider '{providerType}'");
 
 				var compareType = typeof(IRepositoryProvider<>).MakeGenericType(argType);
 
@@ -103,5 +153,57 @@ namespace Deveel.Data {
 
         public static IServiceCollection AddRepositoryController(this IServiceCollection services, Action<RepositoryControllerOptions>? configure = null)
             => services.AddRepositoryController<DefaultRepositoryController>(configure);
+
+		/// <summary>
+		/// Registers a singleton <see cref="ISystemTime"/> service of the
+		/// given <typeparamref name="TTime"/> type.
+		/// </summary>
+		/// <typeparam name="TTime">
+		/// The type of the <see cref="ISystemTime"/> implementation.
+		/// </typeparam>
+		/// <param name="services">
+		/// The <see cref="IServiceCollection"/> to add the service to.
+		/// </param>
+		/// <returns>
+		/// Returns the <see cref="IServiceCollection"/> so that additional calls can be chained.
+		/// </returns>
+		public static IServiceCollection AddSystemTime<TTime>(this IServiceCollection services)
+			where TTime : class, ISystemTime {
+			services.TryAddSingleton<ISystemTime, TTime>();
+			services.AddSingleton<TTime>();
+			return services;
+		}
+
+		/// <summary>
+		/// Registers a singleton instance of <see cref="ISystemTime"/> of the
+		/// given <typeparamref name="TTime"/> type.
+		/// </summary>
+		/// <typeparam name="TTime">
+		/// The type of the <see cref="ISystemTime"/> implementation.
+		/// </typeparam>
+		/// <param name="services">
+		/// The <see cref="IServiceCollection"/> to add the service to.
+		/// </param>
+		/// <returns>
+		/// Returns the <see cref="IServiceCollection"/> so that additional calls can be chained.
+		/// </returns>
+		public static IServiceCollection AddSystemTime<TTime>(this IServiceCollection services, TTime time)
+			where TTime : class, ISystemTime {
+			services.TryAddSingleton<ISystemTime>(time);
+			services.AddSingleton(time);
+			return services;
+		}
+
+		/// <summary>
+		/// Registers the default <see cref="ISystemTime"/> service implementation
+		/// </summary>
+		/// <param name="services">
+		/// The <see cref="IServiceCollection"/> to add the service to.
+		/// </param>
+		/// <returns>
+		/// Returns the <see cref="IServiceCollection"/> so that additional calls can be chained.
+		/// </returns>
+		public static IServiceCollection AddSystemTime(this IServiceCollection services)
+			=> services.AddSystemTime<SystemTime>();
     }
 }

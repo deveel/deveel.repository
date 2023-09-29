@@ -7,7 +7,8 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Deveel.Data {
-    public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, 
+	[Obsolete("This class is obsolete: please use the Deveel.Repository.MongoFramework instead")]
+	public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, 
 		IRepository<TFacade>, 
 		IPageableRepository<TFacade>, 
 		IFilterableRepository<TFacade>,
@@ -45,6 +46,8 @@ namespace Deveel.Data {
 
 			return base.GetFilterDefinition(filter);
 		}
+
+		string? IRepository<TFacade>.GetEntityId(TFacade entity) => GetEntityId(Assert(entity));
 
 		async Task<IList<TFacade>> IFilterableRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
             var result = await FindAllAsync(GetFilterDefinition(filter), cancellationToken);

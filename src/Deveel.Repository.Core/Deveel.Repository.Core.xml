@@ -4,10 +4,79 @@
         <name>Deveel.Repository.Core</name>
     </assembly>
     <members>
+        <member name="T:Deveel.Data.CombinedQueryFilter">
+            <summary>
+            An object that combines multiple <see cref="T:Deveel.Data.IQueryFilter"/> objects
+            into a single one.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.CombinedQueryFilter.#ctor(System.Collections.Generic.ICollection{Deveel.Data.IQueryFilter})">
+            <summary>
+            Constructs the filter by combining the given list of filters.
+            </summary>
+            <param name="filters">
+            The list of filters to combine.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            If the given list of filters is <c>null</c>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            Thrown if the given list of filters is empty.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.CombinedQueryFilter.Filters">
+            <summary>
+            Gets the list of filters that are combined into this object.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.CombinedQueryFilter.Combine(Deveel.Data.IQueryFilter)">
+            <summary>
+            Creates a new combination between the filters
+            of this object and the given one.
+            </summary>
+            <param name="filter">
+            The filter to combine with this object.
+            </param>
+            <returns>
+            Returns a new <see cref="T:Deveel.Data.CombinedQueryFilter"/> that combines
+            the filters of this object and the given one.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the given filter is <c>null</c>.
+            </exception>
+        </member>
         <member name="T:Deveel.Data.DefaultRepositoryController">
             <summary>
-            A default implementation of the <see cref="T:Deveel.Data.IRepositoryController"/>
+            A default implementation of the <see cref="T:Deveel.Data.IRepositoryController"/> interface
             </summary>
+        </member>
+        <member name="M:Deveel.Data.DefaultRepositoryController.#ctor(Microsoft.Extensions.Options.IOptions{Deveel.Data.RepositoryControllerOptions},System.IServiceProvider,Microsoft.Extensions.Logging.ILogger{Deveel.Data.DefaultRepositoryController})">
+            <summary>
+            Constructs a <see cref="T:Deveel.Data.DefaultRepositoryController"/> instance
+            </summary>
+            <param name="options">
+            The options to configure the controller
+            </param>
+            <param name="serviceProvider">
+            The service provider used to resolve the repositories
+            </param>
+            <param name="logger">
+            A logger used to trace the operations
+            </param>
+        </member>
+        <member name="M:Deveel.Data.DefaultRepositoryController.#ctor(Microsoft.Extensions.Options.IOptions{Deveel.Data.RepositoryControllerOptions},System.IServiceProvider,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Constructs a <see cref="T:Deveel.Data.DefaultRepositoryController"/> instance
+            </summary>
+            <param name="options">
+            The options to configure the controller
+            </param>
+            <param name="serviceProvider">
+            The service provider used to resolve the repositories
+            </param>
+            <param name="logger">
+            A logger used to trace the operations
+            </param>
         </member>
         <member name="M:Deveel.Data.DefaultRepositoryController.CreateAllRepositoriesAsync(System.Threading.CancellationToken)">
             <inheritdoc/>
@@ -35,53 +104,92 @@
         </member>
         <member name="T:Deveel.Data.EntityStateInfo`1">
             <summary>
-            A structure that describes the status of an entity
+            A structure that holds information about the state of an entity
             </summary>
-            <typeparam name="TStatus">The status type of the state</typeparam>
+            <typeparam name="TStatus">
+            The status of the entity, which can be an enumeration or a string
+            </typeparam>
         </member>
         <member name="M:Deveel.Data.EntityStateInfo`1.#ctor(`0,System.String,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
-            Constructs a new entity state structure
+            Constructs a new instance of the <see cref="T:Deveel.Data.EntityStateInfo`1"/> structure
+            with the given information.
             </summary>
-            <param name="status">The status of the entity</param>
-            <param name="actorId">The actor (user or system) that set 
-            the status to the entity</param>
-            <param name="timeStamp">The exact time-stamp of the state</param>
-            <param name="data">An optional set of metadata that describes the state</param>
+            <param name="status">
+            The status of the entity, which can be an enumeration or a string
+            </param>
+            <param name="actorId">
+            The identifier of the actor that caused the change of the state
+            </param>
+            <param name="timeStamp">
+            The time stamp of the change of the state
+            </param>
+            <param name="data">
+            A set of data associated with the state
+            </param>
         </member>
         <member name="P:Deveel.Data.EntityStateInfo`1.ActorId">
             <summary>
-            Gets the identifier of the actor (user or system)
-            that operated the state
+            Gets the identifier of the actor that caused the change of the state
             </summary>
         </member>
         <member name="P:Deveel.Data.EntityStateInfo`1.Data">
             <summary>
-            Gets an optional set of metadata describing the state
+            Gets a set of data associated with the state
             </summary>
         </member>
         <member name="P:Deveel.Data.EntityStateInfo`1.TimeStamp">
             <summary>
-            Gets the exact time-stamp of the state
+            Gets the time stamp of the change of the state
             </summary>
         </member>
         <member name="P:Deveel.Data.EntityStateInfo`1.Status">
             <summary>
-            Gets the status of the entity
+            Gets the status of the entity, which can be an enumeration or a string
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.EntityTypeAttribute">
+            <summary>
+            Defines a class as an entity of a repository.
+            </summary>
+            <remarks>
+            This marker attribute is used to fix issues in the discovery
+            of entities managed by a repository, when the repository is
+            generic and multiple types are used as entities (eg. facades,
+            depdendencies, etc.).
+            </remarks>
+        </member>
+        <member name="M:Deveel.Data.EntityTypeAttribute.#ctor(System.Type)">
+            <summary>
+            Constructs the attribute for the given entity type.
+            </summary>
+            <param name="entityType">
+            The type of the repository entity.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the given <paramref name="entityType"/> is <c>null</c>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            If the given <paramref name="entityType"/> is not a class or is abstract.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.EntityTypeAttribute.EntityType">
+            <summary>
+            Gets the type of the entity.
             </summary>
         </member>
         <member name="T:Deveel.Data.ExpressionFieldRef`1">
             <summary>
-            References a expr of an entity through a selection expression
+            References a field of an entity through a selection expression
             </summary>
-            <typeparam name="TEntity">The type of the entity defining the expr to be selected</typeparam>
+            <typeparam name="TEntity">The type of the entity defining the field to be selected</typeparam>
         </member>
         <member name="M:Deveel.Data.ExpressionFieldRef`1.#ctor(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
             <summary>
             Constucts the reference with the expression to select
-            the expr from the entity
+            the field from the entity
             </summary>
-            <param name="expr">The expression that is used to select the expr</param>
+            <param name="expr">The expression that is used to select the field</param>
             <exception cref="T:System.ArgumentNullException">
             Thrown if the expression is empty
             </exception>
@@ -94,55 +202,127 @@
         </member>
         <member name="T:Deveel.Data.ExpressionQueryFilter`1">
             <summary>
-            An implementation of a query expr that uses a lambda expression
+            An implementation of a query filter that uses a lambda expression
             </summary>
             <typeparam name="TEntity">The type of entity to construct
-            the expr</typeparam>
+            the field</typeparam>
         </member>
         <member name="M:Deveel.Data.ExpressionQueryFilter`1.#ctor(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
             <summary>
-            Constructs a new query filter with a given expressions
+            Constructs the filter with the given expression
             </summary>
-            <param name="expr">The LINQ expression that is used to filter</param>
-            <exception cref="T:System.ArgumentNullException"></exception>
+            <param name="expr">
+            The expression that is used to filter the entities
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the expression is <c>null</c>.
+            </exception>
         </member>
         <member name="P:Deveel.Data.ExpressionQueryFilter`1.Expression">
             <summary>
-            Gets the LINQ expression as filter
+            Gets the lambda filter expression
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.ExpressionResultSort`1">
+            <summary>
+            Describes a sorting rule that uses an expression to 
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity that is the target of the sorting and that
+            defines the field to select.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.ExpressionResultSort`1.#ctor(System.Linq.Expressions.Expression{System.Func{`0,System.Object}},System.Boolean)">
+            <summary>
+            Constructs the sorting rule using the given expression
+            to select the field to sort.
+            </summary>
+            <param name="fieldSelector">
+            The expression that selects the field to sort.
+            </param>
+            <param name="ascending">
+            Whether the sorting is ascending or descending.
+            </param>
+        </member>
+        <member name="P:Deveel.Data.ExpressionResultSort`1.FieldSelector">
+            <summary>
+            Gets the expression that selects the field to sort.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.ExpressionResultSort`1.Ascending">
+            <summary>
+            Gets a flag indicating whether the result should
+            be sorted ascending or descending.
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.FieldResultSort">
+            <summary>
+            Describes a sorting rule using a string filter reference
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.FieldResultSort.#ctor(System.String,System.Boolean)">
+            <summary>
+            Constructs the sorting rule using the given field name
+            </summary>
+            <param name="fieldName">
+            The name of the field to sort the results
+            </param>
+            <param name="ascending">
+            Whether the results should be sorted ascending
+            </param>
+            <exception cref="T:System.ArgumentException">
+            Thrown if the given <paramref name="fieldName"/> is <c>null</c> or empty.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.FieldResultSort.FieldName">
+            <summary>
+            Gets the name of the field used to sort the results
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.FieldResultSort.Ascending">
+            <summary>
+            Gets a flag indicating whether the results should be
+            sorted ascending
             </summary>
         </member>
         <member name="T:Deveel.Data.IControllableRepository">
             <summary>
-            A contract that defines a <see cref="T:Deveel.Data.IRepository"/> as controllable
-            through its lifecycle.
+            A repository whose lifecycle can be controlled by the user
             </summary>
         </member>
         <member name="M:Deveel.Data.IControllableRepository.ExistsAsync(System.Threading.CancellationToken)">
             <summary>
-            Checks if the repository actually exists in the underlying infrastructure
+            Checks if the repository exists in the underlying storage
             </summary>
-            <param name="cancellationToken"></param>
+            <param name="cancellationToken">
+            A cancellation token used to cancel the operation
+            </param>
             <returns>
-            Returns as <see cref="T:System.Threading.Tasks.Task"/> that has a value of <c>true</c> if the repository 
-            actually exists in the underlying infrastructure, otherwise has <c>false</c> value.
+            Returns <c>true</c> if the repository exists, or <c>false</c>
             </returns>
         </member>
         <member name="M:Deveel.Data.IControllableRepository.CreateAsync(System.Threading.CancellationToken)">
             <summary>
-            Creates the repository in the underlying infrastructure.
+            Creates the repository in the underlying storage
             </summary>
-            <param name="cancellationToken"></param>
+            <param name="cancellationToken">
+            A cancellation token used to cancel the operation
+            </param>
             <returns>
-            Returns a <see cref="T:System.Threading.Tasks.Task"/> that executes the repository creation command.
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that completes when the repository
+            is created in the underlying storage
             </returns>
         </member>
         <member name="M:Deveel.Data.IControllableRepository.DropAsync(System.Threading.CancellationToken)">
             <summary>
-            Deletes the repository from the underlying infrastructure.
+            Drops the repository from the underlying storage
             </summary>
-            <param name="cancellationToken"></param>
+            <param name="cancellationToken">
+            A cancellation token used to cancel the operation
+            </param>
             <returns>
-            Returns a <see cref="T:System.Threading.Tasks.Task"/> that executes the repository destroy command.
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that completes when the repository
+            is dropped from the underlying storage
             </returns>
         </member>
         <member name="T:Deveel.Data.IDataTransaction">
@@ -154,34 +334,32 @@
         </member>
         <member name="M:Deveel.Data.IDataTransaction.BeginAsync(System.Threading.CancellationToken)">
             <summary>
-            Starts the transaction asynchronously
+            Begins a new transaction on the underlying storage
+            that isolates the access to the data
             </summary>
             <param name="cancellationToken"></param>
-            <returns>
-            Returns a <see cref="T:System.Threading.Tasks.Task"/> that encapsulates the transaction
-            start command.
-            </returns>
+            <returns></returns>
         </member>
         <member name="M:Deveel.Data.IDataTransaction.CommitAsync(System.Threading.CancellationToken)">
             <summary>
-            Commits all changes within the scope of this transaction
-            to the underlying repository
+            Commits all the changes made to the underlying storage
+            during the lifetime of this transaction
             </summary>
-            <param name="cancellationToken"></param>
+            <param name="cancellationToken">
+            A token that can be used to cancel the operation
+            </param>
             <returns>
-            Returns a <see cref="T:System.Threading.Tasks.Task"/> that encapsulates the transaction
-            commitment command.
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be awaited
             </returns>
         </member>
         <member name="M:Deveel.Data.IDataTransaction.RollbackAsync(System.Threading.CancellationToken)">
             <summary>
-            Rollbacks any changes within the scope of this transaction,
-            preventing being reflected to the underlying repository
+            Rolls back any changes made to the underlying storage
+            during the lifetime of this transaction
             </summary>
             <param name="cancellationToken"></param>
             <returns>
-            Returns a <see cref="T:System.Threading.Tasks.Task"/> that encapsulates the transaction
-            rollback command.
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be awaited
             </returns>
         </member>
         <member name="T:Deveel.Data.IDataTransactionFactory">
@@ -207,6 +385,12 @@
             a field of an entity
             </summary>
         </member>
+        <member name="T:Deveel.Data.IFilterableRepository">
+            <summary>
+            Represents a repository that can be filtered to retrieve a subset of
+            the entities it contains.
+            </summary>
+        </member>
         <member name="M:Deveel.Data.IFilterableRepository.ExistsAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
             <summary>
             Determines if at least one item in the repository exists for the
@@ -224,7 +408,6 @@
             <exception cref="T:System.ArgumentException">
             Throw if the <paramref name="filter"/> is not supported by the repository
             </exception>
-            <seealso cref="!:SupportsFilters" />
         </member>
         <member name="M:Deveel.Data.IFilterableRepository.CountAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
             <summary>
@@ -247,7 +430,6 @@
             <exception cref="T:System.ArgumentException">
             Throw if the <paramref name="filter"/> is not supported by the repository
             </exception>
-            <seealso cref="!:SupportsFilters" />
         </member>
         <member name="M:Deveel.Data.IFilterableRepository.FindAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
             <summary>
@@ -270,7 +452,6 @@
             <exception cref="T:System.ArgumentException">
             Throw if the <paramref name="filter"/> is not supported by the repository
             </exception>
-            <seealso cref="!:SupportsFilters" />
         </member>
         <member name="M:Deveel.Data.IFilterableRepository.FindAllAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
             <summary>
@@ -288,14 +469,24 @@
             <exception cref="T:System.ArgumentException">
             Throw if the <paramref name="filter"/> is not supported by the repository
             </exception>
-            <seealso cref="!:SupportsFilters" />
+        </member>
+        <member name="T:Deveel.Data.IFilterableRepository`1">
+            <summary>
+            Represents a repository that can be filtered to retrieve a subset of
+            the entities it contains.
+            </summary>
+            <typeparam name="TEntity">
+            The strongly typed entity that is stored in the repository
+            </typeparam>
         </member>
         <member name="M:Deveel.Data.IFilterableRepository`1.FindAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
             <summary>
             Finds the first item in the repository that matches the given filtering condition
             </summary>
             <param name="filter">The filter used to identify the item</param>
-            <param name="cancellationToken"></param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
             <returns>
             Returns the first item in the repository that matches the given filtering condition,
             or <c>null</c> if none of the items matches the condition.
@@ -306,7 +497,54 @@
             <exception cref="T:System.ArgumentException">
             Throw if the <paramref name="filter"/> is not supported by the repository
             </exception>
-            <seealso cref="!:SupportsFilters" />
+        </member>
+        <member name="M:Deveel.Data.IFilterableRepository`1.FindAllAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
+            <summary>
+            Finds all the items in the repository that match the given filtering condition
+            </summary>
+            <param name="filter">
+            The filter used to identify the items to be returned
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
+            <returns>
+            Returns a list of items in the repository that match the given filtering condition,
+            or an empty list if none of the items matches the condition.
+            </returns>
+        </member>
+        <member name="T:Deveel.Data.IHaveTimeStamp">
+            <summary>
+            A contract for an object that has timestamps on the
+            creation and update.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.IHaveTimeStamp.CreatedAtUtc">
+            <summary>
+            Gets or sets the timestamp of the creation of the object.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.IHaveTimeStamp.UpdatedAtUtc">
+            <summary>
+            Gets or sets the timestamp of the last update of the object.
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.IMultiTenantRepository">
+            <summary>
+            Represents a repository that is capable of segregating the
+            data by the tenant that owns it.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.IMultiTenantRepository.TenantId">
+            <summary>
+            Gets the identifier of the tenant that owns the data
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.IPageableRepository">
+            <summary>
+            Represents a repository that is capable of returning a page of items
+            contained in the underlying storage.
+            </summary>
         </member>
         <member name="M:Deveel.Data.IPageableRepository.GetPageAsync(Deveel.Data.RepositoryPageRequest,System.Threading.CancellationToken)">
             <summary>
@@ -315,7 +553,9 @@
             <param name="request">The request to obtain a given page from the repository. This
             object provides the number of the page, the size of the items to return, filters and
             sorting order.</param>
-            <param name="cancellationToken"></param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
             <returns>
             Returns an instance of <see cref="T:Deveel.Data.RepositoryPage"/> that provides the
             page items and a count of total items.
@@ -324,12 +564,19 @@
             Thrown if an error occurred while retrieving the page
             </exception>
             <exception cref="T:System.NotSupportedException">
-            Thrown if the filters or the sorting capabilities are not provided by the
-            implementation of the repository
+            Thrown if the request includes filters or sorts and filtering or sorting 
+            capabilities are not supported by the implementation of the repository
             </exception>
             <seealso cref="T:Deveel.Data.RepositoryPage"/>
-            <seealso cref="!:SupportsPaging"/>
-            <seealso cref="!:SupportsFilters"/>
+        </member>
+        <member name="T:Deveel.Data.IPageableRepository`1">
+            <summary>
+            Represents a repository that is capable of returning a page of items
+            of the given type contained in the underlying storage.
+            </summary>
+            <typeparam name="TEntity">
+            The strongly typed entity that is stored in the repository
+            </typeparam>
         </member>
         <member name="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.RepositoryPageRequest{`0},System.Threading.CancellationToken)">
             <summary>
@@ -351,8 +598,23 @@
             implementation of the repository
             </exception>
             <seealso cref="T:Deveel.Data.RepositoryPage"/>
-            <seealso cref="!:SupportsPaging"/>
-            <seealso cref="!:SupportsFilters"/>
+        </member>
+        <member name="T:Deveel.Data.IQueryableRepository`1">
+            <summary>
+            Represents a repository that is capable of being queried
+            </summary>
+            <typeparam name="TEntity">
+            The strongly typed entity that is stored in the repository
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.IQueryableRepository`1.AsQueryable">
+            <summary>
+            Gets a queryable object that can be used to query the repository
+            </summary>
+            <returns>
+            Returns an instance of <see cref="T:System.Linq.IQueryable`1"/> that can be used
+            to query the repository.
+            </returns>
         </member>
         <member name="T:Deveel.Data.IQueryFilter">
             <summary>
@@ -371,12 +633,35 @@
             Gets the type of the entity managed by the repository
             </summary>
         </member>
+        <member name="M:Deveel.Data.IRepository.GetEntityId(System.Object)">
+            <summary>
+            Gets the unique identifier of the entity given
+            instance of the entity managed by the repository
+            </summary>
+            <param name="entity">
+            The instance of the entity to get the identifier of
+            </param>
+            <remarks>
+            In some contexts it might be possible that an entity is not
+            immediately associated with an identifier upon creation, such as
+            when the repository is not persistent, or if it is executing
+            CRUD operations in a transactional context (<see cref="T:Deveel.Data.ITransactionalRepository"/>):
+            this method should help to obtain the identifier of the entity.
+            </remarks>
+            <returns>
+            Returns a string that is the unique identifier of the entity
+            within the repository, or <c>null</c> if the entity is not
+            identified
+            </returns>
+        </member>
         <member name="M:Deveel.Data.IRepository.CreateAsync(System.Object,System.Threading.CancellationToken)">
             <summary>
             Creates a new entity in the repository
             </summary>
             <param name="entity">The entity to create</param>
-            <param name="cancellationToken"></param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
             <returns>
             Returns the unique identifier of the entity created.
             </returns>
@@ -399,12 +684,13 @@
             will succeed only if all the items in the list will be created. Anyway, the
             underlying storage system might have persisted some of the items before a
             failure: to prevent the scenario of a partial creation of the set, the
-            callers should consider the <see cref="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)"/>, 
-            where transactions are available.
+            callers should consider the 
+            <see cref="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)"/>
+            overload, where transactions are available.
             </para>
             </remarks>
             <returns>
-            Returns an ordered list of the unique identifiers of the entiies created
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be used to await the operation
             </returns>
             <exception cref="T:Deveel.Data.RepositoryException">
             Thrown if it an error occurred while creating one or more entities
@@ -418,7 +704,9 @@
             Deletes an entity from the repository
             </summary>
             <param name="entity">The entity to be deleted</param>
-            <param name="cancellationToken"></param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
             <returns>
             Returns <c>true</c> if the entity was successfully removed 
             from the repository, otherwise <c>false</c>. 
@@ -435,7 +723,9 @@
             Updates an existing entity in the repository
             </summary>
             <param name="entity">The entity instance to be updated</param>
-            <param name="cancellationToken"></param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
             <returns>
             Returns <c>true</c> if the entity was found and updated in 
             the repository, otherwise <c>false</c>
@@ -458,6 +748,126 @@
             Returns the instance of the entity associated to the given <paramref name="id"/>,
             or <c>null</c> if none entity was found.
             </returns>
+            <exception cref="T:System.ArgumentNullException">
+            If the provided <paramref name="id"/> is <c>null</c> or empty
+            </exception>
+        </member>
+        <member name="T:Deveel.Data.IRepositoryController">
+            <summary>
+            A service used to control the lifecycle of the repositories
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.IRepositoryController.CreateAllRepositoriesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Creates all the repositories for the current context
+            </summary>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be used to await the operation
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IRepositoryController.CreateTenantRepositoriesAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Creates all the repositories for the given tenant
+            </summary>
+            <param name="tenantId">
+            The identifier of the tenant for which the repositories are created
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be used to await the operation
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IRepositoryController.CreateRepositoryAsync``1(System.Threading.CancellationToken)">
+            <summary>
+            Creates a repository for the given entity type
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity managed by the repository
+            </typeparam>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be used to await the operation
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IRepositoryController.CreateTenantRepositoryAsync``1(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Creates a repository for the given entity type and tenant
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity managed by the repository
+            </typeparam>
+            <param name="tenantId">
+            The identifier of the tenant for which the repository is created
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be used to await the operation
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IRepositoryController.DropAllRepositoriesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Drops all the repositories for the current context
+            </summary>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be used to await the operation
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IRepositoryController.DropTenantRepositoriesAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Drops all the repositories for the given tenant
+            </summary>
+            <param name="tenantId">
+            The identifier of the tenant for which the repositories are dropped
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be used to await the operation
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IRepositoryController.DropRepositoryAsync``1(System.Threading.CancellationToken)">
+            <summary>
+            Drops the repository for the given entity type
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity managed by the repository
+            </typeparam>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be used to await the operation
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IRepositoryController.DropTenantRepositoryAsync``1(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Drops the repository for the given entity type and tenant
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity managed by the repository
+            </typeparam>
+            <param name="tenantId">
+            The identifier of the tenant for which the repository is dropped
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
+            <returns>
+            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be used to await the operation
+            </returns>
         </member>
         <member name="T:Deveel.Data.IRepositoryProvider">
             <summary>
@@ -465,7 +875,7 @@
             are isolating the entities of a given tenant
             </summary>
         </member>
-        <member name="M:Deveel.Data.IRepositoryProvider.GetRepository(System.String)">
+        <member name="M:Deveel.Data.IRepositoryProvider.GetRepositoryAsync(System.String)">
             <summary>
             Gets an instance of a repository of entities
             that is isolating the scope for a given tenant
@@ -493,7 +903,7 @@
             <typeparam name="TEntity">The type of entity handled by the
             repository instances</typeparam>
         </member>
-        <member name="M:Deveel.Data.IRepositoryProvider`1.GetRepository(System.String)">
+        <member name="M:Deveel.Data.IRepositoryProvider`1.GetRepositoryAsync(System.String)">
             <inheritdoc/>
         </member>
         <member name="T:Deveel.Data.IRepository`1">
@@ -502,6 +912,19 @@
             for read and write operations
             </summary>
             <typeparam name="TEntity">The type of entity handled by the repository</typeparam>
+        </member>
+        <member name="M:Deveel.Data.IRepository`1.GetEntityId(`0)">
+            <summary>
+            Gets the unique identifier of the entity given
+            </summary>
+            <param name="entity">
+            The instance of the entity to get the identifier of
+            </param>
+            <returns>
+            Returns a string that is the unique identifier of the entity
+            within the repository, or <c>null</c> if the entity is not
+            identified.
+            </returns>
         </member>
         <member name="M:Deveel.Data.IRepository`1.CreateAsync(`0,System.Threading.CancellationToken)">
             <summary>
@@ -531,8 +954,9 @@
             will succeed only if all the items in the list will be created. Anyway, the
             underlying storage system might have persisted some of the items before a
             failure: to prevent the scenario of a partial creation of the set, the
-            callers should consider the <see cref="M:Deveel.Data.ITransactionalRepository`1.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)"/>, 
-            where transactions are available.
+            callers should consider the 
+            <see cref="M:Deveel.Data.ITransactionalRepository`1.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)"/>
+            overload, where transactions are available.
             </para>
             </remarks>
             <returns>
@@ -595,6 +1019,12 @@
             <summary>
             Describes a sorting rule for the results of a query
             </summary>
+            <remarks>
+            Implementations of repositories can use this interface
+            to form queries to the underlying data store, or
+            rather to sort the results of a query after the execution,
+            depending on the nature of the data and the implementation.
+            </remarks>
         </member>
         <member name="P:Deveel.Data.IResultSort.Field">
             <summary>
@@ -614,16 +1044,22 @@
             A repository that provides the capability of persisting the
             states of entities
             </summary>
-            <typeparam name="TStatus">The status code of the states of an entity</typeparam>
+            <typeparam name="TStatus">
+            The status code of the states of an entity
+            </typeparam>
         </member>
         <member name="M:Deveel.Data.IStateRepository`1.GetStatesAsync(System.Object,System.Threading.CancellationToken)">
             <summary>
             Gets the listing of the states of the entity
             </summary>
-            <param name="entity">The entity that holds the states</param>
-            <param name="cancellationToken"></param>
+            <param name="entity">
+            The entity that holds the states
+            </param>
+            <param name="cancellationToken">
+            A cancellation token that can be used to cancel the operation
+            </param>
             <returns>
-            Returns a list of <see cref="!:StateInfo&lt;TStatus&gt;"/> that are the states
+            Returns a list of <see cref="T:Deveel.Data.EntityStateInfo`1"/> that are the states
             currently held by the <paramref name="entity"/> given.
             </returns>
         </member>
@@ -633,17 +1069,37 @@
             </summary>
             <param name="entity">The entity that will holds the state</param>
             <param name="stateInfo">The new state to be added</param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
+            <param name="cancellationToken">
+            A cancellation token that can be used to cancel the operation
+            </param>
+            <returns>
+            Returns a task that returns when the operation is completed
+            </returns>
         </member>
         <member name="M:Deveel.Data.IStateRepository`1.RemoveStateAsync(System.Object,Deveel.Data.EntityStateInfo{`0},System.Threading.CancellationToken)">
             <summary>
-            Removes a state from the entity
+            Removes a given state from the entity
             </summary>
-            <param name="entity">The entity that holds the state to be removed</param>
-            <param name="stateInfo">The state to be removed</param>
+            <param name="entity">
+            The entity that holds the state to be removed
+            </param>
+            <param name="stateInfo">
+            An object that describes the state to be removed
+            </param>
             <param name="cancellationToken"></param>
-            <returns></returns>
+            <remarks>
+            While adding new states to an entity is a logical operation,
+            to implement a state machine, it might also be useful to
+            have functions to remove existing states from an entity: to
+            identify state to be removed, implementations of the repository
+            might use different evaluation strategies, depending on the
+            implementation. The recommended approach to identify a state
+            to be removed is to match the status and time-stamp given
+            by the <see cref="T:Deveel.Data.EntityStateInfo`1"/> object passed as argument.
+            </remarks>
+            <returns>
+            Returns a task that returns when the operation is completed
+            </returns>
         </member>
         <member name="T:Deveel.Data.IStateRepository`2">
             <summary>
@@ -660,7 +1116,7 @@
             <param name="entity">The entity that holds the states</param>
             <param name="cancellationToken"></param>
             <returns>
-            Returns a list of <see cref="!:StateInfo&lt;TStatus&gt;"/> that are the states
+            Returns a list of <see cref="T:Deveel.Data.EntityStateInfo`1"/> that are the states
             currently held by the <paramref name="entity"/> given.
             </returns>
         </member>
@@ -682,11 +1138,44 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
+        <member name="T:Deveel.Data.ISystemTime">
+            <summary>
+            A service that provides the current system time.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.ISystemTime.UtcNow">
+            <summary>
+            Gets the current system time in UTC.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.ISystemTime.Now">
+            <summary>
+            Gets the current local system time.
+            </summary>
+        </member>
         <member name="T:Deveel.Data.ITransactionalRepository">
             <summary>
-            A repository that can handle write operations within
-            transactional contexts
+            Implementations of this repository can provide the capability
+            to execute CRUD operations within the scope of a transaction
             </summary>
+        </member>
+        <member name="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)">
+            <summary>
+            Creates a list of entities in the repository in one single operation, within
+            the scope of a given transaction
+            </summary>
+            <param name="entities">The enumeration of the entities to be created</param>
+            <param name="transaction">The transaction scope of the operation</param>
+            <param name="cancellationToken"></param>
+            <returns>
+            Returns the list of the unique identifiers of the entities created.
+            </returns>
+            <exception cref="T:Deveel.Data.RepositoryException">
+            Thrown if it an error occurred while creating one or more entities
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
+            </exception>
         </member>
         <member name="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Object,System.Threading.CancellationToken)">
             <summary>
@@ -695,7 +1184,9 @@
             <param name="transaction">A transaction that isolates the access
             to the data store used by the repository</param>
             <param name="entity">The entity to create</param>
-            <param name="cancellationToken"></param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
             <returns>
             Returns the unique identifier of the entity created.
             </returns>
@@ -711,24 +1202,6 @@
             </exception>
             <seealso cref="T:Deveel.Data.IDataTransactionFactory"/>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken)">
-            <summary>
-            Creates a list of entities in the repository in one single operation, within
-            the scope of a given transaction
-            </summary>
-            <param name="entities">The enumeration of the entities to be created</param>
-            <param name="transaction">The transaction scope of the operation</param>
-            <param name="cancellationToken"></param>
-            <returns>
-            Returns an ordered list of the unique identifiers of the entiies created
-            </returns>
-            <exception cref="T:Deveel.Data.RepositoryException">
-            Thrown if it an error occurred while creating one or more entities
-            </exception>
-            <exception cref="T:System.ArgumentNullException">
-            Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
-            </exception>
-        </member>
         <member name="M:Deveel.Data.ITransactionalRepository.DeleteAsync(Deveel.Data.IDataTransaction,System.Object,System.Threading.CancellationToken)">
             <summary>
             Deletes an entity from the repository
@@ -736,7 +1209,9 @@
             <param name="transaction">A transaction that isolates the access
             to the data store used by the repository</param>
             <param name="entity">The entity to be deleted</param>
-            <param name="cancellationToken"></param>
+            <param name="cancellationToken">
+            A token used to cancel the operation
+            </param>
             <returns>
             Returns <c>true</c> if the entity was successfully removed 
             from the repository, otherwise <c>false</c>. 
@@ -790,12 +1265,16 @@
             Returns the instance of the entity associated to the given <paramref name="id"/>,
             or <c>null</c> if none entity was found.
             </returns>
+            <exception cref="T:System.ArgumentNullException">
+            If the provided <paramref name="id"/> is <c>null</c> or empty
+            </exception>
         </member>
         <member name="T:Deveel.Data.ITransactionalRepository`1">
             <summary>
-            A repository that can handle write operations within
-            transactional contexts
+            Implementations of this repository can provide the capability
+            to execute CRUD operations within the scope of a transaction
             </summary>
+            <typeparam name="TEntity"></typeparam>
         </member>
         <member name="M:Deveel.Data.ITransactionalRepository`1.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
             <summary>
@@ -886,19 +1365,150 @@
             </exception>
             <seealso cref="T:Deveel.Data.IDataTransactionFactory"/>
         </member>
-        <member name="M:Deveel.Data.ITransactionalRepository`1.FindByIdAsync(Deveel.Data.IDataTransaction,System.String,System.Threading.CancellationToken)">
+        <member name="T:Deveel.Data.QueryFilter">
             <summary>
-            Attempts to find in the repository an entity with the 
-            given unique identifier
+            A utility class that provides a set of static methods to create
+            default types of query filters.
             </summary>
-            <param name="transaction">A transaction that isolates the access
-            to the data store used by the repository</param>
-            <param name="id">The unique identifier of the entity to find</param>
-            <param name="cancellationToken"></param>
+        </member>
+        <member name="F:Deveel.Data.QueryFilter.Empty">
+            <summary>
+            Identifies an empty query filter, that implementations
+            of the <see cref="T:Deveel.Data.IFilterableRepository"/> can use to
+            convert to a default query.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.QueryFilter.IsEmpty(Deveel.Data.IQueryFilter)">
+            <summary>
+            Determines if the given filter is the empty one.
+            </summary>
+            <param name="filter">
+            The filter to check if it is the empty one.
+            </param>
+            <remarks>
+            The method verifies if the reference of the given filter
+            if the same of the <see cref="F:Deveel.Data.QueryFilter.Empty"/> one.
+            </remarks>
             <returns>
-            Returns the instance of the entity associated to the given <paramref name="id"/>,
-            or <c>null</c> if none entity was found.
+            Returns <c>true</c> if the given filter is the empty one,
+            or <c>false</c> otherwise.
             </returns>
+        </member>
+        <member name="M:Deveel.Data.QueryFilter.AsLambda``1(Deveel.Data.IQueryFilter)">
+            <summary>
+            Converts the given filter to a LINQ expression that can be
+            used to filter a <see cref="T:System.Linq.IQueryable`1"/> storage
+            </summary>
+            <typeparam name="TEntity"></typeparam>
+            <param name="filter">
+            The instance of the filter to convert to a LINQ expression.
+            </param>
+            <remarks>
+            If the given filter is the empty one, the method returns
+            a lambda expression that always returns <c>true</c>.
+            </remarks>
+            <returns>
+            Returns an instance of <see cref="T:System.Linq.Expressions.Expression`1"/> that
+            is obtained from the conversion of the given filter.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the given filter is <c>null</c>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            Thrown when the given filter is not an instance of <see cref="T:Deveel.Data.ExpressionQueryFilter`1"/>.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.QueryFilter.Where``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Constructs a new query filter that is built from the given
+            LINQ expression.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity that is the target of the filter.
+            </typeparam>
+            <param name="exp">
+            The lambda expression that defines the filter.
+            </param>
+            <remarks>
+            Various implementations of <see cref="T:Deveel.Data.IFilterableRepository"/> can support
+            LINQ expressions to define the filter to apply to the query, and this
+            method provides a factory to create a default implementation of
+            this kind of filter.
+            </remarks>
+            <returns>
+            Returns a new instance of <see cref="T:Deveel.Data.ExpressionQueryFilter`1"/>
+            wrapping the given expression.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.QueryFilter.Apply``1(Deveel.Data.IQueryFilter,System.Linq.IQueryable{``0})">
+            <summary>
+            Applies the filter to the given queryable object, producing
+            a result that is the filtered query.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity that is the target of the filter.
+            </typeparam>
+            <param name="filter">
+            The filter to apply to the query.
+            </param>
+            <param name="queryable">
+            The queryable object to filter.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:System.Linq.IQueryable`1"/> that is
+            the result of the application of the given filter to the queryable.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.QueryFilter.Combine(System.Collections.Generic.IEnumerable{Deveel.Data.IQueryFilter})">
+            <summary>
+            Combines the list of filters into a single one.
+            </summary>
+            <param name="filters">
+            The list of filters to combine.
+            </param>
+            <returns>
+            Returns a <see cref="T:Deveel.Data.IQueryFilter"/> that is the result of the
+            combination of the given filters.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.QueryFilter.Combine(Deveel.Data.IQueryFilter[])">
+            <summary>
+            Combines the list of filters into a single one.
+            </summary>
+            <param name="filters">
+            The list of filters to combine.
+            </param>
+            <returns>
+            Returns a <see cref="T:Deveel.Data.IQueryFilter"/> that is the result of the
+            combination of the given filters.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the given list of filters is <c>null</c>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            Thrown if the given list of filters is empty.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.QueryFilter.Combine(Deveel.Data.IQueryFilter,Deveel.Data.IQueryFilter)">
+            <summary>
+            Combines the two filters into a single one.
+            </summary>
+            <param name="filter1">
+            The first filter to combine.
+            </param>
+            <param name="filter2">
+            The second filter to combine.
+            </param>
+            <returns></returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if either of the given filters is <c>null</c>.
+            </exception>
+        </member>
+        <member name="T:Deveel.Data.RepositoryControllerOptions">
+            <summary>
+            Provides a set of options that can be used to control
+            the behavior of a <see cref="T:Deveel.Data.IRepositoryController"/>.
+            </summary>
         </member>
         <member name="P:Deveel.Data.RepositoryControllerOptions.DeleteIfExists">
             <summary>
@@ -923,11 +1533,112 @@
             of an operation on the repository
             </summary>
         </member>
+        <member name="M:Deveel.Data.RepositoryException.#ctor">
+            <summary>
+            Constructs an empty instance of the <see cref="T:Deveel.Data.RepositoryException"/> class.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.RepositoryException.#ctor(System.String)">
+            <summary>
+            Constructs an instance of the <see cref="T:Deveel.Data.RepositoryException"/> class
+            </summary>
+            <param name="message">
+            The message that describes the error.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.RepositoryException.#ctor(System.String,System.Exception)">
+            <summary>
+            Constructs an instance of the <see cref="T:Deveel.Data.RepositoryException"/> class
+            </summary>
+            <param name="message">
+            The message that describes the error.
+            </param>
+            <param name="innerException">
+            An exception that is the cause of the current exception.
+            </param>
+        </member>
+        <member name="T:Deveel.Data.RepositoryExtensions">
+            <summary>
+            Extends the functionalities of a <see cref="T:Deveel.Data.IRepository"/> instance
+            to provide a set of utility methods to perform common operations
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.Create``1(Deveel.Data.IRepository{``0},``0)">
+            <summary>
+            Creates a new entity in the repository synchronously
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity to create
+            </typeparam>
+            <param name="repository">
+            The instance of the repository to use to create the entity
+            </param>
+            <param name="entity">
+            The instance of the entity to create
+            </param>
+            <returns>
+            Returns a string that uniquely identifies the created entity
+            within the underlying storage.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.Create``1(Deveel.Data.ITransactionalRepository{``0},Deveel.Data.IDataTransaction,``0)">
+            <summary>
+            Creates a new entity in the repository synchronously
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity to create
+            </typeparam>
+            <param name="repository">
+            The instance of the repository to use to create the entity
+            </param>
+            <param name="transaction">
+            A transaction to use to create the entity
+            </param>
+            <param name="entity">
+            The instance of the entity to create
+            </param>
+            <returns>
+            Returns a string that uniquely identifies the created entity
+            within the underlying storage.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.Create(Deveel.Data.IRepository,System.Object)">
+            <summary>
+            Creates a new entity in the repository synchronously
+            </summary>
+            <param name="repository">
+            The instance of the repository to use to create the entity
+            </param>
+            <param name="entity">
+            The instance of the entity to create
+            </param>
+            <returns>
+            Returns a string that uniquely identifies the created entity
+            within the underlying storage.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.Create(Deveel.Data.ITransactionalRepository,Deveel.Data.IDataTransaction,System.Object)">
+            <summary>
+            Creates a new entity in the repository synchronously
+            within the given transaction
+            </summary>
+            <param name="repository">
+            The instance of the repository to use to create the entity
+            </param>
+            <param name="transaction">
+            The transaction scope to use to create the entity
+            </param>
+            <param name="entity">
+            The instance of the entity to create
+            </param>
+            <returns>
+            </returns>
+        </member>
         <member name="T:Deveel.Data.RepositoryPage">
             <summary>
             A page of entities from a repository, obtained from a query
             </summary>
-            <seealso cref="!:IRepository.GetPageAsync(RepositoryPageRequest, CancellationToken)"/>
+            <seealso cref="M:Deveel.Data.IPageableRepository.GetPageAsync(Deveel.Data.RepositoryPageRequest,System.Threading.CancellationToken)"/>
         </member>
         <member name="M:Deveel.Data.RepositoryPage.#ctor(Deveel.Data.RepositoryPageRequest,System.Int32,System.Collections.Generic.IEnumerable{System.Object})">
             <summary>
@@ -966,6 +1677,15 @@
             Gets a count of the total available pages
             that can be requested from the repository
             </summary>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPage.As``1">
+            <summary>
+            Converts this page result to a page result of a specific type
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity to be returned in the page
+            </typeparam>
+            <returns></returns>
         </member>
         <member name="M:Deveel.Data.RepositoryPage.Empty(Deveel.Data.RepositoryPageRequest)">
             <summary>
@@ -1019,11 +1739,20 @@
             Gets or sets a filter to restrict the context of the query
             </summary>
         </member>
-        <member name="P:Deveel.Data.RepositoryPageRequest.SortBy">
+        <member name="P:Deveel.Data.RepositoryPageRequest.ResultSorts">
             <summary>
             Gets or sets an optional set of orders to sort the
             result of the request
             </summary>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequest.OrderBy(Deveel.Data.IResultSort)">
+            <summary>
+            Appends the given sort order to the request
+            </summary>
+            <param name="resultSort">
+            The 
+            </param>
+            <returns></returns>
         </member>
         <member name="T:Deveel.Data.RepositoryPageRequest`1">
             <summary>
@@ -1031,13 +1760,21 @@
             from a repository
             </summary>
             <typeparam name="TEntity"></typeparam>
-            <seealso cref="!:IRepository&lt;TEntity&gt;.GetPageAsync(RepositoryPageRequest&lt;TEntity&gt;, CancellationToken)"/>
+            <seealso cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.RepositoryPageRequest{`0},System.Threading.CancellationToken)"/>
         </member>
-        <member name="P:Deveel.Data.RepositoryPageRequest`1.Filter">
+        <member name="M:Deveel.Data.RepositoryPageRequest`1.#ctor(System.Int32,System.Int32)">
             <summary>
-            Gets or sets a filter expression that restricts the
-            context of the page request
+            Constructs a new page request with the given page number and size
             </summary>
+            <param name="page">
+            The number of the page to request
+            </param>
+            <param name="size">
+            The maximum size of the page to return.
+            </param>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            If either the page number or the page size are smaller than 1.
+            </exception>
         </member>
         <member name="M:Deveel.Data.RepositoryPageRequest`1.Where(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
             <summary>
@@ -1050,6 +1787,33 @@
             <exception cref="T:System.ArgumentNullException">
             Thrown if the <paramref name="expression"/> is <c>null</c>.
             </exception>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequest`1.OrderBy(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
+            <summary>
+            Appends an ascending sort rule to the page request
+            </summary>
+            <param name="selector">
+            The expression that selects the field to sort by.
+            </param>
+            <returns>
+            Returns this instance of the page request with the
+            appended sort rule.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequest`1.OrderByDescending(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
+            <summary>
+            Appends a descending sort rule to the page request
+            </summary>
+            <param name="selector">
+            The expression that selects the field to sort by.
+            </param>
+            <returns>
+            Returns this instance of the page request with the
+            appended sort rule.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequest`1.OrderBy(Deveel.Data.IResultSort)">
+            <inheritdoc/>
         </member>
         <member name="T:Deveel.Data.RepositoryPage`1">
             <summary>
@@ -1067,15 +1831,100 @@
         </member>
         <member name="T:Deveel.Data.ResultSort">
             <summary>
-            Provides a default implementation of the result sort
+            Provides factory methods to create instances of sorting rules.
             </summary>
             <seealso cref="T:Deveel.Data.IResultSort"/>
         </member>
-        <member name="P:Deveel.Data.ResultSort.Field">
-            <inheritdoc/>
+        <member name="M:Deveel.Data.ResultSort.Create(System.String,System.Boolean)">
+            <summary>
+            Creates a new sorting rule for the given field
+            </summary>
+            <param name="fieldName">
+            The name of the field to sort the results
+            </param>
+            <param name="ascending">
+            The flag indicating whether the results should be
+            </param>
+            <returns>
+            Returns a new instance of <see cref="T:Deveel.Data.IResultSort"/> that
+            sorts by the <paramref name="fieldName"/> given.
+            </returns>
         </member>
-        <member name="P:Deveel.Data.ResultSort.Ascending">
-            <inheritdoc/>
+        <member name="M:Deveel.Data.ResultSort.Create``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Boolean)">
+            <summary>
+            Creates a new sorting rule for the given field
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity that defines the field
+            to be used to sort the results.
+            </typeparam>
+            <param name="fieldSelector"></param>
+            <param name="ascending"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Deveel.Data.ServiceCollectionExtensions">
+            <summary>
+            Extensions for the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to register
+            repositories and providers.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddRepository``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers a repository of the given type in the service collection.
+            </summary>
+            <typeparam name="TRepository">
+            The type of the repository to register.
+            </typeparam>
+            <param name="services">
+            The service collection to register the repository.
+            </param>
+            <param name="lifetime">
+            The lifetime of the repository in the service collection.
+            </param>
+            <returns>
+            Returns the same <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to allow chaining.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddSystemTime``1(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers a singleton <see cref="T:Deveel.Data.ISystemTime"/> service of the
+            given <typeparamref name="TTime"/> type.
+            </summary>
+            <typeparam name="TTime">
+            The type of the <see cref="T:Deveel.Data.ISystemTime"/> implementation.
+            </typeparam>
+            <param name="services">
+            The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to add the service to.
+            </param>
+            <returns>
+            Returns the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> so that additional calls can be chained.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddSystemTime``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,``0)">
+            <summary>
+            Registers a singleton instance of <see cref="T:Deveel.Data.ISystemTime"/> of the
+            given <typeparamref name="TTime"/> type.
+            </summary>
+            <typeparam name="TTime">
+            The type of the <see cref="T:Deveel.Data.ISystemTime"/> implementation.
+            </typeparam>
+            <param name="services">
+            The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to add the service to.
+            </param>
+            <returns>
+            Returns the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> so that additional calls can be chained.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddSystemTime(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers the default <see cref="T:Deveel.Data.ISystemTime"/> service implementation
+            </summary>
+            <param name="services">
+            The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to add the service to.
+            </param>
+            <returns>
+            Returns the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> so that additional calls can be chained.
+            </returns>
         </member>
         <member name="T:Deveel.Data.StringFieldRef">
             <summary>
@@ -1094,6 +1943,23 @@
         <member name="P:Deveel.Data.StringFieldRef.FieldName">
             <summary>
             Gets the name of the field referenced
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.SystemTime">
+            <summary>
+            A default implementation of <see cref="T:Deveel.Data.ISystemTime"/> that
+            uses the <see cref="T:System.DateTimeOffset"/> of the current system.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.SystemTime.UtcNow">
+            <inheritdoc/>
+        </member>
+        <member name="P:Deveel.Data.SystemTime.Now">
+            <inheritdoc/>
+        </member>
+        <member name="P:Deveel.Data.SystemTime.Default">
+            <summary>
+            Gets the default instance of the system time.
             </summary>
         </member>
     </members>

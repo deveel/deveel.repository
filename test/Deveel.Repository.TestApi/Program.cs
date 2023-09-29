@@ -1,12 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 
-using Microsoft.AspNetCore.Mvc;
-
 [assembly: ExcludeFromCodeCoverage]
 
 
 namespace Deveel.Data {
-	public class Program {
+    public class Program {
 		public static void Main(string[] args) {
 			var builder = WebApplication.CreateBuilder(args);
 

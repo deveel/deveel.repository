@@ -5,7 +5,7 @@ using Deveel.Repository.TestApi.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Deveel.Repository.TestApi.Models {
-	public class PersonPageQueryModel : RepositoryPageQueryModel<TestPersonModel> {
+	public class PersonPageQueryModel : PageQueryModel<TestPersonModel> {
 		[FromQuery]
 		public string? LastName { get; set; }
 

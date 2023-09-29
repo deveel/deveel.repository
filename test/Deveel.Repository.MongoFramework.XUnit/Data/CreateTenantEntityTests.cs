@@ -2,12 +2,22 @@
 
 using Bogus;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using MongoDB.Bson;
 
 namespace Deveel.Data {
 	public class CreateTenantEntityTests : MongoRepositoryProviderTestBase {
+		private ISystemTime testTime = new TestTime();
+
 		public CreateTenantEntityTests(MongoFrameworkTestFixture mongo) 
 			: base(mongo) {
+		}
+
+		protected override void AddRepositoryProvider(IServiceCollection services) {
+			services.AddSystemTime(testTime);
+
+			base.AddRepositoryProvider(services);
 		}
 
 		[Fact]
@@ -18,6 +28,17 @@ namespace Deveel.Data {
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
+
+			var created = await FindPerson(ObjectId.Parse(id));
+
+			Assert.NotNull(created);
+			Assert.Equal(person.FirstName, created.FirstName);
+			Assert.Equal(person.LastName, created.LastName);
+			Assert.NotNull(person.BirthDate);
+			Assert.NotNull(created.BirthDate);
+			Assert.Equal(person.BirthDate.Value.Date, created.BirthDate.Value.Date);
+			Assert.NotNull(created.CreatedAtUtc);
+			Assert.Equal(testTime.UtcNow, created.CreatedAtUtc);
 		}
 
 		[Fact]
@@ -27,6 +48,17 @@ namespace Deveel.Data {
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
+
+			var created = await FindPerson(ObjectId.Parse(id));
+
+			Assert.NotNull(created);
+			Assert.Equal(person.FirstName, created.FirstName);
+			Assert.Equal(person.LastName, created.LastName);
+			Assert.NotNull(person.BirthDate);
+			Assert.NotNull(created.BirthDate);
+			Assert.Equal(person.BirthDate.Value.Date, created.BirthDate.Value.Date);
+			Assert.NotNull(created.CreatedAtUtc);
+			Assert.Equal(testTime.UtcNow, created.CreatedAtUtc);
 		}
 
 		[Fact]
@@ -37,6 +69,17 @@ namespace Deveel.Data {
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
+
+			var created = await FindPerson(ObjectId.Parse(id));
+
+			Assert.NotNull(created);
+			Assert.Equal(person.FirstName, created.FirstName);
+			Assert.Equal(person.LastName, created.LastName);
+			Assert.NotNull(person.BirthDate);
+			Assert.NotNull(created.BirthDate);
+			Assert.Equal(person.BirthDate.Value.Date, created.BirthDate.Value.Date);
+			Assert.NotNull(created.CreatedAtUtc);
+			Assert.Equal(testTime.UtcNow, created.CreatedAtUtc);
 		}
 
 
@@ -47,6 +90,8 @@ namespace Deveel.Data {
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
+
+			// TODO: validate it was created in the correct tenant
 		}
 
 		[Fact]

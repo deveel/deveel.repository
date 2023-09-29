@@ -6,36 +6,34 @@ namespace Deveel.Data {
 	/// storage of the repository, to isolate operations
 	/// of access to the data
 	/// </summary>
-	public interface IDataTransaction : IDisposable, IAsyncDisposable {
+	public interface IDataTransaction : IDisposable {
 		/// <summary>
-		/// Starts the transaction asynchronously
+		/// Begins a new transaction on the underlying storage
+		/// that isolates the access to the data
 		/// </summary>
 		/// <param name="cancellationToken"></param>
-		/// <returns>
-		/// Returns a <see cref="Task"/> that encapsulates the transaction
-		/// start command.
-		/// </returns>
+		/// <returns></returns>
 		Task BeginAsync(CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Commits all changes within the scope of this transaction
-		/// to the underlying repository
+		/// Commits all the changes made to the underlying storage
+		/// during the lifetime of this transaction
 		/// </summary>
-		/// <param name="cancellationToken"></param>
+		/// <param name="cancellationToken">
+		/// A token that can be used to cancel the operation
+		/// </param>
 		/// <returns>
-		/// Returns a <see cref="Task"/> that encapsulates the transaction
-		/// commitment command.
+		/// Returns a <see cref="Task"/> that can be awaited
 		/// </returns>
 		Task CommitAsync(CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Rollbacks any changes within the scope of this transaction,
-		/// preventing being reflected to the underlying repository
+		/// Rolls back any changes made to the underlying storage
+		/// during the lifetime of this transaction
 		/// </summary>
 		/// <param name="cancellationToken"></param>
 		/// <returns>
-		/// Returns a <see cref="Task"/> that encapsulates the transaction
-		/// rollback command.
+		/// Returns a <see cref="Task"/> that can be awaited
 		/// </returns>
 		Task RollbackAsync(CancellationToken cancellationToken = default);
 	}

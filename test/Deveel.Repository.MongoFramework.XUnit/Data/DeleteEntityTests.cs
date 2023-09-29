@@ -2,6 +2,8 @@
 
 using MongoDB.Bson;
 
+using MongoFramework;
+
 namespace Deveel.Data {
 	public sealed class DeleteEntityTests : MongoFrameworkRepositoryTestBase {
 		private readonly IList<MongoPerson> people;
@@ -10,7 +12,7 @@ namespace Deveel.Data {
 			people = GeneratePersons(100);
 		}
 
-		protected override async Task SeedAsync(MongoRepository<MongoPerson> repository) {
+		protected override async Task SeedAsync(MongoRepository<MongoDbContext, MongoPerson> repository) {
 			await repository.CreateAsync(people);
 		}
 

@@ -10,10 +10,10 @@ namespace Deveel.Data {
 				Filter = filterBuilder?.Invoke(request.Filter)
 			};
 
-            if (request.SortBy != null) {
+            if (request.ResultSorts != null) {
                 SortDefinition<TDocument>? sortBy = null;
 
-                foreach (var s in request.SortBy) {
+                foreach (var s in request.ResultSorts) {
                     var sort = s.AsMongoSort<TDocument>(fieldSelector);
 
                     if (sort != null) {

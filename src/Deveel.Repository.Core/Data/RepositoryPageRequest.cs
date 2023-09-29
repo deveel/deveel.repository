@@ -1,5 +1,7 @@
 ﻿using System;
 
+using CommunityToolkit.Diagnostics;
+
 namespace Deveel.Data {
 	/// <summary>
 	/// Describes the request to obtain a page of a repository of entities,
@@ -20,10 +22,8 @@ namespace Deveel.Data {
 		/// If either the page number or the page size are smaller than 1.
 		/// </exception>
 		public RepositoryPageRequest(int page, int size) {
-			if (page < 1)
-				throw new ArgumentOutOfRangeException(nameof(page), "The page must be at least the first");
-			if (size < 1)
-				throw new ArgumentOutOfRangeException(nameof(size), "The size of a page must be of at least one item");
+			Guard.IsGreaterThanOrEqualTo(page, 1, nameof(page));
+			Guard.IsGreaterThanOrEqualTo(size, 1, nameof(size));
 
 			Page = page;
 			Size = size;
@@ -54,6 +54,30 @@ namespace Deveel.Data {
 		/// Gets or sets an optional set of orders to sort the
 		/// result of the request
 		/// </summary>
-		public IEnumerable<IResultSort>? SortBy { get; set; }
+		public IEnumerable<IResultSort>? ResultSorts { get; set; }
+
+		/// <summary>
+		/// Appends the given sort order to the request
+		/// </summary>
+		/// <param name="resultSort">
+		/// The 
+		/// </param>
+		/// <returns></returns>
+		public RepositoryPageRequest OrderBy(IResultSort resultSort) {
+			Guard.IsNotNull(resultSort, nameof(resultSort));
+
+			if (ResultSorts == null)
+				ResultSorts = new List<IResultSort>();
+
+			ResultSorts = ResultSorts.Append(resultSort);
+
+			return this;
+		}
+
+		public RepositoryPageRequest OrderBy(string fieldName, bool ascending = true) {
+			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
+
+			return OrderBy(new FieldResultSort(fieldName, ascending));
+		}
 	}
 }

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<PackageTags>data core framework repository mongo mongoframework</PackageTags>
+		<Description>Provides an implementation of the repository pattern that is backed by the MongoFramework library and provides multi-tenancy support through Finbuckle</Description>
+		<DocumentationFile>./Deveel.Repository.MongoFramework.xml</DocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Finbuckle.MultiTenant" Version="6.12.0" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+		<PackageReference Include="MongoFramework" Version="0.28.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\deveel-logo.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="..\..\EULA.md">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
+</Project>

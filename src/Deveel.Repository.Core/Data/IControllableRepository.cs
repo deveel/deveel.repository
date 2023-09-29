@@ -2,35 +2,41 @@
 
 namespace Deveel.Data {
 	/// <summary>
-	/// A contract that defines a <see cref="IRepository"/> as controllable
-	/// through its lifecycle.
+	/// A repository whose lifecycle can be controlled by the user
 	/// </summary>
 	public interface IControllableRepository : IRepository {
 		/// <summary>
-		/// Checks if the repository actually exists in the underlying infrastructure
+		/// Checks if the repository exists in the underlying storage
 		/// </summary>
-		/// <param name="cancellationToken"></param>
+		/// <param name="cancellationToken">
+		/// A cancellation token used to cancel the operation
+		/// </param>
 		/// <returns>
-		/// Returns as <see cref="Task"/> that has a value of <c>true</c> if the repository 
-		/// actually exists in the underlying infrastructure, otherwise has <c>false</c> value.
+		/// Returns <c>true</c> if the repository exists, or <c>false</c>
 		/// </returns>
 		Task<bool> ExistsAsync(CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Creates the repository in the underlying infrastructure.
+		/// Creates the repository in the underlying storage
 		/// </summary>
-		/// <param name="cancellationToken"></param>
+		/// <param name="cancellationToken">
+		/// A cancellation token used to cancel the operation
+		/// </param>
 		/// <returns>
-		/// Returns a <see cref="Task"/> that executes the repository creation command.
+		/// Returns a <see cref="Task"/> that completes when the repository
+		/// is created in the underlying storage
 		/// </returns>
 		Task CreateAsync(CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Deletes the repository from the underlying infrastructure.
+		/// Drops the repository from the underlying storage
 		/// </summary>
-		/// <param name="cancellationToken"></param>
+		/// <param name="cancellationToken">
+		/// A cancellation token used to cancel the operation
+		/// </param>
 		/// <returns>
-		/// Returns a <see cref="Task"/> that executes the repository destroy command.
+		/// Returns a <see cref="Task"/> that completes when the repository
+		/// is dropped from the underlying storage
 		/// </returns>
 		Task DropAsync(CancellationToken cancellationToken = default);
 	}

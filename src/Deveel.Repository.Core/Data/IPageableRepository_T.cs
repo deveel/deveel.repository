@@ -1,8 +1,14 @@
 ﻿using System;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// Represents a repository that is capable of returning a page of items
+	/// of the given type contained in the underlying storage.
+	/// </summary>
+	/// <typeparam name="TEntity">
+	/// The strongly typed entity that is stored in the repository
+	/// </typeparam>
     public interface IPageableRepository<TEntity> : IRepository<TEntity>, IPageableRepository where TEntity : class {
-
         /// <summary>
         /// Gets a page of items from the repository
         /// </summary>
@@ -22,8 +28,6 @@ namespace Deveel.Data {
         /// implementation of the repository
         /// </exception>
         /// <seealso cref="RepositoryPage"/>
-        /// <seealso cref="SupportsPaging"/>
-        /// <seealso cref="SupportsFilters"/>
         Task<RepositoryPage<TEntity>> GetPageAsync(RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq.Expressions;
 
 namespace Deveel.Data {
@@ -12,13 +13,14 @@ namespace Deveel.Data {
 		private readonly List<TEntity> entities;
 		private readonly IEntityFieldMapper<TEntity>? fieldMapper;
 
-		public InMemoryRepository(IEnumerable<TEntity>? list = null, IEntityFieldMapper<TEntity>? fieldMapper = null) {
+		public InMemoryRepository(IEnumerable<TEntity>? list = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null) {
 			entities = list == null ? new List<TEntity>() : new List<TEntity>(list);
+			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
 			this.fieldMapper = fieldMapper;
 		}
 
-		internal InMemoryRepository(string tenantId, IEnumerable<TEntity>? list = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
-			: this(list, fieldMapper) {
+		internal InMemoryRepository(string tenantId, IEnumerable<TEntity>? list = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
+			: this(list, systemTime, fieldMapper) {
 			TenantId = tenantId;
 		}
 
@@ -32,6 +34,8 @@ namespace Deveel.Data {
 
 		protected virtual string? TenantId { get; }
 
+		protected ISystemTime SystemTime { get; }
+
 		private static TEntity Assert(object entity) {
 			if (entity == null)
 				throw new ArgumentNullException(nameof(entity));
@@ -41,6 +45,28 @@ namespace Deveel.Data {
 
 			return t;
 		}
+
+		public virtual string? GetEntityId(TEntity entity) {
+			if (entity == null)
+				throw new ArgumentNullException(nameof(entity));
+
+			if (entity.TryGetMemberValue("Id", out object? idValue))
+				return null;
+
+			string? id;
+
+			if (idValue is string) {
+				id = (string)idValue;
+			} else {
+				id = Convert.ToString(idValue, CultureInfo.InvariantCulture);
+			}
+
+			// TODO: try some other members?
+
+			return id;
+		}
+
+		string? IRepository.GetEntityId(object entity) => GetEntityId(Assert(entity));
 
 		public Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
@@ -60,6 +86,9 @@ namespace Deveel.Data {
 				var id = Guid.NewGuid().ToString();
 				if (!entity.TrySetMemberValue("Id", id))
 					throw new RepositoryException("Unable to set the ID of the entity");
+
+				if (entity is IHaveTimeStamp hasTime)
+					hasTime.CreatedAtUtc = SystemTime.UtcNow;
 
 				entities.Add(entity);
 
@@ -82,6 +111,9 @@ namespace Deveel.Data {
 					var id = Guid.NewGuid().ToString();
 					if (!item.TrySetMemberValue("Id", id))
 						throw new RepositoryException("Unable to set the ID of the entity");
+
+					if (item is IHaveTimeStamp hasTime)
+						hasTime.CreatedAtUtc = SystemTime.UtcNow;
 
 					this.entities.Add(item);
 
@@ -196,10 +228,10 @@ namespace Deveel.Data {
 			try {
 				var entitySet = entities.AsQueryable();
 				if (request.Filter != null)
-					entitySet = entitySet.Where(request.Filter);
+					entitySet = request.Filter.Apply(entitySet);
 
-				if (request.SortBy != null) {
-					foreach (var sort in request.SortBy) {
+				if (request.ResultSorts != null) {
+					foreach (var sort in request.ResultSorts) {
 						if (sort.Ascending) {
 							entitySet = entitySet.OrderBy(MapField(sort.Field));
 						} else {
@@ -221,7 +253,7 @@ namespace Deveel.Data {
 
 		async Task<RepositoryPage> IPageableRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
 			var pageRequest = new RepositoryPageRequest<TEntity>(request.Page, request.Size) {
-				Filter = request.Filter?.AsLambda<TEntity>()
+				Filter = request.Filter != null ? QueryFilter.Where(request.Filter?.AsLambda<TEntity>()) : QueryFilter.Empty
 			};
 
 			var result = await GetPageAsync(pageRequest, cancellationToken);
@@ -239,6 +271,9 @@ namespace Deveel.Data {
 				var oldIndex = entities.FindIndex(x => x.TryGetMemberValue<string>("Id", out var id) && id == entityId);
 				if (oldIndex < 0)
 					return Task.FromResult(false);
+
+				if (entity is IHaveTimeStamp hasTime)
+					hasTime.UpdatedAtUtc = SystemTime.UtcNow;
 
 				entities[oldIndex] = entity;
 				return Task.FromResult(true);

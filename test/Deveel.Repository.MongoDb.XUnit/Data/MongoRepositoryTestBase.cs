@@ -7,6 +7,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Deveel.Data {
     [Collection("Mongo Single Database")]
+    [Obsolete]
     public abstract class MongoRepositoryTestBase : IAsyncLifetime {
         private MongoDbTestFixture mongo;
         private readonly IServiceProvider serviceProvider;
@@ -33,15 +34,15 @@ namespace Deveel.Data {
 
         protected IRepository<MongoPerson> Repository => serviceProvider.GetRequiredService<IRepository<MongoPerson>>();
 
-        protected IPageableRepository<MongoPerson> PageableRepository => Repository as IPageableRepository<MongoPerson>;
+        protected IPageableRepository<MongoPerson> PageableRepository => (IPageableRepository<MongoPerson>) Repository;
 
-        protected IFilterableRepository<MongoPerson> FilterableRepository => Repository as IFilterableRepository<MongoPerson>;
+        protected IFilterableRepository<MongoPerson> FilterableRepository => (IFilterableRepository<MongoPerson>) Repository;
 
         protected IRepository<IPerson> FacadeRepository => serviceProvider.GetRequiredService<IRepository<IPerson>>();
 
-        protected IPageableRepository<IPerson> FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
+        protected IPageableRepository<IPerson> FacadePageableRepository => (IPageableRepository<IPerson>) FacadeRepository;
 
-        protected IFilterableRepository<IPerson> FilterableFacadeRepository => FacadeRepository as IFilterableRepository<IPerson>;
+        protected IFilterableRepository<IPerson> FilterableFacadeRepository => (IFilterableRepository<IPerson>)FacadeRepository;
 
         protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
 
@@ -94,6 +95,7 @@ namespace Deveel.Data {
 
             public string LastName { get; set; }
 
+			[BsonDateTimeOptions(Kind = DateTimeKind.Local)]
             public DateTime? BirthDate { get; set; }
 
             public string? Description { get; set; }

@@ -1,17 +1,19 @@
-﻿using System;
+﻿
+using EphemeralMongo;
 
 using Microsoft.Extensions.Logging.Abstractions;
-
-using Mongo2Go;
 
 using MongoDB.Driver;
 
 namespace Deveel.Data {
-	public class MongoFrameworkTestFixture : IDisposable {
-		private MongoDbRunner mongo;
+    public class MongoFrameworkTestFixture : IDisposable {
+		private IMongoRunner mongo;
 
 		public MongoFrameworkTestFixture() {
-			mongo = MongoDbRunner.Start(logger: NullLogger.Instance, singleNodeReplSet: true);
+			mongo = MongoRunner.Run(new MongoRunnerOptions {
+				UseSingleNodeReplicaSet = true,
+				KillMongoProcessesWhenCurrentProcessExits = true
+			});
 		}
 
 		public string ConnectionString => mongo.ConnectionString;

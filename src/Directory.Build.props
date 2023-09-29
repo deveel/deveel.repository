@@ -1,0 +1,31 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Deveel</RootNamespace>
+    <VersionPrefix>1.1.5</VersionPrefix>
+    <Authors>Antonello Provenzano</Authors>
+    <Company>Deveel AS</Company>
+    <Copyright>(C) 2022-2023 Deveel AS</Copyright>
+    <PackageProjectUrl>https://github.com/deveel/deveel.repository</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/deveel/deveel.repository</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseFile>EULA.md</PackageLicenseFile>
+    <PackageIcon>deveel-logo.png</PackageIcon>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\deveel-logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\EULA.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+</Project>

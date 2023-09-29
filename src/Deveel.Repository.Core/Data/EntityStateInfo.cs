@@ -2,18 +2,28 @@
 
 namespace Deveel.Data {
 	/// <summary>
-	/// A structure that describes the status of an entity
+	/// A structure that holds information about the state of an entity
 	/// </summary>
-	/// <typeparam name="TStatus">The status type of the state</typeparam>
+	/// <typeparam name="TStatus">
+	/// The status of the entity, which can be an enumeration or a string
+	/// </typeparam>
     public readonly struct EntityStateInfo<TStatus> {
 		/// <summary>
-		/// Constructs a new entity state structure
+		/// Constructs a new instance of the <see cref="EntityStateInfo{TStatus}"/> structure
+		/// with the given information.
 		/// </summary>
-		/// <param name="status">The status of the entity</param>
-		/// <param name="actorId">The actor (user or system) that set 
-		/// the status to the entity</param>
-		/// <param name="timeStamp">The exact time-stamp of the state</param>
-		/// <param name="data">An optional set of metadata that describes the state</param>
+		/// <param name="status">
+		/// The status of the entity, which can be an enumeration or a string
+		/// </param>
+		/// <param name="actorId">
+		/// The identifier of the actor that caused the change of the state
+		/// </param>
+		/// <param name="timeStamp">
+		/// The time stamp of the change of the state
+		/// </param>
+		/// <param name="data">
+		/// A set of data associated with the state
+		/// </param>
         public EntityStateInfo(TStatus status, string actorId, DateTimeOffset? timeStamp = null, IDictionary<string, object>? data = null) : this() {
             Status = status;
             ActorId = actorId;
@@ -22,23 +32,22 @@ namespace Deveel.Data {
         }
 
 		/// <summary>
-		/// Gets the identifier of the actor (user or system)
-		/// that operated the state
+		/// Gets the identifier of the actor that caused the change of the state
 		/// </summary>
         public string ActorId { get; }
 
 		/// <summary>
-		/// Gets an optional set of metadata describing the state
+		/// Gets a set of data associated with the state
 		/// </summary>
         public IDictionary<string, object>? Data { get; }
 
 		/// <summary>
-		/// Gets the exact time-stamp of the state
+		/// Gets the time stamp of the change of the state
 		/// </summary>
         public DateTimeOffset TimeStamp { get; }
 
 		/// <summary>
-		/// Gets the status of the entity
+		/// Gets the status of the entity, which can be an enumeration or a string
 		/// </summary>
         public TStatus Status { get; }
     }

@@ -1,86 +1,103 @@
-﻿using System;
-
-using Finbuckle.MultiTenant;
+﻿using Finbuckle.MultiTenant;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 using MongoFramework;
 
 namespace Deveel.Data {
-	public class MongoRepositoryProvider<TEntity> : IRepositoryProvider<TEntity>, IDisposable where TEntity : class {
-		private readonly MongoPerTenantConnectionOptions options;
-		private readonly IEnumerable<IMultiTenantStore<MongoTenantInfo>> stores;
-		private readonly ILoggerFactory loggerFactory;
+	public class MongoRepositoryProvider<TContext, TEntity> : IRepositoryProvider<TEntity>, IDisposable
+		where TContext : class, IMongoDbContext 
+		where TEntity : class {
 		private bool disposedValue;
 
-		private IDictionary<string, MongoRepository<TEntity>>? repositories;
+		private IDictionary<string, MongoRepository<TContext, TEntity>>? repositories;
 
-		public MongoRepositoryProvider(IOptions<MongoPerTenantConnectionOptions> options, 
-			IEnumerable<IMultiTenantStore<MongoTenantInfo>> stores, ILoggerFactory? loggerFactory = null) {
-			this.stores = stores;
-			this.options = options.Value;
-			this.loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+		public MongoRepositoryProvider(
+			IMongoDbConnection<TContext> connection,
+			ISystemTime? systemTime = null,
+			ILoggerFactory? loggerFactory = null) {
+			Connection = connection;
+			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
+			LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 		}
 
-		protected virtual MongoTenantInfo GetTenantInfo(string tenantId) {
-			foreach(var store in stores) {
-				// TODO: making the IRepositoryProvider to be async
-				var tenantInfo = store.TryGetAsync(tenantId)
-					.ConfigureAwait(false).GetAwaiter().GetResult();
+		protected ILoggerFactory LoggerFactory { get; }
 
-				if (tenantInfo == null)
-					tenantInfo = store.TryGetByIdentifierAsync(tenantId)
-						.ConfigureAwait(false).GetAwaiter().GetResult();
+		public IMongoDbConnection<TContext> Connection { get; }
 
-				if (tenantInfo != null) {
-					return tenantInfo;
-				}
-			}
-
-			throw new RepositoryException($"Unable to get a context for tenant '{tenantId}'");
-		}
-
-		protected IMongoPerTenantConnection CreateConnection(MongoTenantInfo tenantInfo) {
-			return new MongoPerTenantConnection(tenantInfo, Options.Create(options));
-		}
+		public ISystemTime SystemTime { get; }
 
 		protected virtual ILogger CreateLogger() {
-			return loggerFactory.CreateLogger(typeof(TEntity));
+			return LoggerFactory.CreateLogger(typeof(MongoRepository<TContext, TEntity>));
 		}
 
-		IRepository<TEntity> IRepositoryProvider<TEntity>.GetRepository(string tenantId) => GetRepository(tenantId);
+		protected virtual TContext? CreateContext(string tenantId) {
+			if (typeof(TContext) == typeof(MongoDbTenantContext))
+				return (new MongoDbTenantContext(Connection, tenantId)) as TContext;
+			if (typeof(TContext) == typeof(MongoDbContext))
+				return new MongoDbContext(Connection) as TContext;
 
-		IRepository IRepositoryProvider.GetRepository(string tenantId) => GetRepository(tenantId);
+			var ctor1 = typeof(TContext).GetConstructor(new Type[] { typeof(IMongoDbConnection<TContext>), typeof(string) });
+			if (ctor1 != null)
+				return Activator.CreateInstance(typeof(TContext), new object[] { Connection.ForContext<TContext>(), tenantId }) as TContext;
 
-		public MongoRepository<TEntity> GetRepository(string tenantId) {
+			var ctor2 = typeof(TContext).GetConstructor(new Type[] { typeof(IMongoDbTenantConnection<TContext>) });
+			if (ctor2 != null)
+				return Activator.CreateInstance(typeof(TContext), new[] { CreateTenantConnection(tenantId) }) as TContext;
+
+			throw new NotSupportedException($"Cannot create '{typeof(TContext)}' MongoDB Context");
+		}
+
+		private IMongoDbTenantConnection<TContext> CreateTenantConnection(string tenantId) {
+			var connectionString = Connection.GetUrl()?.ToString();
+
+			var tenantContext = new MultiTenantContext<TenantInfo> {
+				TenantInfo = new TenantInfo { 
+					Id = tenantId,
+					ConnectionString = connectionString
+				}
+			};
+
+			return new MongoDbTenantConnection<TContext>(tenantContext);
+		}
+
+		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId) => await GetRepositoryAsync(tenantId);
+
+		async Task<IRepository> IRepositoryProvider.GetRepositoryAsync(string tenantId) => await GetRepositoryAsync(tenantId);
+
+		public async Task<MongoRepository<TContext, TEntity>> GetRepositoryAsync(string tenantId) {
 			try {
 				if (repositories == null)
-					repositories = new Dictionary<string, MongoRepository<TEntity>>();
+					repositories = new Dictionary<string, MongoRepository<TContext, TEntity>>();
 
 				if (!repositories.TryGetValue(tenantId, out var repository)) {
-					var tenantInfo = GetTenantInfo(tenantId);
-					var connection = CreateConnection(tenantInfo);
+					var context = CreateContext(tenantId);
 
-					var logger = CreateLogger();
-					var context = new MongoDbTenantContext(connection, tenantInfo.Id);
+					if (context == null)
+						throw new RepositoryException($"Unable to create the Mongo DB Context");
 
-					repository = CreateRepository(context, logger);
+					repository = CreateRepository(context);
 
 					repositories[tenantId] = repository;
 				}
 
 				return repository;
-			} catch (Exception) {
-				// TODO: specialize the exception
+			} catch (RepositoryException) {
 				throw;
+			} catch (Exception ex) {
+				throw new RepositoryException($"Unabe to create the repository for tenant '{tenantId}'", ex);
 			}
 		}
 
-		protected virtual MongoRepository<TEntity> CreateRepository(MongoDbTenantContext context, ILogger logger) {
-			return new MongoRepository<TEntity>(context, logger);
+		protected virtual MongoRepository<TContext, TEntity> CreateRepository(TContext context, ILogger logger) {
+			return new MongoRepository<TContext, TEntity>(context, SystemTime, logger);
 		}
+
+		protected virtual MongoRepository<TContext, TEntity> CreateRepository(TContext context) {
+			return CreateRepository(context, CreateLogger());
+		}
+
 
 		protected virtual void Dispose(bool disposing) {
 			if (!disposedValue) {
@@ -95,7 +112,7 @@ namespace Deveel.Data {
 
 		private void DisposeRepositories() {
 			if (repositories != null) {
-				foreach (var repository in repositories.Values) { 
+				foreach (var repository in repositories.Values) {
 					if (repository is IDisposable disposable)
 						disposable.Dispose();
 				}

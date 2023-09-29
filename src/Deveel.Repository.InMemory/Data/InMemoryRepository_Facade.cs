@@ -15,6 +15,8 @@ namespace Deveel.Data {
 
 		Type IRepository.EntityType => typeof(TFacade);
 
+		string? IRepository<TFacade>.GetEntityId(TFacade entity) => GetEntityId(Assert(entity));
+
 		protected static TEntity Assert(TFacade obj) {
 			if (!(obj is TEntity entity))
 				throw new ArgumentException($"Cannot cast object of type '{typeof(TFacade)}' to '{typeof(TEntity)}' entity type");
@@ -30,7 +32,6 @@ namespace Deveel.Data {
 
 		Task<IList<string>> IRepository<TFacade>.CreateAsync(IEnumerable<TFacade> entities, CancellationToken cancellationToken)
 			=> CreateAsync(entities.Select(Assert), cancellationToken);
-
 
 
 		Task<bool> IRepository<TFacade>.DeleteAsync(TFacade entity, CancellationToken cancellationToken) 

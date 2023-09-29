@@ -1,28 +1,11 @@
 ﻿using MongoDB.Driver;
 
 namespace Deveel.Data {
-    public sealed class MongoTransaction : IDataTransaction {
-		private bool disposedValue;
-		private IClientSessionHandle? sessionHandle;
-
-		internal MongoTransaction(IClientSessionHandle sessionHandle) {
-            this.sessionHandle = sessionHandle;
+	[Obsolete("This class is obsolete: please use the Deveel.Repository.MongoFramework instead")]
+	public sealed class MongoTransaction : IDataTransaction {
+        internal MongoTransaction(IClientSessionHandle sessionHandle) {
+            SessionHandle = sessionHandle;
         }
-
-		~MongoTransaction() {
-			Dispose(false);
-		}
-
-		internal IClientSessionHandle SessionHandle {
-			get {
-				ThrowIfDisposed();
-
-				if (sessionHandle == null)
-					throw new NullReferenceException();
-
-				return sessionHandle;
-			}
-		}
 
 		private void ThrowIfDisposed() {
 			if (disposedValue)

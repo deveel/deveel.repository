@@ -26,9 +26,9 @@ namespace Deveel.Data {
 		}
 
 		private async Task ResolveTenant() {
-			var accessor = serviceProvider.GetRequiredService<IMultiTenantContextAccessor<MongoTenantInfo>>();
+			var accessor = serviceProvider.GetRequiredService<IMultiTenantContextAccessor<TenantInfo>>();
 			if (accessor.MultiTenantContext == null) {
-				var resolver = serviceProvider.GetRequiredService<ITenantResolver<MongoTenantInfo>>();
+				var resolver = serviceProvider.GetRequiredService<ITenantResolver<TenantInfo>>();
 				var context = await resolver.ResolveAsync(new object());
 				accessor.MultiTenantContext = context;
 
@@ -37,16 +37,29 @@ namespace Deveel.Data {
 		}
 
 		private void AddRepository(IServiceCollection services) {
-			services.AddMultiTenant<MongoTenantInfo>()
+			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(config => {
-					config.Tenants.Add(new MongoTenantInfo { Id = tenantId, Identifier = "test-tenant", Name = "Test Tenant" });
+					config.Tenants.Add(new TenantInfo { 
+						Id = tenantId, 
+						Identifier = "test-tenant", 
+						Name = "Test Tenant",
+						ConnectionString = mongo.SetDatabase("testdb")
+					});
 				})
 				.WithStaticStrategy("test-tenant");
 
-			services
-				.AddMongoPerTenantConnection(options => options.DefaultConnectionString = mongo.SetDatabase("testdb"))
-				.AddMongoTenantContext()
-				.AddMongoRepository<MongoPerson>();
+			services.AddSingleton<IMultiTenantContext<TenantInfo>>(_ => {
+				return new MultiTenantContext<TenantInfo> {
+					TenantInfo = new TenantInfo {
+						Id = tenantId,
+						Identifier = "test-tenant",
+						Name = "Test Tenant",
+						ConnectionString = mongo.SetDatabase("testdb")
+					}
+				};
+			});
+
+			services.AddMongoTenantContext(builder => builder.AddRepository<MongoPerson>());
 		}
 
 		[Fact]
@@ -54,7 +67,7 @@ namespace Deveel.Data {
 			// emulate the middleware in ASP.NET
 			await ResolveTenant();
 
-			var repository = serviceProvider.GetService<MongoRepository<MongoPerson>>();
+			var repository = serviceProvider.GetService<MongoRepository<MongoDbTenantContext, MongoPerson>>();
 
 			Assert.NotNull(repository);
 
@@ -69,9 +82,9 @@ namespace Deveel.Data {
 				return null;
 
 			if (members[0] is PropertyInfo property)
-				return (TMember?) property.GetValue(obj);
+				return property.GetValue(obj) as TMember;
 			if (members[0] is FieldInfo field)
-				return (TMember?) field.GetValue(obj);
+				return field.GetValue(obj) as TMember;
 
 			return null;
 		}

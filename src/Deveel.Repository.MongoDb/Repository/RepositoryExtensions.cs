@@ -1,7 +1,8 @@
 using MongoDB.Driver;
 
 namespace Deveel.Data {
-    public static class RepositoryExtensions {
+	[Obsolete("This class is obsolete: please use the Deveel.Repository.MongoFramework instead")]
+	public static class RepositoryExtensions {
         public static Task<TEntity?> FindAsync<TEntity>(this IFilterableRepository<TEntity> repository, FilterDefinition<TEntity> filter, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.FindAsync(new MongoQueryFilter<TEntity>(filter), cancellationToken);

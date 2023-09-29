@@ -1,9 +1,15 @@
-﻿using Bogus;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+using Bogus;
+
+using Finbuckle.MultiTenant;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
 
 using MongoFramework;
 
@@ -28,33 +34,49 @@ namespace Deveel.Data {
 				.RuleFor(x => x.BirthDate, f => f.Date.Past(20));
 		}
 
+		protected virtual string DatabaseName { get; } = "test_db";
+
+		protected IMongoCollection<MongoPerson> MongoCollection => new MongoClient(mongo.ConnectionString)
+			.GetDatabase(DatabaseName)
+			.GetCollection<MongoPerson>("persons");
+
+		protected async Task<MongoPerson?> FindPerson(ObjectId id) {
+			var collection = MongoCollection;
+			var result = await collection.FindAsync(x => x.Id == id);
+
+			return await result.FirstOrDefaultAsync();
+		}
+
 		protected Faker<MongoPerson> PersonFaker { get; }
 
 		protected string TenantId { get; } = Guid.NewGuid().ToString("N");
 
 		protected string ConnectionString => mongo.ConnectionString;
 
-		protected MongoRepositoryProvider<MongoPerson> MongoRepositoryProvider => serviceProvider.GetRequiredService<MongoRepositoryProvider<MongoPerson>>();
+		protected MongoTenantRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo> MongoRepositoryProvider 
+			=> serviceProvider.GetRequiredService<MongoTenantRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>();
 
-		protected MongoRepository<MongoPerson> MongoRepository => MongoRepositoryProvider.GetRepository(TenantId);
+		protected MongoRepository<MongoDbTenantContext, MongoPerson> MongoRepository => 
+			MongoRepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
 
-		protected IRepositoryProvider<MongoPerson> RepositoryProvider => serviceProvider.GetRequiredService<IRepositoryProvider<MongoPerson>>();
+		protected IRepositoryProvider<MongoPerson> RepositoryProvider => 
+			serviceProvider.GetRequiredService<IRepositoryProvider<MongoPerson>>();
 
 		protected IRepository<MongoPerson> Repository => RepositoryProvider.GetRepository(TenantId);
 
-		protected IFilterableRepository<MongoPerson> FilterableRepository => Repository as IFilterableRepository<MongoPerson>;
+		protected IFilterableRepository<MongoPerson> FilterableRepository => (IFilterableRepository<MongoPerson>)Repository;
 
-		protected IPageableRepository<MongoPerson> PageableRepository => Repository as IPageableRepository<MongoPerson>;
+		protected IPageableRepository<MongoPerson> PageableRepository => (IPageableRepository<MongoPerson>)Repository;
 
 		protected IRepositoryProvider<IPerson> FacadeRepositoryProvider => serviceProvider.GetRequiredService<IRepositoryProvider<IPerson>>();
 
 		protected IRepository<IPerson> FacadeRepository => FacadeRepositoryProvider.GetRepository(TenantId);
 
-		protected IPageableRepository<IPerson> FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
+		protected IPageableRepository<IPerson> FacadePageableRepository => (IPageableRepository<IPerson>)FacadeRepository;
 
-        protected IFilterableRepository<IPerson> FilterableFacadeRepository => FacadeRepository as IFilterableRepository<IPerson>;
+		protected IFilterableRepository<IPerson> FilterableFacadeRepository => (IFilterableRepository<IPerson>)FacadeRepository;
 
-        protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
+		protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
 
 		protected MongoPerson GeneratePerson() => PersonFaker.Generate();
 
@@ -62,31 +84,40 @@ namespace Deveel.Data {
 			=> PersonFaker.Generate(count);
 
 		protected virtual void AddRepositoryProvider(IServiceCollection services) {
-			services.AddMultiTenant<MongoTenantInfo>()
+			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(config => {
-					config.Tenants.Add(new MongoTenantInfo {
+					config.Tenants.Add(new TenantInfo {
 						Id = TenantId,
 						Identifier = "test",
 						Name = "Test Tenant",
-						DatabaseName = "test_db1",
-						ConnectionString = mongo.ConnectionString
+						ConnectionString = mongo.SetDatabase(DatabaseName)
 					}) ;
 				});
 
-			services
-				.AddMongoPerTenantConnection(options => {
-					options.DefaultConnectionString = mongo.SetDatabase("testdb");
-				})
-				.AddMongoRepositoryProvider<MongoPerson>()
-				.AddMongoFacadeRepositoryProvider<MongoPerson, IPerson>()
-				.AddRepositoryController();
+			AddMongoDbContext(services);
+			
+			services.AddRepositoryController();
 		}
 
-		public virtual async Task InitializeAsync() {
+		protected virtual void AddMongoDbContext(IServiceCollection services) {
+			var builder = services.AddMongoTenantContext();
+			AddRepository(builder);
+		}
+
+		protected virtual void AddRepository<TContext>(MongoDbContextBuilder<TContext> builder)
+			where TContext : class, IMongoDbContext {
+            builder.UseTenantConnection();
+            builder.AddRepository<MongoPerson>()
+                .WithDefaultTenantProvider()
+                .WithFacade<IPerson>()
+                .WithDefaultFacadeTenantProvider<IPerson>();
+        }
+
+        public virtual async Task InitializeAsync() {
 			var controller = serviceProvider.GetRequiredService<IRepositoryController>();
 			await controller.CreateTenantRepositoryAsync<MongoPerson>(TenantId);
 
-			var repository = MongoRepositoryProvider.GetRepository(TenantId);
+			var repository = await MongoRepositoryProvider.GetRepositoryAsync(TenantId);
 			
 			//await repository.CreateAsync();
 
@@ -101,26 +132,37 @@ namespace Deveel.Data {
 			//await repository.DropAsync();
 		}
 
-		protected virtual Task SeedAsync(MongoRepository<MongoPerson> repository) {
+		protected virtual Task SeedAsync(IRepository<MongoPerson> repository) {
 			return Task.CompletedTask;
 		}
 
-		[MultiTenant]
-		protected class MongoPerson : IPerson, IHaveTenantId {
-			[BsonId]
+		[MultiTenant, Entity, Table("persons")]
+		protected class MongoPerson : IPerson, IHaveTenantId, IHaveTimeStamp {
+			[BsonId, Key]
 			public ObjectId Id { get; set; }
 
 			string? IPerson.Id => Id.ToEntityId();
 
+			[Column("first_name")]
 			public string FirstName { get; set; }
 
+			[Column("last_name")]
 			public string LastName { get; set; }
 
+			[Column("birth_date")]
 			public DateTime? BirthDate { get; set; }
 
+			[Column("description")]
 			public string? Description { get; set; }
 
+			[Column("tenant")]
 			public string TenantId { get; set; }
+
+			[Column("created_at")]
+			public DateTimeOffset? CreatedAtUtc { get; set; }
+
+			[Column("updated_at")]
+			public DateTimeOffset? UpdatedAtUtc { get; set; }
 		}
 
 		protected interface IPerson {

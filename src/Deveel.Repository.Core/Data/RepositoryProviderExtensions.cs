@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 
 namespace Deveel.Data {
+	[Obsolete("The extensions provided by this class are deprecated and will be removed in future versions")]
     public static class RepositoryProviderExtensions {
         private static IFilterableRepository RequireFilterable(this IRepositoryProvider provider, string tenantId) {
             var filterable = provider.GetRepository(tenantId) as IFilterableRepository;
@@ -18,23 +19,33 @@ namespace Deveel.Data {
             return filterable;
         }
 
-        private static ITransactionalRepository RequireTransactional(this IRepositoryProvider provider, string tenantId) {
-            var transactional = provider.GetRepository(tenantId) as ITransactionalRepository;
-            if (transactional == null)
-                throw new NotSupportedException("The repository is not transactional");
+		private static ITransactionalRepository<TEntity> RequireTransactional<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId) where TEntity : class {
+			var transactional = provider.GetRepository(tenantId) as ITransactionalRepository<TEntity>;
+			if (transactional == null)
+				throw new NotSupportedException("The repository is not transactional");
 
-            return transactional;
-        }
+			return transactional;
+		}
+
+		private static ITransactionalRepository RequireTransactional(this IRepositoryProvider provider, string tenantId) {
+			var transactional = provider.GetRepository(tenantId) as ITransactionalRepository;
+			if (transactional == null)
+				throw new NotSupportedException("The repository is not transactional");
+
+			return transactional;
+		}
 
 
-        private static ITransactionalRepository<TEntity> RequireTransactional<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId)
-            where TEntity : class {
-            var transactional = provider.GetRepository(tenantId) as ITransactionalRepository<TEntity>;
-            if (transactional == null)
-                throw new NotSupportedException("The repository is not transactional");
+		#region GetRepository
 
-            return transactional;
-        }
+		public static IRepository GetRepository(this IRepositoryProvider provider, string tenantId)
+            => provider.GetRepositoryAsync(tenantId).GetAwaiter().GetResult();
+
+        public static IRepository<TEntity> GetRepository<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId)
+            where TEntity : class
+            =>  provider.GetRepositoryAsync(tenantId).GetAwaiter().GetResult();
+
+        #endregion
 
 
         #region  Create
@@ -49,7 +60,7 @@ namespace Deveel.Data {
 
         public static string Create<TEntity>(this IRepositoryProvider<TEntity> provider, IDataTransaction transaction, string tenantId, TEntity entity)
             where TEntity : class
-            => provider.GetRepository(tenantId).Create(transaction, entity);
+            => provider.RequireTransactional<TEntity>(tenantId).Create(transaction, entity);
 
         public static Task<string> CreateAsync(this IRepositoryProvider provider, string tenantId, object entity, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).CreateAsync(entity, cancellationToken);
@@ -61,7 +72,7 @@ namespace Deveel.Data {
             => provider.RequireTransactional(tenantId).CreateAsync(transaction, entity, cancellationToken);
 
         public static string Create(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity)
-            => provider.GetRepository(tenantId).Create(transaction, entity);
+            => provider.RequireTransactional(tenantId).Create(transaction, entity);
 
         #endregion
 
@@ -82,7 +93,7 @@ namespace Deveel.Data {
 
         public static bool Delete<TEntity>(this IRepositoryProvider<TEntity> provider, string tenantId, IDataTransaction transaction, TEntity entity)
             where TEntity : class
-            => provider.GetRepository(tenantId).Delete(transaction, entity);
+            => provider.RequireTransactional<TEntity>(tenantId).Delete(transaction, entity);
 
 
         public static Task<bool> DeleteAsync(this IRepositoryProvider provider, string tenantId, object entity, CancellationToken cancellationToken = default)
@@ -95,7 +106,7 @@ namespace Deveel.Data {
             => provider.GetRepository(tenantId).Delete(entity);
 
         public static bool Delete(this IRepositoryProvider provider, string tenantId, IDataTransaction transaction, object entity)
-            => provider.GetRepository(tenantId).Delete(transaction, entity);
+            => provider.RequireTransactional(tenantId).Delete(transaction, entity);
 
         public static Task<bool> DeleteByIdAsync(this IRepositoryProvider provider, string tenantId, string id, CancellationToken cancellationToken = default)
             => provider.GetRepository(tenantId).DeleteByIdAsync(id, cancellationToken);

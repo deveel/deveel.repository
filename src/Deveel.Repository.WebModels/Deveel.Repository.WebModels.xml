@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Deveel.Repository.WebModels</name>
+    </assembly>
+    <members>
+        <member name="P:Deveel.Data.PageQueryResultBaseModel`1.Self">
+            <summary>
+            The URL to the current page of the result
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageQueryResultBaseModel`1.First">
+            <summary>
+            The URL to the first page in the result
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageQueryResultBaseModel`1.Next">
+            <summary>
+            The URL to the next page of the result
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageQueryResultBaseModel`1.Previous">
+            <summary>
+            The URL to the previous page of the result
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageQueryResultBaseModel`1.Last">
+            <summary>
+            The URL to the last page of the result
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResultModelBase.TotalItems">
+            <summary>
+            The total number of items available
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResultModelBase.Items">
+            <summary>
+            The items returned in the page
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResultModelBase.TotalPages">
+            <summary>
+            The maximum size of items returned in the page
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResultModel`1.TotalItems">
+            <summary>
+            The total number of items available
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResultModel`1.Items">
+            <summary>
+            The items returned in the page
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResultModel`1.TotalPages">
+            <summary>
+            The maximum size of items returned in the page
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.QueryStringResultSort">
+            <summary>
+            Provides utility methods to parse and format a strings
+            of sorting rules for query strings of HTTP requests.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.QueryStringResultSort.TryParse(System.String,System.Collections.Generic.IList{Deveel.Data.IResultSort}@)">
+            <summary>
+            Attempts to parse the given string as a list of sorting rules
+            </summary>
+            <param name="s">
+            The string to parse.
+            </param>
+            <param name="results">
+            The list of sorting rules parsed from the string.
+            </param>
+            <returns>
+            Returns <c>true</c> if the string was successfully parsed,
+            and the <paramref name="results"/> contains the list of sorting
+            rules, otherwise <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.QueryStringResultSort.Parse(System.String)">
+            <summary>
+            Parses the given string as a list of sorting rules
+            </summary>
+            <param name="s">The string to be parsed.</param>
+            <returns>
+            Returns a list of sorting rules parsed from the given string.
+            </returns>
+            <exception cref="T:System.FormatException">
+            Thrown if the given string is not a valid list of sorting rules
+            </exception>
+        </member>
+        <member name="T:Deveel.Data.RepositoryPageRequestExtensions">
+            <summary>
+            Extends the <see cref="T:Deveel.Data.RepositoryPageRequest"/> to provide
+            helper functions to order by a set of fields coming from 
+            a query string
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequestExtensions.OrderByQueryString(Deveel.Data.RepositoryPageRequest,System.Collections.Generic.IList{System.String})">
+            <summary>
+            Requests the page to be sorted by the given 
+            set of fields coming from a query string
+            </summary>
+            <param name="request">
+            The page request to the repository.
+            </param>
+            <param name="sort">
+            The list of fields to sort the result by.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.RepositoryPageRequest"/> that has
+            the result sort applied.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPageRequestExtensions.OrderByQueryString``1(Deveel.Data.RepositoryPageRequest{``0},System.Collections.Generic.IList{System.String},System.Func{System.String,System.Linq.Expressions.Expression{System.Func{``0,System.Object}}})">
+            <summary>
+            Requests the page to be sorted by the given 
+            set of fields coming from a query string
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity to sort.
+            </typeparam>
+            <param name="request">
+            The page request to the repository.
+            </param>
+            <param name="sort">
+            The list of fields to sort the result by.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.RepositoryPageRequest`1"/> that has
+            the result sort applied.
+            </returns>
+        </member>
+    </members>
+</doc>

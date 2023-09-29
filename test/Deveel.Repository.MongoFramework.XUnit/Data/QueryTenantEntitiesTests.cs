@@ -1,5 +1,7 @@
 ﻿using System;
 
+using MongoFramework;
+
 namespace Deveel.Data {
 	public class QueryTenantEntitiesTests : MongoRepositoryProviderTestBase {
 		private readonly IList<MongoPerson> people;
@@ -8,7 +10,7 @@ namespace Deveel.Data {
 			people = GeneratePersons(100);
 		}
 
-		protected override async Task SeedAsync(MongoRepository<MongoPerson> repository) {
+		protected override async Task SeedAsync(IRepository<MongoPerson> repository) {
 			await repository.CreateAsync(people);
 		}
 
@@ -256,9 +258,8 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
-				Filter = x => x.FirstName == firstName
-			};
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+				.Where(x => x.FirstName == firstName);
 
 			var result = await MongoRepository.GetPageAsync(request);
 			Assert.NotNull(result);
@@ -276,9 +277,8 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10) {
-				Filter = x => x.FirstName == firstName
-			};
+			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+				.Where(x => x.FirstName == firstName);
 
 			var result = await PageableRepository.GetPageAsync(request);
 			Assert.NotNull(result);

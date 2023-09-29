@@ -6,12 +6,13 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Deveel.Data {
+	[Obsolete("This class is obsolete: please use the Deveel.Repository.MongoFramework instead")]
     public class MongoRepository<TDocument> : MongoStore<TDocument>, 
         IRepository<TDocument>, 
         IQueryableRepository<TDocument>, 
         IPageableRepository<TDocument>, 
         IFilterableRepository<TDocument>,
-        ITransactionalRepository<TDocument>,
+		ITransactionalRepository<TDocument>,
         IMultiTenantRepository,
         IControllableRepository
         where TDocument : class {
@@ -150,6 +151,17 @@ namespace Deveel.Data {
 
 		#endregion
 
+		public virtual string? GetEntityId(TDocument document) {
+			if (document is null) 
+				throw new ArgumentNullException(nameof(document));
+
+			if (document is IMongoDocument doc)
+				return doc.Id;
+
+			throw new NotSupportedException("Unable to retrieve the unique identifier of the entity");
+		}
+
+		string? IRepository.GetEntityId(object entity) => GetEntityId(AssertIsEntity(entity));
 
 		/// <inheritdoc />
 		Task<string> ITransactionalRepository<TDocument>.CreateAsync(IDataTransaction session, TDocument entity, CancellationToken cancellationToken) {
@@ -189,12 +201,9 @@ namespace Deveel.Data {
             return await FindByIdAsync(id, cancellationToken);
         }
 
-        async Task<object?> ITransactionalRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
-            => await FindByIdAsync(id, cancellationToken);
-
-        async Task<TDocument?> ITransactionalRepository<TDocument>.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken)
-            => await FindByIdAsync(id, cancellationToken);
-
+        Task<object?> ITransactionalRepository.FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken) {
+			throw new NotSupportedException("Mongo repositories not support finding entities within sessions (yet)");
+        }
 
         /// <inheritdoc />
         Task<bool> ITransactionalRepository<TDocument>.UpdateAsync(IDataTransaction session, TDocument entity, CancellationToken cancellationToken) {

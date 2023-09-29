@@ -8,16 +8,21 @@ using MongoFramework;
 using MongoFramework.Linq;
 
 namespace Deveel.Data {
-    public class MongoRepository<TEntity, TFacade> : MongoRepository<TEntity>, IRepository<TFacade>, IPageableRepository<TFacade>, IFilterableRepository<TFacade>
+    public class MongoRepository<TContext, TEntity, TFacade> : MongoRepository<TContext, TEntity>, 
+		IRepository<TFacade>, 
+		IPageableRepository<TFacade>, 
+		IFilterableRepository<TFacade>
+		where TContext : class, IMongoDbContext
 		where TEntity : class, TFacade
 		where TFacade : class {
 
-		public MongoRepository(MongoDbContext context, ILogger<MongoRepository<TEntity, TFacade>>? logger = null)
-			: this(context, (ILogger?) logger) {
+		public MongoRepository(TContext context, ISystemTime? systemTime = null, ILogger<MongoRepository<TContext, TEntity, TFacade>>? logger = null)
+			: this(context, systemTime, (ILogger?) logger) {
 
 		}
 
-		protected internal MongoRepository(MongoDbContext context, ILogger? logger = null) : base(context, logger) {
+		protected internal MongoRepository(TContext context, ISystemTime? systemTime = null, ILogger? logger = null) 
+			: base(context, systemTime, logger) {
 		}
 
 		Type IRepository.EntityType => typeof(TFacade);
@@ -39,6 +44,8 @@ namespace Deveel.Data {
 
 			return base.GetFilterDefinition(filter);
 		}
+
+		string? IRepository<TFacade>.GetEntityId(TFacade entity) => ((IRepository<TEntity>)this).GetEntityId(Assert(entity));
 
 		async Task<IList<TFacade>> IFilterableRepository<TFacade>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
 			var result = await FindAllAsync(GetFilterDefinition(filter), cancellationToken);
@@ -67,7 +74,7 @@ namespace Deveel.Data {
 			try {
 				var filter = Builders<TEntity>.Filter.Empty;
 				if (page.Filter != null) {
-					filter = page.Filter.AsMongoFilter<TEntity>();
+					filter = page.Filter.AsLambda<TFacade>().AsMongoFilter<TEntity>();
 				}
 
 				var totalCount = await Collection.CountDocumentsAsync(filter, null, cancellationToken);
@@ -77,8 +84,8 @@ namespace Deveel.Data {
 					Limit = page.Size
 				};
 
-				if (page.SortBy != null) {
-					foreach (var sort in page.SortBy) {
+				if (page.ResultSorts != null) {
+					foreach (var sort in page.ResultSorts) {
 						SortDefinition<TEntity> sortDef;
 
 						if (sort.Field is StringFieldRef stringRef) {
@@ -112,5 +119,6 @@ namespace Deveel.Data {
 
 		Task<bool> IRepository<TFacade>.UpdateAsync(TFacade entity, CancellationToken cancellationToken)
 			=> UpdateAsync(Assert(entity), cancellationToken);
+
 	}
 }
