@@ -128,9 +128,6 @@ namespace Deveel.Data {
 
             public string? Description { get; set; }
 
-            [Version]
-            public string? Version { get; set; }
-
             public IList<PersonRelationship>? Relationships { get; set; }
 
             IEnumerable<IRelationship> IPerson.Relationships => Relationships;

@@ -224,9 +224,7 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<PersonEntity>(1, 10) {
-				Filter = x => x.FirstName == firstName
-			};
+			var request = new RepositoryPageRequest<PersonEntity>(1, 10).Where(x => x.FirstName == firstName);
 
 			var result = await EntityRepository.GetPageAsync(request);
 			Assert.NotNull(result);
@@ -244,10 +242,8 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<PersonEntity>(1, 10) {
-				Filter = x => x.FirstName == firstName
-			};
-
+			var request = new RepositoryPageRequest<PersonEntity>(1, 10).Where(x => x.FirstName == firstName);
+			
 			var result = await PageableRepository.GetPageAsync(request);
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
@@ -259,9 +255,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Entity_GetSortedPage() {
-			var request = new RepositoryPageRequest<PersonEntity>(1, 10) {
-				SortBy = new[] { ResultSort.Create<PersonEntity>(x => x.FirstName, false) }
-			};
+			var request = new RepositoryPageRequest<PersonEntity>(1, 10)
+				.OrderByDescending(x => x.FirstName);
 
 			var result = await EntityRepository.GetPageAsync(request);
 			Assert.NotNull(result);
@@ -274,9 +269,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_GetSortedPage() {
-			var request = new RepositoryPageRequest<PersonEntity>(1, 10) {
-				SortBy = new[] { ResultSort.Create<PersonEntity>(x => x.FirstName, false) }
-			};
+			var request = new RepositoryPageRequest<PersonEntity>(1, 10)
+				.OrderByDescending(x => x.FirstName);
 
 			var result = await PageableRepository.GetPageAsync(request);
 			Assert.NotNull(result);

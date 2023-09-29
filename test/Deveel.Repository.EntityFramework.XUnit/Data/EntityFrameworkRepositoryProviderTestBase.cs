@@ -147,9 +147,6 @@ namespace Deveel.Data {
 
             public string? Description { get; set; }
 
-            [Version]
-            public string? Version { get; set; }
-
             public string TenantId { get; set; }
 
             public IList<PersonRelationship>? Relationships { get; set; }

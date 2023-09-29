@@ -54,24 +54,6 @@ namespace Deveel.Data {
 		Task<string> CreateAsync(IDataTransaction transaction, object entity, CancellationToken cancellationToken = default);
 
 
-        /// <summary>
-        /// Creates a list of entities in the repository in one single operation, within
-        /// the scope of a given transaction
-        /// </summary>
-        /// <param name="entities">The enumeration of the entities to be created</param>
-        /// <param name="transaction">The transaction scope of the operation</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>
-        /// Returns an ordered list of the unique identifiers of the entiies created
-        /// </returns>
-        /// <exception cref="RepositoryException">
-        /// Thrown if it an error occurred while creating one or more entities
-        /// </exception>
-        /// <exception cref="ArgumentNullException">
-        /// Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
-        /// </exception>
-        Task<IList<string>> CreateAsync(IDataTransaction transaction, IEnumerable<object> entities, CancellationToken cancellationToken = default);
-
 		/// <summary>
 		/// Deletes an entity from the repository
 		/// </summary>

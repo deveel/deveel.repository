@@ -27,7 +27,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Deveel.Repository.EntityFramework\Deveel.Repository.EntityFramework.csproj" />
-		<ProjectReference Include="..\..\src\Deveel.Repository.Filters\Deveel.Repository.Filters.csproj" />
 	</ItemGroup>
 
 </Project>

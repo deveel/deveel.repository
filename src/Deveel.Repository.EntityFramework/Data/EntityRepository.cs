@@ -64,6 +64,12 @@ namespace Deveel.Data {
                 throw new ObjectDisposedException(GetType().Name); 
         }
 
+		string? IRepository<TEntity>.GetEntityId(TEntity entity)
+			=> GetEntityId(entity);
+
+		string? IRepository.GetEntityId(object entity)
+			=> GetEntityId((TEntity) entity);
+
 		protected virtual object? GetEntityId(string id) {
             //var model = Context.Model.FindEntityType(typeof(TEntity));
             //if (model == null)
@@ -341,7 +347,7 @@ namespace Deveel.Data {
 			try {
 				var querySet = Entities.AsNoTracking().AsQueryable();
 				if (request.Filter != null)
-					querySet = querySet.Where(request.Filter);
+					querySet = querySet.Where(request.Filter.AsLambda<TEntity>());
 
 				var total = await querySet.CountAsync(cancellationToken);
 
@@ -358,9 +364,9 @@ namespace Deveel.Data {
 			var typedRequest = new RepositoryPageRequest<TEntity>(request.Page, request.Size);
 
 			if (request.Filter != null)
-				typedRequest.Filter = request.Filter.AsLambda<TEntity>();
-			if (request.SortBy != null)
-				typedRequest.SortBy = request.SortBy;
+				typedRequest.Filter = request.Filter;
+			if (request.ResultSorts != null)
+				typedRequest.ResultSorts = request.ResultSorts.ToList();
 
 			return await GetPageAsync(typedRequest);
 		}

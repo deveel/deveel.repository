@@ -87,11 +87,8 @@ namespace Deveel.Data {
             return new EntityRepository<TEntity>(dbContext, tenantInfo, logger);
         }
 
-        IRepository<TEntity> IRepositoryProvider<TEntity>.GetRepository(string tenantId)
-            => GetRepository(tenantId);
-
-        IRepository IRepositoryProvider.GetRepository(string tenantId)
-            => GetRepository(tenantId);
+        Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId)
+            => Task.FromResult<IRepository<TEntity>>(GetRepository(tenantId));
 
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
@@ -130,5 +127,8 @@ namespace Deveel.Data {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
-    }
+
+		Task<IRepository> IRepositoryProvider.GetRepositoryAsync(string tenantId) 
+			=> Task.FromResult<IRepository>(GetRepository(tenantId));
+	}
 }

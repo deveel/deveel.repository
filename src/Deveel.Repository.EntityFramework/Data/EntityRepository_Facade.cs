@@ -33,7 +33,10 @@ namespace Deveel.Data {
 		async Task<TFacade?> IRepository<TFacade>.FindByIdAsync(string id, CancellationToken cancellationToken)
 			=> await FindByIdAsync(id, cancellationToken);
 
-        Task<bool> IRepository<TFacade>.UpdateAsync(TFacade entity, CancellationToken cancellationToken)
+		Task<bool> IRepository<TFacade>.UpdateAsync(TFacade entity, CancellationToken cancellationToken)
 			=> UpdateAsync(Assert(entity), cancellationToken);
-    }
+
+		string? IRepository<TFacade>.GetEntityId(TFacade entity)
+			=> GetEntityId((TEntity) entity);
+	}
 }

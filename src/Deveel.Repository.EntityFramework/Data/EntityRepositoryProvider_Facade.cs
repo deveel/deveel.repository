@@ -14,11 +14,11 @@ namespace Deveel.Data {
             : base(options, tenantStores, loggerFactory) {
         }
 
-        IRepository<TFacade> IRepositoryProvider<TFacade>.GetRepository(string tenantId)
-            => GetRepository(tenantId);
-
         public new EntityRepository<TEntity, TFacade> GetRepository(string tenantId) {
             return (EntityRepository<TEntity, TFacade>)base.GetRepository(tenantId);
         }
-    }
+
+		Task<IRepository<TFacade>> IRepositoryProvider<TFacade>.GetRepositoryAsync(string tenantId) 
+			=> Task.FromResult< IRepository<TFacade>>(GetRepository(tenantId));
+	}
 }

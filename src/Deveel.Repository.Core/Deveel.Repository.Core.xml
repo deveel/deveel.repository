@@ -1271,10 +1271,9 @@
         </member>
         <member name="T:Deveel.Data.ITransactionalRepository`1">
             <summary>
-            Implementations of this repository can provide the capability
-            to execute CRUD operations within the scope of a transaction
+            A repository that can handle write operations within
+            transactional contexts
             </summary>
-            <typeparam name="TEntity"></typeparam>
         </member>
         <member name="M:Deveel.Data.ITransactionalRepository`1.CreateAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
             <summary>
@@ -1364,6 +1363,20 @@
             with the underlying storage of the repository
             </exception>
             <seealso cref="T:Deveel.Data.IDataTransactionFactory"/>
+        </member>
+        <member name="M:Deveel.Data.ITransactionalRepository`1.FindByIdAsync(Deveel.Data.IDataTransaction,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Attempts to find in the repository an entity with the 
+            given unique identifier
+            </summary>
+            <param name="transaction">A transaction that isolates the access
+            to the data store used by the repository</param>
+            <param name="id">The unique identifier of the entity to find</param>
+            <param name="cancellationToken"></param>
+            <returns>
+            Returns the instance of the entity associated to the given <paramref name="id"/>,
+            or <c>null</c> if none entity was found.
+            </returns>
         </member>
         <member name="T:Deveel.Data.QueryFilter">
             <summary>
