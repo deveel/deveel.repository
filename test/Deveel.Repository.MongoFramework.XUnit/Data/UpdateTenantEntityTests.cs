@@ -81,21 +81,6 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FacadeRepository_UpdateExisting() {
-			var person = people.Random()!;
-
-			var entity = await FacadeRepository.FindByIdAsync(person.Id.ToEntityId());
-
-			Assert.NotNull(entity);
-
-			((MongoTenantPerson) entity).BirthDate = new DateTime(1980, 06, 04);
-
-			var result = await FacadeRepository.UpdateAsync(entity);
-
-			Assert.True(result);
-		}
-
-		[Fact]
 		public async Task Mongo_UpdateNotExisting() {
 			var person = GeneratePerson();
 			person.Id = ObjectId.GenerateNewId();
@@ -115,18 +100,6 @@ namespace Deveel.Data {
 			person.BirthDate = new DateTime(1980, 06, 04);
 
 			var result = await Repository.UpdateAsync(person);
-
-			Assert.False(result);
-		}
-
-		[Fact]
-		public async Task FacadeRepository_UpdateNotExisting() {
-			var person = GeneratePerson();
-			person.Id = ObjectId.GenerateNewId();
-
-			person.BirthDate = new DateTime(1980, 06, 04);
-
-			var result = await FacadeRepository.UpdateAsync(person);
 
 			Assert.False(result);
 		}

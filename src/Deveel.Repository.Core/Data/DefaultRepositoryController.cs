@@ -56,7 +56,8 @@ namespace Deveel.Data {
 				logger.LogError(ex, message, args);
 		}
 
-		private async Task<IRepository> GetTenantRepositoryAsync(IRepositoryProvider provider, string tenantId) {
+		private async Task<IControllableRepository?> GetTenantRepositoryAsync<TEntity>(IRepositoryProvider<TEntity> provider, string tenantId)
+			where TEntity : class {
 			try {
 				LogTrace("Obtaining a new repository instance for tenant '{TenantId}'", tenantId);
 
@@ -65,7 +66,7 @@ namespace Deveel.Data {
 				LogTrace("A new repository of type {RepositoryType} was obtained for tenant '{TenantId}'",
 					repository.GetType().Name, tenantId);
 
-				return repository;
+				return repository as IControllableRepository;
 			} catch(RepositoryException ex) {
 				LogError(ex, "Error while trying to obtain a repository for tenant '{TenantId}'", tenantId);
 				throw;
@@ -80,14 +81,15 @@ namespace Deveel.Data {
 
 			LogTrace("Resolving a repository for entity of type {EntityType}", typeof(TEntity).Name);
 
-			var repository = serviceProvider.GetService<IRepository<TEntity>>() as IRepository;
-			if (repository == null) {
-				LogTrace("No generic repository handling the entity '{EntityType}' was found: trying the base forms", typeof(TEntity).Name);
+			var repository = serviceProvider.GetService<IRepository<TEntity>>();
 
-				// less optimal lookup
-				repository = serviceProvider.GetServices<IRepository>()
-					.FirstOrDefault(x => x.EntityType == typeof(TEntity));
-			}
+			//if (repository == null) {
+			//	LogTrace("No generic repository handling the entity '{EntityType}' was found: trying the base forms", typeof(TEntity).Name);
+
+			//	// less optimal lookup
+			//	repository = serviceProvider.GetServices<IRepository>()
+			//		.FirstOrDefault(x => x.EntityType == typeof(TEntity));
+			//}
 			
 			if (repository == null)
 				throw new NotSupportedException($"Unable to resolve any repository for entities of type {typeof(TEntity)}");
@@ -95,21 +97,21 @@ namespace Deveel.Data {
 			LogTrace("The repository of type '{RepositoryType}' was resolved handling type '{EntityType}'", 
 				repository.GetType().Name, typeof(TEntity).Name);
 
-			return RequireControllable(repository);
+			return repository as IControllableRepository;
 		}
 
-		private IControllableRepository? RequireControllable(IRepository repository) {
-			if (!(repository is IControllableRepository controllable)) {
-				if (!options.IgnoreNotControllable)
-					throw new NotSupportedException($"The repository of type '{repository.GetType()}' is not controllable");
+		//private IControllableRepository? RequireControllable(IRepository repository) {
+		//	if (!(repository is IControllableRepository controllable)) {
+		//		if (!options.IgnoreNotControllable)
+		//			throw new NotSupportedException($"The repository of type '{repository.GetType()}' is not controllable");
 
-				LogTrace("The repository {RepositoryType} is not controllable and the service is ignoring it", repository.GetType().Name);
+		//		LogTrace("The repository {RepositoryType} is not controllable and the service is ignoring it", repository.GetType().Name);
 
-				return null;
-			}
+		//		return null;
+		//	}
 
-			return controllable;
-		}
+		//	return controllable;
+		//}
 
 		private IRepositoryProvider<TEntity> RequireRepositoryProvider<TEntity>()
 			where TEntity : class {
@@ -145,16 +147,16 @@ namespace Deveel.Data {
 
 					LogTrace("Repository created");
 				} catch (NotSupportedException ex) {
-					LogError(ex, "Not Supported Error while creating the repository {RepositoryType} handling the type {EntityType}",
-						repository.GetType().FullName, repository.EntityType.Name);
+					LogError(ex, "Not Supported Error while creating the repository {RepositoryType}",
+						repository.GetType().FullName);
 					throw;
 				} catch (RepositoryException ex) {
-					LogError(ex, "Not Supported Error while creating the repository {RepositoryType} handling the type {EntityType}",
-						repository.GetType().FullName, repository.EntityType.Name);
+					LogError(ex, "Not Supported Error while creating the repository {RepositoryType}",
+						repository.GetType().FullName);
 					throw;
 				} catch(Exception ex) {
-					LogError(ex, "Not Supported Error while creating the repository {RepositoryType} handling the type {EntityType}",
-						repository.GetType().FullName, repository.EntityType.Name);
+					LogError(ex, "Not Supported Error while creating the repository {RepositoryType}",
+						repository.GetType().FullName);
 
 					throw new RepositoryException($"Unable to create the repository '{repository.GetType().Name}'", ex);
 				}
@@ -174,76 +176,20 @@ namespace Deveel.Data {
 						LogTrace("The repository was dropped");
 					}
 				} catch (NotSupportedException ex) {
-					LogError(ex, "Not Supported Error while dropping the repository {RepositoryType} handling the type {EntityType}",
-						repository.GetType().Name, repository.EntityType.Name);
+					LogError(ex, "Not Supported Error while dropping the repository {RepositoryType}",
+						repository.GetType().Name);
 					throw;
 				} catch (RepositoryException ex) {
-					LogError(ex, "Not Supported Error while dropping the repository {RepositoryType} handling the type {EntityType}",
-						repository.GetType().Name, repository.EntityType.Name);
+					LogError(ex, "Not Supported Error while dropping the repository {RepositoryType}",
+						repository.GetType().Name);
 					throw;
 				} catch (Exception ex) {
-					LogError(ex, "Not Supported Error while dropping the repository {RepositoryType} handling the type {EntityType}",
-						repository.GetType().Name, repository.EntityType.Name);
+					LogError(ex, "Not Supported Error while dropping the repository {RepositoryType}",
+						repository.GetType().Name);
 
 					throw new RepositoryException($"Unable to drop the repository '{repository.GetType().Name}'", ex);
 				}
 			}
-		}
-
-		/// <inheritdoc/>
-		public virtual async Task CreateAllRepositoriesAsync(CancellationToken cancellationToken = default) {
-			LogTrace("Creating all repositoies registered in the current context");
-
-			var repositories = serviceProvider.GetServices<IRepository>()
-				.Select(RequireControllable);
-
-			foreach (var repository in repositories) {
-				await CreateRepository(repository, cancellationToken);
-			}
-
-			LogTrace("All repositoies registered in the current context were created");
-		}
-
-		/// <inheritdoc/>
-		public virtual async Task CreateTenantRepositoriesAsync(string tenantId, CancellationToken cancellationToken = default) {
-			LogTrace("Creating all repositoies registered in the current context for the tenant '{TenantId}'", tenantId);
-
-			var providers = serviceProvider.GetServices<IRepositoryProvider>();
-			foreach (var provider in providers) {
-				var repository = RequireControllable(await GetTenantRepositoryAsync(provider, tenantId));
-
-				await CreateRepository(repository, cancellationToken);
-			}
-
-			LogTrace("All repositoies registered in the current context for the tenant '{TenantId}' were created", tenantId);
-		}
-
-		/// <inheritdoc/>
-		public virtual async Task DropAllRepositoriesAsync(CancellationToken cancellationToken = default) {
-			LogTrace("Dropping all repositories registered in the current context");
-
-			var repositories = serviceProvider.GetServices<IRepository>()
-				.Select(RequireControllable);
-
-			foreach (var repository in repositories) {
-				await DropRepository(repository, cancellationToken);
-			}
-
-			LogTrace("All repositories registered in the current context were dropped");
-		}
-
-		/// <inheritdoc/>
-		public virtual async Task DropTenantRepositoriesAsync(string tenantId, CancellationToken cancellationToken = default) {
-			LogTrace("Dropping all repositories of tenant '{TenantId}'", tenantId);
-
-			var providers = serviceProvider.GetServices<IRepositoryProvider>();
-			foreach (var provider in providers) {
-				var repository = RequireControllable(await GetTenantRepositoryAsync(provider, tenantId));
-
-				await DropRepository(repository, cancellationToken);
-			}
-
-			LogTrace("All repositories of tenant '{TenantId}' were dropped", tenantId);
 		}
 
 		/// <inheritdoc/>
@@ -265,7 +211,7 @@ namespace Deveel.Data {
 
 			var provider = RequireRepositoryProvider<TEntity>();
 
-			var repository = RequireControllable(await provider.GetRepositoryAsync(tenantId));
+			var repository = await provider.GetRepositoryAsync(tenantId) as IControllableRepository;
 
 			await CreateRepository(repository, cancellationToken);
 
@@ -290,7 +236,7 @@ namespace Deveel.Data {
 
 			var provider = RequireRepositoryProvider<TEntity>();
 
-			var repository = RequireControllable(await GetTenantRepositoryAsync(provider, tenantId));
+			var repository = await GetTenantRepositoryAsync(provider, tenantId);
 
 			await DropRepository(repository, cancellationToken);
 

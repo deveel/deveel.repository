@@ -3,17 +3,10 @@ using System.Linq.Expressions;
 
 namespace Deveel.Data {
 	/// <summary>
-	/// Extends the functionalities of a <see cref="IRepository"/> instance
+	/// Extends the functionalities of a repository instance
 	/// to provide a set of utility methods to perform common operations
 	/// </summary>
-    public static class RepositoryExtensions {
-        private static IFilterableRepository RequireFilterable(this IRepository repository) {
-            if (!(repository is IFilterableRepository filterable))
-                throw new NotSupportedException("The repository is not filterable");
-
-            return filterable;
-        }
-
+	public static class RepositoryExtensions {
         private static IFilterableRepository<TEntity> RequireFilterable<TEntity>(this IRepository<TEntity> repository)
             where TEntity : class {
             if (!(repository is IFilterableRepository<TEntity> filterable))
@@ -32,10 +25,6 @@ namespace Deveel.Data {
 
 		private static bool IsFilterable<TEntity>(this IRepository<TEntity> repository) where TEntity : class {
 			return repository is IFilterableRepository<TEntity>;
-		}
-
-		private static bool IsFilterable(this IRepository repository) {
-			return repository is IFilterableRepository;
 		}
 
 		private static bool IsQueryable<TEntity>(this IRepository<TEntity> repository) where TEntity : class {
@@ -102,22 +91,6 @@ namespace Deveel.Data {
 
 		/// <summary>
 		/// Creates a new entity in the repository synchronously
-		/// </summary>
-		/// <param name="repository">
-		/// The instance of the repository to use to create the entity
-		/// </param>
-		/// <param name="entity">
-		/// The instance of the entity to create
-		/// </param>
-		/// <returns>
-		/// Returns a string that uniquely identifies the created entity
-		/// within the underlying storage.
-		/// </returns>
-        public static string Add(this IRepository repository, object entity)
-            => repository.AddAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
-
-		/// <summary>
-		/// Creates a new entity in the repository synchronously
 		/// within the given transaction
 		/// </summary>
 		/// <param name="repository">
@@ -166,14 +139,6 @@ namespace Deveel.Data {
             return await repository.RemoveAsync(transaction, entity, cancellationToken);
         }
 
-        public static async Task<bool> RemoveByIdAsync(this IRepository repository, string id, CancellationToken cancellationToken = default) {
-            var entity = await repository.FindByIdAsync(id, cancellationToken);
-            if (entity == null)
-                return false;
-
-            return await repository.RemoveAsync(entity, cancellationToken);
-        }
-
         public static async Task<bool> RemoveByIdAsync(this ITransactionalRepository repository, IDataTransaction transaction, string id, CancellationToken cancellationToken = default) {
             // TODO: find within a transaction ...
             var entity = await repository.FindByIdAsync(transaction, id, cancellationToken);
@@ -192,15 +157,8 @@ namespace Deveel.Data {
             => repository.RemoveByIdAsync(transaction, id).ConfigureAwait(false).GetAwaiter().GetResult();
 
 
-        public static bool RemoveById(this IRepository repository, string id)
-            => repository.RemoveByIdAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
-
         public static bool RemoveById(this ITransactionalRepository repository, IDataTransaction transaction, string id)
             => repository.RemoveByIdAsync(transaction, id).ConfigureAwait(false).GetAwaiter().GetResult();
-
-
-        public static bool Remove(this IRepository repository, object entity)
-            => repository.RemoveAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
         public static bool Remove(this ITransactionalRepository repository, IDataTransaction transaction, object entity)
             => repository.RemoveAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -211,9 +169,6 @@ namespace Deveel.Data {
 
         public static bool Update<TEntity>(this IRepository<TEntity> repository, TEntity entity)
             where TEntity : class
-            => repository.UpdateAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
-
-        public static bool Update(this IRepository repository, object entity)
             => repository.UpdateAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion
@@ -253,9 +208,6 @@ namespace Deveel.Data {
 			throw new NotSupportedException("The repository does not support querying");
 		}
 
-        public static bool Exists(this IRepository repository, IQueryFilter filter)
-            => repository.RequireFilterable().ExistsAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
-
         public static bool Exists<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter)
             where TEntity : class
             => repository.ExistsAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -263,9 +215,6 @@ namespace Deveel.Data {
         #endregion
 
         #region Count
-
-        public static Task<long> CountAllAsync(this IRepository repository, CancellationToken cancellationToken = default)
-            => repository.RequireFilterable().CountAsync(QueryFilter.Empty, cancellationToken);
 
         public static Task<long> CountAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class {
@@ -277,16 +226,23 @@ namespace Deveel.Data {
 			throw new NotSupportedException("The repository does not support querying");
 		}
 
-        public static long Count<TEntity>(this IFilterableRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter)
+		public static Task<long> CountAllAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
+			where TEntity : class {
+			if (repository.IsFilterable())
+				return repository.RequireFilterable().CountAsync(QueryFilter.Empty, cancellationToken);
+			if (repository.IsQueryable())
+				return Task.FromResult(repository.RequireQueryable().AsQueryable().LongCount());
+
+			throw new NotSupportedException("The repository does not support querying");
+		}
+
+        public static long Count<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter)
             where TEntity : class
             => repository.CountAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public static long Count(this IFilterableRepository repository, IQueryFilter filter)
-            => repository.CountAsync(filter, default)
-            .ConfigureAwait(false).GetAwaiter().GetResult();
-
-        public static long CountAll(this IRepository repository)
-            => repository.RequireFilterable().Count(QueryFilter.Empty);
+		public static long CountAll<TEntity>(this IRepository<TEntity> repository)
+			where TEntity : class
+			=> repository.CountAllAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion
 
@@ -294,9 +250,6 @@ namespace Deveel.Data {
 
         public static TEntity? FindById<TEntity>(this IRepository<TEntity> store, string id)
             where TEntity : class
-            => store.FindByIdAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
-
-        public static object? FindById(this IRepository store, string id)
             => store.FindByIdAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion
@@ -309,9 +262,6 @@ namespace Deveel.Data {
 
         public static Task<TEntity?> FindAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
             where TEntity : class
-            => repository.RequireFilterable().FindAsync(QueryFilter.Empty, cancellationToken);
-
-        public static Task<object?> FindAsync(this IRepository repository, CancellationToken cancellationToken = default)
             => repository.RequireFilterable().FindAsync(QueryFilter.Empty, cancellationToken);
 
         public static TEntity? Find<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
@@ -335,9 +285,6 @@ namespace Deveel.Data {
             where TEntity : class
             => repository.RequireFilterable().FindAllAsync(QueryFilter.Empty, cancellationToken);
 
-        public static Task<IList<object>> FindAllAsync(this IRepository repository, CancellationToken cancellationToken = default)
-            => repository.RequireFilterable().FindAllAsync(QueryFilter.Empty, cancellationToken);
-
         public static IList<TEntity> FindAll<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
             where TEntity : class
             => repository.RequireFilterable().FindAllAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -345,13 +292,6 @@ namespace Deveel.Data {
         public static IList<TEntity> FindAll<TEntity>(this IRepository<TEntity> repository)
             where TEntity : class
             => repository.FindAll(QueryFilter.Empty);
-
-        public static IList<object> FindAll(this IRepository repository, IQueryFilter filter)
-            => repository.RequireFilterable().FindAllAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
-
-        public static IList<object> FindAll(this IRepository repository)
-            => repository.FindAll(QueryFilter.Empty);
-
 
         #endregion
 
@@ -361,14 +301,8 @@ namespace Deveel.Data {
             where TEntity : class
             => repository.AddStateAsync(entity, stateInfo).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public static void AddState<TStatus>(this IStateRepository<TStatus> repository, object entity, EntityStateInfo<TStatus> stateInfo)
-            => repository.AddStateAsync(entity, stateInfo).ConfigureAwait(false).GetAwaiter().GetResult();
-
         public static void RemoveState<TEntity, TStatus>(this IStateRepository<TEntity, TStatus> repository, TEntity entity, EntityStateInfo<TStatus> stateInfo)
             where TEntity : class
-            => repository.RemoveStateAsync(entity, stateInfo).ConfigureAwait(false).GetAwaiter().GetResult();
-
-        public static void RemoveState<TStatus>(this IStateRepository<TStatus> repository, object entity, EntityStateInfo<TStatus> stateInfo)
             => repository.RemoveStateAsync(entity, stateInfo).ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion

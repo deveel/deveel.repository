@@ -40,12 +40,6 @@ namespace Deveel.Data {
 
 		protected IPageableRepository<MongoPerson> PageableRepository => (IPageableRepository<MongoPerson>)Repository;
 
-		protected IRepository<IPerson> FacadeRepository => Services.GetRequiredService<IRepository<IPerson>>();
-
-		protected IFilterableRepository<IPerson> FilterableFacadeRepository => (IFilterableRepository<IPerson>)FacadeRepository;
-
-		protected IPageableRepository<IPerson> FacadePageableRepository => (IPageableRepository<IPerson>)FacadeRepository;
-
 		protected IDataTransactionFactory TransactionFactory => Services.GetRequiredService<IDataTransactionFactory>();
 
 		protected Faker<MongoPerson> PersonFaker { get; }
@@ -64,7 +58,7 @@ namespace Deveel.Data {
 		}
 
 		protected virtual void AddRepository(MongoDbContextBuilder<MongoDbContext> builder) {
-            builder.AddRepository<MongoPerson>().WithFacade<IPerson>();
+            builder.AddRepository<MongoPerson>();
         }
 
 		protected virtual Task SeedAsync(MongoRepository<MongoDbContext, MongoPerson> repository) {

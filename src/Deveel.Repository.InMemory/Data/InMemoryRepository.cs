@@ -8,7 +8,7 @@ namespace Deveel.Data {
 		IQueryableRepository<TEntity>, 
 		IPageableRepository<TEntity>, 
 		IFilterableRepository<TEntity>,
-		IMultiTenantRepository
+		IMultiTenantRepository<TEntity>
 		where TEntity : class {
 		private readonly List<TEntity> entities;
 		private readonly IEntityFieldMapper<TEntity>? fieldMapper;
@@ -24,27 +24,15 @@ namespace Deveel.Data {
 			TenantId = tenantId;
 		}
 
-		Type IRepository.EntityType => typeof(TEntity);
-
 		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => entities.AsQueryable();
 
 		public IReadOnlyList<TEntity> Entities => entities.AsReadOnly();
 
-		string? IMultiTenantRepository.TenantId => TenantId;
+		string? IMultiTenantRepository<TEntity>.TenantId => TenantId;
 
 		protected virtual string? TenantId { get; }
 
 		protected ISystemTime SystemTime { get; }
-
-		private static TEntity Assert(object entity) {
-			if (entity == null)
-				throw new ArgumentNullException(nameof(entity));
-
-			if (!(entity is TEntity t))
-				throw new ArgumentException($"The type '{entity.GetType()}' is not assignable from {typeof(TEntity)}", nameof(entity));
-
-			return t;
-		}
 
 		public virtual string? GetEntityId(TEntity entity) {
 			if (entity == null)
@@ -65,8 +53,6 @@ namespace Deveel.Data {
 
 			return id;
 		}
-
-		string? IRepository.GetEntityId(object entity) => GetEntityId(Assert(entity));
 
 		public Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
@@ -129,12 +115,6 @@ namespace Deveel.Data {
 			}
 		}
 
-		Task<string> IRepository.AddAsync(object entity, CancellationToken cancellationToken)
-			=> AddAsync(Assert(entity), cancellationToken);
-
-		Task<IList<string>> IRepository.AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
-			=> AddRangeAsync(entities.Select(Assert), cancellationToken);
-
 		public Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			if (entity is null) 
 				throw new ArgumentNullException(nameof(entity));
@@ -150,9 +130,6 @@ namespace Deveel.Data {
 				throw new RepositoryException("Could not delete the entity", ex);
 			}
 		}
-
-		Task<bool> IRepository.RemoveAsync(object entity, CancellationToken cancellationToken) 
-			=> RemoveAsync(Assert(entity), cancellationToken);
 
 		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
@@ -249,17 +226,6 @@ namespace Deveel.Data {
 				throw new RepositoryException("Unable to retrieve the page", ex) ;
 			}
 		}
-
-
-		async Task<RepositoryPage> IPageableRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
-			var pageRequest = new RepositoryPageRequest<TEntity>(request.Page, request.Size) {
-				Filter = request.Filter != null ? QueryFilter.Where(request.Filter?.AsLambda<TEntity>()) : QueryFilter.Empty
-			};
-
-			var result = await GetPageAsync(pageRequest, cancellationToken);
-
-			return new RepositoryPage(request, result.TotalItems, result.Items?.Cast<object>());
-		}
 		
 		public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
@@ -280,19 +246,6 @@ namespace Deveel.Data {
 			} catch (Exception ex) {
 				throw new RepositoryException("Unable to update the entity", ex);
 			}
-		}
-				
-		Task<bool> IRepository.UpdateAsync(object entity, CancellationToken cancellationToken) 
-			=> UpdateAsync(Assert(entity), cancellationToken);
-				
-		async Task<IList<object>> IFilterableRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
-			return (await FindAllAsync(filter, cancellationToken)).Cast<object>().ToList();
-		}
-		
-		async Task<object?> IFilterableRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
-			=> await FindAsync(filter, cancellationToken);
-		
-		async Task<object?> IRepository.FindByIdAsync(string id, CancellationToken cancellationToken)
-			=> await FindByIdAsync(id, cancellationToken);
+		}				
 	}
 }

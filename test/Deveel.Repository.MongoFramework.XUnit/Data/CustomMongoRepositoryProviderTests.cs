@@ -45,14 +45,6 @@ namespace Deveel.Data {
 
         protected IPageableRepository<MongoTenantPerson> PageableRepository => (IPageableRepository<MongoTenantPerson>)Repository;
 
-        protected IRepositoryProvider<IPerson> FacadeRepositoryProvider => serviceProvider.GetRequiredService<IRepositoryProvider<IPerson>>();
-
-        protected IRepository<IPerson> FacadeRepository => FacadeRepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
-
-        protected IPageableRepository<IPerson> FacadePageableRepository => (IPageableRepository<IPerson>)FacadeRepository;
-
-        protected IFilterableRepository<IPerson> FilterableFacadeRepository => (IFilterableRepository<IPerson>)FacadeRepository;
-
         protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
 
         protected MongoTenantPerson GeneratePerson() => PersonFaker.Generate();
@@ -83,11 +75,9 @@ namespace Deveel.Data {
 
         protected virtual void AddRepository(MongoDbContextBuilder<PersonsDbContext> builder) {
             builder.UseTenantConnection();
-            builder.AddRepository<MongoTenantPerson>()
-                .OfType<PersonRepository>()
-                .WithTenantProvider<PersonRepositoryProvider>()
-                .WithFacade<IPerson>()
-                .WithTenantFacadeProvider<IPerson, PersonRepositoryProvider>();
+			builder.AddRepository<MongoTenantPerson>()
+				.OfType<PersonRepository>()
+				.WithTenantProvider<PersonRepositoryProvider>();
         }
 
         public virtual async Task InitializeAsync() {
@@ -113,37 +103,7 @@ namespace Deveel.Data {
             return Task.CompletedTask;
         }
 
-        //[MultiTenant, Entity]
-        //protected class MongoPerson : IPerson, IHaveTenantId {
-        //    [BsonId]
-        //    public ObjectId Id { get; set; }
-
-        //    string? IPerson.Id => Id.ToEntityId();
-
-        //    public string FirstName { get; set; }
-
-        //    public string LastName { get; set; }
-
-        //    public DateTime? BirthDate { get; set; }
-
-        //    public string? Description { get; set; }
-
-        //    public string TenantId { get; set; }
-        //}
-
-        //protected interface IPerson {
-        //    string? Id { get; }
-
-        //    string FirstName { get; }
-
-        //    string LastName { get; }
-
-        //    DateTime? BirthDate { get; }
-
-        //    string? Description { get; }
-        //}
-
-        protected class PersonRepositoryProvider : MongoTenantRepositoryProvider<PersonsDbContext, MongoTenantPerson, IPerson, TenantInfo> {
+        protected class PersonRepositoryProvider : MongoTenantRepositoryProvider<PersonsDbContext, MongoTenantPerson, TenantInfo> {
             public PersonRepositoryProvider(IEnumerable<IMultiTenantStore<TenantInfo>> stores, ISystemTime? systemTime = null, ILoggerFactory? loggerFactory = null) 
 				:base(stores, systemTime, loggerFactory) {
             }
@@ -152,13 +112,13 @@ namespace Deveel.Data {
                 return new PersonsDbContext(connection.ForContext<PersonsDbContext>(), tenantContext.TenantInfo.Id);
             }
 
-            protected override MongoRepository<PersonsDbContext, MongoTenantPerson, IPerson> CreateRepository(PersonsDbContext context) {
+            protected override MongoRepository<PersonsDbContext, MongoTenantPerson> CreateRepository(PersonsDbContext context) {
                 var logger = LoggerFactory.CreateLogger<PersonRepository>();
                 return new PersonRepository(context, logger);
             }
         }
 
-        protected class PersonRepository : MongoRepository<PersonsDbContext, MongoTenantPerson, IPerson> {
+        protected class PersonRepository : MongoRepository<PersonsDbContext, MongoTenantPerson> {
             public PersonRepository(PersonsDbContext context, ILogger<PersonRepository>? logger = null) : base(context, null, logger) {
             }
         }

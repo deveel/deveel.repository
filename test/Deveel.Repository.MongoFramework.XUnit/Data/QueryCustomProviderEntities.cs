@@ -35,15 +35,6 @@
         }
 
         [Fact]
-        public async Task FacadeRepository_CountAll() {
-            var result = await FilterableFacadeRepository.CountAllAsync();
-
-            Assert.NotEqual(0, result);
-            Assert.Equal(people.Count, result);
-        }
-
-
-        [Fact]
         public async Task Mongo_CountFiltered() {
             var firstName = people.Random()!.FirstName;
             var peopleCount = people.Count(x => x.FirstName == firstName);

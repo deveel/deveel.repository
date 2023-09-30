@@ -6,31 +6,6 @@ namespace Deveel.Data {
 	/// </summary>
 	public interface IRepositoryController {
 		/// <summary>
-		/// Creates all the repositories for the current context
-		/// </summary>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation
-		/// </param>
-		/// <returns>
-		/// Returns a <see cref="Task"/> that can be used to await the operation
-		/// </returns>
-		Task CreateAllRepositoriesAsync(CancellationToken cancellationToken = default);
-
-		/// <summary>
-		/// Creates all the repositories for the given tenant
-		/// </summary>
-		/// <param name="tenantId">
-		/// The identifier of the tenant for which the repositories are created
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation
-		/// </param>
-		/// <returns>
-		/// Returns a <see cref="Task"/> that can be used to await the operation
-		/// </returns>
-		Task CreateTenantRepositoriesAsync(string tenantId, CancellationToken cancellationToken = default);
-
-		/// <summary>
 		/// Creates a repository for the given entity type
 		/// </summary>
 		/// <typeparam name="TEntity">
@@ -62,31 +37,6 @@ namespace Deveel.Data {
 		/// </returns>
 		Task CreateTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
 			where TEntity : class;
-
-		/// <summary>
-		/// Drops all the repositories for the current context
-		/// </summary>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation
-		/// </param>
-		/// <returns>
-		/// Returns a <see cref="Task"/> that can be used to await the operation
-		/// </returns>
-		Task DropAllRepositoriesAsync(CancellationToken cancellationToken = default);
-
-		/// <summary>
-		/// Drops all the repositories for the given tenant
-		/// </summary>
-		/// <param name="tenantId">
-		/// The identifier of the tenant for which the repositories are dropped
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation
-		/// </param>
-		/// <returns>
-		/// Returns a <see cref="Task"/> that can be used to await the operation
-		/// </returns>
-		Task DropTenantRepositoriesAsync(string tenantId, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Drops the repository for the given entity type

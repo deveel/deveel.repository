@@ -8,7 +8,7 @@ namespace Deveel.Data {
 			people = GeneratePersons(100);
 		}
 
-		protected override async Task SeedAsync(IRepository repository) {
+		protected override async Task SeedAsync(IRepository<Person> repository) {
 			await repository.AddRangeAsync(people);
 		}
 
@@ -27,15 +27,6 @@ namespace Deveel.Data {
 			Assert.NotEqual(0, result);
 			Assert.Equal(people.Count, result);
 		}
-
-		[Fact]
-		public async Task FacadeRepository_CountAll() {
-			var result = await FilterableFacadeRepository.CountAllAsync();
-
-			Assert.NotEqual(0, result);
-			Assert.Equal(people.Count, result);
-		}
-
 
 		[Fact]
 		public async Task Memory_CountFiltered() {
@@ -78,18 +69,6 @@ namespace Deveel.Data {
 			Assert.NotNull(result);
 			Assert.Equal(id, result.Id);
 		}
-
-		[Fact]
-		public async Task FacadeRepository_FindById() {
-			var id = people.Random()!.Id;
-
-			var result = await FacadeRepository.FindByIdAsync(id);
-
-			Assert.NotNull(result);
-			Assert.Equal(id, result.Id);
-		}
-
-
 
 		[Fact]
 		public async Task Memory_FindFirstFiltered() {
@@ -147,14 +126,6 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FacadeRepository_FindFirst() {
-			var result = await FacadeRepository.FindAsync();
-
-			Assert.NotNull(result);
-			Assert.Equal(people[0].FirstName, result.FirstName);
-		}
-
-		[Fact]
 		public async Task Memory_FindAll() {
 			var result = await InMemoryRepository.FindAllAsync();
 
@@ -171,16 +142,6 @@ namespace Deveel.Data {
 			Assert.NotEmpty(result);
 			Assert.Equal(people.Count, result.Count);
 		}
-
-		[Fact]
-		public async Task FacadeRepository_FindAll() {
-			var result = await FacadeRepository.FindAllAsync();
-
-			Assert.NotNull(result);
-			Assert.NotEmpty(result);
-			Assert.Equal(people.Count, result.Count);
-		}
-
 
 
 		[Fact]
@@ -236,22 +197,6 @@ namespace Deveel.Data {
 			Assert.NotEmpty(result.Items);
 			Assert.Equal(10, result.Items.Count());
 		}
-
-		[Fact]
-		public async Task FacadeRepository_GetPage() {
-			var request = new RepositoryPageRequest<Person>(1, 10);
-
-			Assert.NotNull(FacadePageableRepository);
-			var result = await FacadePageableRepository.GetPageAsync(request);
-
-			Assert.NotNull(result);
-			Assert.Equal(10, result.TotalPages);
-			Assert.Equal(100, result.TotalItems);
-			Assert.NotNull(result.Items);
-			Assert.NotEmpty(result.Items);
-			Assert.Equal(10, result.Items.Count());
-		}
-
 
 
 		[Fact]

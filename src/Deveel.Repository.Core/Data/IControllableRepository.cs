@@ -4,7 +4,7 @@ namespace Deveel.Data {
 	/// <summary>
 	/// A repository whose lifecycle can be controlled by the user
 	/// </summary>
-	public interface IControllableRepository : IRepository {
+	public interface IControllableRepository {
 		/// <summary>
 		/// Checks if the repository exists in the underlying storage
 		/// </summary>

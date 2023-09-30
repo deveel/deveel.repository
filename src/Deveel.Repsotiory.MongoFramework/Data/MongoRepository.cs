@@ -29,7 +29,7 @@ namespace Deveel.Data {
 		IQueryableRepository<TEntity>, 
 		IPageableRepository<TEntity>, 
 		IFilterableRepository<TEntity>,
-		IMultiTenantRepository,
+		IMultiTenantRepository<TEntity>,
 		IControllableRepository, 
 		IAsyncDisposable, 
 		IDisposable
@@ -104,11 +104,9 @@ namespace Deveel.Data {
 		/// </summary>
 		protected string? TenantId { get; }
 
-		string? IMultiTenantRepository.TenantId => TenantId;
+		string? IMultiTenantRepository<TEntity>.TenantId => TenantId;
 
 		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => DbSet.AsQueryable();
-
-		Type IRepository.EntityType => typeof(TEntity);
 
 		/// <summary>
 		/// Gets the <see cref="IMongoCollection{TEntity}"/> instance that is used
@@ -172,8 +170,6 @@ namespace Deveel.Data {
 
 			return _dbSet;
 		}
-
-		string? IRepository.GetEntityId(object entity) => ((IRepository<TEntity>)this).GetEntityId(Assert(entity));
 
 		string? IRepository<TEntity>.GetEntityId(TEntity entity) {
 			var value = GetEntityId(entity);
@@ -377,7 +373,7 @@ namespace Deveel.Data {
 
 		#endregion
 
-		#region Create
+		#region Add
 
 		/// <summary>
 		/// A callback method that is invoked before the entity is created.
@@ -442,12 +438,6 @@ namespace Deveel.Data {
 				throw new RepositoryException("Unable to create the entity", ex);
 			}
 		}
-
-		Task<string> IRepository.AddAsync(object entity, CancellationToken cancellationToken)
-			=> AddAsync(Assert(entity), cancellationToken);
-
-		Task<IList<string>> IRepository.AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
-			=> AddRangeAsync(entities.Select(x => Assert(x)), cancellationToken);
 
 		public async Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
@@ -523,9 +513,6 @@ namespace Deveel.Data {
 			}
 		}
 
-		Task<bool> IRepository.UpdateAsync(object entity, CancellationToken cancellationToken) 
-			=> UpdateAsync(Assert(entity), cancellationToken);
-
 		#endregion
 
 		#region Delete
@@ -571,10 +558,6 @@ namespace Deveel.Data {
 			}
 		}
 
-
-		Task<bool> IRepository.RemoveAsync(object entity, CancellationToken cancellationToken)
-			=> RemoveAsync(Assert(entity), cancellationToken);
-
 		#endregion
 
 		#region FindById
@@ -616,9 +599,6 @@ namespace Deveel.Data {
 			}
 		}
 
-		async Task<object?> IRepository.FindByIdAsync(string id, CancellationToken cancellationToken)
-			=> await FindByIdAsync(id, cancellationToken);
-
 		#endregion
 
 		#region Find
@@ -648,9 +628,6 @@ namespace Deveel.Data {
 			}
 		}
 
-		async Task<object?> IFilterableRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken) 
-			=> await FindAsync(filter, cancellationToken);
-
 		#endregion
 
 		#region FindAll
@@ -674,11 +651,6 @@ namespace Deveel.Data {
 
 				throw new RepositoryException("Unable to execute the query", ex);
 			}
-		}
-
-		async Task<IList<object>> IFilterableRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken) {
-			var result = await FindAllAsync(filter, cancellationToken);
-			return result.Cast<object>().ToList();
 		}
 
 		#endregion
@@ -723,17 +695,6 @@ namespace Deveel.Data {
 
 				throw new RepositoryException("Unable to execute the query", ex);
 			}
-		}
-
-		async Task<RepositoryPage> IPageableRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
-			var newRequest = new RepositoryPageRequest<TEntity>(request.Page, request.Size) {
-				Filter = request.Filter != null ? QueryFilter.Where(request.Filter?.AsLambda<TEntity>()) : QueryFilter.Empty,
-				ResultSorts = request.ResultSorts
-			};
-
-			var result = await GetPageAsync(newRequest, cancellationToken);
-
-			return new RepositoryPage(request, result.TotalItems, result.Items?.Cast<object>());
 		}
 
 		#endregion

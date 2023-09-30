@@ -19,20 +19,21 @@ namespace Deveel.Data {
         }
 
         private void TryAddDefault() {
-            services.TryAdd(new ServiceDescriptor(typeof(IRepository<TEntity>), typeof(MongoRepository<TContext, TEntity>), lifetime));
-            services.TryAdd(new ServiceDescriptor(typeof(MongoRepository<TContext, TEntity>), typeof(MongoRepository<TContext, TEntity>), lifetime));
+			services.AddRepository<MongoRepository<TContext, TEntity>>(lifetime);
         }
 
         public MongoRepositoryBuilder<TContext, TEntity> OfType<TRepository>()
             where TRepository : MongoRepository<TContext, TEntity> {
 
             services.RemoveAll<IRepository<TEntity>>();
+			services.RemoveAll<IQueryableRepository<TEntity>>();
+			services.RemoveAll<IFilterableRepository<TEntity>>();
+			services.RemoveAll<IPageableRepository<TEntity>>();
             services.RemoveAll<MongoRepository<TContext, TEntity>>();
 
-            services.AddRepository<TRepository, TEntity>(lifetime);
+            services.AddRepository<TRepository>(lifetime);
 
-            services.Add(new ServiceDescriptor(typeof(MongoRepository<TContext, TEntity>), typeof(TRepository), lifetime));
-
+			services.Add(new ServiceDescriptor(typeof(MongoRepository<TContext, TEntity>), typeof(TRepository), lifetime));
 
             if (typeof(TRepository) != typeof(MongoRepository<TContext, TEntity>))
                 services.Add(new ServiceDescriptor(typeof(TRepository), typeof(TRepository), lifetime));
@@ -44,7 +45,7 @@ namespace Deveel.Data {
 
 		public MongoRepositoryBuilder<TContext, TEntity> WithProvider<TProvider>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TProvider : MongoRepositoryProvider<TContext, TEntity> {
-			services.AddRepositoryProvider<TProvider, TEntity>(lifetime);
+			services.AddRepositoryProvider<TProvider>(lifetime);
 
 			if (typeof(TProvider) != typeof(MongoRepositoryProvider<TContext, TEntity>))
 				services.TryAdd(new ServiceDescriptor(typeof(MongoRepositoryProvider<TContext, TEntity>), typeof(TProvider), lifetime));
@@ -56,42 +57,14 @@ namespace Deveel.Data {
 			=> WithProvider<MongoRepositoryProvider<TContext, TEntity>>(lifetime);
 
 
-		public MongoRepositoryBuilder<TContext, TEntity> WithFacadeProvider<TFacade, TProvider>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			where TFacade : class {
-
-			if (!typeof(TFacade).IsAssignableFrom(typeof(TEntity)))
-				throw new ArgumentException($"The entity of type '{typeof(TEntity)}' is not assignable from '{typeof(TFacade)}'");
-
-			var facadeProviderType = typeof(MongoRepositoryProvider<,,>)
-				.MakeGenericType(typeof(TContext), typeof(TEntity), typeof(TFacade));
-
-			if (!facadeProviderType.IsAssignableFrom(typeof(TProvider)))
-				throw new ArgumentException($"The provider of type '{typeof(TProvider)}' is not assignable from '{facadeProviderType}'");
-
-			services.AddRepositoryProvider(facadeProviderType, lifetime);
-			services.Add(new ServiceDescriptor(typeof(IRepositoryProvider<TFacade>), facadeProviderType, lifetime));
-
-			if (typeof(TProvider) != typeof(MongoRepositoryProvider<TContext, TEntity>))
-				services.Add(new ServiceDescriptor(typeof(MongoRepositoryProvider<TContext, TEntity>), typeof(TProvider), lifetime));
-
-			if (typeof(TProvider) != facadeProviderType)
-				services.Add(new ServiceDescriptor(typeof(TProvider), typeof(TProvider), lifetime));
-
-			return this;
-		}
-
-		public MongoRepositoryBuilder<TContext, TEntity> WithFacadeProvider<TFacade>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			where TFacade : class
-			=> WithFacadeProvider<TFacade, MongoRepositoryProvider<TContext, TEntity>>(lifetime);
-
 		#endregion
 
-			#region Tenant-Provider
+		#region Tenant-Provider
 
 		public MongoRepositoryBuilder<TContext, TEntity> WithTenantProvider<TTenantInfo, TProvider>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
             where TTenantInfo : class, ITenantInfo, new()
             where TProvider : MongoTenantRepositoryProvider<TContext, TEntity, TTenantInfo> {
-            services.AddRepositoryProvider<TProvider, TEntity>(lifetime);
+            services.AddRepositoryProvider<TProvider>(lifetime);
 
             if (typeof(TProvider) != typeof(MongoTenantRepositoryProvider<TContext, TEntity, TTenantInfo>))
                 services.TryAdd(new ServiceDescriptor(typeof(MongoTenantRepositoryProvider<TContext, TEntity, TTenantInfo>), typeof(TProvider), lifetime));
@@ -110,72 +83,6 @@ namespace Deveel.Data {
         public MongoRepositoryBuilder<TContext, TEntity> WithDefaultTenantProvider(ServiceLifetime lifetime = ServiceLifetime.Singleton)
             => WithDefaultTenantProvider<TenantInfo>(lifetime);
 
-        public MongoRepositoryBuilder<TContext, TEntity> WithTenantFacadeProvider<TFacade, TProvider>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
-            where TFacade : class
-            => WithTenantFacadeProvider<TenantInfo, TFacade, TProvider>(lifetime);
-
-        public MongoRepositoryBuilder<TContext, TEntity> WithTenantFacadeProvider<TTenantInfo, TFacade, TProvider>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
-            where TFacade : class
-            where TTenantInfo : class, ITenantInfo, new() {
-
-            if (!typeof(TFacade).IsAssignableFrom(typeof(TEntity)))
-                throw new ArgumentException($"The entity of type '{typeof(TEntity)}' is not assignable from '{typeof(TFacade)}'");
-
-            var facadeProviderType1 = typeof(MongoTenantRepositoryProvider<,,>)
-                .MakeGenericType(typeof(TContext), typeof(TEntity), typeof(TTenantInfo));
-
-            var facadeProviderType2 = typeof(MongoTenantRepositoryProvider<,,,>)
-                .MakeGenericType(typeof(TContext), typeof(TEntity), typeof(TFacade), typeof(TTenantInfo));
-
-            if (!facadeProviderType2.IsAssignableFrom(typeof(TProvider)))
-                throw new ArgumentException($"The provider of type '{typeof(TProvider)}' is not assignable from '{facadeProviderType2}'");
-
-            services.AddRepositoryProvider(facadeProviderType2, lifetime);
-            services.Add(new ServiceDescriptor(typeof(IRepositoryProvider<TFacade>), facadeProviderType2, lifetime));
-
-            if (typeof(TProvider) != typeof(MongoTenantRepositoryProvider<TContext, TEntity, TTenantInfo>))
-                services.Add(new ServiceDescriptor(typeof(MongoTenantRepositoryProvider<TContext, TEntity, TTenantInfo>), typeof(TProvider), lifetime));
-
-            if (typeof(TProvider) != facadeProviderType2)
-                services.Add(new ServiceDescriptor(typeof(TProvider), typeof(TProvider), lifetime));
-
-            return this;
-        }
-
-        public MongoRepositoryBuilder<TContext, TEntity> WithDefaultFacadeTenantProvider<TTenantInfo, TFacade>(ServiceLifetime lifetime = ServiceLifetime.Singleton) 
-            where TFacade : class
-            where TTenantInfo : class, ITenantInfo, new() {
-            if (!typeof(TFacade).IsAssignableFrom(typeof(TEntity)))
-                throw new ArgumentException($"The entity of type '{typeof(TEntity)}' is not assignable from '{typeof(TFacade)}'");
-
-            var facadeProviderType = typeof(MongoTenantRepositoryProvider<,,,>)
-                .MakeGenericType(typeof(TContext), typeof(TEntity), typeof(TFacade), typeof(TTenantInfo));
-
-            services.AddRepositoryProvider(facadeProviderType, lifetime);
-            services.Add(new ServiceDescriptor(facadeProviderType, facadeProviderType, lifetime));
-            services.Add(new ServiceDescriptor(typeof(IRepositoryProvider<TFacade>), facadeProviderType, lifetime));
-
-            return this;
-        }
-
-        public MongoRepositoryBuilder<TContext, TEntity> WithDefaultFacadeTenantProvider<TFacade>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
-            where TFacade : class
-            => WithDefaultFacadeTenantProvider<TenantInfo, TFacade>(lifetime);
-
 		#endregion
-
-		public MongoRepositoryBuilder<TContext, TEntity> WithFacade<TFacade>()
-            where TFacade : class {
-            if (!typeof(TFacade).IsAssignableFrom(typeof(TEntity)))
-                throw new ArgumentException($"The entity of type '{typeof(TEntity)}' is not assignable from '{typeof(TFacade)}'");
-
-            var facadeType = typeof(MongoRepository<,,>)
-                .MakeGenericType(typeof(TContext), typeof(TEntity), typeof(TFacade));
-
-            services.AddRepository(facadeType, lifetime);
-            services.Add(new ServiceDescriptor(typeof(IRepository<TFacade>), facadeType, lifetime));
-
-            return this;
-        }
     }
 }

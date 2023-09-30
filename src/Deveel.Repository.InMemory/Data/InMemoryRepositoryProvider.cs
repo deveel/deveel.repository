@@ -37,14 +37,9 @@ namespace Deveel.Data {
 			return new InMemoryRepository<TEntity>(tenantId, entities, SystemTime, FieldMapper);
 		}
 
-		Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId) {
+		Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken) {
 			var repo = GetRepository(tenantId);
 			return Task.FromResult<IRepository<TEntity>>(repo);
-		}
-
-		Task<IRepository> IRepositoryProvider.GetRepositoryAsync(string tenantId) {
-			var repo = GetRepository(tenantId);
-			return Task.FromResult<IRepository>(repo);
 		}
 
 		protected virtual void Dispose(bool disposing) {

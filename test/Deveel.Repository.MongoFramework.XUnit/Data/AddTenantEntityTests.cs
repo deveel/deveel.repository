@@ -62,28 +62,6 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FacadeRepository_AddNewPerson() {
-			var person = GeneratePerson();
-
-			var id = await FacadeRepository.AddAsync(person);
-
-			Assert.NotNull(id);
-			Assert.NotEmpty(id);
-
-			var created = await FindPerson(ObjectId.Parse(id));
-
-			Assert.NotNull(created);
-			Assert.Equal(person.FirstName, created.FirstName);
-			Assert.Equal(person.LastName, created.LastName);
-			Assert.NotNull(person.BirthDate);
-			Assert.NotNull(created.BirthDate);
-			Assert.Equal(person.BirthDate.Value.Date, created.BirthDate.Value.Date);
-			Assert.NotNull(created.CreatedAtUtc);
-			Assert.Equal(testTime.UtcNow, created.CreatedAtUtc);
-		}
-
-
-		[Fact]
 		public async Task MongoProvider_AddNewPerson() {
 			var person = GeneratePerson();
 			var repository = await MongoRepositoryProvider.GetRepositoryAsync(TenantId);
@@ -100,17 +78,6 @@ namespace Deveel.Data {
 			var person = GeneratePerson();
 
 			var repository = await RepositoryProvider.GetRepositoryAsync(TenantId);
-			var id = await repository.AddAsync(person);
-
-			Assert.NotNull(id);
-			Assert.NotEmpty(id);
-		}
-
-		[Fact]
-		public async Task FacadeRepositoryProvider_AddNewPerson() {
-			var person = GeneratePerson();
-
-			var repository = await FacadeRepositoryProvider.GetRepositoryAsync(TenantId);
 			var id = await repository.AddAsync(person);
 
 			Assert.NotNull(id);
@@ -146,21 +113,5 @@ namespace Deveel.Data {
 				Assert.Equal(persons[i].Id, ObjectId.Parse(results[i]));
 			}
 		}
-
-		[Fact]
-		public async Task FacadeRepository_AddNewPersons() {
-			var persons = GeneratePersons(100);
-
-			var results = await FacadeRepository.AddRangeAsync(persons);
-
-			Assert.NotNull(results);
-			Assert.NotEmpty(results);
-			Assert.Equal(persons.Count, results.Count);
-
-			for (int i = 0; i < results.Count; i++) {
-				Assert.Equal(persons[i].Id, ObjectId.Parse(results[i]));
-			}
-		}
-
 	}
 }

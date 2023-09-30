@@ -19,15 +19,9 @@ namespace Deveel.Data {
 
 		protected IRepository<Person> Repository => serviceProvider.GetRequiredService<IRepository<Person>>();
 
-		protected IRepository<IPerson> FacadeRepository => serviceProvider.GetRequiredService<IRepository<IPerson>>();
-
 		protected IPageableRepository<Person>? PageableRepository => Repository as IPageableRepository<Person>;
 
-		protected IPageableRepository<IPerson>? FacadePageableRepository => FacadeRepository as IPageableRepository<IPerson>;
-
 		protected IFilterableRepository<Person>? FilterableRepository => Repository as IFilterableRepository<Person>;
-
-		protected IFilterableRepository<IPerson>? FilterableFacadeRepository => FacadeRepository as IFilterableRepository<IPerson>;
 
         protected Faker<Person> PersonFaker { get; }
 
@@ -37,14 +31,12 @@ namespace Deveel.Data {
 			=> PersonFaker.Generate(count);
 
 		protected virtual void AddRepository(IServiceCollection services) {
-			services
-				.AddInMemoryRepository<Person>(builder => builder.WithFacade<IPerson>())
-				.AddRepositoryController();
+			services.AddInMemoryRepository<Person>();
+			services.AddRepositoryController();
 		}
 
 		public virtual async Task InitializeAsync() {
 			await SeedAsync(InMemoryRepository);
-			await SeedAsync(FacadeRepository);
 			await SeedAsync(Repository);
 		}
 
@@ -52,7 +44,7 @@ namespace Deveel.Data {
 			return Task.CompletedTask;
 		}
 
-		protected virtual Task SeedAsync(IRepository repository) {
+		protected virtual Task SeedAsync(IRepository<Person> repository) {
 			return Task.CompletedTask;
 		}
 	}

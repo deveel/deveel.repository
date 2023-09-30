@@ -61,14 +61,6 @@ namespace Deveel.Data {
 
 		protected IPageableRepository<MongoTenantPerson> PageableRepository => (IPageableRepository<MongoTenantPerson>)Repository;
 
-		protected IRepositoryProvider<IPerson> FacadeRepositoryProvider => serviceProvider.GetRequiredService<IRepositoryProvider<IPerson>>();
-
-		protected IRepository<IPerson> FacadeRepository => FacadeRepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
-
-		protected IPageableRepository<IPerson> FacadePageableRepository => (IPageableRepository<IPerson>)FacadeRepository;
-
-		protected IFilterableRepository<IPerson> FilterableFacadeRepository => (IFilterableRepository<IPerson>)FacadeRepository;
-
 		protected IDataTransactionFactory TransactionFactory => serviceProvider.GetRequiredService<IDataTransactionFactory>();
 
 		protected MongoTenantPerson GeneratePerson() => PersonFaker.Generate();
@@ -100,10 +92,8 @@ namespace Deveel.Data {
 		protected virtual void AddRepository<TContext>(MongoDbContextBuilder<TContext> builder)
 			where TContext : class, IMongoDbContext {
             builder.UseTenantConnection();
-            builder.AddRepository<MongoTenantPerson>()
-                .WithDefaultTenantProvider()
-                .WithFacade<IPerson>()
-                .WithDefaultFacadeTenantProvider<IPerson>();
+			builder.AddRepository<MongoTenantPerson>()
+				.WithDefaultTenantProvider();
         }
 
         public virtual async Task InitializeAsync() {
@@ -112,17 +102,12 @@ namespace Deveel.Data {
 
 			var repository = await MongoRepositoryProvider.GetRepositoryAsync(TenantId);
 			
-			//await repository.CreateAsync();
-
 			await SeedAsync(repository);
 		}
 
 		public virtual async Task DisposeAsync() {
 			var controller = serviceProvider.GetRequiredService<IRepositoryController>();
 			await controller.DropTenantRepositoryAsync<MongoTenantPerson>(TenantId);
-
-			//var repository = MongoRepositoryProvider.GetRepository(TenantId);
-			//await repository.DropAsync();
 		}
 
 		protected virtual Task SeedAsync(IRepository<MongoTenantPerson> repository) {

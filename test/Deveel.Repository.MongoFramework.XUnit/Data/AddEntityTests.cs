@@ -29,17 +29,6 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FacadeRepository_CreateNewPerson() {
-			var person = GeneratePerson();
-
-			var id = await FacadeRepository.AddAsync(person);
-
-			Assert.NotNull(id);
-			Assert.NotEmpty(id);
-		}
-
-
-		[Fact]
 		public async Task Mongo_CreateNewPersons() {
 			var persons = Enumerable.Range(0, 100)
 				.Select(x => GeneratePerson())
@@ -72,23 +61,5 @@ namespace Deveel.Data {
 				Assert.Equal(persons[i].Id, ObjectId.Parse(results[i]));
 			}
 		}
-
-		[Fact]
-		public async Task FacadeRepository_CreateNewPersons() {
-			var persons = Enumerable.Range(0, 100)
-				.Select(x => GeneratePerson())
-				.ToList();
-
-			var results = await FacadeRepository.AddRangeAsync(persons);
-
-			Assert.NotNull(results);
-			Assert.NotEmpty(results);
-			Assert.Equal(persons.Count, results.Count);
-
-			for (int i = 0; i < results.Count; i++) {
-				Assert.Equal(persons[i].Id, ObjectId.Parse(results[i]));
-			}
-		}
-
 	}
 }

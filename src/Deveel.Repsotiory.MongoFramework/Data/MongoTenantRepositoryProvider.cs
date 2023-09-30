@@ -28,7 +28,7 @@ namespace Deveel.Data {
 
 		protected ISystemTime SystemTime { get; }
 
-		protected virtual async Task<TTenantInfo?> GetTenantInfoAsync(string tenantId) {
+		protected virtual async Task<TTenantInfo?> GetTenantInfoAsync(string tenantId, CancellationToken cancellationToken) {
 			if (stores == null)
 				return null;
 
@@ -37,8 +37,7 @@ namespace Deveel.Data {
 				var tenantInfo = await store.TryGetAsync(tenantId);
 
 				if (tenantInfo == null)
-					tenantInfo = store.TryGetByIdentifierAsync(tenantId)
-						.ConfigureAwait(false).GetAwaiter().GetResult();
+					tenantInfo = await store.TryGetByIdentifierAsync(tenantId);
 
 				if (tenantInfo != null) {
 					return tenantInfo;
@@ -84,17 +83,16 @@ namespace Deveel.Data {
 			};
 		}
 
-		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId) => await GetRepositoryAsync(tenantId);
+		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken) 
+			=> await GetRepositoryAsync(tenantId, cancellationToken);
 
-		async Task<IRepository> IRepositoryProvider.GetRepositoryAsync(string tenantId) => await GetRepositoryAsync(tenantId);
-
-		public async Task<MongoRepository<TContext, TEntity>> GetRepositoryAsync(string tenantId) {
+		public async Task<MongoRepository<TContext, TEntity>> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken = default) {
 			try {
 				if (repositories == null)
 					repositories = new Dictionary<string, MongoRepository<TContext, TEntity>>();
 
 				if (!repositories.TryGetValue(tenantId, out var repository)) {
-					var tenantInfo = await GetTenantInfoAsync(tenantId);
+					var tenantInfo = await GetTenantInfoAsync(tenantId, cancellationToken);
 
 					if (tenantInfo == null)
 						throw new RepositoryException($"Unable to find any tenant for the ID '{tenantId}' - cannot construct a context");

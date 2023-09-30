@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Drawing;
+using System.Linq.Expressions;
 
 using CommunityToolkit.Diagnostics;
 
@@ -9,7 +10,7 @@ namespace Deveel.Data {
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>
-    public class RepositoryPageRequest<TEntity> : RepositoryPageRequest where TEntity : class {
+    public class RepositoryPageRequest<TEntity> where TEntity : class {
 		/// <summary>
 		/// Constructs a new page request with the given page number and size
 		/// </summary>
@@ -22,9 +23,40 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// If either the page number or the page size are smaller than 1.
 		/// </exception>
-		public RepositoryPageRequest(int page, int size)
-			: base(page, size) {
+		public RepositoryPageRequest(int page, int size) {
+			Guard.IsGreaterThanOrEqualTo(page, 1, nameof(page));
+			Guard.IsGreaterThanOrEqualTo(size, 1, nameof(size));
+
+			Page = page;
+			Size = size;
 		}
+
+		/// <summary>
+		/// Gets the number of the page to return
+		/// </summary>
+		public int Page { get; }
+
+		/// <summary>
+		/// Gets the maximum number of items to be returned.
+		/// </summary>
+		public int Size { get; }
+
+		/// <summary>
+		/// Gets the starting offet in the repository where to start
+		/// collecting the items to return
+		/// </summary>
+		public int Offset => (Page - 1) * Size;
+
+		/// <summary>
+		/// Gets or sets a filter to restrict the context of the query
+		/// </summary>
+		public IQueryFilter? Filter { get; set; }
+
+		/// <summary>
+		/// Gets or sets an optional set of orders to sort the
+		/// result of the request
+		/// </summary>
+		public IEnumerable<IResultSort>? ResultSorts { get; set; }
 
 		/// <summary>
 		/// Sets or appends a new filter
@@ -83,25 +115,28 @@ namespace Deveel.Data {
 			return (RepositoryPageRequest<TEntity>) OrderBy(new ExpressionResultSort<TEntity>(selector, false));
 		}
 
-		/// <inheritdoc/>
-		public new RepositoryPageRequest<TEntity> OrderBy(IResultSort resultSort) {
-			return (RepositoryPageRequest<TEntity>) base.OrderBy(resultSort);
+		/// <summary>
+		/// Appends the given sort order to the request
+		/// </summary>
+		/// <param name="resultSort">
+		/// The 
+		/// </param>
+		/// <returns></returns>
+		public RepositoryPageRequest<TEntity> OrderBy(IResultSort resultSort) {
+			Guard.IsNotNull(resultSort, nameof(resultSort));
+
+			if (ResultSorts == null)
+				ResultSorts = new List<IResultSort>();
+
+			ResultSorts = ResultSorts.Append(resultSort);
+
+			return this;
 		}
 
-		public new RepositoryPageRequest<TEntity> OrderBy(string fieldName, bool ascending = true) {
-			return (RepositoryPageRequest<TEntity>) base.OrderBy(fieldName, ascending);
-		}
+		public RepositoryPageRequest<TEntity> OrderBy(string fieldName, bool ascending = true) {
+			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
 
-		public RepositoryPageRequest<TTarget> As<TTarget>() where TTarget : class {
-			var page = new RepositoryPageRequest<TTarget>(Page, Size);
-
-			if (Filter != null) {
-				page.Filter = QueryFilter.Where(Filter.AsLambda<TEntity>().As<TTarget>());
-			}
-			if (ResultSorts != null)
-				page.ResultSorts = ResultSorts;
-
-			return page;
+			return OrderBy(new FieldResultSort(fieldName, ascending));
 		}
 	}
 }

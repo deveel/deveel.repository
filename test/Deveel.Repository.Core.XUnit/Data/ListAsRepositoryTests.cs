@@ -31,7 +31,7 @@
 
 			await repository.AddAsync(person);
 
-			Assert.Equal(listCount + 1, repository.CountAll());
+			Assert.Equal(listCount + 1, await repository.CountAllAsync());
 			Assert.NotNull(person.Id);
 		}
 
@@ -45,7 +45,7 @@
 
 			await repository.AddAsync(person);
 
-			Assert.Equal(listCount + 1, repository.AsFilterable().CountAll());
+			Assert.Equal(listCount + 1, repository.CountAll());
 			Assert.NotEqual(personId, person.Id);
 		}
 

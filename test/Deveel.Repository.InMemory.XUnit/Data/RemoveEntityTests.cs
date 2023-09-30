@@ -8,7 +8,7 @@ namespace Deveel.Data {
 			people = GeneratePersons(100);
 		}
 
-		protected override async Task SeedAsync(IRepository repository) {
+		protected override async Task SeedAsync(IRepository<Person> repository) {
 			await repository.AddRangeAsync(people);
 		}
 
@@ -35,18 +35,6 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FacadeRepository_DeleteExisting() {
-			var entity = people.Random();
-
-			Assert.NotNull(entity);
-
-			var result = await FacadeRepository.RemoveAsync(entity);
-
-			Assert.True(result);
-		}
-
-
-		[Fact]
 		public async Task Memory_DeleteNotExisting() {
 			var entity = new PersonFaker()
 				.RuleFor(x => x.Id, f => f.Random.Guid().ToString())
@@ -64,16 +52,6 @@ namespace Deveel.Data {
 				.Generate();
 
 			var result = await Repository.RemoveAsync(entity);
-
-			Assert.False(result);
-		}
-
-		[Fact]
-		public async Task FacadeRepository_DeleteNotExisting() {
-			var entity = new PersonFaker()
-				.RuleFor(x => x.Id, f => f.Random.Guid().ToString()).Generate();
-
-			var result = await FacadeRepository.RemoveAsync(entity);
 
 			Assert.False(result);
 		}
@@ -101,17 +79,6 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FacadeRepository_DeleteById_Existing() {
-			var id = people.Random()?.Id;
-
-			Assert.NotNull(id);
-
-			var result = await FacadeRepository.RemoveByIdAsync(id);
-
-			Assert.True(result);
-		}
-
-		[Fact]
 		public async Task Memory_DeleteById_NotExisting() {
 			var id = Guid.NewGuid().ToString();
 
@@ -125,15 +92,6 @@ namespace Deveel.Data {
 			var id = Guid.NewGuid().ToString();
 
 			var result = await Repository.RemoveByIdAsync(id);
-
-			Assert.False(result);
-		}
-
-		[Fact]
-		public async Task FacadeRepository_DeleteById_NotExisting() {
-			var id = Guid.NewGuid().ToString();
-
-			var result = await FacadeRepository.RemoveByIdAsync(id);
 
 			Assert.False(result);
 		}
