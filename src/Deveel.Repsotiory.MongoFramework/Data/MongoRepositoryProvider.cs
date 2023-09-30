@@ -66,7 +66,7 @@ namespace Deveel.Data {
 
 		async Task<IRepository> IRepositoryProvider.GetRepositoryAsync(string tenantId) => await GetRepositoryAsync(tenantId);
 
-		public async Task<MongoRepository<TContext, TEntity>> GetRepositoryAsync(string tenantId) {
+		public Task<MongoRepository<TContext, TEntity>> GetRepositoryAsync(string tenantId) {
 			try {
 				if (repositories == null)
 					repositories = new Dictionary<string, MongoRepository<TContext, TEntity>>();
@@ -82,7 +82,7 @@ namespace Deveel.Data {
 					repositories[tenantId] = repository;
 				}
 
-				return repository;
+				return Task.FromResult(repository);
 			} catch (RepositoryException) {
 				throw;
 			} catch (Exception ex) {

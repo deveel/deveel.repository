@@ -61,10 +61,10 @@ namespace Deveel.Data {
 			if (filter.IsEmpty())
 				return e => true;
 
-			if (!(filter is ExpressionQueryFilter<TEntity> filterExpr))
+			if (!(filter is IExpressionQueryFilter filterExpr))
 				throw new ArgumentException("Only expression query filters are supported");
 
-			return filterExpr.Expression;
+			return filterExpr.AsLambda<TEntity>();
 		}
 
 		/// <summary>

@@ -45,6 +45,9 @@
             Thrown if the given filter is <c>null</c>.
             </exception>
         </member>
+        <member name="M:Deveel.Data.CombinedQueryFilter.AsLambda``1">
+            <inheritdoc/>
+        </member>
         <member name="T:Deveel.Data.DefaultRepositoryController">
             <summary>
             A default implementation of the <see cref="T:Deveel.Data.IRepositoryController"/> interface
@@ -223,6 +226,9 @@
             Gets the lambda filter expression
             </summary>
         </member>
+        <member name="M:Deveel.Data.ExpressionQueryFilter`1.Deveel#Data#IExpressionQueryFilter#AsLambda``1">
+            <inheritdoc/>
+        </member>
         <member name="T:Deveel.Data.ExpressionResultSort`1">
             <summary>
             Describes a sorting rule that uses an expression to 
@@ -377,6 +383,25 @@
             Returns a new instance of <see cref="T:Deveel.Data.IDataTransaction"/> that
             can be used in a <see cref="T:Deveel.Data.IRepository"/> to isolate
             the access to the data of an underlying storage
+            </returns>
+        </member>
+        <member name="T:Deveel.Data.IExpressionQueryFilter">
+            <summary>
+            A type of query filter that is convertible
+            to a LINQ lambda expression for filtering.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.IExpressionQueryFilter.AsLambda``1">
+            <summary>
+            Converts the filter to a LINQ expression that can be
+            used to filter a <see cref="T:System.Linq.IQueryable`1"/> storage
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity to be filtered
+            </typeparam>
+            <returns>
+            Returns an instance of <see cref="T:System.Linq.Expressions.LambdaExpression"/> that
+            can be used to filter a <see cref="T:System.Linq.IQueryable`1"/>.
             </returns>
         </member>
         <member name="T:Deveel.Data.IFieldRef">
@@ -1563,7 +1588,7 @@
             to provide a set of utility methods to perform common operations
             </summary>
         </member>
-        <member name="M:Deveel.Data.RepositoryExtensions.Create``1(Deveel.Data.IRepository{``0},``0)">
+        <member name="M:Deveel.Data.RepositoryExtensions.Add``1(Deveel.Data.IRepository{``0},``0)">
             <summary>
             Creates a new entity in the repository synchronously
             </summary>
@@ -1581,7 +1606,7 @@
             within the underlying storage.
             </returns>
         </member>
-        <member name="M:Deveel.Data.RepositoryExtensions.Create``1(Deveel.Data.ITransactionalRepository{``0},Deveel.Data.IDataTransaction,``0)">
+        <member name="M:Deveel.Data.RepositoryExtensions.Add``1(Deveel.Data.ITransactionalRepository{``0},Deveel.Data.IDataTransaction,``0)">
             <summary>
             Creates a new entity in the repository synchronously
             </summary>
@@ -1602,7 +1627,7 @@
             within the underlying storage.
             </returns>
         </member>
-        <member name="M:Deveel.Data.RepositoryExtensions.Create(Deveel.Data.IRepository,System.Object)">
+        <member name="M:Deveel.Data.RepositoryExtensions.Add(Deveel.Data.IRepository,System.Object)">
             <summary>
             Creates a new entity in the repository synchronously
             </summary>
@@ -1617,7 +1642,7 @@
             within the underlying storage.
             </returns>
         </member>
-        <member name="M:Deveel.Data.RepositoryExtensions.Create(Deveel.Data.ITransactionalRepository,Deveel.Data.IDataTransaction,System.Object)">
+        <member name="M:Deveel.Data.RepositoryExtensions.Add(Deveel.Data.ITransactionalRepository,Deveel.Data.IDataTransaction,System.Object)">
             <summary>
             Creates a new entity in the repository synchronously
             within the given transaction
@@ -1821,13 +1846,25 @@
             </summary>
             <typeparam name="TEntity"></typeparam>
             <seealso cref="T:Deveel.Data.RepositoryPageRequest`1"/>
-            <seealso cref="!:IRepository&lt;TEntity&gt;.GetPageAsync(RepositoryPageRequest&lt;TEntity&gt;, CancellationToken)"/>
+            <seealso cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.RepositoryPageRequest{`0},System.Threading.CancellationToken)"/>
         </member>
         <member name="M:Deveel.Data.RepositoryPage`1.#ctor(Deveel.Data.RepositoryPageRequest,System.Int32,System.Collections.Generic.IEnumerable{`0})">
             <inheritdoc/>
         </member>
         <member name="P:Deveel.Data.RepositoryPage`1.Items">
             <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.RepositoryPage`1.Empty(Deveel.Data.RepositoryPageRequest)">
+            <summary>
+            Creates an empty page response to the given request
+            </summary>
+            <param name="page">
+            The request that originated the page
+            </param>
+            <returns>
+            Returns a new instance of <see cref="T:Deveel.Data.RepositoryPage`1"/> that
+            represents an empty page.
+            </returns>
         </member>
         <member name="T:Deveel.Data.ResultSort">
             <summary>

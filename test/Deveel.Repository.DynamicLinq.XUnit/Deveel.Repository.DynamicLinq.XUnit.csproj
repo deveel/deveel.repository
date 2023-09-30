@@ -4,13 +4,11 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Deveel</RootNamespace>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Data\FilterTests.cs" />
-  </ItemGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Deveel</RootNamespace>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="34.0.2" />
@@ -28,7 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Deveel.Repository.DynamicLinq\Deveel.Repository.DynamicLinq.csproj" />
-    <ProjectReference Include="..\..\src\Deveel.Repository.InMemory\Deveel.Repository.InMemory.csproj" />
   </ItemGroup>
 
 </Project>

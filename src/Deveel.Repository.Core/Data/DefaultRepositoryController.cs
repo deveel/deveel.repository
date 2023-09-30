@@ -56,11 +56,11 @@ namespace Deveel.Data {
 				logger.LogError(ex, message, args);
 		}
 
-		private IRepository GetTenantRepository(IRepositoryProvider provider, string tenantId) {
+		private async Task<IRepository> GetTenantRepositoryAsync(IRepositoryProvider provider, string tenantId) {
 			try {
 				LogTrace("Obtaining a new repository instance for tenant '{TenantId}'", tenantId);
 
-				var repository = provider.GetRepository(tenantId);
+				var repository = await provider.GetRepositoryAsync(tenantId);
 
 				LogTrace("A new repository of type {RepositoryType} was obtained for tenant '{TenantId}'",
 					repository.GetType().Name, tenantId);
@@ -210,7 +210,7 @@ namespace Deveel.Data {
 
 			var providers = serviceProvider.GetServices<IRepositoryProvider>();
 			foreach (var provider in providers) {
-				var repository = RequireControllable(GetTenantRepository(provider, tenantId));
+				var repository = RequireControllable(await GetTenantRepositoryAsync(provider, tenantId));
 
 				await CreateRepository(repository, cancellationToken);
 			}
@@ -238,7 +238,7 @@ namespace Deveel.Data {
 
 			var providers = serviceProvider.GetServices<IRepositoryProvider>();
 			foreach (var provider in providers) {
-				var repository = RequireControllable(GetTenantRepository(provider, tenantId));
+				var repository = RequireControllable(await GetTenantRepositoryAsync(provider, tenantId));
 
 				await DropRepository(repository, cancellationToken);
 			}
@@ -265,7 +265,7 @@ namespace Deveel.Data {
 
 			var provider = RequireRepositoryProvider<TEntity>();
 
-			var repository = RequireControllable(provider.GetRepository(tenantId));
+			var repository = RequireControllable(await provider.GetRepositoryAsync(tenantId));
 
 			await CreateRepository(repository, cancellationToken);
 
@@ -290,7 +290,7 @@ namespace Deveel.Data {
 
 			var provider = RequireRepositoryProvider<TEntity>();
 
-			var repository = RequireControllable(GetTenantRepository(provider, tenantId));
+			var repository = RequireControllable(await GetTenantRepositoryAsync(provider, tenantId));
 
 			await DropRepository(repository, cancellationToken);
 

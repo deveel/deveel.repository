@@ -7,7 +7,7 @@ namespace Deveel.Data {
 	/// </summary>
 	/// <typeparam name="TEntity">The type of entity to construct
 	/// the field</typeparam>
-	public sealed class ExpressionQueryFilter<TEntity> : IQueryFilter where TEntity : class {
+	public sealed class ExpressionQueryFilter<TEntity> : IExpressionQueryFilter where TEntity : class {
 		/// <summary>
 		/// Constructs the filter with the given expression
 		/// </summary>
@@ -25,5 +25,10 @@ namespace Deveel.Data {
 		/// Gets the lambda filter expression
 		/// </summary>
 		public Expression<Func<TEntity, bool>> Expression { get; }
+
+		/// <inheritdoc/>
+		Expression<Func<T, bool>> IExpressionQueryFilter.AsLambda<T>()
+			where T : class
+			=> Expression.As<T>();
 	}
 }
