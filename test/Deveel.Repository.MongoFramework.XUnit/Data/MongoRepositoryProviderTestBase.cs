@@ -55,7 +55,7 @@ namespace Deveel.Data {
 		protected IRepositoryProvider<MongoTenantPerson> RepositoryProvider => 
 			serviceProvider.GetRequiredService<IRepositoryProvider<MongoTenantPerson>>();
 
-		protected IRepository<MongoTenantPerson> Repository => RepositoryProvider.GetRepository(TenantId);
+		protected IRepository<MongoTenantPerson> Repository => RepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		protected IFilterableRepository<MongoTenantPerson> FilterableRepository => (IFilterableRepository<MongoTenantPerson>)Repository;
 
@@ -63,7 +63,7 @@ namespace Deveel.Data {
 
 		protected IRepositoryProvider<IPerson> FacadeRepositoryProvider => serviceProvider.GetRequiredService<IRepositoryProvider<IPerson>>();
 
-		protected IRepository<IPerson> FacadeRepository => FacadeRepositoryProvider.GetRepository(TenantId);
+		protected IRepository<IPerson> FacadeRepository => FacadeRepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		protected IPageableRepository<IPerson> FacadePageableRepository => (IPageableRepository<IPerson>)FacadeRepository;
 

@@ -6,7 +6,7 @@ namespace Deveel.Data {
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
 	/// <seealso cref="RepositoryPageRequest{TEntity}"/>
-	/// <seealso cref="IRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>
+	/// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>
 	public class RepositoryPage<TEntity> : RepositoryPage where TEntity : class {
 		/// <inheritdoc/>
 		public RepositoryPage(RepositoryPageRequest request, int totalItems, IEnumerable<TEntity>? items = null)
@@ -19,6 +19,16 @@ namespace Deveel.Data {
 			set => base.Items = value;
 		}
 
+		/// <summary>
+		/// Creates an empty page response to the given request
+		/// </summary>
+		/// <param name="page">
+		/// The request that originated the page
+		/// </param>
+		/// <returns>
+		/// Returns a new instance of <see cref="RepositoryPage{TEntity}"/> that
+		/// represents an empty page.
+		/// </returns>
 		public static new RepositoryPage<TEntity> Empty(RepositoryPageRequest page) => new RepositoryPage<TEntity>(page, 0);
 	}
 }

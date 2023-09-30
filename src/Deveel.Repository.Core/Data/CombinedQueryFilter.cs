@@ -1,11 +1,13 @@
-﻿using CommunityToolkit.Diagnostics;
+﻿using System.Linq.Expressions;
+
+using CommunityToolkit.Diagnostics;
 
 namespace Deveel.Data {
 	/// <summary>
 	/// An object that combines multiple <see cref="IQueryFilter"/> objects
 	/// into a single one.
 	/// </summary>
-	public sealed class CombinedQueryFilter : IQueryFilter {
+	public sealed class CombinedQueryFilter : IExpressionQueryFilter {
 		/// <summary>
 		/// Constructs the filter by combining the given list of filters.
 		/// </summary>
@@ -49,6 +51,38 @@ namespace Deveel.Data {
 
 			var filters = new List<IQueryFilter>(Filters) { filter};
 			return new CombinedQueryFilter(filters);
+		}
+
+		/// <inheritdoc/>
+		public Expression<Func<TEntity, bool>> AsLambda<TEntity>()
+			where TEntity : class {
+
+			if (Filters.Count == 0)
+				throw new InvalidOperationException("No filters were combined");
+
+			if (Filters.Count == 1)
+				return Filters[0].AsLambda<TEntity>();
+
+			Expression<Func<TEntity, bool>>? result = null;
+
+			foreach (var filter in Filters) {
+				if (filter == null || filter.IsEmpty())
+					continue;
+
+				var lambda = filter.AsLambda<TEntity>();
+				if (result == null) {
+					result = lambda;
+				} else {
+					var lambdaParam = lambda.Parameters[0];
+					if (lambdaParam.Name != result.Parameters[0].Name)
+						throw new InvalidOperationException("The parameters of the filters are not the same");
+
+					var expr = Expression.AndAlso(result.Body, lambda.Body);
+					result = Expression.Lambda<Func<TEntity, bool>>(expr, lambdaParam);
+				}
+			}
+
+			return result ?? throw new InvalidOperationException("No filters were combined");
 		}
 	}
 }

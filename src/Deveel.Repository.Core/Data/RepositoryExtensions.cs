@@ -22,15 +22,40 @@ namespace Deveel.Data {
             return filterable;
         }
 
-		private static ITransactionalRepository RequireTransactional(this IRepository repository) {
-			if (!(repository is ITransactionalRepository transactionalRepository))
-				throw new NotSupportedException("The repository does not support transactions");
+		private static IQueryableRepository<TEntity> RequireQueryable<TEntity>(this IRepository<TEntity> repository)
+			where TEntity : class {
+			if (!(repository is IQueryableRepository<TEntity> queryable))
+				throw new NotSupportedException("The repository is not queryable");
 
-			return transactionalRepository;
+			return queryable;
 		}
 
+		private static bool IsFilterable<TEntity>(this IRepository<TEntity> repository) where TEntity : class {
+			return repository is IFilterableRepository<TEntity>;
+		}
 
-        #region Add
+		private static bool IsFilterable(this IRepository repository) {
+			return repository is IFilterableRepository;
+		}
+
+		private static bool IsQueryable<TEntity>(this IRepository<TEntity> repository) where TEntity : class {
+			return repository is IQueryableRepository<TEntity>;
+		}
+
+		#region AsFilterable
+
+		public static IFilterableRepository<TEntity> AsFilterable<TEntity>(this IRepository<TEntity> repository)
+			where TEntity : class {
+			if (!(repository is IFilterableRepository<TEntity> filterable))
+				throw new NotSupportedException("The repository is not filterable");
+
+			return filterable;
+		}
+
+		#endregion
+
+
+		#region Add
 
 		/// <summary>
 		/// Creates a new entity in the repository synchronously
@@ -48,7 +73,7 @@ namespace Deveel.Data {
 		/// Returns a string that uniquely identifies the created entity
 		/// within the underlying storage.
 		/// </returns>
-        public static string Create<TEntity>(this IRepository<TEntity> repository, TEntity entity)
+		public static string Add<TEntity>(this IRepository<TEntity> repository, TEntity entity)
             where TEntity : class
             => repository.AddAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -219,8 +244,14 @@ namespace Deveel.Data {
             => repository.RequireFilterable().ExistsAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
 
         public static bool Exists<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
-            where TEntity : class
-            => repository.RequireFilterable().ExistsAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
+            where TEntity : class {
+			if (repository.IsFilterable())
+				return repository.RequireFilterable().Exists(filter);
+			if (repository.IsQueryable())
+				return repository.RequireQueryable().AsQueryable().Any(filter.AsLambda<TEntity>());
+
+			throw new NotSupportedException("The repository does not support querying");
+		}
 
         public static bool Exists(this IRepository repository, IQueryFilter filter)
             => repository.RequireFilterable().ExistsAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -233,12 +264,18 @@ namespace Deveel.Data {
 
         #region Count
 
-        public static Task<long> CountAllAsync(this IFilterableRepository repository, CancellationToken cancellationToken = default)
-            => repository.CountAsync(QueryFilter.Empty, cancellationToken);
+        public static Task<long> CountAllAsync(this IRepository repository, CancellationToken cancellationToken = default)
+            => repository.RequireFilterable().CountAsync(QueryFilter.Empty, cancellationToken);
 
-        public static Task<long> CountAsync<TEntity>(this IFilterableRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
-            where TEntity : class
-            => repository.CountAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
+        public static Task<long> CountAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+            where TEntity : class {
+			if (repository.IsFilterable())
+				return repository.RequireFilterable().CountAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
+			if (repository.IsQueryable())
+				return Task.FromResult(repository.RequireQueryable().AsQueryable().LongCount(filter));
+
+			throw new NotSupportedException("The repository does not support querying");
+		}
 
         public static long Count<TEntity>(this IFilterableRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter)
             where TEntity : class

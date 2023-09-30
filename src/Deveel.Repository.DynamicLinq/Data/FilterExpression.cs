@@ -1,39 +1,60 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// Provides helpers to create and evaluate filter expressions
+	/// </summary>
 	public static class FilterExpression {
-		#region AsExpression
-
+		/// <summary>
+		/// Converts the given expression string into a <see cref="LambdaExpression"/>
+		/// to be used as a filter of a <see cref="IQueryable{T}"/>
+		/// </summary>
+		/// <typeparam name="T">
+		/// The type of the object to be filtered
+		/// </typeparam>
+		/// <param name="paramName">
+		/// The name of the parameter to be used in the expression
+		/// </param>
+		/// <param name="expression">
+		/// The LINQ expression string to be parsed
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="LambdaExpression"/> that can be used as a filter
+		/// to a <see cref="IQueryable{T}"/>.
+		/// </returns>
+		/// <exception cref="InvalidOperationException">
+		/// Thrown when the resulting expression is not a filter (the 
+		/// result type is not <see cref="bool"/>).
+		/// </exception>
 		public static Expression<Func<T, bool>> AsLambda<T>(string paramName, string expression) {
-			var paramExp = new[] { Expression.Parameter(typeof(T), paramName) };
-			var exp = DynamicExpressionParser.ParseLambda(ParsingConfig.Default, paramExp, typeof(bool), expression);
+			try {
+				var paramExp = new[] { Expression.Parameter(typeof(T), paramName) };
+				var exp = DynamicExpressionParser.ParseLambda(ParsingConfig.Default, paramExp, typeof(bool), expression);
 
-			if (exp.ReturnType != typeof(bool))
-				throw new InvalidOperationException("The resulting expression is not a filter");
+				if (exp.ReturnType != typeof(bool))
+					throw new InvalidOperationException("The resulting expression is not a filter");
 
-			return (Expression<Func<T, bool>>)exp;
+				return (Expression<Func<T, bool>>)exp;
+			} catch (Exception ex) {
+				throw new InvalidOperationException("Could not create the lambda expression", ex);
+			}
 		}
-
-		public static Expression<Func<object, bool>> AsLambda(Type type, string paramName, string expression) {
-			var paramExp = new[] { Expression.Parameter(type, paramName) };
-			var exp = DynamicExpressionParser.ParseLambda(ParsingConfig.Default, paramExp, typeof(bool), expression);
-
-			if (exp.ReturnType != typeof(bool))
-				throw new InvalidOperationException("The resulting expression is not a filter");
-
-			return (Expression<Func<object, bool>>)exp;
-		}
-
-		#endregion
 
 		#region Compile
 
+		/// <summary>
+		/// Converts the given expression string into a function
+		/// that can be used to filter a collection of objects
+		/// </summary>
+		/// <param name="paramTypes">
+		/// The array of types of the parameters to be used in the expression
+		/// </param>
+		/// <param name="paramNames">
+		/// The array of names of the parameters to be used in the expression
+		/// </param>
+		/// <param name="expression"></param>
+		/// <returns></returns>
 		public static Delegate Compile(Type[] paramTypes, string[] paramNames, string expression)
 			=> Compile(null, paramTypes, paramNames, expression);
 
@@ -85,49 +106,49 @@ namespace Deveel.Data {
 
 		#endregion
 
-		public static bool IsValid(Type paramType, string paramName, string expression)
-			=> IsValid(new Type[] { paramType }, new string[] { paramName }, expression);
+		//public static bool IsValid(Type paramType, string paramName, string expression)
+		//	=> IsValid(new Type[] { paramType }, new string[] { paramName }, expression);
 
-		public static bool IsValid(Type[] paramTypes, string[] paramNames, string expression) {
-			if (paramTypes.Length != paramNames.Length)
-				throw new ArgumentException("The types and the names arrays are not the same size");
+		//public static bool IsValid(Type[] paramTypes, string[] paramNames, string expression) {
+		//	if (paramTypes.Length != paramNames.Length)
+		//		throw new ArgumentException("The types and the names arrays are not the same size");
 
-			var parameters = new ParameterExpression[paramTypes.Length];
-			for (int i = 0; i < paramTypes.Length; i++) {
-				var paramType = paramTypes[i];
-				var paramName = paramNames[i];
+		//	var parameters = new ParameterExpression[paramTypes.Length];
+		//	for (int i = 0; i < paramTypes.Length; i++) {
+		//		var paramType = paramTypes[i];
+		//		var paramName = paramNames[i];
 
-				parameters[i] = Expression.Parameter(paramType, paramName);
-			}
+		//		parameters[i] = Expression.Parameter(paramType, paramName);
+		//	}
 
-			try {
-				var exp = DynamicExpressionParser.ParseLambda(ParsingConfig.Default, parameters, typeof(bool), expression);
+		//	try {
+		//		var exp = DynamicExpressionParser.ParseLambda(ParsingConfig.Default, parameters, typeof(bool), expression);
 
-				if (exp.ReturnType != typeof(bool))
-					return false;
+		//		if (exp.ReturnType != typeof(bool))
+		//			return false;
 
-				var func = exp.Compile();
+		//		var func = exp.Compile();
 
-				return func != null;
-			} catch (Exception) {
-				// TODO: try to interpret the error
-				return false;
-			}
-		}
+		//		return func != null;
+		//	} catch (Exception) {
+		//		// TODO: try to interpret the error
+		//		return false;
+		//	}
+		//}
 
-		public static bool Evaluate(Type paramType, string paramName, string expression, object obj) {
-			if (paramType is null)
-				throw new ArgumentNullException(nameof(paramType));
-			if (obj is null)
-				throw new ArgumentNullException(nameof(obj));
+		//public static bool Evaluate(Type paramType, string paramName, string expression, object obj) {
+		//	if (paramType is null)
+		//		throw new ArgumentNullException(nameof(paramType));
+		//	if (obj is null)
+		//		throw new ArgumentNullException(nameof(obj));
 
-			if (!paramType.IsInstanceOfType(obj))
-				throw new ArgumentException($"The object is not of type {paramType}", nameof(obj));
+		//	if (!paramType.IsInstanceOfType(obj))
+		//		throw new ArgumentException($"The object is not of type {paramType}", nameof(obj));
 
-			return (bool)Compile(paramType, paramName, expression).DynamicInvoke(obj);
-		}
+		//	return (bool)Compile(paramType, paramName, expression).DynamicInvoke(obj);
+		//}
 
-		public static bool Evaluate<T>(string paramName, string expression, T obj)
-			=> Evaluate(typeof(T), paramName, expression, obj);
+		//public static bool Evaluate<T>(string paramName, string expression, T obj)
+		//	=> Evaluate(typeof(T), paramName, expression, obj);
 	}
 }

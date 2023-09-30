@@ -43,7 +43,7 @@ namespace Deveel.Data {
 			var found = await FindPerson(person.Id);
 			Assert.Null(found);
 
-			var repo = RepositoryProvider.GetRepository(TenantId);
+			var repo = await RepositoryProvider.GetRepositoryAsync(TenantId);
 			var found2 = await repo.FindByIdAsync(person.Id.ToEntityId());
 
 			Assert.Null(found2);

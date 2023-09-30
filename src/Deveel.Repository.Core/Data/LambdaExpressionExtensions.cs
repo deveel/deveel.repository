@@ -13,8 +13,11 @@ namespace Deveel.Data {
 
 			var param = expression.Parameters[0];
 
+			if (param.Type == typeof(TTarget))
+				return (Expression<Func<TTarget, bool>>)expression;
+
 			if (!param.Type.IsAssignableFrom(typeof(TTarget)))
-				throw new ArgumentException();
+				throw new ArgumentException("The expression parameter is not assignable from the target type");
 
 			var parameter = Expression.Parameter(typeof(TTarget), param.Name);
 			var body = ReplaceType(expression.Body, param.Type, typeof(TTarget));

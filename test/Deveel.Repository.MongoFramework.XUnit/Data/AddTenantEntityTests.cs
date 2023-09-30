@@ -86,7 +86,8 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task MongoProvider_AddNewPerson() {
 			var person = GeneratePerson();
-			var id = await MongoRepositoryProvider.AddAsync(TenantId, person);
+			var repository = await MongoRepositoryProvider.GetRepositoryAsync(TenantId);
+			var id = await repository.AddAsync(person);
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
@@ -98,7 +99,8 @@ namespace Deveel.Data {
 		public async Task RepositoryProvider_AddNewPerson() {
 			var person = GeneratePerson();
 
-			var id = await RepositoryProvider.AddAsync(TenantId, person);
+			var repository = await RepositoryProvider.GetRepositoryAsync(TenantId);
+			var id = await repository.AddAsync(person);
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
@@ -108,7 +110,8 @@ namespace Deveel.Data {
 		public async Task FacadeRepositoryProvider_AddNewPerson() {
 			var person = GeneratePerson();
 
-			var id = await FacadeRepositoryProvider.AddAsync(TenantId, person);
+			var repository = await FacadeRepositoryProvider.GetRepositoryAsync(TenantId);
+			var id = await repository.AddAsync(person);
 
 			Assert.NotNull(id);
 			Assert.NotEmpty(id);
