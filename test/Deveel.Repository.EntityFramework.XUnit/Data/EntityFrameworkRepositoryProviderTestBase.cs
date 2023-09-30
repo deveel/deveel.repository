@@ -73,7 +73,7 @@ namespace Deveel.Data {
         protected IRepositoryProvider<PersonEntity> RepositoryProvider 
             => serviceProvider.GetRequiredService<IRepositoryProvider<PersonEntity>>();
 
-        protected IRepository<PersonEntity> Repository => RepositoryProvider.GetRepository(TenantId);
+        protected IRepository<PersonEntity> Repository => RepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
 
         protected PersonEntity GeneratePerson() => PersonFaker.Generate();
 

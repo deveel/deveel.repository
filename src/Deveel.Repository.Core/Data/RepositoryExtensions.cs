@@ -14,6 +14,14 @@ namespace Deveel.Data {
             return filterable;
         }
 
+		private static ITransactionalRepository<TEntity> RequireTransactional<TEntity>(this IRepository<TEntity> repository)
+			where TEntity : class {
+			if (!(repository is ITransactionalRepository<TEntity> transactional))
+				throw new NotSupportedException("The repository is not transactional");
+
+			return transactional;
+		}
+
         private static IFilterableRepository<TEntity> RequireFilterable<TEntity>(this IRepository<TEntity> repository)
             where TEntity : class {
             if (!(repository is IFilterableRepository<TEntity> filterable))
