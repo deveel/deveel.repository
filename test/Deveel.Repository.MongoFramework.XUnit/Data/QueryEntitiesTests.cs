@@ -291,7 +291,7 @@ namespace Deveel.Data {
 			Assert.Equal(peopleCount, result.TotalItems);
 			Assert.NotNull(result.Items);
 			Assert.NotEmpty(result.Items);
-			Assert.Equal(perPage, result.Items.Count());
+			Assert.Equal(perPage, result.Items.Count);
 		}
 
 

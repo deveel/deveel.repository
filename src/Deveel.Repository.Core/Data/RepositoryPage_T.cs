@@ -28,7 +28,7 @@ namespace Deveel.Data {
 
 			Request = request ?? throw new ArgumentNullException(nameof(request));
 			TotalItems = totalItems;
-			Items = items;
+			Items = items?.ToList().AsReadOnly();
 		}
 
 		/// <summary>
@@ -45,7 +45,7 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Gets a list of items included in the page
 		/// </summary>
-		public IEnumerable<TEntity>? Items { get; set; }
+		public IReadOnlyList<TEntity>? Items { get; set; }
 
 		/// <summary>
 		/// Gets a count of the total available pages

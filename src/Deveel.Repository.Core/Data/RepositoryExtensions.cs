@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace Deveel.Data {
 	/// <summary>
@@ -31,12 +30,42 @@ namespace Deveel.Data {
 			return repository is IQueryableRepository<TEntity>;
 		}
 
+		private static bool IsPageable<TEntity>(this IRepository<TEntity> repository) where TEntity : class {
+			return repository is IPageableRepository<TEntity>;
+		}
+
+		private static IPageableRepository<TEntity> RequirePageable<TEntity>(this IRepository<TEntity> repository) where TEntity : class {
+			if (!(repository is IPageableRepository<TEntity> pageable))
+				throw new NotSupportedException("The repository is not pageable");
+
+			return pageable;
+		}
+
 		#region AsFilterable
 
+		/// <summary>
+		/// Gets a version of the repository that is filterable
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to filter
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to get the filterable version.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="IFilterableRepository{TEntity}"/>
+		/// that can be used to filter the entities in the repository.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository is not filterable
+		/// </exception>
 		public static IFilterableRepository<TEntity> AsFilterable<TEntity>(this IRepository<TEntity> repository)
 			where TEntity : class {
 			if (!(repository is IFilterableRepository<TEntity> filterable))
 				throw new NotSupportedException("The repository is not filterable");
+
+			// TODO: If the repository is a queryable, we can wrap it
+			//        in a filterable version, so that we can use the filter
 
 			return filterable;
 		}
@@ -47,10 +76,10 @@ namespace Deveel.Data {
 		#region Add
 
 		/// <summary>
-		/// Creates a new entity in the repository synchronously
+		/// Adds a new entity in the repository synchronously
 		/// </summary>
 		/// <typeparam name="TEntity">
-		/// The type of entity to create
+		/// The type of entity to add
 		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository to use to create the entity
@@ -66,60 +95,51 @@ namespace Deveel.Data {
             where TEntity : class
             => repository.AddAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
-		/// <summary>
-		/// Creates a new entity in the repository synchronously
-		/// </summary>
-		/// <typeparam name="TEntity">
-		/// The type of entity to create
-		/// </typeparam>
-		/// <param name="repository">
-		/// The instance of the repository to use to create the entity
-		/// </param>
-		/// <param name="transaction">
-		/// A transaction to use to create the entity
-		/// </param>
-		/// <param name="entity">
-		/// The instance of the entity to create
-		/// </param>
-		/// <returns>
-		/// Returns a string that uniquely identifies the created entity
-		/// within the underlying storage.
-		/// </returns>
-        public static string Add<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, TEntity entity)
-            where TEntity : class
-            => repository.AddAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
-
-		/// <summary>
-		/// Creates a new entity in the repository synchronously
-		/// within the given transaction
-		/// </summary>
-		/// <param name="repository">
-		/// The instance of the repository to use to create the entity
-		/// </param>
-		/// <param name="transaction">
-		/// The transaction scope to use to create the entity
-		/// </param>
-		/// <param name="entity">
-		/// The instance of the entity to create
-		/// </param>
-		/// <returns>
-		/// </returns>
-        public static string Add(this ITransactionalRepository repository, IDataTransaction transaction, object entity)
-            => repository.AddAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
-
-
         #endregion
 
         #region Remove
 
+		/// <summary>
+		/// Removes an entity from the repository synchronously
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository from which the entity is removed
+		/// </param>
+		/// <param name="entity">
+		/// The instance of the entity to remove
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the entity was removed successfully,
+		/// otherwise <c>false</c>.
+		/// </returns>
+		/// <seealso cref="IRepository{TEntity}.RemoveAsync(TEntity, CancellationToken)"/>
         public static bool Remove<TEntity>(this IRepository<TEntity> repository, TEntity entity)
             where TEntity : class
             => repository.RemoveAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public static bool Remove<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, TEntity entity)
-            where TEntity : class
-            => repository.RemoveAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
-
+		/// <summary>
+		/// Removes an entity, identified by the given key,
+		/// from the repository
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository from which the entity is removed
+		/// </param>
+		/// <param name="id">
+		/// The string that uniquely identifies the entity to remove
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the entity was removed successfully,
+		/// otherwise it returns <c>false</c>.
+		/// </returns>
         public static async Task<bool> RemoveByIdAsync<TEntity>(this IRepository<TEntity> repository, string id, CancellationToken cancellationToken = default)
             where TEntity : class {
             var entity = await repository.FindByIdAsync(id, cancellationToken);
@@ -129,44 +149,48 @@ namespace Deveel.Data {
             return await repository.RemoveAsync(entity, cancellationToken);
         }
 
-        public static async Task<bool> RemoveByIdAsync<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, string id, CancellationToken cancellationToken = default)
-            where TEntity : class {
-            // TODO: find within a transaction ...
-            var entity = await repository.FindByIdAsync(id, cancellationToken);
-            if (entity == null)
-                return false;
-
-            return await repository.RemoveAsync(transaction, entity, cancellationToken);
-        }
-
-        public static async Task<bool> RemoveByIdAsync(this ITransactionalRepository repository, IDataTransaction transaction, string id, CancellationToken cancellationToken = default) {
-            // TODO: find within a transaction ...
-            var entity = await repository.FindByIdAsync(transaction, id, cancellationToken);
-            if (entity == null)
-                return false;
-
-            return await repository.RemoveAsync(transaction, entity, cancellationToken);
-        }
-
+		/// <summary>
+		/// Synchronously removes an entity, identified by the given key,
+		/// from the repository
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository from which the entity is removed.
+		/// </param>
+		/// <param name="id">
+		/// The string that uniquely identifies the entity to remove.
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the entity was removed successfully,
+		/// otherwise it returns <c>false</c>.
+		/// </returns>
+		/// <seealso cref="IRepository{TEntity}.RemoveAsync(TEntity, CancellationToken)"/>
         public static bool RemoveById<TEntity>(this IRepository<TEntity> repository, string id)
             where TEntity : class
             => repository.RemoveByIdAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
-
-        public static bool RemoveById<TEntity>(this ITransactionalRepository<TEntity> repository, IDataTransaction transaction, string id)
-            where TEntity : class
-            => repository.RemoveByIdAsync(transaction, id).ConfigureAwait(false).GetAwaiter().GetResult();
-
-
-        public static bool RemoveById(this ITransactionalRepository repository, IDataTransaction transaction, string id)
-            => repository.RemoveByIdAsync(transaction, id).ConfigureAwait(false).GetAwaiter().GetResult();
-
-        public static bool Remove(this ITransactionalRepository repository, IDataTransaction transaction, object entity)
-            => repository.RemoveAsync(transaction, entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion
 
         #region Update
 
+		/// <summary>
+		/// Updates an entity in the repository synchronously
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository from which the entity is updated
+		/// </param>
+		/// <param name="entity">
+		/// The instance of the entity to update
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the entity was updated successfully,
+		/// otherwise <c>false</c>.
+		/// </returns>
         public static bool Update<TEntity>(this IRepository<TEntity> repository, TEntity entity)
             where TEntity : class
             => repository.UpdateAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -175,29 +199,94 @@ namespace Deveel.Data {
 
         #region GetPage
 
-        public static Task<RepositoryPage<TEntity>> GetPageAsync<TEntity>(this IPageableRepository<TEntity> repository, int page, int size, CancellationToken cancellationToken = default)
-            where TEntity : class
-            => repository.GetPageAsync(new RepositoryPageRequest<TEntity>(page, size), cancellationToken);
+		/// <summary>
+		/// Gets a page of entities from the repository,
+		/// given a request object that defines the scope
+		/// </summary>
+		/// <typeparam name="TEntity"></typeparam>
+		/// <param name="repository"></param>
+		/// <param name="request"></param>
+		/// <param name="cancellationToken"></param>
+		/// <remarks>
+		/// <para>
+		/// This method attempts to cast the given repository to a
+		/// <see cref="IPageableRepository{TEntity}"/> and invoke the
+		/// native method <see cref="IPageableRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>.
+		/// </para>
+		/// <para>
+		/// If the repository does not implement the interface, the method
+		/// attempts to cast it to a <see cref="IQueryableRepository{TEntity}"/>
+		/// and invoke the a paging operation on the <see cref="IQueryable{T}"/>.
+		/// </para>
+		/// </remarks>
+		/// <returns>
+		/// Returns an instance of <see cref="RepositoryPage{TEntity}"/> that
+		/// represents the result of the query.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support paging.
+		/// </exception>
+		public static Task<RepositoryPage<TEntity>> GetPageAsync<TEntity>(this IRepository<TEntity> repository, RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default)
+			where TEntity : class {
+			if (repository.IsPageable())
+				return repository.RequirePageable().GetPageAsync(request, cancellationToken);
+			if (repository.IsQueryable())
+				return Task.FromResult(repository.RequireQueryable().GetPage(request));
 
-        //public static async Task<PaginatedResult<TDest>> GetPageAsync<TEntity, TDest>(this IRepository<TEntity> store, PageRequest page, CancellationToken cancellationToken = default)
-        //	where TEntity : class
-        //	where TDest : class {
-        //	var result = await store.GetPageAsync(page, cancellationToken);
-        //	return result.CastTo<TDest>();
-        //}
+			throw new NotSupportedException("The repository does not support paging");
+		}
 
-        public static RepositoryPage<TEntity> GetPage<TEntity>(this IPageableRepository<TEntity> repository, RepositoryPageRequest<TEntity> request)
-            where TEntity : class
-            => repository.GetPageAsync(request).GetAwaiter().GetResult();
+		#endregion
 
-        #endregion
+		#region Exists
 
-        #region Exists
-
-        public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+		/// <summary>
+		/// Checks if an entity exists in the repository,
+		/// that matches the given filter
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to check the existence 
+		/// of any entity that matches the given filter.
+		/// </param>
+		/// <param name="filter">
+		/// The filtering expression to use to check the existence of
+		/// any matching entity.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if any entity exists in the repository
+		/// that matches the given filter, otherwise <c>false</c>.
+		/// </returns>
+		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.RequireFilterable().ExistsAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
 
+		/// <summary>
+		/// Synchronously checks if an entity exists in the repository,
+		/// that matches the given filter
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to check the existence
+		/// of any entity that matches the given filter.
+		/// </param>
+		/// <param name="filter">
+		/// The filter used to check the existence of any matching entity.
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if any entity exists in the repository
+		/// that matches the given filter, otherwise <c>false</c>.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support querying or filtering.
+		/// </exception>
         public static bool Exists<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
             where TEntity : class {
 			if (repository.IsFilterable())

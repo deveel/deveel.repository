@@ -1,7 +1,7 @@
 ﻿namespace Deveel.Data {
 	public class ListAsRepositoryTests {
-		private List<Person> persons;
-		private IRepository<Person> repository;
+		private readonly List<Person> persons;
+		private readonly IRepository<Person> repository;
 
 		public ListAsRepositoryTests() {
 			persons = new PersonFaker()
@@ -50,6 +50,35 @@
 		}
 
 		[Fact]
+		public async Task Mutable_AddRange() {
+			var listCount = persons.Count;
+
+			var newPersons = new PersonFaker()
+				.Generate(10)
+				.ToList();
+
+			var result = await repository.AddRangeAsync(newPersons);
+
+			Assert.Equal(listCount + 10, repository.CountAll());
+			Assert.Equal(10, result.Count);
+
+			foreach (var person in newPersons) {
+				Assert.NotNull(person.Id);
+			}
+		}
+
+		[Fact]
+		public async Task ReadOnly_AddRange() {
+			var list = persons.AsReadOnly();
+			var readOnlyRepository = list.AsRepository();
+			var newPersons = new PersonFaker()
+				.Generate(10)
+				.ToList();
+
+			await Assert.ThrowsAsync<NotSupportedException>(() => readOnlyRepository.AddRangeAsync(newPersons));
+		}
+
+		[Fact]
 		public async Task Mutable_Remove() {
 			var listCount = persons.Count;
 
@@ -76,8 +105,6 @@
 		[Fact]
 		public async Task Mutable_RemoveById_NotFound() {
 			var listCount = persons.Count;
-
-			var person = RandomPerson();
 
 			var result = await repository.RemoveByIdAsync(Guid.NewGuid().ToString());
 			Assert.False(result);
@@ -131,7 +158,7 @@
 
 			var persons = await repository.AsFilterable().FindAllAsync();
 
-			Assert.Equal(this.persons.Count, persons.Count());
+			Assert.Equal(this.persons.Count, persons.Count);
 		}
 
 		[Fact]
@@ -142,7 +169,7 @@
 
 			var persons = await repository.AsFilterable().FindAllAsync(x => x.FirstName == person.FirstName);
 
-			Assert.Equal(this.persons.Count(x => x.FirstName == person.FirstName), persons.Count());
+			Assert.Equal(this.persons.Count(x => x.FirstName == person.FirstName), persons.Count);
 		}
 
 		[Fact]
@@ -152,6 +179,129 @@
 			var persons = await repository.AsFilterable().FindAllAsync(x => x.FirstName == "Not Found");
 
 			Assert.Empty(persons);
+		}
+
+		[Fact]
+		public async Task Queryable_GetPage() {
+			var totalPages = (int)Math.Ceiling(persons.Count / 10.0);
+
+			var request = new RepositoryPageRequest<Person>(1, 10);
+			var page = await repository.GetPageAsync(request);
+
+			Assert.Equal(10, page.Request.Size);
+			Assert.Equal(1, page.Request.Page);
+			Assert.Equal(persons.Count, page.TotalItems);
+			Assert.Equal(totalPages, page.TotalPages);
+			Assert.NotNull(page.Items);
+			Assert.Equal(10, page.Items.Count);
+		}
+
+		[Fact]
+		public async Task Queryable_GetPage_WithFilter() {
+			var person = RandomPerson();
+
+			var subset = persons.Where(x => x.FirstName == person.FirstName).ToList();
+			var itemCount = Math.Min(10, subset.Count);
+			var totalPages = (int)Math.Ceiling(subset.Count / 10.0);
+
+			var request = new RepositoryPageRequest<Person>(1, 10)
+				.Where(x => x.FirstName == person.FirstName);
+
+			var page = await repository.GetPageAsync(request);
+
+			Assert.Equal(10, page.Request.Size);
+			Assert.Equal(1, page.Request.Page);
+			Assert.Equal(subset.Count, page.TotalItems);
+			Assert.Equal(totalPages, page.TotalPages);
+			Assert.NotNull(page.Items);
+			Assert.Equal(itemCount, page.Items.Count);
+		}
+
+		[Fact]
+		public async Task Queryable_GetPage_WithFilter_NotFound() {
+			var request = new RepositoryPageRequest<Person>(1, 10)
+				.Where(x => x.FirstName == "Not Found");
+
+			var page = await repository.GetPageAsync(request);
+
+			Assert.Equal(10, page.Request.Size);
+			Assert.Equal(1, page.Request.Page);
+			Assert.Equal(0, page.TotalItems);
+			Assert.Equal(0, page.TotalPages);
+			Assert.NotNull(page.Items);
+			Assert.Empty(page.Items);
+		}
+
+		[Fact]
+		public async Task Queryable_GetPage_WithSort() {
+			var request = new RepositoryPageRequest<Person>(1, 10)
+				.OrderBy(x => x.FirstName);
+
+			var page = await repository.GetPageAsync(request);
+
+			Assert.Equal(10, page.Request.Size);
+			Assert.Equal(1, page.Request.Page);
+			Assert.Equal(persons.Count, page.TotalItems);
+			Assert.NotNull(page.Items);
+			Assert.Equal(10, page.Items.Count);
+			Assert.Equal(persons.OrderBy(x => x.FirstName).First().FirstName, page.Items.First().FirstName);
+		}
+
+		[Fact]
+		public async Task Queryable_GetPage_WithSort_Descending() {
+			var request = new RepositoryPageRequest<Person>(1, 10)
+				.OrderByDescending(x => x.FirstName);
+
+			var page = await repository.GetPageAsync(request);
+
+			Assert.Equal(10, page.Request.Size);
+			Assert.Equal(1, page.Request.Page);
+			Assert.Equal(persons.Count, page.TotalItems);
+			Assert.NotNull(page.Items);
+			Assert.Equal(10, page.Items.Count);
+			Assert.Equal(persons.OrderByDescending(x => x.FirstName).First().FirstName, page.Items.First().FirstName);
+		}
+
+		[Fact]
+		public async Task Queryable_GetPage_WithFieldNameSort() {
+			var request = new RepositoryPageRequest<Person>(1, 10)
+				.OrderBy("FirstName");
+
+			var page = await repository.GetPageAsync(request);
+
+			Assert.Equal(10, page.Request.Size);
+			Assert.Equal(1, page.Request.Page);
+			Assert.Equal(persons.Count, page.TotalItems);
+			Assert.NotNull(page.Items);
+			Assert.Equal(10, page.Items.Count);
+			Assert.Equal(persons.OrderBy(x => x.FirstName).First().FirstName, page.Items.First().FirstName);
+		}
+
+		[Fact]
+		public async Task Update_Existing() {
+			var person = RandomPerson();
+
+			var personId = person.Id;
+			var personFirstName = person.FirstName;
+
+			person.FirstName = "Updated";
+
+			var result = await repository.UpdateAsync(person);
+
+			Assert.True(result);
+			Assert.Equal(personId, person.Id);
+			Assert.Equal("Updated", person.FirstName);
+		}
+
+		[Fact]
+		public async Task Update_NotFound() {
+			var person = new PersonFaker()
+				.RuleFor(x => x.Id, f => Guid.NewGuid().ToString())
+				.Generate();
+
+			var result = await repository.UpdateAsync(person);
+
+			Assert.False(result);
 		}
 	}
 }

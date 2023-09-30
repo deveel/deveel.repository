@@ -22,6 +22,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task Repository_CountAll() {
+			Assert.NotNull(FilterableRepository);
+
 			var result = await FilterableRepository.CountAllAsync();
 
 			Assert.NotEqual(0, result);

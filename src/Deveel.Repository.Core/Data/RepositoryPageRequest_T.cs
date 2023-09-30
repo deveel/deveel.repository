@@ -1,16 +1,15 @@
-﻿using System.Drawing;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 using CommunityToolkit.Diagnostics;
 
 namespace Deveel.Data {
-    /// <summary>
-    /// Describes the request to obtain a page of a given size
-    /// from a repository
-    /// </summary>
-    /// <typeparam name="TEntity"></typeparam>
-    /// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>
-    public class RepositoryPageRequest<TEntity> where TEntity : class {
+	/// <summary>
+	/// Describes the request to obtain a page of a given size
+	/// from a repository
+	/// </summary>
+	/// <typeparam name="TEntity"></typeparam>
+	/// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>
+	public class RepositoryPageRequest<TEntity> where TEntity : class {
 		/// <summary>
 		/// Constructs a new page request with the given page number and size
 		/// </summary>
@@ -96,7 +95,7 @@ namespace Deveel.Data {
 		public RepositoryPageRequest<TEntity> OrderBy(Expression<Func<TEntity, object>> selector) {
 			Guard.IsNotNull(selector, nameof(selector));
 
-			return (RepositoryPageRequest<TEntity>) OrderBy(new ExpressionResultSort<TEntity>(selector));
+			return OrderBy(new ExpressionResultSort<TEntity>(selector));
 		}
 
 		/// <summary>
@@ -112,7 +111,7 @@ namespace Deveel.Data {
 		public RepositoryPageRequest<TEntity> OrderByDescending(Expression<Func<TEntity, object>> selector) {
 			Guard.IsNotNull(selector, nameof(selector));
 
-			return (RepositoryPageRequest<TEntity>) OrderBy(new ExpressionResultSort<TEntity>(selector, false));
+			return OrderBy(ResultSort.Create(selector, false));
 		}
 
 		/// <summary>
@@ -133,10 +132,23 @@ namespace Deveel.Data {
 			return this;
 		}
 
+		/// <summary>
+		/// Appends an order by the given field name
+		/// </summary>
+		/// <param name="fieldName">
+		/// The name of the field to sort by
+		/// </param>
+		/// <param name="ascending">
+		/// The flag indicating if the sort is ascending or descending
+		/// </param>
+		/// <returns>
+		/// Returns this instance of the page request with the
+		/// appended sort rule.
+		/// </returns>
 		public RepositoryPageRequest<TEntity> OrderBy(string fieldName, bool ascending = true) {
 			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
 
-			return OrderBy(new FieldResultSort(fieldName, ascending));
+			return OrderBy(ResultSort.Create(fieldName, ascending));
 		}
 	}
 }

@@ -10,7 +10,7 @@ namespace Deveel.Data {
 	/// to execute CRUD operations within the scope of a transaction
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
-	public interface ITransactionalRepository<TEntity> : ITransactionalRepository, IRepository<TEntity> where TEntity : class {
+	public interface ITransactionalRepository<TEntity> : IRepository<TEntity> where TEntity : class {
 		/// <summary>
 		/// Creates a list of entities in the repository in one single operation, within
 		/// the scope of a given transaction
@@ -27,7 +27,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
 		/// </exception>
-		Task<IList<string>> AddRangeAsync(IDataTransaction transaction, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+		Task AddRangeAsync(IDataTransaction transaction, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Creates a new entity in the repository
@@ -50,7 +50,7 @@ namespace Deveel.Data {
 		/// with the underlying storage of the repository
 		/// </exception>
 		/// <seealso cref="IDataTransactionFactory"/>
-		Task<string> AddAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
+		Task AddAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Updates an existing entity in the repository
@@ -74,7 +74,7 @@ namespace Deveel.Data {
 		/// with the underlying storage of the repository
 		/// </exception>
 		/// <seealso cref="IDataTransactionFactory"/>
-		Task<bool> UpdateAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
+		Task UpdateAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Deletes an entity from the repository
@@ -98,6 +98,6 @@ namespace Deveel.Data {
 		/// with the underlying storage of the repository
 		/// </exception>
 		/// <seealso cref="IDataTransactionFactory"/>
-		Task<bool> RemoveAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
+		Task RemoveAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
 	}
 }

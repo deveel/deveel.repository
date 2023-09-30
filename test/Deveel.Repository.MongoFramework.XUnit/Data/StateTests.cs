@@ -37,7 +37,7 @@ namespace Deveel.Data {
 
         private IRepository<MongoPersonWithStatus> Repository => Services.GetRequiredService<IRepository<MongoPersonWithStatus>>();
 
-        private IStateRepository<MongoPersonWithStatus, PersonStatus> StateRepository => Repository as IStateRepository<MongoPersonWithStatus, PersonStatus>;
+        private IStateRepository<MongoPersonWithStatus, PersonStatus>? StateRepository => Repository as IStateRepository<MongoPersonWithStatus, PersonStatus>;
 
 
         protected virtual void AddRepository(IServiceCollection services) {
@@ -79,6 +79,8 @@ namespace Deveel.Data {
 
             var state = new EntityStateInfo<PersonStatus>(PersonStatus.Alive, Guid.NewGuid().ToString(), DateTimeOffset.Now);
 
+			Assert.NotNull(StateRepository);
+
             await StateRepository.AddStateAsync(person, state);
             await StateRepository.UpdateAsync(person);
 
@@ -94,7 +96,9 @@ namespace Deveel.Data {
         public async Task GetPersonWithState() {
             var person = persons.First(x => x.Status != null);
 
-            var states = await StateRepository.GetStatesAsync(person);
+			Assert.NotNull(StateRepository);
+
+			var states = await StateRepository.GetStatesAsync(person);
 
             Assert.NotNull(states);
             Assert.NotEmpty(states);
@@ -109,7 +113,9 @@ namespace Deveel.Data {
             
             var state = new EntityStateInfo<PersonStatus>(person.Status!.Value, person.LastActorId!, person.LastStatusAt!);
 
-            await StateRepository.RemoveStateAsync(person, state);
+			Assert.NotNull(StateRepository);
+
+			await StateRepository.RemoveStateAsync(person, state);
 
             var updated = await StateRepository.FindByIdAsync(person.Id.ToString());
             Assert.NotNull(updated);
@@ -164,11 +170,15 @@ namespace Deveel.Data {
             DateTime? BirthDate { get; }
         }
 
-        #endregion
+		#endregion
 
-        #region MngoPersonWithState
+		#region MngoPersonWithState
 
-        protected class MongoPersonWithStatus : IPerson {
+// Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning disable CS8618
+
+
+		protected class MongoPersonWithStatus : IPerson {
             public ObjectId Id { get; set; }
 
             public string FirstName { get; set; }
@@ -185,6 +195,8 @@ namespace Deveel.Data {
 
             string? IPerson.Id => Id.ToEntityId();
         }
+
+#pragma warning restore CS8618
 
         #endregion
 

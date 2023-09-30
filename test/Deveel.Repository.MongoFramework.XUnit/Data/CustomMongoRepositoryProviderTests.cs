@@ -109,7 +109,7 @@ namespace Deveel.Data {
             }
 
             protected override PersonsDbContext CreateContext(IMongoDbConnection connection, IMultiTenantContext<TenantInfo> tenantContext) {
-                return new PersonsDbContext(connection.ForContext<PersonsDbContext>(), tenantContext.TenantInfo.Id);
+                return new PersonsDbContext(connection.ForContext<PersonsDbContext>(), tenantContext?.TenantInfo?.Id ?? throw new InvalidOperationException());
             }
 
             protected override MongoRepository<PersonsDbContext, MongoTenantPerson> CreateRepository(PersonsDbContext context) {

@@ -43,8 +43,8 @@ namespace Deveel.Data {
 
 			string? id;
 
-			if (idValue is string) {
-				id = (string)idValue;
+			if (idValue is string v) {
+				id = v;
 			} else {
 				id = Convert.ToString(idValue, CultureInfo.InvariantCulture);
 			}

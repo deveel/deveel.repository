@@ -18,8 +18,8 @@ namespace Deveel.Data {
             where TContext : class, IMongoDbContext {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
-            if (connection is IMongoDbConnection<TContext>)
-                return (IMongoDbConnection<TContext>)connection;
+            if (connection is IMongoDbConnection<TContext> mongoConnection)
+                return mongoConnection;
 
             return new MongoDbConnectionWrapper<TContext>(connection);
         }

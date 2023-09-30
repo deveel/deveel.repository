@@ -5,6 +5,7 @@ namespace Deveel.Data {
     /// A factory that provides instances of transactions
     /// used to isolate the access to data layers of an underlying storage
     /// </summary>
+	/// <seealso cref="ITransactionalRepository{TEntity}"/>
     public interface IDataTransactionFactory {
         /// <summary>
         /// Creates a new stransaction and starts it
@@ -12,7 +13,7 @@ namespace Deveel.Data {
         /// <param name="cancellationToken"></param>
         /// <returns>
         /// Returns a new instance of <see cref="IDataTransaction"/> that
-        /// can be used in a <see cref="IRepository"/> to isolate
+        /// can be used in a repository to isolate
         /// the access to the data of an underlying storage
         /// </returns>
         Task<IDataTransaction> CreateTransactionAsync(CancellationToken cancellationToken = default);

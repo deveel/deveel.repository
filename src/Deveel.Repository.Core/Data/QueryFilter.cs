@@ -11,7 +11,7 @@ namespace Deveel.Data {
 	public static class QueryFilter {
 		/// <summary>
 		/// Identifies an empty query filter, that implementations
-		/// of the <see cref="IFilterableRepository"/> can use to
+		/// of the <see cref="IFilterableRepository{TEntity}"/> can use to
 		/// convert to a default query.
 		/// </summary>
 		public static readonly IQueryFilter Empty = new EmptyQueryFilter();
@@ -78,7 +78,7 @@ namespace Deveel.Data {
 		/// The lambda expression that defines the filter.
 		/// </param>
 		/// <remarks>
-		/// Various implementations of <see cref="IFilterableRepository"/> can support
+		/// Various implementations of <see cref="IFilterableRepository{TEntity}"/> can support
 		/// LINQ expressions to define the filter to apply to the query, and this
 		/// method provides a factory to create a default implementation of
 		/// this kind of filter.

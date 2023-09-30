@@ -64,17 +64,7 @@ namespace Deveel.Data {
 		}
 
 		private static Type? GetEntityType(Type serviceType) {
-			var entityTypeAttr = serviceType.GetCustomAttribute<EntityTypeAttribute>(true);
-			if (entityTypeAttr != null)
-				return entityTypeAttr.EntityType;
-
 			var genericTypes = serviceType.GenericTypeArguments;
-
-			var entityTypes = genericTypes.Where(x => Attribute.IsDefined(x, typeof(EntityAttribute))).ToList();
-			if (entityTypes.Count > 1)
-				throw new RepositoryException($"Ambigous entity type specifications: {serviceType} has multiple 'Entity' types as type argument '{String.Join(", ", entityTypes)}'");
-			if (entityTypes.Count == 1)
-				return entityTypes[0];
 
 			if (genericTypes.Length == 1 && genericTypes[0].IsClass)
 				return genericTypes[0];

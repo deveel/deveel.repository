@@ -2,7 +2,10 @@
 using System.Reflection;
 
 namespace Deveel.Data {
-	class RepositoryWrapper<TEntity> : IFilterableRepository<TEntity> where TEntity : class {
+	class RepositoryWrapper<TEntity> : 
+		IFilterableRepository<TEntity>,
+		IQueryableRepository<TEntity>
+		where TEntity : class {
 		private readonly IEnumerable<TEntity> entities;
 
 		public RepositoryWrapper(IEnumerable<TEntity> entities) {
@@ -11,8 +14,6 @@ namespace Deveel.Data {
 
 		private bool IsMutable => (entities is IList<TEntity> list && !list.IsReadOnly) || 
 			(entities is ICollection<TEntity> collection && !collection.IsReadOnly);
-
-		public Type EntityType => typeof(TEntity);
 
 		private void AssertMutable() {
 			if (!IsMutable)
@@ -29,8 +30,10 @@ namespace Deveel.Data {
 			}
 		}
 
+		public IQueryable<TEntity> AsQueryable() => entities.AsQueryable();
+
 		public string? GetEntityId(TEntity entity) {
-			var idMembers = EntityType.GetMembers(BindingFlags.Instance | BindingFlags.Public)
+			var idMembers = typeof(TEntity).GetMembers(BindingFlags.Instance | BindingFlags.Public)
 				.Where(x => x.MemberType == MemberTypes.Property || x.MemberType == MemberTypes.Field)
 				.Where(x => x.Name == "Id" || x.Name == "ID")
 				.ToList();
@@ -63,7 +66,7 @@ namespace Deveel.Data {
 		}
 
 		private string SetId(TEntity entity) {
-			var idMembers = EntityType.GetMembers(BindingFlags.Instance | BindingFlags.Public)
+			var idMembers = typeof(TEntity).GetMembers(BindingFlags.Instance | BindingFlags.Public)
 				.Where(x => x.MemberType == MemberTypes.Property || x.MemberType == MemberTypes.Field)
 				.Where(x => x.Name == "Id" || x.Name == "ID")
 				.ToList();

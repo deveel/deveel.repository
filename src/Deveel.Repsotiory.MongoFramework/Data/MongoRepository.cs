@@ -119,7 +119,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		private static string RequireString(object value) {
+		private static string RequireString(object? value) {
 			if (value is string s)
 				return s;
 			if (value is ObjectId id)
