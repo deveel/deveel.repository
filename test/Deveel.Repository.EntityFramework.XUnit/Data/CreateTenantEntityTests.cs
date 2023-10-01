@@ -9,18 +9,6 @@ namespace Deveel.Data {
         }
 
         [Fact]
-        public async Task Eentity_CreateNewPerson() {
-            var person = GeneratePerson();
-
-            var id = await EntityRepository.AddAsync(person);
-
-            Assert.NotNull(id);
-            Assert.NotEmpty(id);
-            Assert.Equal(id, person.Id.ToString());
-            Assert.Equal(TenantId, person.TenantId);
-        }
-
-        [Fact]
         public async Task Repository_CreateNewPerson() {
             var person = GeneratePerson();
 

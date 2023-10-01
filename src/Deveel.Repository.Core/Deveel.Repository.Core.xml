@@ -693,7 +693,7 @@
             underlying storage system might have persisted some of the items before a
             failure: to prevent the scenario of a partial creation of the set, the
             callers should consider the 
-            <see cref="!:ITransactionalRepository&lt;TEntity&gt;.AddRangeAsync(IDataTransaction, IEnumerable&lt;TEntity&gt;, CancellationToken)"/>
+            <see cref="M:Deveel.Data.ITransactionalRepository`1.AddRangeAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)"/>
             overload, where transactions are available.
             </para>
             </remarks>
@@ -831,10 +831,9 @@
         </member>
         <member name="T:Deveel.Data.ITransactionalRepository`1">
             <summary>
-            Implementations of this repository can provide the capability
-            to execute CRUD operations within the scope of a transaction
+            A repository that can handle write operations within
+            transactional contexts
             </summary>
-            <typeparam name="TEntity"></typeparam>
         </member>
         <member name="M:Deveel.Data.ITransactionalRepository`1.AddRangeAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
             <summary>
@@ -925,6 +924,20 @@
             </exception>
             <seealso cref="T:Deveel.Data.IDataTransactionFactory"/>
         </member>
+        <member name="M:Deveel.Data.ITransactionalRepository`1.FindByIdAsync(Deveel.Data.IDataTransaction,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Attempts to find in the repository an entity with the 
+            given unique identifier
+            </summary>
+            <param name="transaction">A transaction that isolates the access
+            to the data store used by the repository</param>
+            <param name="id">The unique identifier of the entity to find</param>
+            <param name="cancellationToken"></param>
+            <returns>
+            Returns the instance of the entity associated to the given <paramref name="id"/>,
+            or <c>null</c> if none entity was found.
+            </returns>
+        </member>
         <member name="T:Deveel.Data.PageableRepositoryExtensions">
             <summary>
             Defines a set of extension methods for the <see cref="T:Deveel.Data.IPageableRepository`1"/>
@@ -1007,20 +1020,6 @@
             <returns>
             Returns an instance of <see cref="T:Deveel.Data.RepositoryPage`1"/> that
             is the result of the query.
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.ITransactionalRepository`1.FindByIdAsync(Deveel.Data.IDataTransaction,System.String,System.Threading.CancellationToken)">
-            <summary>
-            Attempts to find in the repository an entity with the 
-            given unique identifier
-            </summary>
-            <param name="transaction">A transaction that isolates the access
-            to the data store used by the repository</param>
-            <param name="id">The unique identifier of the entity to find</param>
-            <param name="cancellationToken"></param>
-            <returns>
-            Returns the instance of the entity associated to the given <paramref name="id"/>,
-            or <c>null</c> if none entity was found.
             </returns>
         </member>
         <member name="T:Deveel.Data.QueryFilter">
@@ -1782,6 +1781,35 @@
             <returns>
             Returns the same <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to allow chaining.
             </returns>
+            <seealso cref="M:Deveel.Data.ServiceCollectionExtensions.AddRepository(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)"/>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddRepository(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers a repository of the given type in the service collection.
+            </summary>
+            <param name="services">
+            The service collection to register the repository.
+            </param>
+            <param name="repositoryType">
+            The type of the repository to register.
+            </param>
+            <param name="lifetime">
+            the lifetime of the repository in the service collection.
+            </param>
+            <returns>
+            Returns the same <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to allow chaining.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when the given <paramref name="repositoryType"/> is <c>null</c>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            Thrown when the given <paramref name="repositoryType"/> is not
+            a class or is abstract.
+            </exception>
+            <exception cref="T:Deveel.Data.RepositoryException">
+            Thrown when the given <paramref name="repositoryType"/> is not a valid
+            repository type.
+            </exception>
         </member>
         <member name="M:Deveel.Data.ServiceCollectionExtensions.AddSystemTime``1(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>

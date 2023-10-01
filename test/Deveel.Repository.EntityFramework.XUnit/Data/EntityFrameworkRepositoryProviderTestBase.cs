@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-    [Collection(nameof(SqlConnectionCollection))]
+    [Collection(nameof(SqlTenantConnectionCollection))]
     public abstract class EntityFrameworkRepositoryProviderTestBase : IAsyncLifetime {
         private readonly IServiceProvider serviceProvider;
         private readonly SqliteConnection sqliteConnection;
@@ -52,7 +52,8 @@ namespace Deveel.Data {
                 .RuleFor(x => x.FullName, f => f.Name.FullName())
                 .RuleFor(x => x.Type, f => f.PickRandom(relTypes));
 
-            PersonFaker = new Faker<PersonEntity>()
+			PersonFaker = new Faker<PersonEntity>()
+				.RuleFor(x => x.TenantId, TenantId)
                 .RuleFor(x => x.FirstName, f => f.Name.FirstName())
                 .RuleFor(x => x.LastName, f => f.Name.LastName())
                 .RuleFor(x => x.BirthDate, f => f.Date.Past(20))
@@ -65,11 +66,6 @@ namespace Deveel.Data {
 
         protected string TenantId { get; }
 
-        protected EntityRepositoryProvider<PersonEntity, TestDbContext> EntityRepositoryProvider 
-            => serviceProvider.GetRequiredService<EntityRepositoryProvider<PersonEntity, TestDbContext>>();
-
-        protected EntityRepository<PersonEntity> EntityRepository => EntityRepositoryProvider.GetRepository(TenantId);
-
         protected IRepositoryProvider<PersonEntity> RepositoryProvider 
             => serviceProvider.GetRequiredService<IRepositoryProvider<PersonEntity>>();
 
@@ -80,16 +76,15 @@ namespace Deveel.Data {
         protected IList<PersonEntity> GeneratePersons(int count) => PersonFaker.Generate(count);
 
         protected virtual void AddRepository(IServiceCollection services) {
-            services
-                .AddDbContext<DbContext, TestDbContext>(builder => {
-                    builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-                    builder.UseSqlite(sqliteConnection);
-                })
-                .AddEntityRepositoryProvider<TestDbContext, PersonEntity>()
-                .AddEntityFacadeRepositoryProvider<TestDbContext, PersonEntity, IPerson>();
+			services
+				.AddDbContext<DbContext, TestDbContext>(builder => {
+					builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
+					builder.UseSqlite(sqliteConnection);
+				})
+				.AddRepositoryProvider<EntityRepositoryProvider<PersonEntity, TestDbContext>>();
         }
 
-        protected virtual Task SeedAsync(EntityRepository<PersonEntity> repository) {
+        protected virtual Task SeedAsync(IRepository<PersonEntity> repository) {
             return Task.CompletedTask;
         }
 
@@ -110,7 +105,7 @@ namespace Deveel.Data {
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
 
-            await SeedAsync(EntityRepository);
+            await SeedAsync(Repository);
         }
 
         protected class TestDbContext : MultiTenantDbContext {

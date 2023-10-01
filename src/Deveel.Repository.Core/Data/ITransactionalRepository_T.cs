@@ -5,7 +5,7 @@ namespace Deveel.Data {
     /// A repository that can handle write operations within
     /// transactional contexts
     /// </summary>
-    public interface ITransactionalRepository<TEntity> : IRepository<TEntity>, ITransactionalRepository where TEntity : class {
+    public interface ITransactionalRepository<TEntity> : IRepository<TEntity> where TEntity : class {
         /// <summary>
         /// Creates a list of entities in the repository in one single operation, within
         /// the scope of a given transaction
@@ -22,7 +22,7 @@ namespace Deveel.Data {
         /// <exception cref="ArgumentNullException">
         /// Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
         /// </exception>
-        Task<IList<string>> CreateAsync(IDataTransaction transaction, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+        Task AddRangeAsync(IDataTransaction transaction, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Deveel.Data {
         /// with the underlying storage of the repository
         /// </exception>
         /// <seealso cref="IDataTransactionFactory"/>
-        Task<string> CreateAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
+        Task AddAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates an existing entity in the repository
@@ -70,7 +70,7 @@ namespace Deveel.Data {
         /// with the underlying storage of the repository
         /// </exception>
         /// <seealso cref="IDataTransactionFactory"/>
-        Task<bool> UpdateAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
+        Task UpdateAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Deletes an entity from the repository
@@ -94,7 +94,7 @@ namespace Deveel.Data {
         /// with the underlying storage of the repository
         /// </exception>
         /// <seealso cref="IDataTransactionFactory"/>
-        Task<bool> DeleteAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
+        Task RemoveAsync(IDataTransaction transaction, TEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Attempts to find in the repository an entity with the 
@@ -108,6 +108,6 @@ namespace Deveel.Data {
         /// Returns the instance of the entity associated to the given <paramref name="id"/>,
         /// or <c>null</c> if none entity was found.
         /// </returns>
-        new Task<TEntity?> FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken = default);
+        Task<TEntity?> FindByIdAsync(IDataTransaction transaction, string id, CancellationToken cancellationToken = default);
     }
 }

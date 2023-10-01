@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-    [Collection(nameof(SqlConnectionCollection))]
+	[Collection(nameof(SqlConnectionCollection))]
     public abstract class EntityFrameworkRepositoryTestBase : IAsyncLifetime {
         private readonly IServiceProvider serviceProvider;
         private readonly SqliteConnection sqliteConnection;
@@ -48,31 +48,22 @@ namespace Deveel.Data {
 
         protected Faker<PersonEntity> PersonFaker { get; }
 
-		protected EntityRepository<PersonEntity> EntityRepository => serviceProvider.GetRequiredService<EntityRepository<PersonEntity>>();
-
 		protected IRepository<PersonEntity> Repository => serviceProvider.GetRequiredService<IRepository<PersonEntity>>();
-
-		protected IPageableRepository<PersonEntity> PageableRepository => Repository as IPageableRepository<PersonEntity>;
-
-		protected IFilterableRepository<PersonEntity> FilterableRepository => Repository as IFilterableRepository<PersonEntity>;
-
-		protected IRepository<IPerson> FacadeRepository => serviceProvider.GetRequiredService<IRepository<IPerson>>();
 
 		protected PersonEntity GeneratePerson() => PersonFaker.Generate();
 
         protected IList<PersonEntity> GeneratePersons(int count) => PersonFaker.Generate(count);
 
         protected virtual void AddRepository(IServiceCollection services) {
-            services
-                .AddDbContext<DbContext, TestDbContext>(builder => {
+			services
+				.AddDbContext<DbContext, TestDbContext>(builder => {
 					builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-                    builder.UseSqlite(sqliteConnection);
-                })
-                .AddEntityRepository<PersonEntity>()
-                .AddEntityFacadeRepository<PersonEntity, IPerson>();
+					builder.UseSqlite(sqliteConnection);
+				})
+				.AddRepository<EntityRepository<PersonEntity>>();
         }
 
-		protected virtual Task SeedAsync(EntityRepository<PersonEntity> repository) {
+		protected virtual Task SeedAsync(IRepository<PersonEntity> repository) {
 			return Task.CompletedTask;
 		}
 
@@ -84,6 +75,8 @@ namespace Deveel.Data {
 			await dbContext.DisposeAsync();
 
 			await sqliteConnection.CloseAsync();
+
+			(serviceProvider as IDisposable)?.Dispose();
 		}
 
 		public async Task InitializeAsync() {
@@ -94,7 +87,7 @@ namespace Deveel.Data {
 			await dbContext.Database.EnsureDeletedAsync();
 			await dbContext.Database.EnsureCreatedAsync();
 
-			await SeedAsync(EntityRepository);
+			await SeedAsync(Repository);
 		}
 
 		protected class TestDbContext : DbContext {

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Deveel.Data {
-    public class EntityRepository<TEntity> : 
+	public class EntityRepository<TEntity> : 
         IRepository<TEntity>,
         IFilterableRepository<TEntity>,
         IQueryableRepository<TEntity>,
@@ -47,8 +47,6 @@ namespace Deveel.Data {
             Dispose(disposing: false);
         }
 
-        Type IRepository.EntityType => typeof(TEntity);
-
         protected DbContext Context { get; private set; }
 
         protected ILogger Logger { get; }
@@ -66,9 +64,6 @@ namespace Deveel.Data {
 
 		string? IRepository<TEntity>.GetEntityId(TEntity entity)
 			=> GetEntityId(entity);
-
-		string? IRepository.GetEntityId(object entity)
-			=> GetEntityId((TEntity) entity);
 
 		protected virtual object? GetEntityId(string id) {
             //var model = Context.Model.FindEntityType(typeof(TEntity));
@@ -164,18 +159,12 @@ namespace Deveel.Data {
 			}
         }
 
-        Task<string> IRepository.AddAsync(object entity, CancellationToken cancellationToken)
-            => AddAsync(AssertEntity(entity), cancellationToken);
-
         private static TEntity AssertEntity(object entity) {
             if (!(entity is TEntity dataEntity))
                 throw new ArgumentException($"The entity is not assignable from '{typeof(TEntity)}'");
 
             return dataEntity;
         }
-
-        Task<IList<string>> IRepository.AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
-            => AddRangeAsync(entities.Select(x =>  AssertEntity(x)), cancellationToken);
 
         public async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
@@ -221,9 +210,6 @@ namespace Deveel.Data {
 			}
         }
 
-        Task<bool> IRepository.RemoveAsync(object entity, CancellationToken cancellationToken)
-            => RemoveAsync(AssertEntity(entity), cancellationToken);
-
         public async Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default)
             => await Entities.FindAsync(new object?[] { GetEntityId(id) }, cancellationToken);
 
@@ -268,39 +254,27 @@ namespace Deveel.Data {
         }
 
 
-        Task<bool> IRepository.UpdateAsync(object entity, CancellationToken cancellationToken)
-            => UpdateAsync(AssertEntity(entity), cancellationToken);
-
-        async Task<object?> IRepository.FindByIdAsync(string id, CancellationToken cancellationToken)
-            => await FindByIdAsync(id, cancellationToken);
-
         async Task<TEntity?> IFilterableRepository<TEntity>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
             => await FindAsync(AssertExpression(filter), cancellationToken);
 
         async Task<IList<TEntity>> IFilterableRepository<TEntity>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken)
             => await FindAllAsync(AssertExpression(filter), cancellationToken);
 
-        Task<bool> IFilterableRepository.ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken)
-            => ExistsAsync(AssertExpression(filter), cancellationToken);
+		async Task<bool> IFilterableRepository<TEntity>.ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken)
+			=> await ExistsAsync(AssertExpression(filter), cancellationToken);
 
         public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
             => await Entities.AnyAsync(EnsureFilter(filter), cancellationToken);
 
-        Task<long> IFilterableRepository.CountAsync(IQueryFilter filter, CancellationToken cancellationToken)
-            => CountAsync(AssertExpression(filter), cancellationToken);
-
         public async Task<long> CountAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
             => await Entities.LongCountAsync(EnsureFilter(filter), cancellationToken);
 
-        async Task<object?> IFilterableRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
-            => await FindAsync(AssertExpression(filter), cancellationToken);
+		Task<long> IFilterableRepository<TEntity>.CountAsync(IQueryFilter filter, CancellationToken cancellationToken)
+			=> CountAsync(AssertExpression(filter), cancellationToken);
 
         public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default) {
             return await Entities.FirstOrDefaultAsync(EnsureFilter(filter), cancellationToken);
         }
-
-        async Task<IList<object>> IFilterableRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken)
-            => (await FindAllAsync(AssertExpression(filter), cancellationToken)).Cast<object>().ToList();
 
         private static Expression<Func<TEntity, bool>> EnsureFilter(Expression<Func<TEntity, bool>>? filter) {
             if (filter == null)
@@ -358,17 +332,6 @@ namespace Deveel.Data {
 
 				throw new RepositoryException("Could not get the page of entities", ex);
 			}
-		}
-
-		async Task<RepositoryPage> IPageableRepository.GetPageAsync(RepositoryPageRequest request, CancellationToken cancellationToken) {
-			var typedRequest = new RepositoryPageRequest<TEntity>(request.Page, request.Size);
-
-			if (request.Filter != null)
-				typedRequest.Filter = request.Filter;
-			if (request.ResultSorts != null)
-				typedRequest.ResultSorts = request.ResultSorts.ToList();
-
-			return await GetPageAsync(typedRequest);
 		}
 	}
 }
