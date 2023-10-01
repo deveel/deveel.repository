@@ -6,7 +6,7 @@ namespace Deveel.Data {
     /// for read and write operations
     /// </summary>
     /// <typeparam name="TEntity">The type of entity handled by the repository</typeparam>
-    public interface IRepository<TEntity> : IRepository where TEntity : class {
+    public interface IRepository<TEntity> where TEntity : class {
 		/// <summary>
 		/// Gets the unique identifier of the entity given
 		/// </summary>
@@ -108,6 +108,6 @@ namespace Deveel.Data {
         /// Returns the instance of the entity associated to the given <paramref name="id"/>,
         /// or <c>null</c> if none entity was found.
         /// </returns>
-        new Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default);
+        Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default);
     }
 }

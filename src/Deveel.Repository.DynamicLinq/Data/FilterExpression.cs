@@ -58,7 +58,7 @@ namespace Deveel.Data {
 		public static Delegate Compile(Type[] paramTypes, string[] paramNames, string expression)
 			=> Compile(null, paramTypes, paramNames, expression);
 
-		public static Delegate Compile(IFilterCache cache, Type[] paramTypes, string[] paramNames, string expression) {
+		public static Delegate Compile(IFilterCache? cache, Type[] paramTypes, string[] paramNames, string expression) {
 			if (paramTypes is null)
 				throw new ArgumentNullException(nameof(paramTypes));
 			if (paramNames is null)
@@ -92,13 +92,13 @@ namespace Deveel.Data {
 			return func;
 		}
 
-		public static Delegate Compile(IFilterCache cache, Type paramType, string paramName, string expression)
+		public static Delegate Compile(IFilterCache? cache, Type paramType, string paramName, string expression)
 			=> Compile(cache, new Type[] { paramType }, new string[] { paramName }, expression);
 
 		public static Delegate Compile(Type paramType, string paramName, string expression)
 			=> Compile(null, paramType, paramName, expression);
 
-		public static Func<T, bool> Compile<T>(IFilterCache cache, string paramName, string expression)
+		public static Func<T, bool> Compile<T>(IFilterCache? cache, string paramName, string expression)
 			=> (Func<T, bool>)Compile(cache, typeof(T), paramName, expression);
 
 		public static Func<T, bool> Compile<T>(string paramName, string expression)

@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Reflection;
+﻿using System.Reflection;
 
 using Finbuckle.MultiTenant;
 
@@ -87,15 +85,6 @@ namespace Deveel.Data {
 				return field.GetValue(obj) as TMember;
 
 			return null;
-		}
-
-		protected class MongoPerson {
-			[Key]
-			public string Id { get; set; }
-
-			public string FirstName { get; set; }
-
-			public string LastName { get; set; }
 		}
 	}
 }

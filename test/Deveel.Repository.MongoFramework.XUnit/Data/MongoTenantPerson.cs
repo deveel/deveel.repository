@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning disable CS8618
+
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Finbuckle.MultiTenant;
@@ -9,7 +12,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoFramework;
 
 namespace Deveel.Data {
-	[MultiTenant, Entity, Table("persons")]
+	[MultiTenant, Table("persons")]
 	public class MongoTenantPerson : IPerson, IHaveTenantId, IHaveTimeStamp {
 		[BsonId, Key]
 		public ObjectId Id { get; set; }

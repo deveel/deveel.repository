@@ -2,7 +2,10 @@
 using System.Reflection;
 
 namespace Deveel.Data {
-	class RepositoryWrapper<TEntity> : IFilterableRepository<TEntity> where TEntity : class {
+	class RepositoryWrapper<TEntity> : 
+		IFilterableRepository<TEntity>,
+		IQueryableRepository<TEntity>
+		where TEntity : class {
 		private readonly IEnumerable<TEntity> entities;
 
 		public RepositoryWrapper(IEnumerable<TEntity> entities) {
@@ -11,8 +14,6 @@ namespace Deveel.Data {
 
 		private bool IsMutable => (entities is IList<TEntity> list && !list.IsReadOnly) || 
 			(entities is ICollection<TEntity> collection && !collection.IsReadOnly);
-
-		public Type EntityType => typeof(TEntity);
 
 		private void AssertMutable() {
 			if (!IsMutable)
@@ -29,11 +30,10 @@ namespace Deveel.Data {
 			}
 		}
 
-		string? IRepository.GetEntityId(object entity)
-			=> GetEntityId((TEntity)entity);
+		public IQueryable<TEntity> AsQueryable() => entities.AsQueryable();
 
 		public string? GetEntityId(TEntity entity) {
-			var idMembers = EntityType.GetMembers(BindingFlags.Instance | BindingFlags.Public)
+			var idMembers = typeof(TEntity).GetMembers(BindingFlags.Instance | BindingFlags.Public)
 				.Where(x => x.MemberType == MemberTypes.Property || x.MemberType == MemberTypes.Field)
 				.Where(x => x.Name == "Id" || x.Name == "ID")
 				.ToList();
@@ -55,9 +55,6 @@ namespace Deveel.Data {
 			}
 		}
 
-		Task<string> IRepository.AddAsync(object entity, CancellationToken cancellationToken)
-			=> AddAsync((TEntity)entity, cancellationToken);
-
 		public Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			AssertMutable();
 
@@ -69,7 +66,7 @@ namespace Deveel.Data {
 		}
 
 		private string SetId(TEntity entity) {
-			var idMembers = EntityType.GetMembers(BindingFlags.Instance | BindingFlags.Public)
+			var idMembers = typeof(TEntity).GetMembers(BindingFlags.Instance | BindingFlags.Public)
 				.Where(x => x.MemberType == MemberTypes.Property || x.MemberType == MemberTypes.Field)
 				.Where(x => x.Name == "Id" || x.Name == "ID")
 				.ToList();
@@ -94,9 +91,6 @@ namespace Deveel.Data {
 			return entityId;
 		}
 
-		Task<IList<string>> IRepository.AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken)
-			=> AddRangeAsync(entities.Cast<TEntity>(), cancellationToken);
-
 		public Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			AssertMutable();
 
@@ -116,12 +110,6 @@ namespace Deveel.Data {
 			var entity = entities.FirstOrDefault(x => GetEntityId(x) == id);
 			return Task.FromResult<TEntity?>(entity);
 		}
-
-		async Task<object?> IRepository.FindByIdAsync(string id, CancellationToken cancellationToken)
-			=> await FindByIdAsync(id, cancellationToken);
-
-		Task<bool> IRepository.RemoveAsync(object entity, CancellationToken cancellationToken)
-			=> RemoveAsync((TEntity)entity, cancellationToken);
 
 		public Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			AssertMutable();
@@ -168,9 +156,6 @@ namespace Deveel.Data {
 
 			return Task.FromResult(true);
 		}
-
-		Task<bool> IRepository.UpdateAsync(object entity, CancellationToken cancellationToken)
-			=> UpdateAsync((TEntity)entity, cancellationToken);
 
 		public Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			TEntity? result;
@@ -219,11 +204,5 @@ namespace Deveel.Data {
 
 			return Task.FromResult(result);
 		}
-
-		async Task<object?> IFilterableRepository.FindAsync(IQueryFilter filter, CancellationToken cancellationToken) 
-			=> await FindAsync(filter, cancellationToken);
-
-		async Task<IList<object>> IFilterableRepository.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken)
-			=> (await FindAllAsync(filter, cancellationToken)).Cast<object>().ToList();
 	}
 }

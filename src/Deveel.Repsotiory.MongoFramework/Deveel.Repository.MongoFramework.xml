@@ -195,22 +195,6 @@
             property of the entity managed by this repository.
             </exception>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.Assert(System.Object)">
-            <summary>
-            Asserts that the given entity is of the type managed by this repository.
-            </summary>
-            <param name="entity">
-            The object that has to be asserted.
-            </param>
-            <returns>
-            Returns an instance of the object casted to the type managed by this
-            repository.
-            </returns>
-            <exception cref="T:System.ArgumentException">
-            Thrown when the given entity is not of the type managed by this
-            repository
-            </exception>
-        </member>
         <member name="M:Deveel.Data.MongoRepository`2.GetFilterDefinition(Deveel.Data.IQueryFilter)">
             <summary>
             Gets the MongoDB filter definition for the given query filter.

@@ -8,7 +8,7 @@ namespace Deveel.Data {
 	/// Extensions for the <see cref="IServiceCollection"/> to register
 	/// repositories and providers.
 	/// </summary>
-    public static class ServiceCollectionExtensions {
+	public static class ServiceCollectionExtensions {
 		/// <summary>
 		/// Registers a repository of the given type in the service collection.
 		/// </summary>
@@ -24,59 +24,74 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the same <see cref="IServiceCollection"/> to allow chaining.
 		/// </returns>
+		/// <seealso cref="AddRepository(IServiceCollection, Type, ServiceLifetime)"/>
 		public static IServiceCollection AddRepository<TRepository>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
-			where TRepository : class, IRepository
 			=> services.AddRepository(typeof(TRepository), lifetime);
 
-		public static IServiceCollection AddRepository<TRepository, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
-			where TRepository : class, IRepository<TEntity>
-			where TEntity : class {
-			services.AddRepository(typeof(TRepository), lifetime);
-			services.TryAdd(new ServiceDescriptor(typeof(IRepository<TEntity>), typeof(TRepository), lifetime));
-
-			return services;
-		}
-
+		/// <summary>
+		/// Registers a repository of the given type in the service collection.
+		/// </summary>
+		/// <param name="services">
+		/// The service collection to register the repository.
+		/// </param>
+		/// <param name="repositoryType">
+		/// The type of the repository to register.
+		/// </param>
+		/// <param name="lifetime">
+		/// the lifetime of the repository in the service collection.
+		/// </param>
+		/// <returns>
+		/// Returns the same <see cref="IServiceCollection"/> to allow chaining.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown when the given <paramref name="repositoryType"/> is <c>null</c>.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the given <paramref name="repositoryType"/> is not
+		/// a class or is abstract.
+		/// </exception>
+		/// <exception cref="RepositoryException">
+		/// Thrown when the given <paramref name="repositoryType"/> is not a valid
+		/// repository type.
+		/// </exception>
 		public static IServiceCollection AddRepository(this IServiceCollection services, Type repositoryType, ServiceLifetime lifetime = ServiceLifetime.Scoped) {
 			if (repositoryType is null) 
 				throw new ArgumentNullException(nameof(repositoryType));
 
-			if (!typeof(IRepository).IsAssignableFrom(repositoryType))
-				throw new ArgumentException($"The type '{repositoryType}' is not assignable from '{typeof(IRepository)}'",  nameof(repositoryType));
+			if (!repositoryType.IsClass || repositoryType.IsAbstract)
+				throw new ArgumentException($"The type '{repositoryType}' is not a valid repository type", nameof(repositoryType));
 
-			services.Add(new ServiceDescriptor(typeof(IRepository), repositoryType, lifetime));
+			var baseTypes = repositoryType.GetInterfaces()
+				.Where(x => x.IsGenericType && typeof(IRepository<>).IsAssignableFrom(x.GetGenericTypeDefinition()))
+				.ToList();
 
-			if (repositoryType.GenericTypeArguments.Length > 0) {
-				var argType = GetEntityType(repositoryType);
+			if (baseTypes.Count == 0)
+				throw new ArgumentException($"The type '{repositoryType}' is not a valid repository type", nameof(repositoryType));
 
-				if (argType == null)
-					throw new ArgumentException($"Could not determine the entity type in '{repositoryType}'");
-				
-				var compareType = typeof(IRepository<>).MakeGenericType(argType);
+			foreach (var baseType in baseTypes) {
+				var entityType = GetEntityType(baseType);
 
-				if (!compareType.IsAssignableFrom(repositoryType))
-					throw new ArgumentException($"The type '{repositoryType}' is not assignable from '{compareType}'", nameof(repositoryType));
+				if (entityType == null)
+					throw new RepositoryException($"Unable to determine the entity of the repository '{repositoryType}'");
 
-				services.TryAdd(new ServiceDescriptor(compareType, repositoryType, lifetime));
+				if (typeof(IRepository<>).MakeGenericType(entityType).IsAssignableFrom(repositoryType))
+					services.TryAdd(new ServiceDescriptor(typeof(IRepository<>).MakeGenericType(entityType), repositoryType, lifetime));
+
+				if (typeof(IQueryableRepository<>).MakeGenericType(entityType).IsAssignableFrom(repositoryType))
+					services.TryAdd(new ServiceDescriptor(typeof(IQueryableRepository<>).MakeGenericType(entityType), repositoryType, lifetime));
+				if (typeof(IFilterableRepository<>).MakeGenericType(entityType).IsAssignableFrom(repositoryType))
+					services.TryAdd(new ServiceDescriptor(typeof(IFilterableRepository<>).MakeGenericType(entityType), repositoryType, lifetime));
+				if (typeof(IPageableRepository<>).MakeGenericType(entityType).IsAssignableFrom(repositoryType))
+					services.TryAdd(new ServiceDescriptor(typeof(IPageableRepository<>).MakeGenericType(entityType), repositoryType, lifetime));
 			}
 
 			services.Add(new ServiceDescriptor(repositoryType, repositoryType, lifetime));
-			
+
 			return services;
 		}
 
 		private static Type? GetEntityType(Type serviceType) {
-			var entityTypeAttr = serviceType.GetCustomAttribute<EntityTypeAttribute>(true);
-			if (entityTypeAttr != null)
-				return entityTypeAttr.EntityType;
-
 			var genericTypes = serviceType.GenericTypeArguments;
-
-			var entityTypes = genericTypes.Where(x => Attribute.IsDefined(x, typeof(EntityAttribute))).ToList();
-			if (entityTypes.Count > 1)
-				throw new RepositoryException($"Ambigous entity type specifications: {serviceType} has multiple 'Entity' types as type argument '{String.Join(", ", entityTypes)}'");
-			if (entityTypes.Count == 1)
-				return entityTypes[0];
 
 			if (genericTypes.Length == 1 && genericTypes[0].IsClass)
 				return genericTypes[0];
@@ -96,39 +111,28 @@ namespace Deveel.Data {
 		}
 
         public static IServiceCollection AddRepositoryProvider<TProvider>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-            where TProvider : class, IRepositoryProvider
+            where TProvider : class
 			=> services.AddRepositoryProvider(typeof(TProvider), lifetime);
-
-		public static IServiceCollection AddRepositoryProvider<TProvider, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			where TProvider : class, IRepositoryProvider<TEntity>
-			where TEntity : class {
-			services.AddRepositoryProvider(typeof(TProvider), lifetime);
-			services.TryAdd(new ServiceDescriptor(typeof(IRepositoryProvider<TEntity>), typeof(TProvider), lifetime));
-
-			return services;
-		}
 
 		public static IServiceCollection AddRepositoryProvider(this IServiceCollection services, Type providerType, ServiceLifetime lifetime = ServiceLifetime.Singleton) {
 			if (providerType is null)
 				throw new ArgumentNullException(nameof(providerType));
 
-			if (!typeof(IRepositoryProvider).IsAssignableFrom(providerType))
-				throw new ArgumentException($"The type '{providerType}' is not assignable from '{typeof(IRepositoryProvider)}'", nameof(providerType));
+			var baseTypes = providerType.GetInterfaces()
+				.Where(x => x.IsGenericType && typeof(IRepositoryProvider<>).IsAssignableFrom(x.GetGenericTypeDefinition()))
+				.ToList();
 
-			services.TryAddEnumerable(new ServiceDescriptor(typeof(IRepositoryProvider), providerType, lifetime));
+			if (baseTypes.Count == 0)
+				throw new ArgumentException($"The type '{providerType}' is not a valid repository provider type", nameof(providerType));
 
-			if (providerType.GenericTypeArguments.Length > 0) {
-				var argType = GetEntityType(providerType);
+			foreach (var baseType in baseTypes) {
+				var entityType = GetEntityType(baseType);
 
-				if (argType == null)
-					throw new RepositoryException($"Unable to determine the entity of the provider '{providerType}'");
+				if (entityType == null)
+					throw new RepositoryException($"Unable to determine the entity of the repository provider '{providerType}'");
 
-				var compareType = typeof(IRepositoryProvider<>).MakeGenericType(argType);
-
-				if (!compareType.IsAssignableFrom(providerType))
-					throw new ArgumentException($"The type '{providerType}' is not assignable from '{compareType}'", nameof(providerType));
-
-				services.TryAdd(new ServiceDescriptor(compareType, providerType, lifetime));
+				if (typeof(IRepositoryProvider<>).MakeGenericType(entityType).IsAssignableFrom(providerType))
+					services.TryAdd(new ServiceDescriptor(typeof(IRepositoryProvider<>).MakeGenericType(entityType), providerType, lifetime));
 			}
 
 			services.Add(new ServiceDescriptor(providerType, providerType, lifetime));
