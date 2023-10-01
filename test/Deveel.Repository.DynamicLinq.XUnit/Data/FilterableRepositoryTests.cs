@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Deveel.Data {
+﻿namespace Deveel.Data {
 	public class FilterableRepositoryTests {
 		private readonly IList<Person> persons;
 		private readonly IRepository<Person> repository;
@@ -119,5 +113,47 @@ namespace Deveel.Data {
 		public async Task FindAll_WithInvalidExpression() {
 			await Assert.ThrowsAsync<InvalidOperationException>(() => repository.FindAllAsync("x.FirstName"));
 		}
+
+		[Fact]
+		public async Task GetFilteredPage_WithParameterName() {
+			var person = RandomPerson();
+			var list = persons.Where(x => x.FirstName == person.FirstName)
+				.ToList();
+			var totalPages = (int)Math.Ceiling((double)list.Count / 10);
+			var pageItemCount = list.Count % 10;
+
+			var pageRequest = new RepositoryPageRequest<Person>(1, 10)
+				.Where("p", $"p.FirstName == \"{person.FirstName}\"");
+
+			var result = await repository.GetPageAsync(pageRequest);
+
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(list.Count, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+
+		}
+
+		[Fact]
+		public async Task GetFilteredPage() {
+			var person = RandomPerson();
+			var list = persons.Where(x => x.FirstName == person.FirstName)
+				.ToList();
+			var totalPages = (int)Math.Ceiling((double)list.Count / 10);
+			var pageItemCount = list.Count % 10;
+
+			var pageRequest = new RepositoryPageRequest<Person>(1, 10)
+				.Where($"x.FirstName == \"{person.FirstName}\"");
+
+			var result = await repository.GetPageAsync(pageRequest);
+
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(list.Count, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+		}
+
 	}
 }

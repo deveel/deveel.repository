@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Deveel.Data {
     public class InMemoryRepositoryTests : IAsyncLifetime {
 		private readonly AsyncServiceScope scope;
+		private readonly IServiceProvider serviceProvider;
 
 		public InMemoryRepositoryTests() {
 			People = GeneratePersons(100);
@@ -14,12 +15,15 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 			AddRepository(services);
 
-			scope = services.BuildServiceProvider().CreateAsyncScope();
+			serviceProvider = services.BuildServiceProvider();
+			scope = serviceProvider.CreateAsyncScope();
 		}
 
 		protected IList<Person> People { get; }
 
-		protected IRepository<Person> Repository => scope.ServiceProvider.GetRequiredService<IRepository<Person>>();
+		protected IServiceProvider Services => scope.ServiceProvider;
+
+		protected virtual IRepository<Person> Repository => Services.GetRequiredService<IRepository<Person>>();
 
 		protected Faker<Person> PersonFaker { get; } = new PersonFaker();
 
@@ -39,6 +43,7 @@ namespace Deveel.Data {
 
 		public virtual async Task DisposeAsync() {
 			await scope.DisposeAsync();
+			(serviceProvider as IDisposable)?.Dispose();
 		}
 
 		protected virtual async Task SeedAsync(IRepository<Person> repository) {

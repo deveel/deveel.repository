@@ -70,6 +70,30 @@ namespace Deveel.Data {
 			return filterable;
 		}
 
+		/// <summary>
+		/// Gets a version of the repository that is transactional
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to get the transactional version.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="ITransactionalRepository{TEntity}"/>
+		/// that is used to perform transactional operations on the repository.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository is not transactional.
+		/// </exception>
+		public static ITransactionalRepository<TEntity> AsTransactional<TEntity>(this IRepository<TEntity> repository)
+			where TEntity : class {
+			if (!(repository is ITransactionalRepository<TEntity> transactional))
+				throw new NotSupportedException("The repository is not transactional");
+
+			return transactional;
+		}
+
 		#endregion
 
 
@@ -267,6 +291,40 @@ namespace Deveel.Data {
             => repository.RequireFilterable().ExistsAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
 
 		/// <summary>
+		/// Checks if an entity exists in the repository,
+		/// that matches the given filter
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to check the existence
+		/// of any entity that matches the given filter.
+		/// </param>
+		/// <param name="filter">
+		/// The filter used to check the existence of any matching entity.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if any entity exists in the repository,
+		/// or <c>false</c> if not.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support querying or filtering.
+		/// </exception>
+		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
+			where TEntity : class {
+			if (repository.IsFilterable())
+				return repository.RequireFilterable().ExistsAsync(filter, cancellationToken);
+			if (repository.IsQueryable())
+				return Task.FromResult(repository.RequireQueryable().AsQueryable().Any(filter.AsLambda<TEntity>()));
+
+			throw new NotSupportedException("The repository does not support querying");
+		}
+
+		/// <summary>
 		/// Synchronously checks if an entity exists in the repository,
 		/// that matches the given filter
 		/// </summary>
@@ -297,14 +355,56 @@ namespace Deveel.Data {
 			throw new NotSupportedException("The repository does not support querying");
 		}
 
+		/// <summary>
+		/// Synchronously checks if an entity exists in the repository,
+		/// given a filter expression
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to check the existence
+		/// of any entity that matches the given filter.
+		/// </param>
+		/// <param name="filter">
+		/// The filter expression used to check the existence of any matching entity.
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if any entity exists in the repository,
+		/// otherwise it returns <c>false</c>.
+		/// </returns>
+		/// <seealso cref="IFilterableRepository{TEntity}.ExistsAsync(IQueryFilter, CancellationToken)"/>
         public static bool Exists<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter)
             where TEntity : class
-            => repository.ExistsAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.ExistsAsync(new ExpressionQueryFilter<TEntity>(filter)).ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion
 
         #region Count
 
+		/// <summary>
+		/// Counts the number of entities in the repository,
+		/// given a filter expression
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to count the entities.
+		/// </param>
+		/// <param name="filter">
+		/// A filter expression used to count the matching entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the number of entities in the repository that match
+		/// the given filter.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support querying or filtering.
+		/// </exception>
         public static Task<long> CountAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class {
 			if (repository.IsFilterable())
@@ -315,6 +415,14 @@ namespace Deveel.Data {
 			throw new NotSupportedException("The repository does not support querying");
 		}
 
+		/// <summary>
+		/// Counts the number of entities in the repository
+		/// </summary>
+		/// <typeparam name="TEntity"></typeparam>
+		/// <param name="repository"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <exception cref="NotSupportedException"></exception>
 		public static Task<long> CountAllAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())

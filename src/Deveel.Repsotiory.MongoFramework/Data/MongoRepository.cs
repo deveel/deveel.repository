@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Linq.Expressions;
 
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -247,27 +246,6 @@ namespace Deveel.Data {
 				return Convert.ChangeType(id, valueType, CultureInfo.InvariantCulture);
 
 			throw new NotSupportedException($"It is not possible to convert the ID to '{valueType}'");
-		}
-
-		/// <summary>
-		/// Asserts that the given entity is of the type managed by this repository.
-		/// </summary>
-		/// <param name="entity">
-		/// The object that has to be asserted.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of the object casted to the type managed by this
-		/// repository.
-		/// </returns>
-		/// <exception cref="ArgumentException">
-		/// Thrown when the given entity is not of the type managed by this
-		/// repository
-		/// </exception>
-		protected static TEntity Assert(object entity) {
-			if (!(entity is TEntity entityObj))
-				throw new ArgumentException($"The type '{entity.GetType()}' is not assignable from '{typeof(TEntity)}'");
-
-			return entityObj;
 		}
 
 		/// <summary>

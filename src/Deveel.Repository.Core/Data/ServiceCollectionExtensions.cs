@@ -24,9 +24,36 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the same <see cref="IServiceCollection"/> to allow chaining.
 		/// </returns>
+		/// <seealso cref="AddRepository(IServiceCollection, Type, ServiceLifetime)"/>
 		public static IServiceCollection AddRepository<TRepository>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
 			=> services.AddRepository(typeof(TRepository), lifetime);
 
+		/// <summary>
+		/// Registers a repository of the given type in the service collection.
+		/// </summary>
+		/// <param name="services">
+		/// The service collection to register the repository.
+		/// </param>
+		/// <param name="repositoryType">
+		/// The type of the repository to register.
+		/// </param>
+		/// <param name="lifetime">
+		/// the lifetime of the repository in the service collection.
+		/// </param>
+		/// <returns>
+		/// Returns the same <see cref="IServiceCollection"/> to allow chaining.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown when the given <paramref name="repositoryType"/> is <c>null</c>.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the given <paramref name="repositoryType"/> is not
+		/// a class or is abstract.
+		/// </exception>
+		/// <exception cref="RepositoryException">
+		/// Thrown when the given <paramref name="repositoryType"/> is not a valid
+		/// repository type.
+		/// </exception>
 		public static IServiceCollection AddRepository(this IServiceCollection services, Type repositoryType, ServiceLifetime lifetime = ServiceLifetime.Scoped) {
 			if (repositoryType is null) 
 				throw new ArgumentNullException(nameof(repositoryType));
