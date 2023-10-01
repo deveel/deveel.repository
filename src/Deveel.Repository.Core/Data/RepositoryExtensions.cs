@@ -374,6 +374,10 @@ namespace Deveel.Data {
             where TEntity : class
             => repository.RequireFilterable().FindAllAsync(QueryFilter.Empty, cancellationToken);
 
+		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
+			where TEntity : class
+			=> repository.RequireFilterable().FindAllAsync(filter);
+
         public static IList<TEntity> FindAll<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
             where TEntity : class
             => repository.RequireFilterable().FindAllAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();

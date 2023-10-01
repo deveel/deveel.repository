@@ -19,8 +19,13 @@ namespace Deveel.Data {
 
         public InMemoryRepositoryBuilder<TEntity> Use<TRepository>()
             where TRepository : InMemoryRepository<TEntity> {
+
+			services.RemoveAll<IRepository<TEntity>>();
+			services.RemoveAll<IPageableRepository<TEntity>>();
+			services.RemoveAll<IFilterableRepository<TEntity>>();
+			services.RemoveAll<IQueryableRepository<TEntity>>();
+
             services.AddRepository<TRepository>(lifetime);
-            services.Add(new ServiceDescriptor(typeof(IRepository<TEntity>), typeof(TRepository), lifetime));
 
             return this;
         }

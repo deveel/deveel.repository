@@ -19,7 +19,7 @@ namespace Deveel.Data {
 			this.fieldMapper = fieldMapper;
 		}
 
-		internal InMemoryRepository(string tenantId, IEnumerable<TEntity>? list = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
+		protected InMemoryRepository(string tenantId, IEnumerable<TEntity>? list = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
 			: this(list, systemTime, fieldMapper) {
 			TenantId = tenantId;
 		}
@@ -34,11 +34,12 @@ namespace Deveel.Data {
 
 		protected ISystemTime SystemTime { get; }
 
+		/// <inheritdoc/>
 		public virtual string? GetEntityId(TEntity entity) {
 			if (entity == null)
 				throw new ArgumentNullException(nameof(entity));
 
-			if (entity.TryGetMemberValue("Id", out object? idValue))
+			if (!entity.TryGetMemberValue("Id", out object? idValue))
 				return null;
 
 			string? id;
@@ -54,6 +55,7 @@ namespace Deveel.Data {
 			return id;
 		}
 
+		/// <inheritdoc/>
 		public Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -65,6 +67,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -87,6 +90,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -115,6 +119,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			if (entity is null) 
 				throw new ArgumentNullException(nameof(entity));
@@ -131,6 +136,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -143,6 +149,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -156,6 +163,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -168,6 +176,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default) {
 			if (string.IsNullOrWhiteSpace(id)) 
 				throw new ArgumentException($"'{nameof(id)}' cannot be null or whitespace.", nameof(id));
@@ -199,6 +208,7 @@ namespace Deveel.Data {
 			return fieldMapper.Map(fieldName);
 		}
 
+		/// <inheritdoc/>
 		public Task<RepositoryPage<TEntity>> GetPageAsync(RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -226,7 +236,8 @@ namespace Deveel.Data {
 				throw new RepositoryException("Unable to retrieve the page", ex) ;
 			}
 		}
-		
+
+		/// <inheritdoc/>
 		public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -246,6 +257,9 @@ namespace Deveel.Data {
 			} catch (Exception ex) {
 				throw new RepositoryException("Unable to update the entity", ex);
 			}
-		}				
+		}
+		
+		internal static InMemoryRepository<TEntity> Create(string tenantId, IList<TEntity>? entities = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
+			=> new InMemoryRepository<TEntity>(tenantId, entities, systemTime, fieldMapper);
 	}
 }
