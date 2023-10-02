@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using MongoFramework;
 
 namespace Deveel.Data {
-    public sealed class MongoDbContextBuilder<TContext> where TContext : class, IMongoDbContext {
+	public sealed class MongoDbContextBuilder<TContext> where TContext : class, IMongoDbContext {
         private readonly ServiceLifetime defaultLifetime;
 
         public MongoDbContextBuilder(IServiceCollection services, ServiceLifetime defaultLifetime = ServiceLifetime.Singleton) {
@@ -128,9 +128,5 @@ namespace Deveel.Data {
 
             return this;
         }
-
-        public MongoRepositoryBuilder<TContext, TEntity> AddRepository<TEntity>(ServiceLifetime? lifetime = null)
-            where TEntity : class
-            => new MongoRepositoryBuilder<TContext, TEntity>(Services, lifetime ?? defaultLifetime);
 	}
 }

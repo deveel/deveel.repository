@@ -44,15 +44,11 @@ namespace Deveel.Data {
             services
                 .AddMongoContext(builder => {
                     builder.UseConnection(mongo.SetDatabase("testdb"));
-                    AddRepository(builder);
                 })
                 .AddRepositoryController();
-        }
 
-        protected virtual void AddRepository(MongoDbContextBuilder<MongoDbContext> builder) {
-            builder.AddRepository<MongoPersonWithStatus>()
-                .OfType<MongoStateRepository>();
-        }
+			services.AddRepository<MongoStateRepository>();
+		}
 
         public async Task InitializeAsync() {
             var controller = Services.GetRequiredService<IRepositoryController>();

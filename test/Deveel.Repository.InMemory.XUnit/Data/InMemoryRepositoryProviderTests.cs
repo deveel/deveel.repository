@@ -13,8 +13,7 @@ namespace Deveel.Data {
 			=> Services.GetRequiredService<IRepositoryProvider<Person>>().GetRepository(tenantId);
 
 		protected override void AddRepository(IServiceCollection services) {
-			services.AddInMemoryRepository<Person>()
-				.UseProvider<InMemoryRepositoryProvider<Person>>();
+			services.AddRepositoryProvider<InMemoryRepositoryProvider<Person>>();
 		}
 	}
 }

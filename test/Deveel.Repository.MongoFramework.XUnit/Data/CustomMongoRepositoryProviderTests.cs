@@ -53,9 +53,8 @@ namespace Deveel.Data {
 
         protected virtual void AddRepository(MongoDbContextBuilder<PersonsDbContext> builder) {
             builder.UseTenantConnection();
-			builder.AddRepository<MongoTenantPerson>()
-				.OfType<PersonRepository>()
-				.WithTenantProvider<PersonRepositoryProvider>();
+			builder.Services.AddRepository<PersonRepository>();
+			builder.Services.AddRepositoryProvider<PersonRepositoryProvider>();			
         }
 
         protected override async Task InitializeAsync() {
@@ -72,9 +71,6 @@ namespace Deveel.Data {
         protected override async Task DisposeAsync() {
             var controller = Services.GetRequiredService<IRepositoryController>();
             await controller.DropTenantRepositoryAsync<MongoTenantPerson>(TenantId);
-
-            //var repository = MongoRepositoryProvider.GetRepository(TenantId);
-            //await repository.DropAsync();
         }
 
 		[Fact]

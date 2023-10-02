@@ -18,7 +18,7 @@ namespace Deveel.Data {
 		}
 
 		protected virtual void AddRepository(IServiceCollection services) {
-			services.AddInMemoryRepository<Person>();
+			services.AddRepository<InMemoryRepository<Person>>();
 			services.AddRepositoryController();
 		}
 	}

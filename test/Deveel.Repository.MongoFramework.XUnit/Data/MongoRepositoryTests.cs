@@ -34,7 +34,8 @@ namespace Deveel.Data {
 		}
 
 		protected virtual void AddRepository(MongoDbContextBuilder<MongoDbContext> builder) {
-            builder.AddRepository<MongoPerson>();
+            // builder.AddRepository<MongoPerson>();
+			builder.Services.AddRepository<MongoRepository<MongoDbContext, MongoPerson>>();
         }
 
 		protected async Task<MongoPerson?> FindPerson(ObjectId id) {
@@ -44,20 +45,6 @@ namespace Deveel.Data {
 			return await result.FirstOrDefaultAsync();
 		}
 
-
-		//protected override async Task InitializeAsync() {
-		//	var controller = Services.GetRequiredService<IRepositoryController>();
-		//	await controller.CreateRepositoryAsync<MongoPerson>();
-
-		//	await base.InitializeAsync();
-		//}
-
-		//protected override async Task DisposeAsync() {
-		//	var controller = Services.GetRequiredService<IRepositoryController>();
-		//	await controller.DropRepositoryAsync<MongoPerson>();
-
-		//	await base.DisposeAsync();
-		//}
 
 		[Fact]
 		public async Task FindAll_MongoQueryFiltered() {

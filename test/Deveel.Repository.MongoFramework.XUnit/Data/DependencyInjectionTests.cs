@@ -12,9 +12,10 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 
 			services.AddMongoContext(builder => {
-					builder.UseConnection("mongodb://localhost:27017/testdb");
-					builder.AddRepository<MongoPerson>();
-				});
+				builder.UseConnection("mongodb://localhost:27017/testdb");
+			});
+
+			services.AddRepository<MongoRepository<MongoDbContext, MongoPerson>>();
 
 			var provider = services.BuildServiceProvider();
 

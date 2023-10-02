@@ -57,7 +57,8 @@ namespace Deveel.Data {
 				};
 			});
 
-			services.AddMongoTenantContext(builder => builder.AddRepository<MongoPerson>());
+			services.AddMongoTenantContext(/*builder => builder.AddRepository<MongoPerson>()*/);
+			services.AddRepository<MongoRepository<MongoDbTenantContext, MongoPerson>>();
 		}
 
 		[Fact]
