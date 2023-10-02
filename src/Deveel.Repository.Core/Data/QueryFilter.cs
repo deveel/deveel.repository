@@ -56,10 +56,10 @@ namespace Deveel.Data {
 		/// </exception>
 		public static Expression<Func<TEntity, bool>> AsLambda<TEntity>(this IQueryFilter filter)
 			where TEntity : class {
-			if (filter == null)
-				throw new ArgumentNullException(nameof(filter));
+			ArgumentNullException.ThrowIfNull(filter, nameof(filter));
+
 			if (filter.IsEmpty())
-				return e => true;
+				return x => true;
 
 			if (!(filter is IExpressionQueryFilter filterExpr))
 				throw new ArgumentException("Only expression query filters are supported");

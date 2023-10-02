@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.DynamicLi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Core.XUnit", "test\Deveel.Repository.Core.XUnit\Deveel.Repository.Core.XUnit.csproj", "{29D24A08-958D-4237-83BF-5C8E815D9F38}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Tests.XUnit", "test\Deveel.Repository.Tests.XUnit\Deveel.Repository.Tests.XUnit.csproj", "{201917F4-0557-46AE-B532-A4CC801AF5A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{29D24A08-958D-4237-83BF-5C8E815D9F38}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29D24A08-958D-4237-83BF-5C8E815D9F38}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29D24A08-958D-4237-83BF-5C8E815D9F38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{201917F4-0557-46AE-B532-A4CC801AF5A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{201917F4-0557-46AE-B532-A4CC801AF5A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{201917F4-0557-46AE-B532-A4CC801AF5A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{201917F4-0557-46AE-B532-A4CC801AF5A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -87,6 +93,7 @@ Global
 		{2EABF754-C498-4532-BB5C-A5F101E51013} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 		{C1F3CFF0-50EC-4204-A987-7F950878AEFB} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 		{29D24A08-958D-4237-83BF-5C8E815D9F38} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
+		{201917F4-0557-46AE-B532-A4CC801AF5A7} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01FD9B16-84B3-4D99-80C1-11B2F3D65B56}

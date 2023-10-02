@@ -625,8 +625,9 @@
             Represents an provider of strongly-typed repositories that
             are isolating the entities of a given tenant
             </summary>
-            <typeparam name="TEntity">The type of entity handled by the
-            repository instances</typeparam>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository instances
+            </typeparam>
         </member>
         <member name="M:Deveel.Data.IRepositoryProvider`1.GetRepositoryAsync(System.String,System.Threading.CancellationToken)">
             <summary>
@@ -1369,6 +1370,38 @@
             Thrown when the repository does not support paging.
             </exception>
         </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.GetPageAsync``1(Deveel.Data.IRepository{``0},System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Gets a page of entities from the repository, given
+            the page number and the size
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The instance of the repository to use to retrieve the page.
+            </param>
+            <param name="page">
+            The number of the page, starting from 1, to retrieve from the repository.
+            </param>
+            <param name="size">
+            The size of the page to retrieve from the repository.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.RepositoryPage`1"/> that
+            represents the result of the query.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support paging.
+            </exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            Thrown when the given page number is less than 1, or the given
+            size is less than zero.
+            </exception>
+        </member>
         <member name="M:Deveel.Data.RepositoryExtensions.ExistsAsync``1(Deveel.Data.IRepository{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
             <summary>
             Checks if an entity exists in the repository,
@@ -1665,6 +1698,31 @@
             represents an empty page.
             </returns>
         </member>
+        <member name="T:Deveel.Data.RepositoryProviderExtensions">
+            <summary>
+            Extends the <see cref="T:Deveel.Data.IRepositoryProvider`1"/> interface
+            with further methods to resolve a repository.
+            </summary>
+            <seealso cref="T:Deveel.Data.IRepositoryProvider`1"/>
+        </member>
+        <member name="M:Deveel.Data.RepositoryProviderExtensions.GetRepository``1(Deveel.Data.IRepositoryProvider{``0},System.String)">
+            <summary>
+            Synchronously resolves the repository for the given tenant.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="provider">
+            The instance of the provider that resolves the repository.
+            </param>
+            <param name="tenantId">
+            The identifier of the tenant for which the repository is resolved.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.IRepository`1"/> that
+            is isolated for the given tenant.
+            </returns>
+        </member>
         <member name="T:Deveel.Data.ResultSort">
             <summary>
             Provides factory methods to create instances of sorting rules.
@@ -1768,6 +1826,35 @@
             <returns>
             Returns the same <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to allow chaining.
             </returns>
+            <seealso cref="M:Deveel.Data.ServiceCollectionExtensions.AddRepository(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)"/>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddRepository(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers a repository of the given type in the service collection.
+            </summary>
+            <param name="services">
+            The service collection to register the repository.
+            </param>
+            <param name="repositoryType">
+            The type of the repository to register.
+            </param>
+            <param name="lifetime">
+            the lifetime of the repository in the service collection.
+            </param>
+            <returns>
+            Returns the same <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to allow chaining.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when the given <paramref name="repositoryType"/> is <c>null</c>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            Thrown when the given <paramref name="repositoryType"/> is not
+            a class or is abstract.
+            </exception>
+            <exception cref="T:Deveel.Data.RepositoryException">
+            Thrown when the given <paramref name="repositoryType"/> is not a valid
+            repository type.
+            </exception>
         </member>
         <member name="M:Deveel.Data.ServiceCollectionExtensions.AddSystemTime``1(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>

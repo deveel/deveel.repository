@@ -1,8 +1,9 @@
 ﻿namespace Deveel.Data {
-	public class TestTime : ISystemTime {
+	public readonly struct TestTime : ISystemTime {
 		public TestTime() {
-			UtcNow = DateTimeOffset.UtcNow;
-			Now = DateTimeOffset.Now;
+			var now = DateTimeOffset.UtcNow;
+			UtcNow = now;
+			Now = now.ToLocalTime();
 		}
 
 		public DateTimeOffset UtcNow { get; }
