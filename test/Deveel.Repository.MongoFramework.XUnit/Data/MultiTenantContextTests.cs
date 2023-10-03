@@ -57,8 +57,8 @@ namespace Deveel.Data {
 				};
 			});
 
-			services.AddMongoTenantContext(/*builder => builder.AddRepository<MongoPerson>()*/);
-			services.AddRepository<MongoRepository<MongoDbTenantContext, MongoPerson>>();
+			services.AddMongoDbContext<MongoDbTenantContext>((tenant, builder) => builder.UseConnection(tenant.ConnectionString));
+			services.AddRepository<MongoRepository<MongoPerson>>();
 		}
 
 		[Fact]
@@ -66,7 +66,7 @@ namespace Deveel.Data {
 			// emulate the middleware in ASP.NET
 			await ResolveTenant();
 
-			var repository = serviceProvider.GetService<MongoRepository<MongoDbTenantContext, MongoPerson>>();
+			var repository = serviceProvider.GetService<MongoRepository<MongoPerson>>();
 
 			Assert.NotNull(repository);
 

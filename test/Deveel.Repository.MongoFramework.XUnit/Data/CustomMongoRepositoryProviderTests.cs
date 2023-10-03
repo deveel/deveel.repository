@@ -47,14 +47,13 @@ namespace Deveel.Data {
         }
 
         protected virtual void AddMongoDbContext(IServiceCollection services) {
-            var builder = services.AddMongoTenantContext<PersonsDbContext>();
-            AddRepository(builder);
+            services.AddMongoDbContext<PersonsDbContext>((tenant, builder) => builder.UseConnection(tenant.ConnectionString!));
+            AddRepository(services);
         }
 
-        protected virtual void AddRepository(MongoDbContextBuilder<PersonsDbContext> builder) {
-            builder.UseTenantConnection();
-			builder.Services.AddRepository<PersonRepository>();
-			builder.Services.AddRepositoryProvider<PersonRepositoryProvider>();			
+        protected virtual void AddRepository(IServiceCollection services) {
+			services.AddRepository<PersonRepository>();
+			services.AddRepositoryProvider<PersonRepositoryProvider>();			
         }
 
         protected override async Task InitializeAsync() {
@@ -79,22 +78,22 @@ namespace Deveel.Data {
 			Assert.IsType<PersonRepositoryProvider>(RepositoryProvider);
 		}
 
-		protected class PersonRepositoryProvider : MongoTenantRepositoryProvider<PersonsDbContext, MongoTenantPerson, TenantInfo> {
+		protected class PersonRepositoryProvider : MongoRepositoryProvider<PersonsDbContext, MongoTenantPerson, TenantInfo> {
             public PersonRepositoryProvider(IEnumerable<IMultiTenantStore<TenantInfo>> stores, ISystemTime? systemTime = null, ILoggerFactory? loggerFactory = null) 
 				:base(stores, systemTime, loggerFactory) {
             }
 
-            protected override PersonsDbContext CreateContext(IMongoDbConnection connection, IMultiTenantContext<TenantInfo> tenantContext) {
-                return new PersonsDbContext(connection.ForContext<PersonsDbContext>(), tenantContext?.TenantInfo?.Id ?? throw new InvalidOperationException());
+            protected override PersonsDbContext CreateContext(IMongoDbConnection connection, TenantInfo tenantInfo) {
+                return new PersonsDbContext(connection.ForContext<PersonsDbContext>(), tenantInfo?.Id ?? throw new InvalidOperationException());
             }
 
-            protected override MongoRepository<PersonsDbContext, MongoTenantPerson> CreateRepository(PersonsDbContext context) {
+            protected override MongoRepository<MongoTenantPerson> CreateRepository(PersonsDbContext context) {
                 var logger = LoggerFactory.CreateLogger<PersonRepository>();
                 return new PersonRepository(context, logger);
             }
         }
 
-        protected class PersonRepository : MongoRepository<PersonsDbContext, MongoTenantPerson> {
+        protected class PersonRepository : MongoRepository<MongoTenantPerson> {
             public PersonRepository(PersonsDbContext context, ILogger<PersonRepository>? logger = null) : base(context, null, logger) {
             }
         }

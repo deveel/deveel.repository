@@ -17,14 +17,10 @@ namespace Deveel.Data {
 	/// An implementation of <see cref="IRepository{TEntity}"/> contract
 	/// that uses the MongoDB system to store and retrieve data.
 	/// </summary>
-	/// <typeparam name="TContext">
-	/// The type of the <see cref="IMongoDbContext"/> that is used to
-	/// handling the connection to the MongoDB server.
-	/// </typeparam>
 	/// <typeparam name="TEntity">
 	/// The type of the entity that is stored in the repository.
 	/// </typeparam>
-	public class MongoRepository<TContext, TEntity> : IRepository<TEntity>, 
+	public class MongoRepository<TEntity> : IRepository<TEntity>, 
 		IQueryableRepository<TEntity>, 
 		IPageableRepository<TEntity>, 
 		IFilterableRepository<TEntity>,
@@ -32,7 +28,6 @@ namespace Deveel.Data {
 		IControllableRepository, 
 		IAsyncDisposable, 
 		IDisposable
-		where TContext : class, IMongoDbContext
 		where TEntity : class 
 	{
 		private IMongoDbSet<TEntity>? _dbSet;
@@ -50,7 +45,7 @@ namespace Deveel.Data {
 		/// <param name="logger">
 		/// A logger instance that is used to log messages from the repository.
 		/// </param>
-		protected internal MongoRepository(TContext context, ISystemTime? systemTime = null, ILogger? logger = null) {
+		protected internal MongoRepository(IMongoDbContext context, ISystemTime? systemTime = null, ILogger? logger = null) {
 			Context = context;
 			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
 			Logger = logger ?? NullLogger.Instance;
@@ -71,14 +66,14 @@ namespace Deveel.Data {
 		/// <param name="logger">
 		/// A logger instance that is used to log messages from the repository.
 		/// </param>
-		public MongoRepository(TContext context, ISystemTime? systemTime = null, ILogger<MongoRepository<TContext, TEntity>>? logger = null)
+		public MongoRepository(IMongoDbContext context, ISystemTime? systemTime = null, ILogger<MongoRepository<TEntity>>? logger = null)
 			: this(context, systemTime, (ILogger?)logger) {
 		}
 
 		/// <summary>
 		/// Gets the context that is used to handle the connection to the MongoDB server.
 		/// </summary>
-		protected TContext Context { get; }
+		protected IMongoDbContext Context { get; }
 
 		/// <summary>
 		/// Gets the <see cref="IMongoDbSet{TEntity}"/> that is used to handle the

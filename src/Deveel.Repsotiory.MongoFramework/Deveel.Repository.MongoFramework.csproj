@@ -7,6 +7,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Data\MongoDbContextBuilder.cs" />
+	  <Compile Remove="Data\MongoDbTenantConnection.cs" />
+	  <Compile Remove="Data\MongoDbTenantConnection_T.cs" />
 	  <Compile Remove="Data\MongoRepositoryBuilder.cs" />
 	</ItemGroup>
 

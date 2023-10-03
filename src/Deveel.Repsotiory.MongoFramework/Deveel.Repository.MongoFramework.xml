@@ -25,67 +25,16 @@
         <member name="T:Deveel.Data.LoggerExtensions.__TraceUpdatedForTenantStruct">
             <summary> This API supports the logging infrastructure and is not intended to be used directly from your code. It is subject to change in the future. </summary>
         </member>
-        <member name="T:Deveel.Data.MongoDbTenantConnection`2">
-            <summary>
-            Defines a connection to a MongoDB database for a specific tenant
-            </summary>
-            <typeparam name="TContext">
-            The type of <see cref="T:MongoFramework.IMongoDbContext"/> for which this connection is
-            specifically defined.
-            </typeparam>
-            <typeparam name="TTenantInfo">
-            The type of <see cref="T:Finbuckle.MultiTenant.ITenantInfo"/> that defines the information
-            of the tenant's connection.
-            </typeparam>
-        </member>
-        <member name="M:Deveel.Data.MongoDbTenantConnection`2.#ctor(Finbuckle.MultiTenant.IMultiTenantContext{`1})">
-            <summary>
-            Constructs the connection to the MongoDB database for the tenant
-            resolved by the given context.
-            </summary>
-            <param name="tenantContext">
-            The context used to resolve the tenant information.
-            </param>
-            <exception cref="T:System.ArgumentNullException">
-            Thrown when the given <paramref name="tenantContext"/> is <c>null</c>.
-            </exception>
-        </member>
-        <member name="M:Deveel.Data.MongoDbTenantConnection`2.#ctor(`1)">
-            <summary>
-            Constructs the connection to the MongoDB database for the given tenant 
-            </summary>
-            <param name="tenantInfo">
-            The <see cref="T:Finbuckle.MultiTenant.ITenantInfo"/> that defines the information on the
-            connection to the tenant's database.
-            </param>
-            <exception cref="T:System.ArgumentNullException">
-            Thrown if the given <paramref name="tenantInfo"/> is <c>null</c>.
-            </exception>
-            <exception cref="T:System.ArgumentException">
-            Thrown if the given <paramref name="tenantInfo"/> does not define
-            any connection string.
-            </exception>
-        </member>
-        <member name="P:Deveel.Data.MongoDbTenantConnection`2.TenantInfo">
-            <summary>
-            Gets the <see cref="T:Finbuckle.MultiTenant.ITenantInfo"/> that defines the information
-            on the tenant's connection.
-            </summary>
-        </member>
-        <member name="T:Deveel.Data.MongoRepository`2">
+        <member name="T:Deveel.Data.MongoRepository`1">
             <summary>
             An implementation of <see cref="T:Deveel.Data.IRepository`1"/> contract
             that uses the MongoDB system to store and retrieve data.
             </summary>
-            <typeparam name="TContext">
-            The type of the <see cref="T:MongoFramework.IMongoDbContext"/> that is used to
-            handling the connection to the MongoDB server.
-            </typeparam>
             <typeparam name="TEntity">
             The type of the entity that is stored in the repository.
             </typeparam>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.#ctor(`0,Deveel.Data.ISystemTime,Microsoft.Extensions.Logging.ILogger)">
+        <member name="M:Deveel.Data.MongoRepository`1.#ctor(MongoFramework.IMongoDbContext,Deveel.Data.ISystemTime,Microsoft.Extensions.Logging.ILogger)">
             <summary>
             Constructs the repository with the given context and logger.
             </summary>
@@ -99,7 +48,7 @@
             A logger instance that is used to log messages from the repository.
             </param>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.#ctor(`0,Deveel.Data.ISystemTime,Microsoft.Extensions.Logging.ILogger{Deveel.Data.MongoRepository{`0,`1}})">
+        <member name="M:Deveel.Data.MongoRepository`1.#ctor(MongoFramework.IMongoDbContext,Deveel.Data.ISystemTime,Microsoft.Extensions.Logging.ILogger{Deveel.Data.MongoRepository{`0}})">
             <summary>
             Constructs the repository with the given context and logger.
             </summary>
@@ -113,41 +62,41 @@
             A logger instance that is used to log messages from the repository.
             </param>
         </member>
-        <member name="P:Deveel.Data.MongoRepository`2.Context">
+        <member name="P:Deveel.Data.MongoRepository`1.Context">
             <summary>
             Gets the context that is used to handle the connection to the MongoDB server.
             </summary>
         </member>
-        <member name="P:Deveel.Data.MongoRepository`2.DbSet">
+        <member name="P:Deveel.Data.MongoRepository`1.DbSet">
             <summary>
             Gets the <see cref="T:MongoFramework.IMongoDbSet`1"/> that is used to handle the
             repository operations.
             </summary>
         </member>
-        <member name="P:Deveel.Data.MongoRepository`2.SystemTime">
+        <member name="P:Deveel.Data.MongoRepository`1.SystemTime">
             <summary>
             Gets a service that provides the current system time.
             </summary>
         </member>
-        <member name="P:Deveel.Data.MongoRepository`2.Logger">
+        <member name="P:Deveel.Data.MongoRepository`1.Logger">
             <summary>
             Gets the <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance that is used to log messages
             </summary>
         </member>
-        <member name="P:Deveel.Data.MongoRepository`2.TenantId">
+        <member name="P:Deveel.Data.MongoRepository`1.TenantId">
             <summary>
             When the underlying context is a <see cref="T:MongoFramework.IMongoDbTenantContext"/>,
             this property returns the tenant identifier that is used to filter
             the data in the repository.
             </summary>
         </member>
-        <member name="P:Deveel.Data.MongoRepository`2.Collection">
+        <member name="P:Deveel.Data.MongoRepository`1.Collection">
             <summary>
             Gets the <see cref="T:MongoDB.Driver.IMongoCollection`1"/> instance that is used
             to handle the data in the repository.
             </summary>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.ThrowIfDisposed">
+        <member name="M:Deveel.Data.MongoRepository`1.ThrowIfDisposed">
             <summary>
             Throws an exception if the repository has been disposed.
             </summary>
@@ -155,7 +104,7 @@
             Thrown when the repository has been disposed.
             </exception>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.MakeEntitySet">
+        <member name="M:Deveel.Data.MongoRepository`1.MakeEntitySet">
             <summary>
             Constructs a new <see cref="T:MongoFramework.IMongoDbSet`1"/> that is
             coherent with the context and the entity type.
@@ -163,7 +112,7 @@
             <returns></returns>
             <exception cref="T:Deveel.Data.RepositoryException"></exception>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.GetEntityId(`1)">
+        <member name="M:Deveel.Data.MongoRepository`1.GetEntityId(`0)">
             <summary>
             Gets the value of the ID property of the given entity.
             </summary>
@@ -174,7 +123,7 @@
             Returns the value of the ID property of the given entity.
             </returns>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.ConvertIdValue(System.String)">
+        <member name="M:Deveel.Data.MongoRepository`1.ConvertIdValue(System.String)">
             <summary>
             Converts the given string value to the type of the ID property of the
             entity managed by this repository.
@@ -195,7 +144,7 @@
             property of the entity managed by this repository.
             </exception>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.GetFilterDefinition(Deveel.Data.IQueryFilter)">
+        <member name="M:Deveel.Data.MongoRepository`1.GetFilterDefinition(Deveel.Data.IQueryFilter)">
             <summary>
             Gets the MongoDB filter definition for the given query filter.
             </summary>
@@ -210,7 +159,7 @@
             Thrown when the given query filter is not supported by this repository.
             </exception>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.CollectionExistsAsync(System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.MongoRepository`1.CollectionExistsAsync(System.Threading.CancellationToken)">
             <summary>
             Verifies if the repository exists in the underlying database.
             </summary>
@@ -226,7 +175,7 @@
             collection in the underlying database.
             </exception>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.OnCreating(`1)">
+        <member name="M:Deveel.Data.MongoRepository`1.OnCreating(`0)">
             <summary>
             A callback method that is invoked before the entity is created.
             </summary>
@@ -237,7 +186,7 @@
             Returns the entity that is about to be created.
             </returns>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`2.AddAsync(`1,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.MongoRepository`1.AddAsync(`0,System.Threading.CancellationToken)">
             <summary>
             Creates a new entity in the repository.
             </summary>

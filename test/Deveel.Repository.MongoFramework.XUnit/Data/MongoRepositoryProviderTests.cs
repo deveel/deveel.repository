@@ -48,10 +48,10 @@ namespace Deveel.Data {
 		}
 
 		protected virtual void AddMongoDbContext(IServiceCollection services) {
-			var builder = services.AddMongoTenantContext();
-			builder.UseTenantConnection();
+			//var builder = services.AddMongoTenantContext();
+			//builder.UseTenantConnection();
 
-			services.AddRepositoryProvider<MongoTenantRepositoryProvider<MongoDbTenantContext, MongoTenantPerson, TenantInfo>>();
+			services.AddRepositoryProvider<MongoRepositoryProvider<MongoDbTenantContext, MongoTenantPerson, TenantInfo>>();
 		}
 
         protected override async Task InitializeAsync() {

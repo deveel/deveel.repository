@@ -26,17 +26,13 @@ namespace Deveel.Data {
 
 		protected virtual void AddRepository(IServiceCollection services) {
 			services
-				.AddMongoContext(builder => { 
+				.AddMongoDbContext<MongoDbContext>(builder => { 
 					builder.UseConnection(ConnectionString);
-					AddRepository(builder);
 				})
 				.AddRepositoryController();
-		}
 
-		protected virtual void AddRepository(MongoDbContextBuilder<MongoDbContext> builder) {
-            // builder.AddRepository<MongoPerson>();
-			builder.Services.AddRepository<MongoRepository<MongoDbContext, MongoPerson>>();
-        }
+			services.AddRepository<MongoRepository<MongoPerson>>();
+		}
 
 		protected async Task<MongoPerson?> FindPerson(ObjectId id) {
 			var collection = MongoCollection;

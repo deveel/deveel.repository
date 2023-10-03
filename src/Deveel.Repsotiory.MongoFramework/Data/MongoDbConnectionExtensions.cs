@@ -21,30 +21,30 @@ namespace Deveel.Data {
             if (connection is IMongoDbConnection<TContext> mongoConnection)
                 return mongoConnection;
 
-            return new MongoDbConnectionWrapper<TContext>(connection);
+            return new MongoDbConnection<TContext>(connection);
         }
 
-        private class MongoDbConnectionWrapper<TContext> : IMongoDbConnection<TContext> where TContext : class, IMongoDbContext {
-            private readonly IMongoDbConnection _connection;
+        //private class MongoDbConnectionWrapper<TContext> : IMongoDbConnection<TContext> where TContext : class, IMongoDbContext {
+        //    private readonly IMongoDbConnection _connection;
 
-            public MongoDbConnectionWrapper(IMongoDbConnection connection) {
-                _connection = connection;
-            }
+        //    public MongoDbConnectionWrapper(IMongoDbConnection connection) {
+        //        _connection = connection;
+        //    }
 
-            public IMongoClient Client => _connection.Client;
+        //    public IMongoClient Client => _connection.Client;
 
-            public IDiagnosticListener DiagnosticListener {
-                get => _connection.DiagnosticListener;
-                set => _connection.DiagnosticListener = value;
-            }
+        //    public IDiagnosticListener DiagnosticListener {
+        //        get => _connection.DiagnosticListener;
+        //        set => _connection.DiagnosticListener = value;
+        //    }
 
-            public void Dispose() {
-                _connection?.Dispose();
-            }
+        //    public void Dispose() {
+        //        _connection?.Dispose();
+        //    }
 
-            public IMongoDatabase GetDatabase() {
-                return _connection.GetDatabase();
-            }
-        }
+        //    public IMongoDatabase GetDatabase() {
+        //        return _connection.GetDatabase();
+        //    }
+        //}
     }
 }
