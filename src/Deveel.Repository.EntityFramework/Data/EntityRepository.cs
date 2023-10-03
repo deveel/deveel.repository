@@ -146,11 +146,9 @@ namespace Deveel.Data {
             ThrowIfDisposed();
 
 			try {
-				foreach (var entity in entities) {
-					Entities.Add(entity);
-				}
+				await Entities.AddRangeAsync(entities, cancellationToken);
 
-				var count = await Context.SaveChangesAsync(cancellationToken);
+				var count = await Context.SaveChangesAsync(true, cancellationToken);
 
 				return entities.Select(x => GetEntityId(x)!).ToList();
 			} catch (Exception ex) {
@@ -288,7 +286,7 @@ namespace Deveel.Data {
                 return e => true;
 
             if (!(filter is ExpressionQueryFilter<TEntity> queryFilter))
-                throw new ArgumentException($"The filter of type {filter.GetType()} is not supported");
+                throw new RepositoryException($"The filter of type {filter.GetType()} is not supported");
 
             return queryFilter.Expression;
         }
@@ -319,9 +317,22 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 
 			try {
-				var querySet = Entities.AsNoTracking().AsQueryable();
-				if (request.Filter != null)
-					querySet = querySet.Where(request.Filter.AsLambda<TEntity>());
+				var querySet = Entities.AsQueryable();
+				if (request.Filter != null) {
+					if (request.Filter is CombinedQueryFilter combined) {
+						foreach (var filter in combined.Filters) {
+							querySet = filter.Apply(querySet);
+						}
+					} else {
+						querySet = request.Filter.Apply(querySet);
+					}
+				}
+
+				if (request.ResultSorts != null) {
+					foreach (var sort in request.ResultSorts) {
+						querySet = sort.Apply(querySet);
+					}
+				}
 
 				var total = await querySet.CountAsync(cancellationToken);
 

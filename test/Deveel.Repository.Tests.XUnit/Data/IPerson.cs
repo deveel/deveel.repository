@@ -6,7 +6,7 @@
 
 		string LastName { get; set; }
 
-		string Email { get; set; }
+		string? Email { get; set; }
 
 		DateTime? DateOfBirth { get; set; }
 
