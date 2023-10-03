@@ -42,17 +42,13 @@ namespace Deveel.Data {
 
         protected virtual void AddRepository(IServiceCollection services) {
             services
-                .AddMongoContext(builder => {
+                .AddMongoDbContext<MongoDbContext>(builder => {
                     builder.UseConnection(mongo.SetDatabase("testdb"));
-                    AddRepository(builder);
                 })
                 .AddRepositoryController();
-        }
 
-        protected virtual void AddRepository(MongoDbContextBuilder<MongoDbContext> builder) {
-            builder.AddRepository<MongoPersonWithStatus>()
-                .OfType<MongoStateRepository>();
-        }
+			services.AddRepository<MongoStateRepository>();
+		}
 
         public async Task InitializeAsync() {
             var controller = Services.GetRequiredService<IRepositoryController>();
@@ -126,7 +122,7 @@ namespace Deveel.Data {
 
         #region StateRepository
 
-        class MongoStateRepository : MongoRepository<MongoDbContext, MongoPersonWithStatus>, IStateRepository<MongoPersonWithStatus, PersonStatus> {
+        class MongoStateRepository : MongoRepository<MongoPersonWithStatus>, IStateRepository<MongoPersonWithStatus, PersonStatus> {
             public MongoStateRepository(MongoDbContext context, ILogger<MongoStateRepository>? logger = null) 
                 : base(context, null, logger) {
             }

@@ -260,6 +260,51 @@ namespace Deveel.Data {
 			throw new NotSupportedException("The repository does not support paging");
 		}
 
+		/// <summary>
+		/// Gets a page of entities from the repository, given
+		/// the page number and the size
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to retrieve the page.
+		/// </param>
+		/// <param name="page">
+		/// The number of the page, starting from 1, to retrieve from the repository.
+		/// </param>
+		/// <param name="size">
+		/// The size of the page to retrieve from the repository.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="RepositoryPage{TEntity}"/> that
+		/// represents the result of the query.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support paging.
+		/// </exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// Thrown when the given page number is less than 1, or the given
+		/// size is less than zero.
+		/// </exception>
+		public static Task<RepositoryPage<TEntity>> GetPageAsync<TEntity>(this IRepository<TEntity> repository, int page, int size, CancellationToken cancellationToken = default)
+			where TEntity : class
+			=> repository.RequirePageable().GetPageAsync(new RepositoryPageRequest<TEntity>(page, size), cancellationToken);
+
+
+		public static RepositoryPage<TEntity> GetPage<TEntity>(this IRepository<TEntity> repository, RepositoryPageRequest<TEntity> request)
+			where TEntity : class {
+			if (repository.IsPageable())
+				return repository.RequirePageable().GetPage(request);
+			if (repository.IsQueryable())
+				return repository.RequireQueryable().GetPage(request);
+
+			throw new NotSupportedException("The repository does not support paging");
+		}
+
 		#endregion
 
 		#region Exists
@@ -288,7 +333,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
-            => repository.RequireFilterable().ExistsAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
+            => repository.ExistsAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
 
 		/// <summary>
 		/// Checks if an entity exists in the repository,
@@ -345,15 +390,9 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying or filtering.
 		/// </exception>
-        public static bool Exists<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
-            where TEntity : class {
-			if (repository.IsFilterable())
-				return repository.RequireFilterable().Exists(filter);
-			if (repository.IsQueryable())
-				return repository.RequireQueryable().AsQueryable().Any(filter.AsLambda<TEntity>());
-
-			throw new NotSupportedException("The repository does not support querying");
-		}
+		public static bool Exists<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
+			where TEntity : class
+			=> repository.ExistsAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		/// <summary>
 		/// Synchronously checks if an entity exists in the repository,
@@ -376,7 +415,7 @@ namespace Deveel.Data {
 		/// <seealso cref="IFilterableRepository{TEntity}.ExistsAsync(IQueryFilter, CancellationToken)"/>
         public static bool Exists<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter)
             where TEntity : class
-            => repository.ExistsAsync(new ExpressionQueryFilter<TEntity>(filter)).ConfigureAwait(false).GetAwaiter().GetResult();
+            => Exists(repository, new ExpressionQueryFilter<TEntity>(filter));
 
         #endregion
 

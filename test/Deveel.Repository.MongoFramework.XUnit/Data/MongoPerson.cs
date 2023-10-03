@@ -13,7 +13,10 @@ namespace Deveel.Data {
 		public ObjectId Id { get; set; }
 
 
-		string? IPerson.Id => Id.ToEntityId();
+		string? IPerson.Id {
+			get => Id.ToEntityId();
+			set => Id = ObjectId.Parse(value);
+		}
 
 		[Column("first_name")]
 		public string FirstName { get; set; }
@@ -21,11 +24,17 @@ namespace Deveel.Data {
 		[Column("last_name")]
 		public string LastName { get; set; }
 
-		[Column("birth_date")]
-		public DateTime? BirthDate { get; set; }
+		[Column("birthdate")]
+		public DateTime? DateOfBirth { get; set; }
 
 		[Column("description")]
 		public string? Description { get; set; }
+
+		[Column("email")]
+		public string Email { get; set; }
+
+		[Column("phone")]
+		public string? PhoneNumber { get; set; }
 
 		[Column("created_at")]
 		public DateTimeOffset? CreatedAtUtc { get; set; }
@@ -34,16 +43,16 @@ namespace Deveel.Data {
 		public DateTimeOffset? UpdatedAtUtc { get; set; }
 	}
 
-	public interface IPerson {
-		string? Id { get; }
+	//public interface IPerson {
+	//	string? Id { get; }
 
-		public string FirstName { get; }
+	//	public string FirstName { get; }
 
-		public string LastName { get; }
+	//	public string LastName { get; }
 
-		public DateTime? BirthDate { get; }
+	//	public DateTime? BirthDate { get; }
 
-		public string? Description { get; }
-	}
+	//	public string? Description { get; }
+	//}
 
 }

@@ -4,13 +4,15 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>Deveel</RootNamespace>
     <IsPackable>false</IsPackable>
-	  <RootNamespace>Deveel</RootNamespace>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="34.0.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageReference Include="xunit" Version="2.5.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1">
@@ -24,8 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Deveel.Repository.InMemory\Deveel.Repository.InMemory.csproj" />
-    <ProjectReference Include="..\Deveel.Repository.Tests.XUnit\Deveel.Repository.Tests.XUnit.csproj" />
+    <ProjectReference Include="..\..\src\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
+    <ProjectReference Include="..\Deveel.Repository.Test.Utils\Deveel.Repository.Test.Utils.csproj" />
   </ItemGroup>
 
 </Project>

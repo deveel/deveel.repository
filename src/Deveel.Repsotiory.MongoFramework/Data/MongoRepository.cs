@@ -17,14 +17,10 @@ namespace Deveel.Data {
 	/// An implementation of <see cref="IRepository{TEntity}"/> contract
 	/// that uses the MongoDB system to store and retrieve data.
 	/// </summary>
-	/// <typeparam name="TContext">
-	/// The type of the <see cref="IMongoDbContext"/> that is used to
-	/// handling the connection to the MongoDB server.
-	/// </typeparam>
 	/// <typeparam name="TEntity">
 	/// The type of the entity that is stored in the repository.
 	/// </typeparam>
-	public class MongoRepository<TContext, TEntity> : IRepository<TEntity>, 
+	public class MongoRepository<TEntity> : IRepository<TEntity>, 
 		IQueryableRepository<TEntity>, 
 		IPageableRepository<TEntity>, 
 		IFilterableRepository<TEntity>,
@@ -32,7 +28,6 @@ namespace Deveel.Data {
 		IControllableRepository, 
 		IAsyncDisposable, 
 		IDisposable
-		where TContext : class, IMongoDbContext
 		where TEntity : class 
 	{
 		private IMongoDbSet<TEntity>? _dbSet;
@@ -50,7 +45,7 @@ namespace Deveel.Data {
 		/// <param name="logger">
 		/// A logger instance that is used to log messages from the repository.
 		/// </param>
-		protected internal MongoRepository(TContext context, ISystemTime? systemTime = null, ILogger? logger = null) {
+		protected internal MongoRepository(IMongoDbContext context, ISystemTime? systemTime = null, ILogger? logger = null) {
 			Context = context;
 			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
 			Logger = logger ?? NullLogger.Instance;
@@ -71,14 +66,14 @@ namespace Deveel.Data {
 		/// <param name="logger">
 		/// A logger instance that is used to log messages from the repository.
 		/// </param>
-		public MongoRepository(TContext context, ISystemTime? systemTime = null, ILogger<MongoRepository<TContext, TEntity>>? logger = null)
+		public MongoRepository(IMongoDbContext context, ISystemTime? systemTime = null, ILogger<MongoRepository<TEntity>>? logger = null)
 			: this(context, systemTime, (ILogger?)logger) {
 		}
 
 		/// <summary>
 		/// Gets the context that is used to handle the connection to the MongoDB server.
 		/// </summary>
-		protected TContext Context { get; }
+		protected IMongoDbContext Context { get; }
 
 		/// <summary>
 		/// Gets the <see cref="IMongoDbSet{TEntity}"/> that is used to handle the
@@ -270,7 +265,7 @@ namespace Deveel.Data {
 			if (filter is MongoQueryFilter<TEntity> filterDef)
 				return filterDef.Filter;
 
-			throw new ArgumentException($"The query filter type '{filter.GetType()}' is not supported by Mongo");
+			throw new RepositoryException($"The query filter type '{filter.GetType()}' is not supported by Mongo");
 		}
 
 
@@ -584,14 +579,14 @@ namespace Deveel.Data {
 		public Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default)
 			=> FindAsync(GetFilterDefinition(filter), cancellationToken);
 
-		public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
-			try {
-				return await DbSet.Where(filter).FirstOrDefaultAsync(cancellationToken);
-			} catch (Exception ex) {
+		//public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
+		//	try {
+		//		return await DbSet.Where(filter).FirstOrDefaultAsync(cancellationToken);
+		//	} catch (Exception ex) {
 
-				throw new RepositoryException("Unable to execute the query", ex);
-			}
-		}
+		//		throw new RepositoryException("Unable to execute the query", ex);
+		//	}
+		//}
 
 		public async Task<TEntity?> FindAsync(FilterDefinition<TEntity> filter, CancellationToken cancellationToken = default) {
 			try {
@@ -613,13 +608,13 @@ namespace Deveel.Data {
 		public Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default)
 			=> FindAllAsync(GetFilterDefinition(filter), cancellationToken);
 
-		public async Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
-			try {
-				return await DbSet.Where(filter).ToListAsync(cancellationToken);
-			} catch (Exception ex) {
-				throw new RepositoryException("Unable to execute the query", ex);
-			}
-		}
+		//public async Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
+		//	try {
+		//		return await DbSet.Where(filter).ToListAsync(cancellationToken);
+		//	} catch (Exception ex) {
+		//		throw new RepositoryException("Unable to execute the query", ex);
+		//	}
+		//}
 
 		public async Task<IList<TEntity>> FindAllAsync(FilterDefinition<TEntity> filter, CancellationToken cancellationToken = default) {
 			try {
@@ -645,8 +640,6 @@ namespace Deveel.Data {
 
 				var totalCount = await entitySet.CountAsync(cancellationToken);
 
-				entitySet = entitySet.Skip(request.Offset).Take(request.Size);
-
 				if (request.ResultSorts != null) {
 					foreach (var sort in request.ResultSorts) {
 						Expression<Func<TEntity, object>> keySelector;
@@ -667,6 +660,8 @@ namespace Deveel.Data {
 					}
 				}
 
+				entitySet = entitySet.Skip(request.Offset).Take(request.Size);
+
 				var items = await entitySet.ToListAsync(cancellationToken);
 				return new RepositoryPage<TEntity>(request, totalCount, items);
 			} catch (Exception ex) {
@@ -682,14 +677,14 @@ namespace Deveel.Data {
 		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default)
 			=> ExistsAsync(GetFilterDefinition(filter), cancellationToken);
 
-		public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
-			try {
-				return await DbSet.Where(filter).AnyAsync(cancellationToken);
-			} catch (Exception ex) {
+		//public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
+		//	try {
+		//		return await DbSet.Where(filter).AnyAsync(cancellationToken);
+		//	} catch (Exception ex) {
 
-				throw new RepositoryException("Unable to execute the query", ex);
-			}
-		}
+		//		throw new RepositoryException("Unable to execute the query", ex);
+		//	}
+		//}
 
 		public async Task<bool> ExistsAsync(FilterDefinition<TEntity> filter, CancellationToken cancellationToken = default) {
 			try {
@@ -708,14 +703,14 @@ namespace Deveel.Data {
 		public Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default)
 			=> CountAsync(GetFilterDefinition(filter), cancellationToken);
 
-		public async Task<long> CountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
-			try {
-				return await DbSet.Where(filter).CountAsync(cancellationToken);
-			} catch (Exception ex) {
+		//public async Task<long> CountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
+		//	try {
+		//		return await DbSet.Where(filter).CountAsync(cancellationToken);
+		//	} catch (Exception ex) {
 
-				throw new RepositoryException("Unable to execute the query", ex);
-			}
-		}
+		//		throw new RepositoryException("Unable to execute the query", ex);
+		//	}
+		//}
 
 		public async Task<long> CountAsync(FilterDefinition<TEntity> filter, CancellationToken cancellationToken) {
 			try {

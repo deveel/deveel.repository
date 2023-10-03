@@ -5,7 +5,7 @@ namespace Deveel.Data {
 		[Fact]
 		public static void AddDefaultInMemoryRepository() {
 			var services = new ServiceCollection();
-			services.AddInMemoryRepository<Person>();
+			services.AddRepository<InMemoryRepository<Person>>();
 
 			var serviceProvider = services.BuildServiceProvider();
 
@@ -19,8 +19,7 @@ namespace Deveel.Data {
 		[Fact]
 		public static void AddInMemoryRepository() {
 			var services = new ServiceCollection();
-			services.AddInMemoryRepository<Person>()
-				.Use<PersonRepository>();
+			services.AddRepository<PersonRepository>();
 
 			var serviceProvider = services.BuildServiceProvider();
 
@@ -38,8 +37,7 @@ namespace Deveel.Data {
 		[Fact]
 		public static async Task AddInMemoryRepositoryProvider() {
 			var services = new ServiceCollection();
-			services.AddInMemoryRepository<Person>()
-				.UseProvider<PersonRepositoryProvider>();
+			services.AddRepositoryProvider<PersonRepositoryProvider>();
 
 			var serviceProvider = services.BuildServiceProvider();
 
