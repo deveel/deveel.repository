@@ -27,8 +27,13 @@ jobs:
       run: dotnet build --no-restore --version-suffix $GITHUB_RUN_ID -c Release
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal -c Release
+      run: dotnet test --no-build --verbosity normal -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
       
+    - name: Collect to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
     - name: Pack NuGet
       run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release -o ./nuget
       
