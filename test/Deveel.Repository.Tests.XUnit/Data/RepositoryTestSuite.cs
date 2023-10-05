@@ -78,7 +78,8 @@ namespace Deveel.Data {
 			await repository.AddRangeAsync(People);
 		}
 
-		protected virtual void AssertEqual(TPerson expected, TPerson actual) {
+		protected virtual IEnumerable<TPerson> NaturalOrder(IEnumerable<TPerson> source) {
+			return source;
 		}
 
 		[Fact]
@@ -245,10 +246,12 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FindFirst() {
+			var ordered = NaturalOrder(People).ToList();
+
 			var result = await Repository.FindAsync();
 
 			Assert.NotNull(result);
-			Assert.Equal(People[0].FirstName, result.FirstName);
+			Assert.Equal(ordered[0].FirstName, result.FirstName);
 		}
 
 		[Fact]

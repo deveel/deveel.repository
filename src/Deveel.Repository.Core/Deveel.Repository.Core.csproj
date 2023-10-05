@@ -6,9 +6,9 @@
     <DocumentationFile>./Deveel.Repository.Core.xml</DocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Data\StateInfo.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Data\StateInfo.cs" />
+	</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.1" />
