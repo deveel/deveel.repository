@@ -10,6 +10,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// A repository that uses an <see cref="DbContext"/> to access the data
+	/// of the entities.
+	/// </summary>
+	/// <typeparam name="TEntity">
+	/// The type of the entity managed by the repository.
+	/// </typeparam>
 	public class EntityRepository<TEntity> : 
         IRepository<TEntity>,
         IFilterableRepository<TEntity>,
@@ -18,13 +25,38 @@ namespace Deveel.Data {
         IDisposable
         where TEntity : class {
         private bool disposedValue;
-
         private IKey primaryKey;
 
+		/// <summary>
+		/// Constructs the repository using the given <see cref="DbContext"/>.
+		/// </summary>
+		/// <param name="context">
+		/// The <see cref="DbContext"/> used to access the data of the entities.
+		/// </param>
+		/// <param name="logger">
+		/// A logger used to log the operations of the repository.
+		/// </param>
+		/// <remarks>
+		/// When the given <paramref name="context"/> implements the <see cref="IMultiTenantDbContext"/>
+		/// the repository will use the tenant information to access the data.
+		/// </remarks>
         public EntityRepository(DbContext context, ILogger<EntityRepository<TEntity>>? logger = null)
             : this(context, (context as IMultiTenantDbContext)?.TenantInfo, logger) {
         }
 
+		/// <summary>
+		/// Constructs the repository using the given <see cref="DbContext"/> for
+		/// the given tenant.
+		/// </summary>
+		/// <param name="context">
+		/// The <see cref="DbContext"/> used to access the data of the entities.
+		/// </param>
+		/// <param name="tenantInfo">
+		/// The information about the tenant that the repository will use to access the data.
+		/// </param>
+		/// <param name="logger">
+		/// The logger used to log the operations of the repository.
+		/// </param>
         public EntityRepository(DbContext context, ITenantInfo? tenantInfo, ILogger<EntityRepository<TEntity>>? logger = null)
             : this(context, tenantInfo, (ILogger?) logger) {
         }
@@ -43,41 +75,74 @@ namespace Deveel.Data {
             TenantInfo = tenantInfo;
         }
 
+		/// <summary>
+		/// The destructor of the repository.
+		/// </summary>
         ~EntityRepository() {
             Dispose(disposing: false);
         }
 
+		/// <summary>
+		/// Gets the instance of the <see cref="DbContext"/> used by the repository.
+		/// </summary>
         protected DbContext Context { get; private set; }
 
+		/// <summary>
+		/// Gets the logger used by the repository.
+		/// </summary>
         protected ILogger Logger { get; }
 
-        protected DbSet<TEntity> Entities => Context.Set<TEntity>();
+		/// <summary>
+		/// Gets the <see cref="DbSet{TEntity}"/> used by the repository to access the data.
+		/// </summary>
+        protected virtual DbSet<TEntity> Entities => Context.Set<TEntity>();
 
+		/// <summary>
+		/// Gets the information about the tenant that the repository is using to access the data.
+		/// </summary>
         protected virtual ITenantInfo? TenantInfo { get; }
 
+		/// <summary>
+		/// Gets the identifier of the tenant that the repository is using to access the data.
+		/// </summary>
         protected string? TenantId => TenantInfo?.Id;
 
+		/// <summary>
+		/// Assesses if the repository has been disposed.
+		/// </summary>
+		/// <exception cref="ObjectDisposedException">
+		/// Thrown when the repository has been disposed.
+		/// </exception>
         protected void ThrowIfDisposed() {
             if (disposedValue)
                 throw new ObjectDisposedException(GetType().Name); 
         }
 
-		string? IRepository<TEntity>.GetEntityId(TEntity entity)
-			=> GetEntityId(entity);
-
-		protected virtual object? GetEntityId(string id) {
-            //var model = Context.Model.FindEntityType(typeof(TEntity));
-            //if (model == null)
-            //	throw new RepositoryException($"The entity type '{typeof(TEntity)}' was not mapped");
-
-            //var key = model.FindPrimaryKey();
-            //if (key == null)
-            //	throw new RepositoryException($"The model of the entity '{typeof(TEntity)}' has no primary key configured");
-
-            //var keyType = key.GetKeyType();
-
+		/// <summary>
+		/// Converts the given string identifier to the type of the 
+		/// primary key of the entity.
+		/// </summary>
+		/// <param name="id">
+		/// The string representation of the identifier.
+		/// </param>
+		/// <returns>
+		/// Returns the identifier converted to the type of the primary key
+		/// of the entity.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the given string is not a valid identifier for the entity.
+		/// </exception>
+		protected virtual object? ConvertEntityKey(string id) {
             var keyType = primaryKey.GetKeyType();
 
+			if (keyType == null)
+				// The entity has no primary key
+				return null;
+
+			if (Nullable.GetUnderlyingType(keyType) != null)
+				keyType = Nullable.GetUnderlyingType(keyType);
+
+			// These are the most common types of primary keys in SQL databases
 			if (keyType == typeof(string))
 				return id;
 			if (keyType == typeof(Guid)) {
@@ -86,19 +151,18 @@ namespace Deveel.Data {
 
 				return guid;
 			}
+			if (keyType == typeof(int)) {
+				if (!int.TryParse(id, out var intId))
+					throw new ArgumentException($"The string '{id}' is not valid integer");
 
-			return Convert.ChangeType(id, keyType, CultureInfo.InvariantCulture);
+				return intId;
+			}
+
+			return Convert.ChangeType(id, keyType!, CultureInfo.InvariantCulture);
 		}
 
-		protected virtual string? GetEntityId(TEntity entity) {
-			//var model = Context.Model.FindEntityType(typeof(TEntity));
-			//if (model == null)
-			//	throw new RepositoryException($"The entity type '{typeof(TEntity)}' was not mapped");
-
-			//var key = model.FindPrimaryKey();
-			//if (key == null)
-			//	throw new RepositoryException($"The model of the entity '{typeof(TEntity)}' has no primary key configured");
-
+		/// <inheritdoc/>
+		public virtual string? GetEntityId(TEntity entity) {
 			var props = primaryKey.Properties.ToList();
 			if (props.Count > 1)
 				throw new RepositoryException($"The entity '{typeof(TEntity)}' has more than one property has primary key");
@@ -116,6 +180,7 @@ namespace Deveel.Data {
 			return id;
 		}
 
+		/// <inheritdoc/>
 		public async Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
@@ -138,11 +203,12 @@ namespace Deveel.Data {
                 return id;
             } catch (Exception ex) {
                 Logger.LogUnknownError(ex, typeof(TEntity));
-                throw;
+                throw new RepositoryException("Unknown error while trying to add an entity to the repository", ex);
             }
         }
 
-        public async Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		/// <inheritdoc/>
+		public async Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
 			try {
@@ -153,18 +219,12 @@ namespace Deveel.Data {
 				return entities.Select(x => GetEntityId(x)!).ToList();
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
-				throw new RepositoryException("Could not create the entities", ex);
+				throw new RepositoryException("Unknown error while trying to add a range of entities to the repository", ex);
 			}
         }
 
-        private static TEntity AssertEntity(object entity) {
-            if (!(entity is TEntity dataEntity))
-                throw new ArgumentException($"The entity is not assignable from '{typeof(TEntity)}'");
-
-            return dataEntity;
-        }
-
-        public async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		/// <inheritdoc/>
+		public async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			if (entity is null) throw new ArgumentNullException(nameof(entity));
@@ -208,10 +268,18 @@ namespace Deveel.Data {
 			}
         }
 
-        public async Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default)
-            => await Entities.FindAsync(new object?[] { GetEntityId(id) }, cancellationToken);
+		/// <inheritdoc/>
+		public async Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default) {
+			try {
+				return await Entities.FindAsync(new object?[] { ConvertEntityKey(id) }, cancellationToken);
+			} catch (Exception ex) {
+				Logger.LogUnknownError(ex, typeof(TEntity));
+				throw new RepositoryException("Unable to find an entity in the repository because of an error", ex);
+			}
+		}
 
-        public async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		/// <inheritdoc/>
+		public async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
 			if (entity == null)
@@ -221,6 +289,8 @@ namespace Deveel.Data {
                 var entityId = GetEntityId(entity)!;
 
                 Logger.TraceUpdatingEntity(typeof(TEntity), entityId, TenantId);
+
+				// TODO: is it there any better way to do this with EF?
 
                 var existing = await FindByIdAsync(entityId, cancellationToken);
                 if (existing == null) {
@@ -247,7 +317,7 @@ namespace Deveel.Data {
                 return updated;
             } catch (Exception ex) {
                 Logger.LogUnknownError(ex, typeof(TEntity));
-                throw new RepositoryException("Unable to update the entity", ex);
+                throw new RepositoryException("Unable to update the entity because of an error", ex);
             }
         }
 
@@ -261,17 +331,67 @@ namespace Deveel.Data {
 		async Task<bool> IFilterableRepository<TEntity>.ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken)
 			=> await ExistsAsync(AssertExpression(filter), cancellationToken);
 
-        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
-            => await Entities.AnyAsync(EnsureFilter(filter), cancellationToken);
+		/// <summary>
+		/// Checks if the repository contains an entity that matches 
+		/// the given filter.
+		/// </summary>
+		/// <param name="filter">
+		/// The expression that defines the filter to apply to the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the repository contains at least one entity
+		/// that matches the given filter, otherwise <c>false</c>.
+		/// </returns>
+		/// <exception cref="RepositoryException"></exception>
+		public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default) {
+			try {
+				return await Entities.AnyAsync(EnsureFilter(filter), cancellationToken);
+			} catch (Exception ex) {
+				Logger.LogUnknownError(ex, typeof(TEntity));
+				throw new RepositoryException("Unable to determine the existence of an entity", ex);
+			}
+		}
 
+		/// <summary>
+		/// Counts the number of entities in the repository that match 
+		/// the given filter.
+		/// </summary>
+		/// <param name="filter">
+		/// The expression that defines the filter to apply to the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns></returns>
         public async Task<long> CountAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
             => await Entities.LongCountAsync(EnsureFilter(filter), cancellationToken);
 
 		Task<long> IFilterableRepository<TEntity>.CountAsync(IQueryFilter filter, CancellationToken cancellationToken)
 			=> CountAsync(AssertExpression(filter), cancellationToken);
 
+		/// <summary>
+		/// Finds the first entity in the repository that matches the given filter.
+		/// </summary>
+		/// <param name="filter">
+		/// The expression that defines the filter to apply to the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the first entity that matches the given filter, or <c>null</c>
+		/// if no entity is found.
+		/// </returns>
         public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default) {
-            return await Entities.FirstOrDefaultAsync(EnsureFilter(filter), cancellationToken);
+			try {
+				return await Entities.FirstOrDefaultAsync(EnsureFilter(filter), cancellationToken);
+			} catch (Exception ex) {
+
+				throw new RepositoryException("Unknown error while trying to find an entity", ex);
+			}
         }
 
         private static Expression<Func<TEntity, bool>> EnsureFilter(Expression<Func<TEntity, bool>>? filter) {
@@ -283,36 +403,61 @@ namespace Deveel.Data {
 
         private Expression<Func<TEntity, bool>> AssertExpression(IQueryFilter filter) {
             if (filter == null || filter.IsEmpty())
-                return e => true;
+                return x => true;
 
-            if (!(filter is ExpressionQueryFilter<TEntity> queryFilter))
+            if (!(filter is IExpressionQueryFilter exprFilter))
                 throw new RepositoryException($"The filter of type {filter.GetType()} is not supported");
 
-            return queryFilter.Expression;
+			try {
+				return exprFilter.AsLambda<TEntity>();
+			} catch (Exception ex) {
+				throw new RepositoryException("Unable to trasnform the provided filter to an expression", ex);
+			}
+		}
+
+		/// <summary>
+		/// Finds all the entities in the repository that match the given filter.
+		/// </summary>
+		/// <param name="filter">
+		/// The expression that defines the filter to apply to the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a list of entities that match the given filter.
+		/// </returns>
+		public async Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
+			try {
+				return await Entities.Where(filter).ToListAsync(cancellationToken);
+			} catch (Exception ex) {
+				throw new RepositoryException("Unable to list the entities", ex);
+			}
         }
 
-        public async Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
-            return await Entities.Where(filter).ToListAsync(cancellationToken);
-        }
+		/// <inheritdoc/>
+        public IQueryable<TEntity> AsQueryable() => Entities.AsQueryable();
 
-        public IQueryable<TEntity> AsQueryable() {
-            return Entities.AsQueryable();
-        }
-
+		/// <summary>
+		/// Disposes the repository and frees all the resources used by it.
+		/// </summary>
+		/// <param name="disposing">
+		/// Indicates if the repository is explicitly disposing.
+		/// </param>
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
-
                 Context = null;
                 disposedValue = true;
             }
         }
 
+		/// <inheritdoc/>
         public void Dispose() {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+		/// <inheritdoc/>
 		public async Task<RepositoryPage<TEntity>> GetPageAsync(RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
@@ -340,7 +485,7 @@ namespace Deveel.Data {
 
 				return new RepositoryPage<TEntity>(request, total, items);
 			} catch (Exception ex) {
-
+				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Could not get the page of entities", ex);
 			}
 		}

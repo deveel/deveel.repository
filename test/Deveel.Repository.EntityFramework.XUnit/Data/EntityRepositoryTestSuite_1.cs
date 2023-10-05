@@ -5,12 +5,14 @@ using Xunit.Abstractions;
 
 namespace Deveel.Data {
 	[Collection(nameof(SqlConnectionCollection))]
-	public abstract class EntityFrameworkRepositoryTestSuite<TPerson> : RepositoryTestSuite<TPerson> where TPerson : DbPerson {
+	public abstract class EntityRepositoryTestSuite : RepositoryTestSuite<DbPerson> {
 		private readonly SqlTestConnection sql;
 
-		public EntityFrameworkRepositoryTestSuite(SqlTestConnection sql, ITestOutputHelper? testOutput) : base(testOutput) {
+		public EntityRepositoryTestSuite(SqlTestConnection sql, ITestOutputHelper? testOutput) : base(testOutput) {
 			this.sql = sql;
 		}
+
+		protected string ConnectionString => sql.Connection.ConnectionString;
 
 		protected override void ConfigureServices(IServiceCollection services) {
 			services.AddDbContext<DbContext, PersonDbContext>(builder => {
@@ -18,7 +20,7 @@ namespace Deveel.Data {
 				builder.UseSqlite(sql.Connection);
 				builder.LogTo(TestOutput!.WriteLine);
 			})
-				.AddRepository<EntityRepository<TPerson>>();
+				.AddEntityRepository<DbPerson>();
 
 			base.ConfigureServices(services);
 		}
@@ -43,6 +45,6 @@ namespace Deveel.Data {
 			await dbContext.Database.EnsureDeletedAsync();
 		}
 
-		protected override IEnumerable<TPerson> NaturalOrder(IEnumerable<TPerson> source) => source.OrderBy(x => x.Id);
+		protected override IEnumerable<DbPerson> NaturalOrder(IEnumerable<DbPerson> source) => source.OrderBy(x => x.Id);
 	}
 }

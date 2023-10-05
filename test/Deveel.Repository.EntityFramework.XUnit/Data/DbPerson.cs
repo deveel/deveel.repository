@@ -5,11 +5,11 @@ namespace Deveel.Data {
 	[Table("people")]
 	public class DbPerson : IPerson {
 		[Key]
-		public Guid Id { get; set; }
+		public Guid? Id { get; set; }
 
-		string IPerson.Id {
+		string? IPerson.Id {
 			get => Id.ToString();
-			set => Id = Guid.Parse(value);
+			set => Id = value == null ? null : Guid.Parse(value);
 		}
 
 		public string FirstName { get; set; }
@@ -34,9 +34,9 @@ namespace Deveel.Data {
 		[Key]
 		public Guid Id { get; set; }
 
-		public Guid PersonId { get; set; }
+		public Guid? PersonId { get; set; }
 
-		public DbPerson Person { get; set; }
+		public virtual DbPerson Person { get; set; }
 
 		public string Type { get; set; }
 

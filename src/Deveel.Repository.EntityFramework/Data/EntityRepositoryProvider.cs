@@ -8,6 +8,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// An implementation of <see cref="IRepositoryProvider{TEntity}"/> that
+	/// allows to create <see cref="EntityRepository{TEntity}"/> instances
+	/// in a multi-tenant context.
+	/// </summary>
+	/// <typeparam name="TEntity">
+	/// The type of entity managed by the repository
+	/// </typeparam>
+	/// <typeparam name="TContext">
+	/// The type of <see cref="DbContext"/> used to manage the entities
+	/// </typeparam>
     public class EntityRepositoryProvider<TEntity, TContext> : IRepositoryProvider<TEntity>, IDisposable 
         where TContext : DbContext
         where TEntity : class {
@@ -25,26 +36,54 @@ namespace Deveel.Data {
             this.loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         }
 
+		/// <summary>
+		/// Destroys the instance of the provider.
+		/// </summary>
         ~EntityRepositoryProvider() {
             Dispose(disposing: false);
         }
 
-        public virtual EntityRepository<TEntity> GetRepository(string tenantId) {
-            foreach (var store in tenantStores) {
-                var tenant = store.TryGetAsync(tenantId)
-                    .ConfigureAwait(false).GetAwaiter().GetResult();
+		/// <summary>
+		/// Gets a repository for the given tenant.
+		/// </summary>
+		/// <param name="tenantId">
+		/// The identifier of the tenant to get the repository for
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="EntityRepository{TEntity}"/> that
+		/// isolates the entities of the given tenant.
+		/// </returns>
+		/// <exception cref="RepositoryException">
+		/// Thrown when the tenant was not found or the repository could not be
+		/// constructed with the given tenant.
+		/// </exception>
+        public virtual async Task<EntityRepository<TEntity>> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken = default) {
+            // TODO: move the cache here ...
 
-                if (tenant != null)
-                    return CreateRepository(tenant);
+			foreach (var store in tenantStores) {
+                var tenant = await store.TryGetAsync(tenantId);
+
+                if (tenant == null)
+					tenant = await store.TryGetByIdentifierAsync(tenantId);
+
+				if (tenant != null)
+					return CreateRepository(tenant);
             }
 
             throw new RepositoryException($"The tenant '{tenantId}' was not found");
         }
 
+		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken)
+			=> await GetRepositoryAsync(tenantId, cancellationToken);
+
         private TContext ConstructDbContext(TenantInfo tenantInfo) {
             if (contexts == null || !contexts.TryGetValue(tenantInfo.Id, out var dbContext)) {
                 var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-                var ctor = typeof(TContext).GetConstructor(bindingFlags, new[] { typeof(ITenantInfo), typeof(DbContextOptions<TContext>) });
+                
+				var ctor = typeof(TContext).GetConstructor(bindingFlags, new[] { typeof(ITenantInfo), typeof(DbContextOptions<TContext>) });
                 if (ctor == null)
                     throw new RepositoryException($"The DbContext of type '{typeof(TContext)}' has invalid constructor for a repository provider");
 
@@ -86,9 +125,6 @@ namespace Deveel.Data {
             var logger = CreateLogger();
             return new EntityRepository<TEntity>(dbContext, tenantInfo, logger);
         }
-
-        Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken)
-            => Task.FromResult<IRepository<TEntity>>(GetRepository(tenantId));
 
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
