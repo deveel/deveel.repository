@@ -122,7 +122,7 @@
 			var totalPages = (int)Math.Ceiling((double)list.Count / 10);
 			var pageItemCount = list.Count % 10;
 
-			var pageRequest = new RepositoryPageRequest<Person>(1, 10)
+			var pageRequest = new PageQuery<Person>(1, 10)
 				.Where("p", $"p.FirstName == \"{person.FirstName}\"");
 
 			var result = await repository.GetPageAsync(pageRequest);
@@ -143,7 +143,7 @@
 			var totalPages = (int)Math.Ceiling((double)list.Count / 10);
 			var pageItemCount = list.Count % 10;
 
-			var pageRequest = new RepositoryPageRequest<Person>(1, 10)
+			var pageRequest = new PageQuery<Person>(1, 10)
 				.Where($"x.FirstName == \"{person.FirstName}\"");
 
 			var result = await repository.GetPageAsync(pageRequest);

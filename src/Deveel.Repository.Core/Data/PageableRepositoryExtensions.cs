@@ -39,20 +39,20 @@ namespace Deveel.Data {
 		/// </param>
 		/// <remarks>
 		/// This method is a shortcut for the invocation of
-		/// <see cref="IPageableRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>,
+		/// <see cref="IPageableRepository{TEntity}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>,
 		/// without filtering and sorting.
 		/// </remarks>
 		/// <returns>
-		/// Returns an instance of <see cref="RepositoryPage{TEntity}"/> that
+		/// Returns an instance of <see cref="PageResult{TEntity}"/> that
 		/// is the result of the query.
 		/// </returns>
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// Thrown when the given page number is less than 1, or
 		/// if the given page size is less than 0.
 		/// </exception>
-		public static Task<RepositoryPage<TEntity>> GetPageAsync<TEntity>(this IPageableRepository<TEntity> repository, int page, int size, CancellationToken cancellationToken = default)
+		public static Task<PageResult<TEntity>> GetPageAsync<TEntity>(this IPageableRepository<TEntity> repository, int page, int size, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.GetPageAsync(new RepositoryPageRequest<TEntity>(page, size), cancellationToken);
+			=> repository.GetPageAsync(new PageQuery<TEntity>(page, size), cancellationToken);
 
 		/// <summary>
 		/// Gets a page of entities from the repository,
@@ -68,10 +68,10 @@ namespace Deveel.Data {
 		/// The request object that defines the scope of the page to retrieve.
 		/// </param>
 		/// <returns>
-		/// Returns an instance of <see cref="RepositoryPage{TEntity}"/> that
+		/// Returns an instance of <see cref="PageResult{TEntity}"/> that
 		/// is the result of the query.
 		/// </returns>
-		public static RepositoryPage<TEntity> GetPage<TEntity>(this IPageableRepository<TEntity> repository, RepositoryPageRequest<TEntity> request)
+		public static PageResult<TEntity> GetPage<TEntity>(this IPageableRepository<TEntity> repository, PageQuery<TEntity> request)
 			where TEntity : class
 			=> repository.GetPageAsync(request).GetAwaiter().GetResult();
 	}

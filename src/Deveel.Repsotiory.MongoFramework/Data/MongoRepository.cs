@@ -644,7 +644,7 @@ namespace Deveel.Data {
 
 		#region GetPage
 
-		public async Task<RepositoryPage<TEntity>> GetPageAsync(RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default) {
+		public async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
 			try {
 				var entitySet = DbSet.AsQueryable();
 
@@ -677,7 +677,7 @@ namespace Deveel.Data {
 				entitySet = entitySet.Skip(request.Offset).Take(request.Size);
 
 				var items = await entitySet.ToListAsync(cancellationToken);
-				return new RepositoryPage<TEntity>(request, totalCount, items);
+				return new PageResult<TEntity>(request, totalCount, items);
 			} catch (Exception ex) {
 
 				throw new RepositoryException("Unable to execute the query", ex);

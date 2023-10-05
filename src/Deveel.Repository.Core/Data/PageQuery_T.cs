@@ -22,8 +22,8 @@ namespace Deveel.Data {
 	/// from a repository
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
-	/// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>
-	public class RepositoryPageRequest<TEntity> where TEntity : class {
+	/// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>
+	public class PageQuery<TEntity> where TEntity : class {
 		/// <summary>
 		/// Constructs a new page request with the given page number and size
 		/// </summary>
@@ -36,7 +36,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// If either the page number or the page size are smaller than 1.
 		/// </exception>
-		public RepositoryPageRequest(int page, int size) {
+		public PageQuery(int page, int size) {
 			Guard.IsGreaterThanOrEqualTo(page, 1, nameof(page));
 			Guard.IsGreaterThanOrEqualTo(size, 1, nameof(size));
 
@@ -69,7 +69,7 @@ namespace Deveel.Data {
 		/// Gets or sets an optional set of orders to sort the
 		/// result of the request
 		/// </summary>
-		public IEnumerable<IResultSort>? ResultSorts { get; set; }
+		public IList<IResultSort>? ResultSorts { get; set; }
 
 		/// <summary>
 		/// Sets or appends a new filter
@@ -81,7 +81,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the <paramref name="expression"/> is <c>null</c>.
 		/// </exception>
-		public RepositoryPageRequest<TEntity> Where(Expression<Func<TEntity, bool>> expression) {
+		public PageQuery<TEntity> Where(Expression<Func<TEntity, bool>> expression) {
 			Guard.IsNotNull(expression, nameof(expression));
 
 			var filter = Filter;
@@ -106,7 +106,7 @@ namespace Deveel.Data {
 		/// Returns this instance of the page request with the
 		/// appended sort rule.
 		/// </returns>
-		public RepositoryPageRequest<TEntity> OrderBy(Expression<Func<TEntity, object>> selector) {
+		public PageQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> selector) {
 			Guard.IsNotNull(selector, nameof(selector));
 
 			return OrderBy(new ExpressionResultSort<TEntity>(selector));
@@ -122,7 +122,7 @@ namespace Deveel.Data {
 		/// Returns this instance of the page request with the
 		/// appended sort rule.
 		/// </returns>
-		public RepositoryPageRequest<TEntity> OrderByDescending(Expression<Func<TEntity, object>> selector) {
+		public PageQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> selector) {
 			Guard.IsNotNull(selector, nameof(selector));
 
 			return OrderBy(ResultSort.Create(selector, false));
@@ -135,13 +135,13 @@ namespace Deveel.Data {
 		/// The 
 		/// </param>
 		/// <returns></returns>
-		public RepositoryPageRequest<TEntity> OrderBy(IResultSort resultSort) {
+		public PageQuery<TEntity> OrderBy(IResultSort resultSort) {
 			Guard.IsNotNull(resultSort, nameof(resultSort));
 
 			if (ResultSorts == null)
 				ResultSorts = new List<IResultSort>();
 
-			ResultSorts = ResultSorts.Append(resultSort);
+			ResultSorts = ResultSorts.Append(resultSort).ToList();
 
 			return this;
 		}
@@ -159,7 +159,7 @@ namespace Deveel.Data {
 		/// Returns this instance of the page request with the
 		/// appended sort rule.
 		/// </returns>
-		public RepositoryPageRequest<TEntity> OrderBy(string fieldName, bool ascending = true) {
+		public PageQuery<TEntity> OrderBy(string fieldName, bool ascending = true) {
 			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
 
 			return OrderBy(ResultSort.Create(fieldName, ascending));

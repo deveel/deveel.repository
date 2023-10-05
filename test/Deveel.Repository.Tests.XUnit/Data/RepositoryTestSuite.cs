@@ -1,4 +1,6 @@
-﻿using System.Net.Mail;
+﻿using System.Collections.Concurrent;
+using System.Collections.Immutable;
+using System.Net.Mail;
 
 using Bogus;
 
@@ -20,7 +22,7 @@ namespace Deveel.Data {
 
 		protected virtual int EntitySetCount => 100;
 
-		protected IList<TPerson> People { get; private set; }
+		protected IReadOnlyList<TPerson> People { get; private set; }
 
 		protected IServiceProvider Services => scope.ServiceProvider;
 
@@ -54,7 +56,7 @@ namespace Deveel.Data {
 		async Task IAsyncLifetime.InitializeAsync() {
 			BuildServices();
 
-			People = GeneratePeople(EntitySetCount);
+			People = GeneratePeople(EntitySetCount).ToImmutableList();
 
 			await InitializeAsync();
 		}
@@ -65,6 +67,8 @@ namespace Deveel.Data {
 
 		async Task IAsyncLifetime.DisposeAsync() {
 			await DisposeAsync();
+
+			People = null;
 
 			await scope.DisposeAsync();
 			(services as IDisposable)?.Dispose();
@@ -294,7 +298,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task GetSimplePage() {
-			var request = new RepositoryPageRequest<TPerson>(1, 10);
+			var request = new PageQuery<TPerson>(1, 10);
 
 			var result = await Repository.GetPageAsync(request);
 
@@ -325,7 +329,7 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<TPerson>(1, 10)
+			var request = new PageQuery<TPerson>(1, 10)
 				.Where(x => x.FirstName == firstName);
 
 			var result = await Repository.GetPageAsync(request);
@@ -347,7 +351,7 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
-			var request = new RepositoryPageRequest<TPerson>(1, 10)
+			var request = new PageQuery<TPerson>(1, 10)
 				.Where(x => x.FirstName == firstName)
 				.Where(x => x.LastName == lastName);
 
@@ -365,7 +369,7 @@ namespace Deveel.Data {
 		public async Task GetDescendingSortedPage() {
 			var sorted = People.Where(x => x.LastName != null).OrderByDescending(x => x.LastName).Skip(0).Take(10).ToList();
 
-			var request = new RepositoryPageRequest<TPerson>(1, 10)
+			var request = new PageQuery<TPerson>(1, 10)
 				.OrderByDescending(x => x.LastName);
 
 			var result = await Repository.GetPageAsync(request);
@@ -385,7 +389,7 @@ namespace Deveel.Data {
 		public async Task GetSortedPage() {
 			var totalPages = (int)Math.Ceiling((double)People.Count / 10);
 
-			var request = new RepositoryPageRequest<TPerson>(1, 10)
+			var request = new PageQuery<TPerson>(1, 10)
 				.OrderBy(x => x.FirstName);
 
 			var result = await Repository.GetPageAsync(request);
@@ -402,7 +406,7 @@ namespace Deveel.Data {
 		public void GetPage_Sync() {
 			var totalPages = (int)Math.Ceiling((double)People.Count / 10);
 
-			var request = new RepositoryPageRequest<TPerson>(1, 10);
+			var request = new PageQuery<TPerson>(1, 10);
 
 			var result = Repository.GetPage(request);
 

@@ -249,7 +249,7 @@ namespace Deveel.Data {
 		/// <para>
 		/// This method attempts to cast the given repository to a
 		/// <see cref="IPageableRepository{TEntity}"/> and invoke the
-		/// native method <see cref="IPageableRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>.
+		/// native method <see cref="IPageableRepository{TEntity}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>.
 		/// </para>
 		/// <para>
 		/// If the repository does not implement the interface, the method
@@ -258,13 +258,13 @@ namespace Deveel.Data {
 		/// </para>
 		/// </remarks>
 		/// <returns>
-		/// Returns an instance of <see cref="RepositoryPage{TEntity}"/> that
+		/// Returns an instance of <see cref="PageResult{TEntity}"/> that
 		/// represents the result of the query.
 		/// </returns>
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support paging.
 		/// </exception>
-		public static Task<RepositoryPage<TEntity>> GetPageAsync<TEntity>(this IRepository<TEntity> repository, RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default)
+		public static Task<PageResult<TEntity>> GetPageAsync<TEntity>(this IRepository<TEntity> repository, PageQuery<TEntity> request, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsPageable())
 				return repository.RequirePageable().GetPageAsync(request, cancellationToken);
@@ -294,7 +294,7 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation.
 		/// </param>
 		/// <returns>
-		/// Returns an instance of <see cref="RepositoryPage{TEntity}"/> that
+		/// Returns an instance of <see cref="PageResult{TEntity}"/> that
 		/// represents the result of the query.
 		/// </returns>
 		/// <exception cref="NotSupportedException">
@@ -304,12 +304,12 @@ namespace Deveel.Data {
 		/// Thrown when the given page number is less than 1, or the given
 		/// size is less than zero.
 		/// </exception>
-		public static Task<RepositoryPage<TEntity>> GetPageAsync<TEntity>(this IRepository<TEntity> repository, int page, int size, CancellationToken cancellationToken = default)
+		public static Task<PageResult<TEntity>> GetPageAsync<TEntity>(this IRepository<TEntity> repository, int page, int size, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.RequirePageable().GetPageAsync(new RepositoryPageRequest<TEntity>(page, size), cancellationToken);
+			=> repository.RequirePageable().GetPageAsync(new PageQuery<TEntity>(page, size), cancellationToken);
 
 
-		public static RepositoryPage<TEntity> GetPage<TEntity>(this IRepository<TEntity> repository, RepositoryPageRequest<TEntity> request)
+		public static PageResult<TEntity> GetPage<TEntity>(this IRepository<TEntity> repository, PageQuery<TEntity> request)
 			where TEntity : class {
 			if (repository.IsPageable())
 				return repository.RequirePageable().GetPage(request);

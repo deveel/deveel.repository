@@ -128,17 +128,20 @@ namespace Deveel.Data {
 			if (filter.IsEmpty())
 				return queryable;
 
-			if (filter is ExpressionQueryFilter<TEntity> filterExpr)
-				return queryable.Where(filterExpr.Expression);
-
-			var result = queryable;
 			if (filter is CombinedQueryFilter combined) {
+				var result = queryable;
+
 				foreach (var f in combined.Filters) {
 					result = f.Apply(queryable);
 				}
+
+				return result;
 			}
 
-			return result;
+			if (filter is IExpressionQueryFilter filterExpr)
+				return queryable.Where(filterExpr.AsLambda<TEntity>());
+
+			throw new ArgumentException($"The given filter is not supported: {filter.GetType()}");
 		}
 
 		/// <summary>

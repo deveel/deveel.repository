@@ -31,7 +31,7 @@ namespace Deveel.Data {
 		/// sorting order.</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns>
-		/// Returns an instance of <see cref="RepositoryPage{TEntity}"/> that provides the
+		/// Returns an instance of <see cref="PageResult{TEntity}"/> that provides the
 		/// page items and a count of total items.
 		/// </returns>
 		/// <exception cref="RepositoryException">
@@ -41,7 +41,7 @@ namespace Deveel.Data {
 		/// Thrown if the filters or the sorting capabilities are not provided by the
 		/// implementation of the repository
 		/// </exception>
-		/// <seealso cref="RepositoryPage{TEntity}"/>
-		Task<RepositoryPage<TEntity>> GetPageAsync(RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default);
+		/// <seealso cref="PageResult{TEntity}"/>
+		Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default);
     }
 }

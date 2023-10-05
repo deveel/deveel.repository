@@ -509,7 +509,7 @@
             The strongly typed entity that is stored in the repository
             </typeparam>
         </member>
-        <member name="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.RepositoryPageRequest{`0},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.PageQuery{`0},System.Threading.CancellationToken)">
             <summary>
             Gets a page of items from the repository
             </summary>
@@ -518,7 +518,7 @@
             sorting order.</param>
             <param name="cancellationToken"></param>
             <returns>
-            Returns an instance of <see cref="T:Deveel.Data.RepositoryPage`1"/> that provides the
+            Returns an instance of <see cref="T:Deveel.Data.PageResult`1"/> that provides the
             page items and a count of total items.
             </returns>
             <exception cref="T:Deveel.Data.RepositoryException">
@@ -528,7 +528,7 @@
             Thrown if the filters or the sorting capabilities are not provided by the
             implementation of the repository
             </exception>
-            <seealso cref="T:Deveel.Data.RepositoryPage`1"/>
+            <seealso cref="T:Deveel.Data.PageResult`1"/>
         </member>
         <member name="T:Deveel.Data.IQueryableRepository`1">
             <summary>
@@ -967,11 +967,11 @@
             </param>
             <remarks>
             This method is a shortcut for the invocation of
-            <see cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.RepositoryPageRequest{`0},System.Threading.CancellationToken)"/>,
+            <see cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.PageQuery{`0},System.Threading.CancellationToken)"/>,
             without filtering and sorting.
             </remarks>
             <returns>
-            Returns an instance of <see cref="T:Deveel.Data.RepositoryPage`1"/> that
+            Returns an instance of <see cref="T:Deveel.Data.PageResult`1"/> that
             is the result of the query.
             </returns>
             <exception cref="T:System.ArgumentOutOfRangeException">
@@ -979,7 +979,7 @@
             if the given page size is less than 0.
             </exception>
         </member>
-        <member name="M:Deveel.Data.PageableRepositoryExtensions.GetPage``1(Deveel.Data.IPageableRepository{``0},Deveel.Data.RepositoryPageRequest{``0})">
+        <member name="M:Deveel.Data.PageableRepositoryExtensions.GetPage``1(Deveel.Data.IPageableRepository{``0},Deveel.Data.PageQuery{``0})">
             <summary>
             Gets a page of entities from the repository,
             given the request object that defines the scope
@@ -994,8 +994,178 @@
             The request object that defines the scope of the page to retrieve.
             </param>
             <returns>
-            Returns an instance of <see cref="T:Deveel.Data.RepositoryPage`1"/> that
+            Returns an instance of <see cref="T:Deveel.Data.PageResult`1"/> that
             is the result of the query.
+            </returns>
+        </member>
+        <member name="T:Deveel.Data.PageQuery`1">
+            <summary>
+            Describes the request to obtain a page of a given size
+            from a repository
+            </summary>
+            <typeparam name="TEntity"></typeparam>
+            <seealso cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.PageQuery{`0},System.Threading.CancellationToken)"/>
+        </member>
+        <member name="M:Deveel.Data.PageQuery`1.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructs a new page request with the given page number and size
+            </summary>
+            <param name="page">
+            The number of the page to request
+            </param>
+            <param name="size">
+            The maximum size of the page to return.
+            </param>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            If either the page number or the page size are smaller than 1.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.PageQuery`1.Page">
+            <summary>
+            Gets the number of the page to return
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageQuery`1.Size">
+            <summary>
+            Gets the maximum number of items to be returned.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageQuery`1.Offset">
+            <summary>
+            Gets the starting offet in the repository where to start
+            collecting the items to return
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageQuery`1.Filter">
+            <summary>
+            Gets or sets a filter to restrict the context of the query
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageQuery`1.ResultSorts">
+            <summary>
+            Gets or sets an optional set of orders to sort the
+            result of the request
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.PageQuery`1.Where(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            Sets or appends a new filter
+            </summary>
+            <param name="expression">The filter expression to add</param>
+            <returns>
+            Returns this page request with the new filter
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the <paramref name="expression"/> is <c>null</c>.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.PageQuery`1.OrderBy(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
+            <summary>
+            Appends an ascending sort rule to the page request
+            </summary>
+            <param name="selector">
+            The expression that selects the field to sort by.
+            </param>
+            <returns>
+            Returns this instance of the page request with the
+            appended sort rule.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.PageQuery`1.OrderByDescending(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
+            <summary>
+            Appends a descending sort rule to the page request
+            </summary>
+            <param name="selector">
+            The expression that selects the field to sort by.
+            </param>
+            <returns>
+            Returns this instance of the page request with the
+            appended sort rule.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.PageQuery`1.OrderBy(Deveel.Data.IResultSort)">
+            <summary>
+            Appends the given sort order to the request
+            </summary>
+            <param name="resultSort">
+            The 
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:Deveel.Data.PageQuery`1.OrderBy(System.String,System.Boolean)">
+            <summary>
+            Appends an order by the given field name
+            </summary>
+            <param name="fieldName">
+            The name of the field to sort by
+            </param>
+            <param name="ascending">
+            The flag indicating if the sort is ascending or descending
+            </param>
+            <returns>
+            Returns this instance of the page request with the
+            appended sort rule.
+            </returns>
+        </member>
+        <member name="T:Deveel.Data.PageResult`1">
+            <summary>
+            The strongly typed page from a repository, obtained from 
+            a paginated query
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <seealso cref="T:Deveel.Data.PageQuery`1"/>
+            <seealso cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.PageQuery{`0},System.Threading.CancellationToken)"/>
+        </member>
+        <member name="M:Deveel.Data.PageResult`1.#ctor(Deveel.Data.PageQuery{`0},System.Int32,System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Constructs the result referencing the original request, a count
+            of the items in the repository and optionally a list of items in the page
+            </summary>
+            <param name="request">The original page request</param>
+            <param name="totalItems">The total number of items in the context
+            of the request given (filtered and sorted).</param>
+            <param name="items">The list of items included in the page</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            Thrown if the number of total items is smaller than zero.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the <paramref name="request"/> is <c>null</c>.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.PageResult`1.Request">
+            <summary>
+            Gets a reference to the request
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResult`1.TotalItems">
+            <summary>
+            Gets a count of the total items in the repository
+            for the context of the request
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResult`1.Items">
+            <summary>
+            Gets a list of items included in the page
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResult`1.TotalPages">
+            <summary>
+            Gets a count of the total available pages
+            that can be requested from the repository
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.PageResult`1.Empty(Deveel.Data.PageQuery{`0})">
+            <summary>
+            Creates an empty page response to the given request
+            </summary>
+            <param name="page">
+            The request that originated the page
+            </param>
+            <returns>
+            Returns a new instance of <see cref="T:Deveel.Data.PageResult`1"/> that
+            represents an empty page.
             </returns>
         </member>
         <member name="T:Deveel.Data.QueryableRepositoryExtensions">
@@ -1004,7 +1174,7 @@
             to provide methods to query the repository.
             </summary>
         </member>
-        <member name="M:Deveel.Data.QueryableRepositoryExtensions.GetPage``1(Deveel.Data.IQueryableRepository{``0},Deveel.Data.RepositoryPageRequest{``0})">
+        <member name="M:Deveel.Data.QueryableRepositoryExtensions.GetPage``1(Deveel.Data.IQueryableRepository{``0},Deveel.Data.PageQuery{``0})">
             <summary>
             Gets a page of entities from the repository,
             given a request object that defines the scope
@@ -1019,7 +1189,7 @@
             The request object that defines the scope of the page to retrieve.
             </param>
             <returns>
-            Returns an instance of <see cref="T:Deveel.Data.RepositoryPage`1"/> that
+            Returns an instance of <see cref="T:Deveel.Data.PageResult`1"/> that
             is the result of the query.
             </returns>
         </member>
@@ -1354,7 +1524,7 @@
             otherwise <c>false</c>.
             </returns>
         </member>
-        <member name="M:Deveel.Data.RepositoryExtensions.GetPageAsync``1(Deveel.Data.IRepository{``0},Deveel.Data.RepositoryPageRequest{``0},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.RepositoryExtensions.GetPageAsync``1(Deveel.Data.IRepository{``0},Deveel.Data.PageQuery{``0},System.Threading.CancellationToken)">
             <summary>
             Gets a page of entities from the repository,
             given a request object that defines the scope
@@ -1367,7 +1537,7 @@
             <para>
             This method attempts to cast the given repository to a
             <see cref="T:Deveel.Data.IPageableRepository`1"/> and invoke the
-            native method <see cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.RepositoryPageRequest{`0},System.Threading.CancellationToken)"/>.
+            native method <see cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.PageQuery{`0},System.Threading.CancellationToken)"/>.
             </para>
             <para>
             If the repository does not implement the interface, the method
@@ -1376,7 +1546,7 @@
             </para>
             </remarks>
             <returns>
-            Returns an instance of <see cref="T:Deveel.Data.RepositoryPage`1"/> that
+            Returns an instance of <see cref="T:Deveel.Data.PageResult`1"/> that
             represents the result of the query.
             </returns>
             <exception cref="T:System.NotSupportedException">
@@ -1404,7 +1574,7 @@
             A token used to cancel the operation.
             </param>
             <returns>
-            Returns an instance of <see cref="T:Deveel.Data.RepositoryPage`1"/> that
+            Returns an instance of <see cref="T:Deveel.Data.PageResult`1"/> that
             represents the result of the query.
             </returns>
             <exception cref="T:System.NotSupportedException">
@@ -1543,173 +1713,6 @@
             <param name="cancellationToken"></param>
             <returns></returns>
             <exception cref="T:System.NotSupportedException"></exception>
-        </member>
-        <member name="T:Deveel.Data.RepositoryPageRequest`1">
-            <summary>
-            Describes the request to obtain a page of a given size
-            from a repository
-            </summary>
-            <typeparam name="TEntity"></typeparam>
-            <seealso cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.RepositoryPageRequest{`0},System.Threading.CancellationToken)"/>
-        </member>
-        <member name="M:Deveel.Data.RepositoryPageRequest`1.#ctor(System.Int32,System.Int32)">
-            <summary>
-            Constructs a new page request with the given page number and size
-            </summary>
-            <param name="page">
-            The number of the page to request
-            </param>
-            <param name="size">
-            The maximum size of the page to return.
-            </param>
-            <exception cref="T:System.ArgumentOutOfRangeException">
-            If either the page number or the page size are smaller than 1.
-            </exception>
-        </member>
-        <member name="P:Deveel.Data.RepositoryPageRequest`1.Page">
-            <summary>
-            Gets the number of the page to return
-            </summary>
-        </member>
-        <member name="P:Deveel.Data.RepositoryPageRequest`1.Size">
-            <summary>
-            Gets the maximum number of items to be returned.
-            </summary>
-        </member>
-        <member name="P:Deveel.Data.RepositoryPageRequest`1.Offset">
-            <summary>
-            Gets the starting offet in the repository where to start
-            collecting the items to return
-            </summary>
-        </member>
-        <member name="P:Deveel.Data.RepositoryPageRequest`1.Filter">
-            <summary>
-            Gets or sets a filter to restrict the context of the query
-            </summary>
-        </member>
-        <member name="P:Deveel.Data.RepositoryPageRequest`1.ResultSorts">
-            <summary>
-            Gets or sets an optional set of orders to sort the
-            result of the request
-            </summary>
-        </member>
-        <member name="M:Deveel.Data.RepositoryPageRequest`1.Where(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
-            <summary>
-            Sets or appends a new filter
-            </summary>
-            <param name="expression">The filter expression to add</param>
-            <returns>
-            Returns this page request with the new filter
-            </returns>
-            <exception cref="T:System.ArgumentNullException">
-            Thrown if the <paramref name="expression"/> is <c>null</c>.
-            </exception>
-        </member>
-        <member name="M:Deveel.Data.RepositoryPageRequest`1.OrderBy(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
-            <summary>
-            Appends an ascending sort rule to the page request
-            </summary>
-            <param name="selector">
-            The expression that selects the field to sort by.
-            </param>
-            <returns>
-            Returns this instance of the page request with the
-            appended sort rule.
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.RepositoryPageRequest`1.OrderByDescending(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
-            <summary>
-            Appends a descending sort rule to the page request
-            </summary>
-            <param name="selector">
-            The expression that selects the field to sort by.
-            </param>
-            <returns>
-            Returns this instance of the page request with the
-            appended sort rule.
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.RepositoryPageRequest`1.OrderBy(Deveel.Data.IResultSort)">
-            <summary>
-            Appends the given sort order to the request
-            </summary>
-            <param name="resultSort">
-            The 
-            </param>
-            <returns></returns>
-        </member>
-        <member name="M:Deveel.Data.RepositoryPageRequest`1.OrderBy(System.String,System.Boolean)">
-            <summary>
-            Appends an order by the given field name
-            </summary>
-            <param name="fieldName">
-            The name of the field to sort by
-            </param>
-            <param name="ascending">
-            The flag indicating if the sort is ascending or descending
-            </param>
-            <returns>
-            Returns this instance of the page request with the
-            appended sort rule.
-            </returns>
-        </member>
-        <member name="T:Deveel.Data.RepositoryPage`1">
-            <summary>
-            The strongly typed page from a repository, obtained from a query
-            </summary>
-            <typeparam name="TEntity"></typeparam>
-            <seealso cref="T:Deveel.Data.RepositoryPageRequest`1"/>
-            <seealso cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.RepositoryPageRequest{`0},System.Threading.CancellationToken)"/>
-        </member>
-        <member name="M:Deveel.Data.RepositoryPage`1.#ctor(Deveel.Data.RepositoryPageRequest{`0},System.Int32,System.Collections.Generic.IEnumerable{`0})">
-            <summary>
-            Constructs the result referencing the original request, a count
-            of the items in the repository and optionally a list of items in the page
-            </summary>
-            <param name="request">The original page request</param>
-            <param name="totalItems">The total number of items in the context
-            of the request given (filtered and sorted).</param>
-            <param name="items">The list of items included in the page</param>
-            <exception cref="T:System.ArgumentOutOfRangeException">
-            Thrown if the number of total items is smaller than zero.
-            </exception>
-            <exception cref="T:System.ArgumentNullException">
-            Thrown if the <paramref name="request"/> is <c>null</c>.
-            </exception>
-        </member>
-        <member name="P:Deveel.Data.RepositoryPage`1.Request">
-            <summary>
-            Gets a reference to the request
-            </summary>
-        </member>
-        <member name="P:Deveel.Data.RepositoryPage`1.TotalItems">
-            <summary>
-            Gets a count of the total items in the repository
-            for the context of the request
-            </summary>
-        </member>
-        <member name="P:Deveel.Data.RepositoryPage`1.Items">
-            <summary>
-            Gets a list of items included in the page
-            </summary>
-        </member>
-        <member name="P:Deveel.Data.RepositoryPage`1.TotalPages">
-            <summary>
-            Gets a count of the total available pages
-            that can be requested from the repository
-            </summary>
-        </member>
-        <member name="M:Deveel.Data.RepositoryPage`1.Empty(Deveel.Data.RepositoryPageRequest{`0})">
-            <summary>
-            Creates an empty page response to the given request
-            </summary>
-            <param name="page">
-            The request that originated the page
-            </param>
-            <returns>
-            Returns a new instance of <see cref="T:Deveel.Data.RepositoryPage`1"/> that
-            represents an empty page.
-            </returns>
         </member>
         <member name="T:Deveel.Data.RepositoryProviderExtensions">
             <summary>

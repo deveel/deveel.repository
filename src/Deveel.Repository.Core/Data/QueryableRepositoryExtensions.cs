@@ -32,10 +32,10 @@ namespace Deveel.Data {
 		/// The request object that defines the scope of the page to retrieve.
 		/// </param>
 		/// <returns>
-		/// Returns an instance of <see cref="RepositoryPage{TEntity}"/> that
+		/// Returns an instance of <see cref="PageResult{TEntity}"/> that
 		/// is the result of the query.
 		/// </returns>
-		public static RepositoryPage<TEntity> GetPage<TEntity>(this IQueryableRepository<TEntity> repository, RepositoryPageRequest<TEntity> request)
+		public static PageResult<TEntity> GetPage<TEntity>(this IQueryableRepository<TEntity> repository, PageQuery<TEntity> request)
 			where TEntity : class {
 			var query = repository.AsQueryable();
 
@@ -54,7 +54,7 @@ namespace Deveel.Data {
 				.Take(request.Size)
 				.ToList();
 
-			return new RepositoryPage<TEntity>(request, total, items);
+			return new PageResult<TEntity>(request, total, items);
 		}
 	}
 }

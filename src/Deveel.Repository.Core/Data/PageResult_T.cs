@@ -16,12 +16,15 @@ using System;
 
 namespace Deveel.Data {
 	/// <summary>
-	/// The strongly typed page from a repository, obtained from a query
+	/// The strongly typed page from a repository, obtained from 
+	/// a paginated query
 	/// </summary>
-	/// <typeparam name="TEntity"></typeparam>
-	/// <seealso cref="RepositoryPageRequest{TEntity}"/>
-	/// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(RepositoryPageRequest{TEntity}, CancellationToken)"/>
-	public class RepositoryPage<TEntity> where TEntity : class {
+	/// <typeparam name="TEntity">
+	/// The type of entity handled by the repository.
+	/// </typeparam>
+	/// <seealso cref="PageQuery{TEntity}"/>
+	/// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>
+	public class PageResult<TEntity> where TEntity : class {
 		/// <summary>
 		/// Constructs the result referencing the original request, a count
 		/// of the items in the repository and optionally a list of items in the page
@@ -36,7 +39,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the <paramref name="request"/> is <c>null</c>.
 		/// </exception>
-		public RepositoryPage(RepositoryPageRequest<TEntity> request, int totalItems, IEnumerable<TEntity>? items = null){
+		public PageResult(PageQuery<TEntity> request, int totalItems, IEnumerable<TEntity>? items = null){
 			if (totalItems < 0)
 				throw new ArgumentOutOfRangeException(nameof(totalItems), "The number of total items must be zero or more");
 
@@ -48,7 +51,7 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Gets a reference to the request
 		/// </summary>
-		public RepositoryPageRequest<TEntity> Request { get; }
+		public PageQuery<TEntity> Request { get; }
 
 		/// <summary>
 		/// Gets a count of the total items in the repository
@@ -74,9 +77,9 @@ namespace Deveel.Data {
 		/// The request that originated the page
 		/// </param>
 		/// <returns>
-		/// Returns a new instance of <see cref="RepositoryPage{TEntity}"/> that
+		/// Returns a new instance of <see cref="PageResult{TEntity}"/> that
 		/// represents an empty page.
 		/// </returns>
-		public static RepositoryPage<TEntity> Empty(RepositoryPageRequest<TEntity> page) => new RepositoryPage<TEntity>(page, 0);
+		public static PageResult<TEntity> Empty(PageQuery<TEntity> page) => new PageResult<TEntity>(page, 0);
 	}
 }

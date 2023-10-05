@@ -188,7 +188,7 @@
         <member name="M:Deveel.Data.EntityRepository`1.Dispose">
             <inheritdoc/>
         </member>
-        <member name="M:Deveel.Data.EntityRepository`1.GetPageAsync(Deveel.Data.RepositoryPageRequest{`0},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.EntityRepository`1.GetPageAsync(Deveel.Data.PageQuery{`0},System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
         <member name="T:Deveel.Data.EntityRepositoryProvider`2">

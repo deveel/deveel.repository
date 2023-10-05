@@ -223,7 +223,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<RepositoryPage<TEntity>> GetPageAsync(RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default) {
+		public Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
@@ -244,7 +244,7 @@ namespace Deveel.Data {
 				var itemCount = entitySet.Count();
 				var items = entitySet.Skip(request.Offset).Take(request.Size);
 
-				var result = new RepositoryPage<TEntity>(request, itemCount,items);
+				var result = new PageResult<TEntity>(request, itemCount,items);
 				return Task.FromResult(result);
 			} catch (Exception ex) {
 				throw new RepositoryException("Unable to retrieve the page", ex) ;

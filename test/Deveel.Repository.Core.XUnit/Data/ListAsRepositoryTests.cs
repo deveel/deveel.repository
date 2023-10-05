@@ -185,7 +185,7 @@
 		public async Task Queryable_GetPage() {
 			var totalPages = (int)Math.Ceiling(persons.Count / 10.0);
 
-			var request = new RepositoryPageRequest<Person>(1, 10);
+			var request = new PageQuery<Person>(1, 10);
 			var page = await repository.GetPageAsync(request);
 
 			Assert.Equal(10, page.Request.Size);
@@ -204,7 +204,7 @@
 			var itemCount = Math.Min(10, subset.Count);
 			var totalPages = (int)Math.Ceiling(subset.Count / 10.0);
 
-			var request = new RepositoryPageRequest<Person>(1, 10)
+			var request = new PageQuery<Person>(1, 10)
 				.Where(x => x.FirstName == person.FirstName);
 
 			var page = await repository.GetPageAsync(request);
@@ -219,7 +219,7 @@
 
 		[Fact]
 		public async Task Queryable_GetPage_WithFilter_NotFound() {
-			var request = new RepositoryPageRequest<Person>(1, 10)
+			var request = new PageQuery<Person>(1, 10)
 				.Where(x => x.FirstName == "Not Found");
 
 			var page = await repository.GetPageAsync(request);
@@ -234,7 +234,7 @@
 
 		[Fact]
 		public async Task Queryable_GetPage_WithSort() {
-			var request = new RepositoryPageRequest<Person>(1, 10)
+			var request = new PageQuery<Person>(1, 10)
 				.OrderBy(x => x.FirstName);
 
 			var page = await repository.GetPageAsync(request);
@@ -249,7 +249,7 @@
 
 		[Fact]
 		public async Task Queryable_GetPage_WithSort_Descending() {
-			var request = new RepositoryPageRequest<Person>(1, 10)
+			var request = new PageQuery<Person>(1, 10)
 				.OrderByDescending(x => x.FirstName);
 
 			var page = await repository.GetPageAsync(request);
@@ -264,7 +264,7 @@
 
 		[Fact]
 		public async Task Queryable_GetPage_WithFieldNameSort() {
-			var request = new RepositoryPageRequest<Person>(1, 10)
+			var request = new PageQuery<Person>(1, 10)
 				.OrderBy("FirstName");
 
 			var page = await repository.GetPageAsync(request);

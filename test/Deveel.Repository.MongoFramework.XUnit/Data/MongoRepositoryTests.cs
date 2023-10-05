@@ -59,7 +59,7 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)People.Count / 10);
 			var sorted = People.OrderBy(x => x.FirstName).Skip(0).Take(10).ToList();
 
-			var request = new RepositoryPageRequest<MongoPerson>(1, 10)
+			var request = new PageQuery<MongoPerson>(1, 10)
 				.OrderBy("FirstName");
 
 			var result = await Repository.GetPageAsync(request);

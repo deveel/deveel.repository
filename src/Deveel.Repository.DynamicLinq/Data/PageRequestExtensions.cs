@@ -36,10 +36,10 @@ namespace Deveel.Data {
 		/// The dynamic LINQ expression to use to filter the data.
 		/// </param>
 		/// <returns>
-		/// Returns the instance of the <see cref="RepositoryPageRequest{TEntity}"/>
+		/// Returns the instance of the <see cref="PageQuery{TEntity}"/>
 		/// with the filter appended.
 		/// </returns>
-		public static RepositoryPageRequest<TEntity> Where<TEntity>(this RepositoryPageRequest<TEntity> request, string paramName, string expression)
+		public static PageQuery<TEntity> Where<TEntity>(this PageQuery<TEntity> request, string paramName, string expression)
 			where TEntity : class
 			=> request.Where(FilterExpression.AsLambda<TEntity>(paramName, expression));
 
@@ -60,10 +60,10 @@ namespace Deveel.Data {
 		/// parameter name</see> for the filter expression.
 		/// </remarks>
 		/// <returns>
-		/// Returns the instance of the <see cref="RepositoryPageRequest{TEntity}"/>
+		/// Returns the instance of the <see cref="PageQuery{TEntity}"/>
 		/// with the filter appended.
 		/// </returns>
-		public static RepositoryPageRequest<TEntity> Where<TEntity>(this RepositoryPageRequest<TEntity> request, string expression)
+		public static PageQuery<TEntity> Where<TEntity>(this PageQuery<TEntity> request, string expression)
 			where TEntity : class
 			=> request.Where(DynamicLinqFilter.DefaultParameterName, expression);
 

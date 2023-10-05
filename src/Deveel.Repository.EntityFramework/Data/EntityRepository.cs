@@ -472,19 +472,13 @@ namespace Deveel.Data {
         }
 
 		/// <inheritdoc/>
-		public async Task<RepositoryPage<TEntity>> GetPageAsync(RepositoryPageRequest<TEntity> request, CancellationToken cancellationToken = default) {
+		public async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			try {
 				var querySet = Entities.AsQueryable();
 				if (request.Filter != null) {
-					if (request.Filter is CombinedQueryFilter combined) {
-						foreach (var filter in combined.Filters) {
-							querySet = filter.Apply(querySet);
-						}
-					} else {
-						querySet = request.Filter.Apply(querySet);
-					}
+					querySet = request.Filter.Apply(querySet);
 				}
 
 				if (request.ResultSorts != null) {
@@ -497,7 +491,7 @@ namespace Deveel.Data {
 
 				var items = await querySet.Skip(request.Offset).Take(request.Size).ToListAsync(cancellationToken);
 
-				return new RepositoryPage<TEntity>(request, total, items);
+				return new PageResult<TEntity>(request, total, items);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Could not get the page of entities", ex);
