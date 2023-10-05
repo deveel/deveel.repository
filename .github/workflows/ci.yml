@@ -30,7 +30,7 @@ jobs:
       run: dotnet test --no-build --verbosity normal -c Release
       
     - name: Pack NuGet
-      run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release --property PackageOutputPath=${GITHUB_WORKSPACE}/nuget
+      run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release -o ./nuget
       
     - name: Push NutGet
       run: dotnet nuget push ./nuget/*.nupkg -s "Deveel GitHub" --skip-duplicate --api-key ${{secrets.DEVEEL_NUGET_TOKEN}}

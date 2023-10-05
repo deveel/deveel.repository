@@ -1,14 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageTags>data core framework repository</PackageTags>
     <Description>Abstractions for the definition of repositories of entities</Description>
     <DocumentationFile>./Deveel.Repository.Core.xml</DocumentationFile>
+    <PackageTags>repository;abstractions;extensions;pattern;cleanarchitecture;clean;collections;framework</PackageTags>
   </PropertyGroup>
-
-	<ItemGroup>
-		<Compile Remove="Data\StateInfo.cs" />
-	</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.1" />

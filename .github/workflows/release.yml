@@ -33,10 +33,18 @@ jobs:
       run: dotnet build --no-restore -p:Version=${{steps.tag.outputs.tag}} -c Release
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal -c Release
+      run: dotnet test --no-build --verbosity normal -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
       
+    - name: Collect to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.DEVEEL_CODECOV_TOKEN }}
+
     - name: Pack NuGet
       run: dotnet pack -p:PackageVersion=${{steps.tag.outputs.tag}} -c Release -o ./nuget
       
-    - name: Push NutGet
+    - name: Push Github Nuget
       run: dotnet nuget push ./nuget/*.nupkg -s "Deveel GitHub" --skip-duplicate --api-key ${{secrets.DEVEEL_NUGET_TOKEN}}
+
+    - name: Push to Github.org
+      run: dotnet nuget push ./nuget/**/*.nupkg --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json

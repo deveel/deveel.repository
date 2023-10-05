@@ -35,7 +35,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.EntityFra
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.EntityFramework.XUnit", "test\Deveel.Repository.EntityFramework.XUnit\Deveel.Repository.EntityFramework.XUnit.csproj", "{FAD909B7-94A9-4ECA-AA63-DF6C95188566}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Tests.XUnit", "test\Deveel.Repository.Tests.XUnit\Deveel.Repository.Tests.XUnit.csproj", "{201917F4-0557-46AE-B532-A4CC801AF5A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Tests.XUnit", "test\Deveel.Repository.Tests.XUnit\Deveel.Repository.Tests.XUnit.csproj", "{201917F4-0557-46AE-B532-A4CC801AF5A7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E0CFA12B-8021-431C-8961-CC0E4AD8D664}"
+	ProjectSection(SolutionItems) = preProject
+		Deveel.Repository.licenseheader = Deveel.Repository.licenseheader
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

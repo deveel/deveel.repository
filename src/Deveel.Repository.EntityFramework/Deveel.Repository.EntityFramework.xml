@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Deveel.Repository.EntityFramework</name>
+    </assembly>
+    <members>
+        <member name="T:Deveel.Data.EntityRepository`1">
+            <summary>
+            A repository that uses an <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/> to access the data
+            of the entities.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity managed by the repository.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.#ctor(Microsoft.EntityFrameworkCore.DbContext,Microsoft.Extensions.Logging.ILogger{Deveel.Data.EntityRepository{`0}})">
+            <summary>
+            Constructs the repository using the given <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/>.
+            </summary>
+            <param name="context">
+            The <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/> used to access the data of the entities.
+            </param>
+            <param name="logger">
+            A logger used to log the operations of the repository.
+            </param>
+            <remarks>
+            When the given <paramref name="context"/> implements the <see cref="T:Finbuckle.MultiTenant.EntityFrameworkCore.IMultiTenantDbContext"/>
+            the repository will use the tenant information to access the data.
+            </remarks>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.#ctor(Microsoft.EntityFrameworkCore.DbContext,Finbuckle.MultiTenant.ITenantInfo,Microsoft.Extensions.Logging.ILogger{Deveel.Data.EntityRepository{`0}})">
+            <summary>
+            Constructs the repository using the given <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/> for
+            the given tenant.
+            </summary>
+            <param name="context">
+            The <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/> used to access the data of the entities.
+            </param>
+            <param name="tenantInfo">
+            The information about the tenant that the repository will use to access the data.
+            </param>
+            <param name="logger">
+            The logger used to log the operations of the repository.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.Finalize">
+            <summary>
+            The destructor of the repository.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityRepository`1.Context">
+            <summary>
+            Gets the instance of the <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/> used by the repository.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityRepository`1.Logger">
+            <summary>
+            Gets the logger used by the repository.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityRepository`1.Entities">
+            <summary>
+            Gets the <see cref="T:Microsoft.EntityFrameworkCore.DbSet`1"/> used by the repository to access the data.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityRepository`1.TenantInfo">
+            <summary>
+            Gets the information about the tenant that the repository is using to access the data.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityRepository`1.TenantId">
+            <summary>
+            Gets the identifier of the tenant that the repository is using to access the data.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.ThrowIfDisposed">
+            <summary>
+            Assesses if the repository has been disposed.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            Thrown when the repository has been disposed.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.ConvertEntityKey(System.String)">
+            <summary>
+            Converts the given string identifier to the type of the 
+            primary key of the entity.
+            </summary>
+            <param name="id">
+            The string representation of the identifier.
+            </param>
+            <returns>
+            Returns the identifier converted to the type of the primary key
+            of the entity.
+            </returns>
+            <exception cref="T:System.ArgumentException">
+            Thrown when the given string is not a valid identifier for the entity.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.GetEntityId(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.AddAsync(`0,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.AddRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.RemoveAsync(`0,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.FindByIdAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.UpdateAsync(`0,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.ExistsAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Checks if the repository contains an entity that matches 
+            the given filter.
+            </summary>
+            <param name="filter">
+            The expression that defines the filter to apply to the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns <c>true</c> if the repository contains at least one entity
+            that matches the given filter, otherwise <c>false</c>.
+            </returns>
+            <exception cref="T:Deveel.Data.RepositoryException"></exception>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.CountAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Counts the number of entities in the repository that match 
+            the given filter.
+            </summary>
+            <param name="filter">
+            The expression that defines the filter to apply to the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.FindAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Finds the first entity in the repository that matches the given filter.
+            </summary>
+            <param name="filter">
+            The expression that defines the filter to apply to the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns the first entity that matches the given filter, or <c>null</c>
+            if no entity is found.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.FindAllAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Finds all the entities in the repository that match the given filter.
+            </summary>
+            <param name="filter">
+            The expression that defines the filter to apply to the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns a list of entities that match the given filter.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.AsQueryable">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.Dispose(System.Boolean)">
+            <summary>
+            Disposes the repository and frees all the resources used by it.
+            </summary>
+            <param name="disposing">
+            Indicates if the repository is explicitly disposing.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.EntityRepository`1.GetPageAsync(Deveel.Data.RepositoryPageRequest{`0},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Deveel.Data.EntityRepositoryProvider`2">
+            <summary>
+            An implementation of <see cref="T:Deveel.Data.IRepositoryProvider`1"/> that
+            allows to create <see cref="T:Deveel.Data.EntityRepository`1"/> instances
+            in a multi-tenant context.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity managed by the repository
+            </typeparam>
+            <typeparam name="TContext">
+            The type of <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/> used to manage the entities
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.EntityRepositoryProvider`2.Finalize">
+            <summary>
+            Destroys the instance of the provider.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.EntityRepositoryProvider`2.GetRepositoryAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Gets a repository for the given tenant.
+            </summary>
+            <param name="tenantId">
+            The identifier of the tenant to get the repository for
+            </param>
+            <param name="cancellationToken">
+            A token that can be used to cancel the operation.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.EntityRepository`1"/> that
+            isolates the entities of the given tenant.
+            </returns>
+            <exception cref="T:Deveel.Data.RepositoryException">
+            Thrown when the tenant was not found or the repository could not be
+            constructed with the given tenant.
+            </exception>
+        </member>
+    </members>
+</doc>

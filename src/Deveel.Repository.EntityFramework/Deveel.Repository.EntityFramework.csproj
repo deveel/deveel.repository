@@ -1,39 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
 		<RootNamespace>Deveel</RootNamespace>
-		<VersionPrefix>1.0.5</VersionPrefix>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<Authors>Antonello Provenzano</Authors>
-		<Company>Deveel AS</Company>
-		<Copyright>(C) 2023 Deveel AS</Copyright>
-		<PackageProjectUrl>https://github.com/deveel/deveel.data.repository</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/deveel/deveel.data.repository</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-		<PackageTags>data core framework repository entity entityframework ef efcore</PackageTags>
 		<Description>Provides an implementation of the repository pattern that is backed by the Entity Framework and provides multi-tenancy support through Finbuckle</Description>
-		<PackageLicenseFile>EULA.md</PackageLicenseFile>
-		<PackageIcon>deveel-logo.png</PackageIcon>
-		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-
+    <PackageTags>repository;entityframework;ef;core;entityframeworkcore;efcore;entity;pattern;linq;queryable</PackageTags>
+    <DocumentationFile>./Deveel.Repository.EntityFramework.xml</DocumentationFile>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="6.10.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.15" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="..\..\deveel-logo.png">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-		<None Include="..\..\EULA.md">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
