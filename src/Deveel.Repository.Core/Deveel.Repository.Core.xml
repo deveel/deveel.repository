@@ -310,61 +310,6 @@
             is dropped from the underlying storage
             </returns>
         </member>
-        <member name="T:Deveel.Data.IDataTransaction">
-            <summary>
-            Represents a transaction provided by the underlying
-            storage of the repository, to isolate operations
-            of access to the data
-            </summary>
-        </member>
-        <member name="M:Deveel.Data.IDataTransaction.BeginAsync(System.Threading.CancellationToken)">
-            <summary>
-            Begins a new transaction on the underlying storage
-            that isolates the access to the data
-            </summary>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Deveel.Data.IDataTransaction.CommitAsync(System.Threading.CancellationToken)">
-            <summary>
-            Commits all the changes made to the underlying storage
-            during the lifetime of this transaction
-            </summary>
-            <param name="cancellationToken">
-            A token that can be used to cancel the operation
-            </param>
-            <returns>
-            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be awaited
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.IDataTransaction.RollbackAsync(System.Threading.CancellationToken)">
-            <summary>
-            Rolls back any changes made to the underlying storage
-            during the lifetime of this transaction
-            </summary>
-            <param name="cancellationToken"></param>
-            <returns>
-            Returns a <see cref="T:System.Threading.Tasks.Task"/> that can be awaited
-            </returns>
-        </member>
-        <member name="T:Deveel.Data.IDataTransactionFactory">
-            <summary>
-            A factory that provides instances of transactions
-            used to isolate the access to data layers of an underlying storage
-            </summary>
-            <seealso cref="T:Deveel.Data.ITransactionalRepository`1"/>
-        </member>
-        <member name="M:Deveel.Data.IDataTransactionFactory.CreateTransactionAsync(System.Threading.CancellationToken)">
-            <summary>
-            Creates a new stransaction and starts it
-            </summary>
-            <param name="cancellationToken"></param>
-            <returns>
-            Returns a new instance of <see cref="T:Deveel.Data.IDataTransaction"/> that
-            can be used in a repository to isolate
-            the access to the data of an underlying storage
-            </returns>
-        </member>
         <member name="T:Deveel.Data.IExpressionQueryFilter">
             <summary>
             A type of query filter that is convertible
@@ -694,7 +639,7 @@
             underlying storage system might have persisted some of the items before a
             failure: to prevent the scenario of a partial creation of the set, the
             callers should consider the 
-            <see cref="M:Deveel.Data.ITransactionalRepository`1.AddRangeAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)"/>
+            <see cref="!:ITransactionalRepository&lt;TEntity&gt;.AddRangeAsync(IDataTransaction, IEnumerable&lt;TEntity&gt;, CancellationToken)"/>
             overload, where transactions are available.
             </para>
             </remarks>
@@ -829,115 +774,6 @@
             <summary>
             Gets the current local system time.
             </summary>
-        </member>
-        <member name="T:Deveel.Data.ITransactionalRepository`1">
-            <summary>
-            A repository that can handle write operations within
-            transactional contexts
-            </summary>
-        </member>
-        <member name="M:Deveel.Data.ITransactionalRepository`1.AddRangeAsync(Deveel.Data.IDataTransaction,System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
-            <summary>
-            Creates a list of entities in the repository in one single operation, within
-            the scope of a given transaction
-            </summary>
-            <param name="entities">The enumeration of the entities to be created</param>
-            <param name="transaction">The transaction scope of the operation</param>
-            <param name="cancellationToken"></param>
-            <returns>
-            Returns an ordered list of the unique identifiers of the entiies created
-            </returns>
-            <exception cref="T:Deveel.Data.RepositoryException">
-            Thrown if it an error occurred while creating one or more entities
-            </exception>
-            <exception cref="T:System.ArgumentNullException">
-            Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
-            </exception>
-        </member>
-        <member name="M:Deveel.Data.ITransactionalRepository`1.AddAsync(Deveel.Data.IDataTransaction,`0,System.Threading.CancellationToken)">
-            <summary>
-            Creates a new entity in the repository
-            </summary>
-            <param name="transaction">A transaction that isolates the access
-            to the data store used by the repository</param>
-            <param name="entity">The entity to create</param>
-            <param name="cancellationToken"></param>
-            <returns>
-            Returns the unique identifier of the entity created.
-            </returns>
-            <exception cref="T:Deveel.Data.RepositoryException">
-            Thrown if it an error occurred while creating the entity
-            </exception>
-            <exception cref="T:System.ArgumentNullException">
-            Thrown if the provided <paramref name="entity"/> is <c>null</c>
-            </exception>
-            <exception cref="T:System.ArgumentException">
-            Thrown if the provided <paramref name="transaction"/> is not compatible
-            with the underlying storage of the repository
-            </exception>
-            <seealso cref="T:Deveel.Data.IDataTransactionFactory"/>
-        </member>
-        <member name="M:Deveel.Data.ITransactionalRepository`1.UpdateAsync(Deveel.Data.IDataTransaction,`0,System.Threading.CancellationToken)">
-            <summary>
-            Updates an existing entity in the repository
-            </summary>
-            <param name="transaction">A transaction that isolates the access
-            to the data store used by the repository</param>
-            <param name="entity">The entity instance to be updated</param>
-            <param name="cancellationToken"></param>
-            <returns>
-            Returns <c>true</c> if the entity was found and updated in 
-            the repository, otherwise <c>false</c>
-            </returns>
-            <exception cref="T:System.ArgumentNullException">
-            Thrown if the provided <paramref name="entity"/> is <c>null</c>
-            </exception>
-            <exception cref="T:Deveel.Data.RepositoryException">
-            Thrown if it an error occurred while updating the entity
-            </exception>
-            <exception cref="T:System.ArgumentException">
-            Thrown if the provided <paramref name="transaction"/> is not compatible
-            with the underlying storage of the repository
-            </exception>
-            <seealso cref="T:Deveel.Data.IDataTransactionFactory"/>
-        </member>
-        <member name="M:Deveel.Data.ITransactionalRepository`1.RemoveAsync(Deveel.Data.IDataTransaction,`0,System.Threading.CancellationToken)">
-            <summary>
-            Deletes an entity from the repository
-            </summary>
-            <param name="transaction">A transaction that isolates the access
-            to the data store used by the repository</param>
-            <param name="entity">The entity to be deleted</param>
-            <param name="cancellationToken"></param>
-            <returns>
-            Returns <c>true</c> if the entity was successfully removed 
-            from the repository, otherwise <c>false</c>. 
-            </returns>
-            <exception cref="T:System.ArgumentNullException">
-            Thrown if the provided <paramref name="entity"/> is <c>null</c>
-            </exception>
-            <exception cref="T:Deveel.Data.RepositoryException">
-            Thrown if it an error occurred while deleting the entity
-            </exception>
-            <exception cref="T:System.ArgumentException">
-            Thrown if the provided <paramref name="transaction"/> is not compatible
-            with the underlying storage of the repository
-            </exception>
-            <seealso cref="T:Deveel.Data.IDataTransactionFactory"/>
-        </member>
-        <member name="M:Deveel.Data.ITransactionalRepository`1.FindByIdAsync(Deveel.Data.IDataTransaction,System.String,System.Threading.CancellationToken)">
-            <summary>
-            Attempts to find in the repository an entity with the 
-            given unique identifier
-            </summary>
-            <param name="transaction">A transaction that isolates the access
-            to the data store used by the repository</param>
-            <param name="id">The unique identifier of the entity to find</param>
-            <param name="cancellationToken"></param>
-            <returns>
-            Returns the instance of the entity associated to the given <paramref name="id"/>,
-            or <c>null</c> if none entity was found.
-            </returns>
         </member>
         <member name="T:Deveel.Data.PageableRepositoryExtensions">
             <summary>
@@ -1407,24 +1243,6 @@
             </returns>
             <exception cref="T:System.NotSupportedException">
             Thrown when the repository is not filterable
-            </exception>
-        </member>
-        <member name="M:Deveel.Data.RepositoryExtensions.AsTransactional``1(Deveel.Data.IRepository{``0})">
-            <summary>
-            Gets a version of the repository that is transactional
-            </summary>
-            <typeparam name="TEntity">
-            The type of entity handled by the repository.
-            </typeparam>
-            <param name="repository">
-            The instance of the repository to get the transactional version.
-            </param>
-            <returns>
-            Returns an instance of <see cref="T:Deveel.Data.ITransactionalRepository`1"/>
-            that is used to perform transactional operations on the repository.
-            </returns>
-            <exception cref="T:System.NotSupportedException">
-            Thrown when the repository is not transactional.
             </exception>
         </member>
         <member name="M:Deveel.Data.RepositoryExtensions.Add``1(Deveel.Data.IRepository{``0},``0)">
@@ -1948,94 +1766,6 @@
             <summary>
             Gets the default instance of the system time.
             </summary>
-        </member>
-        <member name="T:Deveel.Data.TransactionalRepositoryExtensions">
-            <summary>
-            Extends the <see cref="T:Deveel.Data.ITransactionalRepository`1"/> interface
-            to provide more methods to handle entities in a transactional way.
-            </summary>
-        </member>
-        <member name="M:Deveel.Data.TransactionalRepositoryExtensions.Add``1(Deveel.Data.ITransactionalRepository{``0},Deveel.Data.IDataTransaction,``0)">
-            <summary>
-            Adds a new entity in the repository synchronously
-            </summary>
-            <typeparam name="TEntity">
-            The type of entity to create
-            </typeparam>
-            <param name="repository">
-            The instance of the repository to use to create the entity
-            </param>
-            <param name="transaction">
-            A transaction to use to create the entity
-            </param>
-            <param name="entity">
-            The instance of the entity to create
-            </param>
-        </member>
-        <member name="M:Deveel.Data.TransactionalRepositoryExtensions.Remove``1(Deveel.Data.ITransactionalRepository{``0},Deveel.Data.IDataTransaction,``0)">
-            <summary>
-            Removes an entity from the repository synchronously,
-            using a transaction isolation given
-            </summary>
-            <typeparam name="TEntity">
-            The type of entity handled by the repository.
-            </typeparam>
-            <param name="repository">
-            The instance of the repository from which the entity is removed.
-            </param>
-            <param name="transaction">
-            The transaction state that isolates the operation.
-            </param>
-            <param name="entity">
-            The instance of the entity to remove.
-            </param>
-        </member>
-        <member name="M:Deveel.Data.TransactionalRepositoryExtensions.RemoveByIdAsync``1(Deveel.Data.ITransactionalRepository{``0},Deveel.Data.IDataTransaction,System.String,System.Threading.CancellationToken)">
-            <summary>
-            Removes an entity, identified by the given key,
-            from the repository, using a transaction isolation
-            </summary>
-            <typeparam name="TEntity">
-            The type of entity handled by the repository.
-            </typeparam>
-            <param name="repository">
-            The instance of the repository from which the entity is removed.
-            </param>
-            <param name="transaction">
-            A transaction state that isolates the operation.
-            </param>
-            <param name="id">
-            The string that uniquely identifies the entity to remove.
-            </param>
-            <param name="cancellationToken">
-            A token used to cancel the operation.
-            </param>
-            <returns>
-            Returns a task that can be used to await the operation.
-            </returns>
-            <exception cref="T:System.InvalidOperationException">
-            Thrown when the entity with the given key is not found in the repository.
-            </exception>
-        </member>
-        <member name="M:Deveel.Data.TransactionalRepositoryExtensions.RemoveById``1(Deveel.Data.ITransactionalRepository{``0},Deveel.Data.IDataTransaction,System.String)">
-            <summary>
-            Synchronously removes an entity, identified by the given key,
-            from the repository, using a transaction isolation
-            </summary>
-            <typeparam name="TEntity">
-            The type of entity handled by the repository.
-            </typeparam>
-            <param name="repository">
-            The instance of the repository from which the entity is removed.
-            </param>
-            <param name="transaction">
-            A transaction state that isolates the operation.
-            </param>
-            <param name="id">
-            The string that uniquely identifies the entity to remove.
-            </param>
-            <seealso cref="T:Deveel.Data.ITransactionalRepository`1"/>
-            <seealso cref="M:Deveel.Data.ITransactionalRepository`1.RemoveAsync(Deveel.Data.IDataTransaction,`0,System.Threading.CancellationToken)"/>
         </member>
     </members>
 </doc>

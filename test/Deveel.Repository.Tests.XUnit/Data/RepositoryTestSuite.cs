@@ -352,8 +352,7 @@ namespace Deveel.Data {
 			var perPage = Math.Min(peopleCount, 10);
 
 			var request = new PageQuery<TPerson>(1, 10)
-				.Where(x => x.FirstName == firstName)
-				.Where(x => x.LastName == lastName);
+				.Where(x => x.FirstName == firstName && x.LastName == lastName);
 
 			var result = await Repository.GetPageAsync(request);
 			Assert.NotNull(result);
