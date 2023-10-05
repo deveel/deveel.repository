@@ -84,30 +84,6 @@ namespace Deveel.Data {
 			return filterable;
 		}
 
-		/// <summary>
-		/// Gets a version of the repository that is transactional
-		/// </summary>
-		/// <typeparam name="TEntity">
-		/// The type of entity handled by the repository.
-		/// </typeparam>
-		/// <param name="repository">
-		/// The instance of the repository to get the transactional version.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of <see cref="ITransactionalRepository{TEntity}"/>
-		/// that is used to perform transactional operations on the repository.
-		/// </returns>
-		/// <exception cref="NotSupportedException">
-		/// Thrown when the repository is not transactional.
-		/// </exception>
-		public static ITransactionalRepository<TEntity> AsTransactional<TEntity>(this IRepository<TEntity> repository)
-			where TEntity : class {
-			if (!(repository is ITransactionalRepository<TEntity> transactional))
-				throw new NotSupportedException("The repository is not transactional");
-
-			return transactional;
-		}
-
 		#endregion
 
 
