@@ -134,11 +134,11 @@ namespace Deveel.Data {
         }
 
 		/// <summary>
-		/// Converts the given string identifier to the type of the 
+		/// Converts the given value to the type of the 
 		/// primary key of the entity.
 		/// </summary>
-		/// <param name="id">
-		/// The string representation of the identifier.
+		/// <param name="key">
+		/// The key that represents the identifier of the entity.
 		/// </param>
 		/// <returns>
 		/// Returns the identifier converted to the type of the primary key
@@ -147,8 +147,11 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentException">
 		/// Thrown when the given string is not a valid identifier for the entity.
 		/// </exception>
-		protected virtual object? ConvertEntityKey(string id) {
-            var keyType = primaryKey.GetKeyType();
+		protected virtual object? ConvertEntityKey(object? key) {
+			if (key == null)
+				return null;
+
+			var keyType = primaryKey.GetKeyType();
 
 			if (keyType == null)
 				// The entity has no primary key
@@ -157,46 +160,35 @@ namespace Deveel.Data {
 			if (Nullable.GetUnderlyingType(keyType) != null)
 				keyType = Nullable.GetUnderlyingType(keyType);
 
+			var valueType = key.GetType();
+
 			// These are the most common types of primary keys in SQL databases
-			if (keyType == typeof(string))
-				return id;
-			if (keyType == typeof(Guid)) {
-				if (!Guid.TryParse(id, out var guid))
-					throw new ArgumentException($"The string '{id}' is not valid GUID");
+			if (keyType == valueType)
+				return key;
 
-				return guid;
-			}
-			if (keyType == typeof(int)) {
-				if (!int.TryParse(id, out var intId))
-					throw new ArgumentException($"The string '{id}' is not valid integer");
+			if (key is string s) {
+				if (keyType == typeof(Guid) && Guid.TryParse(s, out var guid))
+					return guid;
 
-				return intId;
+				if (typeof(IConvertible).IsAssignableFrom(keyType))
+					return Convert.ChangeType(key, keyType, CultureInfo.InvariantCulture);
 			}
 
-			return Convert.ChangeType(id, keyType!, CultureInfo.InvariantCulture);
+			throw new ArgumentException($"The given key '{key}' is not a valid identifier for the entity '{typeof(TEntity)}'");
 		}
 
 		/// <inheritdoc/>
-		public virtual string? GetEntityId(TEntity entity) {
+		public virtual object? GetEntityKey(TEntity entity) {
 			var props = primaryKey.Properties.ToList();
 			if (props.Count > 1)
 				throw new RepositoryException($"The entity '{typeof(TEntity)}' has more than one property has primary key");
 
 			var getter = props[0].GetGetter();
-			var value = getter.GetClrValue(entity);
-
-			if (value == null)
-				return null;
-
-			if (!(value is string id)) {
-				id = Convert.ToString(value, CultureInfo.InvariantCulture)!;
-			}
-
-			return id;
+			return getter.GetClrValue(entity);
 		}
 
 		/// <inheritdoc/>
-		public async Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
             if (entity is null) throw new ArgumentNullException(nameof(entity));
@@ -211,11 +203,9 @@ namespace Deveel.Data {
 					// TODO: warn about this...
 				}
 
-				var id = GetEntityId(entity)!;
+				var key = GetEntityKey(entity)!;
 
-                Logger.LogEntityCreated(typeof(TEntity), id, TenantId);
-
-                return id;
+                Logger.LogEntityCreated(typeof(TEntity), key, TenantId);
             } catch (Exception ex) {
                 Logger.LogUnknownError(ex, typeof(TEntity));
                 throw new RepositoryException("Unknown error while trying to add an entity to the repository", ex);
@@ -223,15 +213,13 @@ namespace Deveel.Data {
         }
 
 		/// <inheritdoc/>
-		public async Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
 			try {
 				await Entities.AddRangeAsync(entities, cancellationToken);
 
 				var count = await Context.SaveChangesAsync(true, cancellationToken);
-
-				return entities.Select(x => GetEntityId(x)!).ToList();
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unknown error while trying to add a range of entities to the repository", ex);
@@ -245,11 +233,11 @@ namespace Deveel.Data {
 			if (entity is null) throw new ArgumentNullException(nameof(entity));
 
 			try {
-                var entityId = GetEntityId(entity)!;
+                var entityId = GetEntityKey(entity)!;
 
                 Logger.TraceDeletingEntity(typeof(TEntity), entityId, TenantId);
 
-                var existing = await FindByIdAsync(entityId, cancellationToken);
+                var existing = await FindByKeyAsync(entityId, cancellationToken);
                 if (existing == null) {
                     Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
                     return false;
@@ -298,9 +286,10 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default) {
+		public async Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
 			try {
-				return await Entities.FindAsync(new object?[] { ConvertEntityKey(id) }, cancellationToken);
+				// TODO: add support for composite keys
+				return await Entities.FindAsync(new object?[] { ConvertEntityKey(key) }, cancellationToken);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unable to find an entity in the repository because of an error", ex);
@@ -315,13 +304,13 @@ namespace Deveel.Data {
 				throw new ArgumentNullException(nameof(entity));
 
             try {
-                var entityId = GetEntityId(entity)!;
+                var entityId = GetEntityKey(entity)!;
 
                 Logger.TraceUpdatingEntity(typeof(TEntity), entityId, TenantId);
 
 				// TODO: is it there any better way to do this with EF?
 
-                var existing = await FindByIdAsync(entityId, cancellationToken);
+                var existing = await FindByKeyAsync(entityId, cancellationToken);
                 if (existing == null) {
                     Logger.WarnEntityNotUpdated(typeof(TEntity), entityId, TenantId);
                     return false;

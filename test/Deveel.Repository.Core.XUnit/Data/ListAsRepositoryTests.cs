@@ -57,10 +57,9 @@
 				.Generate(10)
 				.ToList();
 
-			var result = await repository.AddRangeAsync(newPersons);
+			await repository.AddRangeAsync(newPersons);
 
 			Assert.Equal(listCount + 10, repository.CountAll());
-			Assert.Equal(10, result.Count);
 
 			foreach (var person in newPersons) {
 				Assert.NotNull(person.Id);
@@ -96,7 +95,7 @@
 
 			var person = RandomPerson();
 
-			var result = await repository.RemoveByIdAsync(person.Id!);
+			var result = await repository.RemoveByKeyAsync(person.Id!);
 			Assert.True(result);
 
 			Assert.Equal(listCount - 1, repository.AsFilterable().CountAll());
@@ -106,7 +105,7 @@
 		public async Task Mutable_RemoveById_NotFound() {
 			var listCount = persons.Count;
 
-			var result = await repository.RemoveByIdAsync(Guid.NewGuid().ToString());
+			var result = await repository.RemoveByKeyAsync(Guid.NewGuid().ToString());
 			Assert.False(result);
 
 			Assert.Equal(listCount, repository.AsFilterable().CountAll());

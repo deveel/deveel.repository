@@ -179,19 +179,22 @@ namespace Deveel.Data {
 			return _dbSet;
 		}
 
-		string? IRepository<TEntity>.GetEntityId(TEntity entity) {
-			var value = GetEntityId(entity);
+		//string? IRepository<TEntity>.GetEntityId(TEntity entity) {
+		//	var value = GetEntityId(entity);
 
-			if (value == null)
-				return null;
+		//	if (value == null)
+		//		return null;
 
-			if (value is string s)
-				return s;
-			if (value is ObjectId id)
-				return id.ToEntityId();
+		//	if (value is string s)
+		//		return s;
+		//	if (value is ObjectId id)
+		//		return id.ToEntityId();
 
-			return Convert.ToString(value, CultureInfo.InvariantCulture);
-		}
+		//	return Convert.ToString(value, CultureInfo.InvariantCulture);
+		//}
+
+		object? IRepository<TEntity>.GetEntityKey(TEntity entity)
+			=> GetEntityKey(entity);
 
 		/// <summary>
 		/// Gets the value of the ID property of the given entity.
@@ -202,7 +205,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the value of the ID property of the given entity.
 		/// </returns>
-		protected virtual object? GetEntityId(TEntity entity) {
+		protected virtual object? GetEntityKey(TEntity entity) {
 			var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
 			var idProperty = entityDef.GetIdProperty();
@@ -210,20 +213,20 @@ namespace Deveel.Data {
 			if (idProperty == null)
 				throw new RepositoryException($"The type '{typeof(TEntity)}' has no ID property specified");
 
-			return idProperty.PropertyInfo.GetValue(entity);
+			return entityDef.GetIdValue(entity);
 		}
 
 		/// <summary>
-		/// Converts the given string value to the type of the ID property of the
+		/// Converts the given value to the type of the ID property of the
 		/// entity managed by this repository.
 		/// </summary>
-		/// <param name="id">
-		/// The string representation of the ID value.
+		/// <param name="key">
+		/// The value representing the key of the entity.
 		/// </param>
 		/// <returns>
 		/// Returns the value converted accordingly to the type of the ID property
 		/// of the entity managed by this repository, or <c>null</c> if the given
-		/// string is <c>null</c> or empty.
+		/// key is <c>null</c> or empty.
 		/// </returns>
 		/// <exception cref="RepositoryException">
 		/// Thrown if the entity managed by this repository has no ID property
@@ -232,10 +235,11 @@ namespace Deveel.Data {
 		/// Thrown when the value cannot be converted to the type of the ID
 		/// property of the entity managed by this repository.
 		/// </exception>
-		protected virtual object? ConvertIdValue(string? id) {
-			if (String.IsNullOrWhiteSpace(id))
+		protected virtual object? ConvertKeyValue(object? key) {
+			if (key == null)
 				return null;
 
+			var idType = key.GetType();
 			var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
 			var idProperty = entityDef.GetIdProperty();
@@ -245,14 +249,16 @@ namespace Deveel.Data {
 
 			var valueType = idProperty.PropertyInfo.PropertyType;
 
-			if (valueType == typeof(string))
-				return id;
+			if (valueType == idType)
+				return key;
 
-			if (valueType == typeof(ObjectId))
-				return ObjectId.Parse(id);
+			if (idType == typeof(string)) {
+				if (valueType == typeof(ObjectId))
+					return ObjectId.Parse(key.ToString());
 
-			if (typeof(IConvertible).IsAssignableFrom(valueType))
-				return Convert.ChangeType(id, valueType, CultureInfo.InvariantCulture);
+				if (typeof(IConvertible).IsAssignableFrom(valueType))
+					return Convert.ChangeType(key, valueType, CultureInfo.InvariantCulture);
+			}
 
 			throw new NotSupportedException($"It is not possible to convert the ID to '{valueType}'");
 		}
@@ -394,7 +400,7 @@ namespace Deveel.Data {
 		/// Thrown when an error occurs while creating the entity in the
 		/// underlying database.
 		/// </exception>
-		public async Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -410,23 +416,20 @@ namespace Deveel.Data {
 				DbSet.Add(entity);
 				await DbSet.Context.SaveChangesAsync(cancellationToken);
 
-				// TODO: this is UGLY! change the IRepository to use object keys instead?
-				var id = RequireString(GetEntityId(entity));
+				var id = GetEntityKey(entity);
 
 				if (!String.IsNullOrWhiteSpace(TenantId)) {
-					Logger.TraceCreatedForTenant(TenantId, id);
+					Logger.TraceCreatedForTenant(TenantId, id!);
 				} else {
-					Logger.TraceCreated(id);
+					Logger.TraceCreated(id!);
 				}
-
-				return id;
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex);
 				throw new RepositoryException("Unable to create the entity", ex);
 			}
 		}
 
-		public async Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -435,9 +438,6 @@ namespace Deveel.Data {
 
 				DbSet.AddRange(entities);
 				await DbSet.Context.SaveChangesAsync(cancellationToken);
-
-				// TODO: this is UGLY! Change the IRepository to work with object keys
-				return entities.Select(x => RequireString(GetEntityId(x))).ToList();
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex);
 				throw new RepositoryException("Could not add the list of entities", ex);
@@ -462,7 +462,7 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
-			var id = GetEntityId(entity);
+			var id = GetEntityKey(entity);
 
 			if (id == null)
 				throw new ArgumentException(nameof(entity), "Cannot determine the identifier of the entity");
@@ -511,7 +511,7 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
-			var entityId = GetEntityId(entity);
+			var entityId = GetEntityKey(entity);
 			if (entityId == null)
 				throw new ArgumentException("The entity does not have an ID", nameof(entity));
 
@@ -566,39 +566,39 @@ namespace Deveel.Data {
 
 		#region FindById
 
-		public async Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default) {
+		public async Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
 
 			if (!String.IsNullOrWhiteSpace(TenantId)) {
-				Logger.TraceFindingByIdForTenant(TenantId, id);
+				Logger.TraceFindingByIdForTenant(TenantId, key);
 			} else {
-				Logger.TraceFindingById(id);
+				Logger.TraceFindingById(key);
 			}
 
 			try {
-				var idValue = ConvertIdValue(id);
+				var keyValue = ConvertKeyValue(key);
 
-				var entry = Context.ChangeTracker.GetEntryById<TEntity>(idValue);
+				var entry = Context.ChangeTracker.GetEntryById<TEntity>(keyValue);
 				if (entry != null && entry.State == EntityEntryState.Deleted)
 					return null;
 
-				var result = await DbSet.FindAsync(idValue);
+				var result = await DbSet.FindAsync(keyValue);
 
 				if (result == null)
 					return null;
 
 
 				if (!String.IsNullOrWhiteSpace(TenantId)) {
-					Logger.TraceFoundByIdForTenant(TenantId, id);
+					Logger.TraceFoundByIdForTenant(TenantId, key);
 				} else {
-					Logger.TraceFoundById(id);
+					Logger.TraceFoundById(key);
 				}
 
 				return result;
 			} catch (Exception ex) {
-				Logger.LogUnknownEntityError(ex, id);
+				Logger.LogUnknownEntityError(ex, key);
 				throw new RepositoryException("Unable to find the entity", ex);
 			}
 		}

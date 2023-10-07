@@ -39,5 +39,24 @@ namespace Deveel.Data {
 
 			await base.DisposeAsync();
 		}
+
+		[Fact]
+		public async Task FindByObjectId() {
+			var person = await RandomPersonAsync();
+
+			var found = await Repository.FindByKeyAsync(person.Id);
+
+			Assert.NotNull(found);
+			Assert.Equal(person.Id, found.Id);
+		}
+
+		[Fact]
+		public async Task FindByObjectId_NotExisting() {
+			var personId = ObjectId.GenerateNewId();
+
+			var found = await Repository.FindByKeyAsync(personId.ToString());
+
+			Assert.Null(found);
+		}
 	}
 }

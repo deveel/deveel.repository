@@ -105,7 +105,7 @@ namespace Deveel.Data {
 		/// Returns a string that uniquely identifies the created entity
 		/// within the underlying storage.
 		/// </returns>
-		public static string Add<TEntity>(this IRepository<TEntity> repository, TEntity entity)
+		public static void Add<TEntity>(this IRepository<TEntity> repository, TEntity entity)
             where TEntity : class
             => repository.AddAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -144,8 +144,8 @@ namespace Deveel.Data {
 		/// <param name="repository">
 		/// The instance of the repository from which the entity is removed
 		/// </param>
-		/// <param name="id">
-		/// The string that uniquely identifies the entity to remove
+		/// <param name="key">
+		/// The key that uniquely identifies the entity to remove
 		/// </param>
 		/// <param name="cancellationToken">
 		/// A token used to cancel the operation.
@@ -154,9 +154,9 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the entity was removed successfully,
 		/// otherwise it returns <c>false</c>.
 		/// </returns>
-        public static async Task<bool> RemoveByIdAsync<TEntity>(this IRepository<TEntity> repository, string id, CancellationToken cancellationToken = default)
+        public static async Task<bool> RemoveByKeyAsync<TEntity>(this IRepository<TEntity> repository, object key, CancellationToken cancellationToken = default)
             where TEntity : class {
-            var entity = await repository.FindByIdAsync(id, cancellationToken);
+            var entity = await repository.FindByKeyAsync(key, cancellationToken);
             if (entity == null)
                 return false;
 
@@ -173,17 +173,17 @@ namespace Deveel.Data {
 		/// <param name="repository">
 		/// The instance of the repository from which the entity is removed.
 		/// </param>
-		/// <param name="id">
-		/// The string that uniquely identifies the entity to remove.
+		/// <param name="key">
+		/// The key that uniquely identifies the entity to remove.
 		/// </param>
 		/// <returns>
 		/// Returns <c>true</c> if the entity was removed successfully,
 		/// otherwise it returns <c>false</c>.
 		/// </returns>
 		/// <seealso cref="IRepository{TEntity}.RemoveAsync(TEntity, CancellationToken)"/>
-        public static bool RemoveById<TEntity>(this IRepository<TEntity> repository, string id)
+        public static bool RemoveByKey<TEntity>(this IRepository<TEntity> repository, string key)
             where TEntity : class
-            => repository.RemoveByIdAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.RemoveByKeyAsync(key).ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion
 
@@ -476,7 +476,7 @@ namespace Deveel.Data {
 
         public static TEntity? FindById<TEntity>(this IRepository<TEntity> store, string id)
             where TEntity : class
-            => store.FindByIdAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
+            => store.FindByKeyAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion
 

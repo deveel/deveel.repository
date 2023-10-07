@@ -87,8 +87,8 @@ namespace Deveel.Data {
 			return source;
 		}
 
-		protected virtual Task<TPerson?> FindPersonAsync(string id) {
-			var entity = People.FirstOrDefault(x => Repository.GetEntityId(x) == id);
+		protected virtual Task<TPerson?> FindPersonAsync(object id) {
+			var entity = People.FirstOrDefault(x => Repository.GetEntityKey(x) == id);
 			return Task.FromResult(entity);
 		}
 
@@ -105,24 +105,28 @@ namespace Deveel.Data {
 		public async Task AddNewPerson() {
 			var person = GeneratePerson();
 
-			var id = await Repository.AddAsync(person);
+			await Repository.AddAsync(person);
+
+			var id = Repository.GetEntityKey(person);
 
 			Assert.NotNull(id);
-			Assert.NotEmpty(id);
+
+			var found = await Repository.FindByKeyAsync(id);
+			Assert.NotNull(found);
 		}
 
 		[Fact]
 		public async Task AddNewPersons() {
 			var entities = GeneratePeople(10);
 
-			var results = await Repository.AddRangeAsync(entities);
+			await Repository.AddRangeAsync(entities);
 
-			Assert.NotNull(results);
-			Assert.NotEmpty(results);
-			Assert.Equal(entities.Count, results.Count);
+			foreach (var item in entities) {
+				var key = Repository.GetEntityKey(item);
+				Assert.NotNull(key);
 
-			for (int i = 0; i < results.Count; i++) {
-				Assert.Equal(Repository.GetEntityId(entities[i]), results[i]);
+				var found = await Repository.FindByKeyAsync(key);
+				Assert.NotNull(found);
 			}
 		}
 
@@ -150,11 +154,11 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task RemoveById_Existing() {
-			var id = Repository.GetEntityId(People.Random()!);
+			var key = Repository.GetEntityKey(People.Random()!);
 
-			Assert.NotNull(id);
+			Assert.NotNull(key);
 
-			var result = await Repository.RemoveByIdAsync(id);
+			var result = await Repository.RemoveByKeyAsync(key);
 
 			Assert.True(result);
 		}
@@ -163,7 +167,7 @@ namespace Deveel.Data {
 		public async Task RemoveById_NotExisting() {
 			var id = GeneratePersonId();
 
-			var result = await Repository.RemoveByIdAsync(id);
+			var result = await Repository.RemoveByKeyAsync(id);
 
 			Assert.False(result);
 		}
@@ -227,11 +231,11 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FindById() {
+		public async Task FindByKey() {
 			var person = await RandomPersonAsync();
 			var id = person.Id!;
 
-			var result = await Repository.FindByIdAsync(id);
+			var result = await Repository.FindByKeyAsync(id);
 
 			Assert.NotNull(result);
 			Assert.Equal(id, result.Id);
@@ -272,7 +276,7 @@ namespace Deveel.Data {
 		public async Task FindById_Existing() {
 			var person = await RandomPersonAsync();
 
-			var result = await Repository.FindByIdAsync(person.Id!);
+			var result = await Repository.FindByKeyAsync(person.Id!);
 
 			Assert.NotNull(result);
 			Assert.Equal(person.Id, result.Id);
@@ -285,7 +289,7 @@ namespace Deveel.Data {
 		public async Task FindById_NotFound() {
 			var id = GeneratePersonId();
 
-			var result = await Repository.FindByIdAsync(id);
+			var result = await Repository.FindByKeyAsync(id);
 
 			Assert.Null(result);
 		}
@@ -505,10 +509,10 @@ namespace Deveel.Data {
 		public async Task GetPersonId() {
 			var person = await RandomPersonAsync();
 
-			var id = Repository.GetEntityId(person);
+			var id = Repository.GetEntityKey(person);
 
 			Assert.NotNull(id);
-			Assert.Equal(person.Id, id);
+			Assert.Equal(person.Id, id.ToString());
 		}
 
 		[Fact]
@@ -521,7 +525,7 @@ namespace Deveel.Data {
 
 			Assert.True(result);
 
-			var updated = await Repository.FindByIdAsync(person.Id!);
+			var updated = await Repository.FindByKeyAsync(person.Id!);
 
 			Assert.NotNull(updated);
 			Assert.Equal(person.FirstName, updated.FirstName);
