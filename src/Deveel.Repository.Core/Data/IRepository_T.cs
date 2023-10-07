@@ -28,11 +28,11 @@ namespace Deveel.Data {
 		/// The instance of the entity to get the identifier of
 		/// </param>
 		/// <returns>
-		/// Returns a string that is the unique identifier of the entity
+		/// Returns an object that is the unique identifier of the entity
 		/// within the repository, or <c>null</c> if the entity is not
 		/// identified.
 		/// </returns>
-		string? GetEntityId(TEntity entity);
+		object? GetEntityKey(TEntity entity);
 
         /// <summary>
         /// Adds a new entity into the repository
@@ -40,7 +40,7 @@ namespace Deveel.Data {
         /// <param name="entity">The entity to be added</param>
         /// <param name="cancellationToken"></param>
         /// <returns>
-        /// Returns the unique identifier of the entity added.
+		/// Returns a task that will complete when the operation is completed
         /// </returns>
         /// <exception cref="RepositoryException">
         /// Thrown if it an error occurred while adding the entity
@@ -48,7 +48,7 @@ namespace Deveel.Data {
         /// <exception cref="ArgumentNullException">
         /// Thrown if the provided <paramref name="entity"/> is <c>null</c>
         /// </exception>
-        Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task AddAsync(TEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Adds a list of entities in the repository in one single operation
@@ -64,7 +64,7 @@ namespace Deveel.Data {
 		/// </para>
 		/// </remarks>
 		/// <returns>
-		/// Returns an ordered list of the unique identifiers of the entiies created
+		/// Returns a task that will complete when the operation is completed
 		/// </returns>
 		/// <exception cref="RepositoryException">
 		/// Thrown if it an error occurred while adding one or more entities
@@ -72,7 +72,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
 		/// </exception>
-		Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+		Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
 
         /// <summary>
@@ -131,12 +131,15 @@ namespace Deveel.Data {
         /// Attempts to find in the repository an entity with the 
         /// given unique identifier
         /// </summary>
-        /// <param name="id">The unique identifier of the entity to find</param>
+        /// <param name="key">The unique identifier of the entity to find</param>
         /// <param name="cancellationToken"></param>
         /// <returns>
-        /// Returns the instance of the entity associated to the given <paramref name="id"/>,
+        /// Returns the instance of the entity associated to the given <paramref name="key"/>,
         /// or <c>null</c> if none entity was found.
         /// </returns>
-        Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default);
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the provided <paramref name="key"/> is <c>null</c>
+		/// </exception>
+        Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default);
     }
 }

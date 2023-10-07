@@ -46,7 +46,7 @@ namespace Deveel.Data {
 
 		public IQueryable<TEntity> AsQueryable() => entities.AsQueryable();
 
-		public string? GetEntityId(TEntity entity) {
+		public object? GetEntityKey(TEntity entity) {
 			var idMembers = typeof(TEntity).GetMembers(BindingFlags.Instance | BindingFlags.Public)
 				.Where(x => x.MemberType == MemberTypes.Property || x.MemberType == MemberTypes.Field)
 				.Where(x => x.Name == "Id" || x.Name == "ID")
@@ -61,22 +61,22 @@ namespace Deveel.Data {
 			var idMember = idMembers[0];
 
 			if (idMember is PropertyInfo propertyInfo) {
-				return (string?)propertyInfo.GetValue(entity);
+				return propertyInfo.GetValue(entity);
 			} else if (idMember is FieldInfo fieldInfo) {
-				return (string?)fieldInfo.GetValue(entity);
+				return fieldInfo.GetValue(entity);
 			} else {
 				throw new NotSupportedException("The entity Id is not supported");
 			}
 		}
 
-		public Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			AssertMutable();
 
 			var id = SetId(entity);
 
 			AddEntity(entity);
 
-			return Task.FromResult<string>(id);
+			return Task.CompletedTask;
 		}
 
 		private string SetId(TEntity entity) {
@@ -105,34 +105,30 @@ namespace Deveel.Data {
 			return entityId;
 		}
 
-		public Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			AssertMutable();
-
-			var result = new List<string>();
 
 			foreach (var entity in entities) {
 				var id = SetId(entity);
 				AddEntity(entity);
-
-				result.Add(id);
 			}
 
-			return Task.FromResult<IList<string>>(result);
+			return Task.CompletedTask;
 		}
 
-		public Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default) {
-			var entity = entities.FirstOrDefault(x => GetEntityId(x) == id);
+		public Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
+			var entity = entities.FirstOrDefault(x => GetEntityKey(x) == key);
 			return Task.FromResult<TEntity?>(entity);
 		}
 
 		public Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			AssertMutable();
 
-			var id = GetEntityId(entity);
-			if (id == null)
+			var key = GetEntityKey(entity);
+			if (key == null)
 				return Task.FromResult(false);
 
-			var found = entities.FirstOrDefault(x => GetEntityId(x) == id);
+			var found = entities.FirstOrDefault(x => GetEntityKey(x) == key);
 			if (found == null)
 				return Task.FromResult(false);
 
@@ -151,11 +147,11 @@ namespace Deveel.Data {
 			AssertMutable();
 
 			foreach (var entity in entities) {
-				var id = GetEntityId(entity);
-				if (id == null)
+				var key = GetEntityKey(entity);
+				if (key == null)
 					continue;
 
-				var found = this.entities.FirstOrDefault(x => GetEntityId(x) == id);
+				var found = this.entities.FirstOrDefault(x => GetEntityKey(x) == key);
 				if (found == null)
 					continue;
 
@@ -174,11 +170,11 @@ namespace Deveel.Data {
 		public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			AssertMutable();
 
-			var id = GetEntityId(entity);
-			if (id == null)
+			var key = GetEntityKey(entity);
+			if (key == null)
 				return Task.FromResult(false);
 
-			var found = entities.FirstOrDefault(x => GetEntityId(x) == id);
+			var found = entities.FirstOrDefault(x => GetEntityKey(x) == key);
 			if (found == null)
 				return Task.FromResult(false);
 

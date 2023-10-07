@@ -81,13 +81,13 @@
             Thrown when the repository has been disposed.
             </exception>
         </member>
-        <member name="M:Deveel.Data.EntityRepository`1.ConvertEntityKey(System.String)">
+        <member name="M:Deveel.Data.EntityRepository`1.ConvertEntityKey(System.Object)">
             <summary>
-            Converts the given string identifier to the type of the 
+            Converts the given value to the type of the 
             primary key of the entity.
             </summary>
-            <param name="id">
-            The string representation of the identifier.
+            <param name="key">
+            The key that represents the identifier of the entity.
             </param>
             <returns>
             Returns the identifier converted to the type of the primary key
@@ -97,7 +97,7 @@
             Thrown when the given string is not a valid identifier for the entity.
             </exception>
         </member>
-        <member name="M:Deveel.Data.EntityRepository`1.GetEntityId(`0)">
+        <member name="M:Deveel.Data.EntityRepository`1.GetEntityKey(`0)">
             <inheritdoc/>
         </member>
         <member name="M:Deveel.Data.EntityRepository`1.AddAsync(`0,System.Threading.CancellationToken)">
@@ -112,7 +112,7 @@
         <member name="M:Deveel.Data.EntityRepository`1.RemoveRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
-        <member name="M:Deveel.Data.EntityRepository`1.FindByIdAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.EntityRepository`1.FindByKeyAsync(System.Object,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
         <member name="M:Deveel.Data.EntityRepository`1.UpdateAsync(`0,System.Threading.CancellationToken)">

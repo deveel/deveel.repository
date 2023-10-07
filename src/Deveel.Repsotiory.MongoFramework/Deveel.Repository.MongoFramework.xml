@@ -112,7 +112,7 @@
             <returns></returns>
             <exception cref="T:Deveel.Data.RepositoryException"></exception>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`1.GetEntityId(`0)">
+        <member name="M:Deveel.Data.MongoRepository`1.GetEntityKey(`0)">
             <summary>
             Gets the value of the ID property of the given entity.
             </summary>
@@ -123,18 +123,18 @@
             Returns the value of the ID property of the given entity.
             </returns>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`1.ConvertIdValue(System.String)">
+        <member name="M:Deveel.Data.MongoRepository`1.ConvertKeyValue(System.Object)">
             <summary>
-            Converts the given string value to the type of the ID property of the
+            Converts the given value to the type of the ID property of the
             entity managed by this repository.
             </summary>
-            <param name="id">
-            The string representation of the ID value.
+            <param name="key">
+            The value representing the key of the entity.
             </param>
             <returns>
             Returns the value converted accordingly to the type of the ID property
             of the entity managed by this repository, or <c>null</c> if the given
-            string is <c>null</c> or empty.
+            key is <c>null</c> or empty.
             </returns>
             <exception cref="T:Deveel.Data.RepositoryException">
             Thrown if the entity managed by this repository has no ID property

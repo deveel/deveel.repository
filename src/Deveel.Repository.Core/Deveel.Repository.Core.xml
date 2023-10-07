@@ -597,7 +597,7 @@
             </summary>
             <typeparam name="TEntity">The type of entity handled by the repository</typeparam>
         </member>
-        <member name="M:Deveel.Data.IRepository`1.GetEntityId(`0)">
+        <member name="M:Deveel.Data.IRepository`1.GetEntityKey(`0)">
             <summary>
             Gets the unique identifier of the entity given
             </summary>
@@ -605,7 +605,7 @@
             The instance of the entity to get the identifier of
             </param>
             <returns>
-            Returns a string that is the unique identifier of the entity
+            Returns an object that is the unique identifier of the entity
             within the repository, or <c>null</c> if the entity is not
             identified.
             </returns>
@@ -617,7 +617,7 @@
             <param name="entity">The entity to be added</param>
             <param name="cancellationToken"></param>
             <returns>
-            Returns the unique identifier of the entity added.
+            Returns a task that will complete when the operation is completed
             </returns>
             <exception cref="T:Deveel.Data.RepositoryException">
             Thrown if it an error occurred while adding the entity
@@ -641,7 +641,7 @@
             </para>
             </remarks>
             <returns>
-            Returns an ordered list of the unique identifiers of the entiies created
+            Returns a task that will complete when the operation is completed
             </returns>
             <exception cref="T:Deveel.Data.RepositoryException">
             Thrown if it an error occurred while adding one or more entities
@@ -702,17 +702,20 @@
             Thrown if it an error occurred while removing one or more entities
             </exception>
         </member>
-        <member name="M:Deveel.Data.IRepository`1.FindByIdAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IRepository`1.FindByKeyAsync(System.Object,System.Threading.CancellationToken)">
             <summary>
             Attempts to find in the repository an entity with the 
             given unique identifier
             </summary>
-            <param name="id">The unique identifier of the entity to find</param>
+            <param name="key">The unique identifier of the entity to find</param>
             <param name="cancellationToken"></param>
             <returns>
-            Returns the instance of the entity associated to the given <paramref name="id"/>,
+            Returns the instance of the entity associated to the given <paramref name="key"/>,
             or <c>null</c> if none entity was found.
             </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the provided <paramref name="key"/> is <c>null</c>
+            </exception>
         </member>
         <member name="T:Deveel.Data.IResultSort">
             <summary>
@@ -1297,7 +1300,7 @@
             </returns>
             <seealso cref="M:Deveel.Data.IRepository`1.RemoveAsync(`0,System.Threading.CancellationToken)"/>
         </member>
-        <member name="M:Deveel.Data.RepositoryExtensions.RemoveByIdAsync``1(Deveel.Data.IRepository{``0},System.String,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.RepositoryExtensions.RemoveByKeyAsync``1(Deveel.Data.IRepository{``0},System.Object,System.Threading.CancellationToken)">
             <summary>
             Removes an entity, identified by the given key,
             from the repository
@@ -1308,8 +1311,8 @@
             <param name="repository">
             The instance of the repository from which the entity is removed
             </param>
-            <param name="id">
-            The string that uniquely identifies the entity to remove
+            <param name="key">
+            The key that uniquely identifies the entity to remove
             </param>
             <param name="cancellationToken">
             A token used to cancel the operation.
@@ -1319,7 +1322,7 @@
             otherwise it returns <c>false</c>.
             </returns>
         </member>
-        <member name="M:Deveel.Data.RepositoryExtensions.RemoveById``1(Deveel.Data.IRepository{``0},System.String)">
+        <member name="M:Deveel.Data.RepositoryExtensions.RemoveByKey``1(Deveel.Data.IRepository{``0},System.String)">
             <summary>
             Synchronously removes an entity, identified by the given key,
             from the repository
@@ -1330,8 +1333,8 @@
             <param name="repository">
             The instance of the repository from which the entity is removed.
             </param>
-            <param name="id">
-            The string that uniquely identifies the entity to remove.
+            <param name="key">
+            The key that uniquely identifies the entity to remove.
             </param>
             <returns>
             Returns <c>true</c> if the entity was removed successfully,

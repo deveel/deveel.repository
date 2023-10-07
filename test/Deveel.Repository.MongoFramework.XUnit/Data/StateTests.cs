@@ -80,7 +80,7 @@ namespace Deveel.Data {
             await StateRepository.AddStateAsync(person, state);
             await StateRepository.UpdateAsync(person);
 
-            var updated = await StateRepository.FindByIdAsync(person.Id.ToString());
+            var updated = await StateRepository.FindByKeyAsync(person.Id.ToString());
 
             Assert.NotNull(updated);
             Assert.Equal(PersonStatus.Alive, updated.Status);
@@ -113,7 +113,7 @@ namespace Deveel.Data {
 
 			await StateRepository.RemoveStateAsync(person, state);
 
-            var updated = await StateRepository.FindByIdAsync(person.Id.ToString());
+            var updated = await StateRepository.FindByKeyAsync(person.Id.ToString());
             Assert.NotNull(updated);
             Assert.Null(updated.Status);
             Assert.Null(updated.LastActorId);

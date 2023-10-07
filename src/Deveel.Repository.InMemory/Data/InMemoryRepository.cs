@@ -49,7 +49,7 @@ namespace Deveel.Data {
 		protected ISystemTime SystemTime { get; }
 
 		/// <inheritdoc/>
-		public virtual string? GetEntityId(TEntity entity) {
+		public virtual object? GetEntityKey(TEntity entity) {
 			if (entity == null)
 				throw new ArgumentNullException(nameof(entity));
 
@@ -82,7 +82,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<string> AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
@@ -95,7 +95,7 @@ namespace Deveel.Data {
 
 				entities.Add(entity);
 
-				return Task.FromResult(id);
+				return Task.CompletedTask;
 			} catch (RepositoryException) {
 
 				throw;
@@ -105,12 +105,10 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<IList<string>> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var result = new List<string>();
-
 				foreach (var item in entities) {
 					var id = Guid.NewGuid().ToString();
 					if (!item.TrySetMemberValue("Id", id))
@@ -120,11 +118,9 @@ namespace Deveel.Data {
 						hasTime.CreatedAtUtc = SystemTime.UtcNow;
 
 					this.entities.Add(item);
-
-					result.Add(id);
 				}
 
-				return Task.FromResult<IList<string>>(result);
+				return Task.CompletedTask;
 			} catch (RepositoryException) {
 
 				throw;
@@ -215,14 +211,13 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default) {
-			if (string.IsNullOrWhiteSpace(id)) 
-				throw new ArgumentException($"'{nameof(id)}' cannot be null or whitespace.", nameof(id));
+		public Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
+			ArgumentNullException.ThrowIfNull(key, nameof(key));
 
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var entity = entities.FirstOrDefault(x => x.TryGetMemberValue<string>("Id", out var entityId) && entityId == id);
+				var entity = entities.FirstOrDefault(x => x.TryGetMemberValue<object>("Id", out var entityId) && entityId == key);
 				return Task.FromResult(entity);
 			} catch (Exception ex) {
 				throw new RepositoryException("Error while searching any entities with the given ID", ex);
