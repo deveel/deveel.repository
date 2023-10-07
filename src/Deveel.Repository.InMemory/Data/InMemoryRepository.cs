@@ -151,6 +151,30 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
+		public Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+			cancellationToken.ThrowIfCancellationRequested();
+
+			try {
+				// if any of the entities is not in the list, we throw an exception
+				foreach (var entity in entities) {
+					if (!this.entities.Contains(entity))
+						throw new RepositoryException("The entity is not in the repository");
+				}
+
+				foreach (var entity in entities) {
+					this.entities.Remove(entity);
+				}
+
+				return Task.CompletedTask;
+			} catch (RepositoryException) {
+
+				throw;
+			} catch (Exception ex) {
+				throw new RepositoryException("Could not delete the entities", ex);
+			}
+		}
+
+		/// <inheritdoc/>
 		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 

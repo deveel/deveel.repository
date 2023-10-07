@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Linq.Expressions;
 using System.Net.Mail;
 
 using Bogus;
@@ -86,6 +87,20 @@ namespace Deveel.Data {
 			return source;
 		}
 
+		protected virtual Task<TPerson?> FindPersonAsync(string id) {
+			var entity = People.FirstOrDefault(x => Repository.GetEntityId(x) == id);
+			return Task.FromResult(entity);
+		}
+
+		protected virtual Task<TPerson> RandomPersonAsync(Expression<Func<TPerson, bool>>? predicate = null) {
+			var result = People.Random(predicate?.Compile());
+
+			if (result == null)
+				throw new InvalidOperationException("No person found");
+
+			return Task.FromResult(result);
+		}
+
 		[Fact]
 		public async Task AddNewPerson() {
 			var person = GeneratePerson();
@@ -113,11 +128,11 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task RemoveExisting() {
-			var entity = People.Random();
+			var person = await RandomPersonAsync();
 
-			Assert.NotNull(entity);
+			Assert.NotNull(person);
 
-			var result = await Repository.RemoveAsync(entity);
+			var result = await Repository.RemoveAsync(person);
 
 			Assert.True(result);
 		}
@@ -154,6 +169,37 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
+		public async Task RemoveRangeOfExisting() {
+			var peopleCount = People.Count;
+			var people = People.Take(10).ToList();
+
+			await Repository.RemoveRangeAsync(people);
+
+			var result = await Repository.FindAllAsync();
+			Assert.NotNull(result);
+			Assert.NotEmpty(result);
+			Assert.Equal(peopleCount - 10, result.Count);
+		}
+
+		[Fact]
+		public async Task RemoveRangeWithOneNotExisting() {
+			var peopleCount = People.Count;
+			var people = People.Take(9).ToList();
+
+			var entity = GeneratePerson();
+			entity.Id = GeneratePersonId();
+
+			people.Add(entity);
+
+			await Assert.ThrowsAsync<RepositoryException>(() => Repository.RemoveRangeAsync(people));
+
+			var result = await Repository.FindAllAsync();
+			Assert.NotNull(result);
+			Assert.NotEmpty(result);
+			Assert.Equal(peopleCount, result.Count);
+		}
+
+		[Fact]
 		public async Task CountAll() {
 			var result = await Repository.CountAllAsync();
 
@@ -171,7 +217,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task CountFiltered() {
-			var firstName = People.Random()!.FirstName;
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
 			var peopleCount = People.Count(x => x.FirstName == firstName);
 
 			var count = await Repository.CountAsync(p => p.FirstName == firstName);
@@ -181,7 +228,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FindById() {
-			var id = People.Random()!.Id!;
+			var person = await RandomPersonAsync();
+			var id = person.Id!;
 
 			var result = await Repository.FindByIdAsync(id);
 
@@ -191,7 +239,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FindFirstFiltered() {
-			var firstName = People.Random()!.FirstName;
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
 
 			var result = await Repository.FindAsync(x => x.FirstName == firstName);
 
@@ -201,7 +250,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task ExistsFiltered() {
-			var firstName = People.Random()!.FirstName;
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
 
 			var result = await Repository.ExistsAsync(x => x.FirstName == firstName);
 
@@ -209,8 +259,9 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public void ExistsFiltered_Sync() {
-			var firstName = People.Random()!.FirstName;
+		public async Task ExistsFiltered_Sync() {
+			var person = await RandomPersonAsync();
+			var firstName =person.FirstName;
 
 			var result = Repository.Exists(x => x.FirstName == firstName);
 
@@ -219,7 +270,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FindById_Existing() {
-			var person = People.Random()!;
+			var person = await RandomPersonAsync();
 
 			var result = await Repository.FindByIdAsync(person.Id!);
 
@@ -240,8 +291,8 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public void FindById_Sync() {
-			var person = People.Random()!;
+		public async Task FindById_Sync() {
+			var person = await RandomPersonAsync();
 
 			var result = Repository.FindById(person.Id!);
 
@@ -278,7 +329,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FindAllFiltered() {
-			var firstName = People.Random()!.FirstName;
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
 			var peopleCount = People.Count(x => x.FirstName == firstName);
 
 			var result = await Repository.FindAllAsync(x => x.FirstName == firstName);
@@ -290,7 +342,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FindAllFiltered_BadFilter() {
-			var firstName = People.Random()!.FirstName;
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
 
 			var result = await Assert.ThrowsAsync<RepositoryException>(
 				() => Repository.FindAllAsync(QueryFilter.Where<MailAddress>(m => m.Address == null)));
@@ -312,19 +365,23 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task GetSimplePage_WithParameters() {
+			var totalItems = People.Count;
+			var totalPages = (int)Math.Ceiling((double)totalItems / 10);
+
 			var result = await Repository.GetPageAsync(1, 10);
 
 			Assert.NotNull(result);
-			Assert.Equal(10, result.TotalPages);
-			Assert.Equal(100, result.TotalItems);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(totalItems, result.TotalItems);
 			Assert.NotNull(result.Items);
 			Assert.NotEmpty(result.Items);
-			Assert.Equal(10, result.Items.Count());
+			Assert.Equal(10, result.Items.Count);
 		}
 
 		[Fact]
 		public async Task GetFilteredPage() {
-			var firstName = People.Random()!.FirstName;
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
 			var peopleCount = People.Count(x => x.FirstName == firstName);
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
@@ -342,8 +399,8 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task GetMultiFilteredPage() {
-			var person = People.Random(x => x.LastName != null)!;
+		public async Task GetPage_MultipleFilters() {
+			var person = await RandomPersonAsync(x => x.LastName != null);
 			var firstName = person.FirstName;
 			var lastName = person.LastName;
 
@@ -353,6 +410,33 @@ namespace Deveel.Data {
 
 			var request = new PageQuery<TPerson>(1, 10)
 				.Where(x => x.FirstName == firstName && x.LastName == lastName);
+
+			var result = await Repository.GetPageAsync(request);
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(peopleCount, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(perPage, result.Items.Count);
+		}
+
+		[Fact]
+		public async Task GetPage_ChainedFilters() {
+			var person = await RandomPersonAsync(x => x.DateOfBirth != null);
+			var firstName = person.FirstName;
+			var birthDate = person.DateOfBirth!.Value;
+
+			var peopleCount = People
+				.Where(x => x.FirstName == firstName)
+				.Where(x => x.DateOfBirth >= birthDate)
+				.Count();
+
+			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
+			var perPage = Math.Min(peopleCount, 10);
+
+			var request = new PageQuery<TPerson>(1, 10)
+				.Where(x => x.FirstName == firstName)
+				.Where(x => x.DateOfBirth >= birthDate);
 
 			var result = await Repository.GetPageAsync(request);
 			Assert.NotNull(result);
@@ -418,8 +502,8 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public void GetPersonId() {
-			var person = People.Random()!;
+		public async Task GetPersonId() {
+			var person = await RandomPersonAsync();
 
 			var id = Repository.GetEntityId(person);
 
@@ -429,7 +513,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task UpdateExisting() {
-			var person = People.Random()!;
+			var person = await RandomPersonAsync(x => x.FirstName != "John");
 
 			person.FirstName = "John";
 
@@ -437,7 +521,7 @@ namespace Deveel.Data {
 
 			Assert.True(result);
 
-			var updated = await Repository.FindByIdAsync(person.Id);
+			var updated = await Repository.FindByIdAsync(person.Id!);
 
 			Assert.NotNull(updated);
 			Assert.Equal(person.FirstName, updated.FirstName);

@@ -41,6 +41,9 @@ namespace Deveel.Data {
 			return await result.FirstOrDefaultAsync();
 		}
 
+		protected override async Task DisposeAsync() {
+			var result = await MongoCollection.DeleteManyAsync(x => true);
+		}
 
 		[Fact]
 		public async Task FindAll_MongoQueryFiltered() {

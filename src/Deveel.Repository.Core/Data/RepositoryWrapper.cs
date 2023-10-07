@@ -147,6 +147,30 @@ namespace Deveel.Data {
 			return Task.FromResult(true);
 		}
 
+		public Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+			AssertMutable();
+
+			foreach (var entity in entities) {
+				var id = GetEntityId(entity);
+				if (id == null)
+					continue;
+
+				var found = this.entities.FirstOrDefault(x => GetEntityId(x) == id);
+				if (found == null)
+					continue;
+
+				if (this.entities is IList<TEntity> list) {
+					list.Remove(found);
+				} else if (this.entities is ICollection<TEntity> collection) {
+					collection.Remove(found);
+				} else {
+					throw new NotSupportedException("The repository is readonly");
+				}
+			}
+
+			return Task.CompletedTask;
+		}
+
 		public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			AssertMutable();
 

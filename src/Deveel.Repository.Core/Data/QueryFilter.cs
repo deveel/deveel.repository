@@ -129,13 +129,11 @@ namespace Deveel.Data {
 				return queryable;
 
 			if (filter is CombinedQueryFilter combined) {
-				var result = queryable;
-
 				foreach (var f in combined.Filters) {
-					result = f.Apply(queryable);
+					queryable = f.Apply(queryable);
 				}
 
-				return result;
+				return queryable;
 			}
 
 			if (filter is IExpressionQueryFilter filterExpr)

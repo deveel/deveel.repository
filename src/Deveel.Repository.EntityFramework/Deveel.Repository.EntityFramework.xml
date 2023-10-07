@@ -109,6 +109,9 @@
         <member name="M:Deveel.Data.EntityRepository`1.RemoveAsync(`0,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
+        <member name="M:Deveel.Data.EntityRepository`1.RemoveRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
         <member name="M:Deveel.Data.EntityRepository`1.FindByIdAsync(System.String,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>

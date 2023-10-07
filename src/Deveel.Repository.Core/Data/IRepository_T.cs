@@ -60,10 +60,7 @@ namespace Deveel.Data {
 		/// The operation is intended to be <c>all-or-nothing</c> fashion, where it
 		/// will succeed only if all the items in the list will be created. Anyway, the
 		/// underlying storage system might have persisted some of the items before a
-		/// failure: to prevent the scenario of a partial creation of the set, the
-		/// callers should consider the 
-		/// <see cref="ITransactionalRepository{TEntity}.AddRangeAsync(IDataTransaction, IEnumerable{TEntity}, CancellationToken)"/>
-		/// overload, where transactions are available.
+		/// failure.
 		/// </para>
 		/// </remarks>
 		/// <returns>
@@ -108,9 +105,27 @@ namespace Deveel.Data {
         /// Thrown if the provided <paramref name="entity"/> is <c>null</c>
         /// </exception>
         /// <exception cref="RepositoryException">
-        /// Thrown if it an error occurred while deleting the entity
+        /// Thrown if it an error occurred while removing the entity
         /// </exception>
         Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default);
+
+		/// <summary>
+		/// Removes a list of entities from the repository in one 
+		/// single operation.
+		/// </summary>
+		/// <param name="entities">
+		/// The list of entities to be removed from the repository
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token to cancel the operation
+		/// </param>
+		/// <returns>
+		/// Returns a task that will complete when the operation is completed
+		/// </returns>
+		/// <exception cref="RepositoryException">
+		/// Thrown if it an error occurred while removing one or more entities
+		/// </exception>
+		Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Attempts to find in the repository an entity with the 

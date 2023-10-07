@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Data;
 using System.Globalization;
 using System.Linq.Expressions;
 
@@ -281,6 +282,20 @@ namespace Deveel.Data {
 				throw new RepositoryException("Unable to delete the entity", ex);
 			}
         }
+
+		/// <inheritdoc/>
+		public async Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+			ThrowIfDisposed();
+
+			try {
+				Entities.RemoveRange(entities);
+
+				await Context.SaveChangesAsync(true, cancellationToken);
+			} catch (Exception ex) {
+				Logger.LogUnknownError(ex, typeof(TEntity));
+				throw new RepositoryException("Unknown error while trying to remove a range of entities from the repository", ex);
+			}
+		}
 
 		/// <inheritdoc/>
 		public async Task<TEntity?> FindByIdAsync(string id, CancellationToken cancellationToken = default) {

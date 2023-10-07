@@ -502,7 +502,7 @@ namespace Deveel.Data {
 
 		#endregion
 
-		#region Delete
+		#region Remove
 
 		public async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			if (entity is null) 
@@ -542,6 +542,23 @@ namespace Deveel.Data {
 				Logger.LogUnknownEntityError(ex, id);
 
 				throw new RepositoryException("Unable to delete the entity", ex);
+			}
+		}
+
+		public async Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+			ThrowIfDisposed();
+			cancellationToken.ThrowIfCancellationRequested();
+
+			try {
+				if (entities.Any(x => DbSet.Context.ChangeTracker.GetEntry(x) == null))
+					throw new RepositoryException("The list contains entities that are not tracked by the repository");
+
+				DbSet.RemoveRange(entities);
+
+				await Context.SaveChangesAsync(cancellationToken);
+			} catch (Exception ex) {
+				Logger.LogUnknownError(ex);
+				throw new RepositoryException("Could not delete the list of entities", ex);
 			}
 		}
 
