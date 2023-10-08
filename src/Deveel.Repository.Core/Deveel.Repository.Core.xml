@@ -1263,6 +1263,24 @@
             Thrown when the repository is not filterable
             </exception>
         </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.AsQueryable``1(Deveel.Data.IRepository{``0})">
+            <summary>
+            Gets a version of the repository that is queryable.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity to query
+            </typeparam>
+            <param name="repository">
+            The instance of the repository to get the queryable version.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.IQueryableRepository`1"/>
+            if the repository is queryable, otherwise it throws an exception.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository is not queryable
+            </exception>
+        </member>
         <member name="M:Deveel.Data.RepositoryExtensions.Add``1(Deveel.Data.IRepository{``0},``0)">
             <summary>
             Adds a new entity in the repository synchronously

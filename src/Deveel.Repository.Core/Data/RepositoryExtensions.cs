@@ -84,6 +84,30 @@ namespace Deveel.Data {
 			return filterable;
 		}
 
+		/// <summary>
+		/// Gets a version of the repository that is queryable.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to query
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to get the queryable version.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="IQueryableRepository{TEntity}"/>
+		/// if the repository is queryable, otherwise it throws an exception.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository is not queryable
+		/// </exception>
+		public static IQueryableRepository<TEntity> AsQueryable<TEntity>(this IRepository<TEntity> repository)
+			where TEntity : class {
+			if (!(repository is IQueryableRepository<TEntity> queryable))
+				throw new NotSupportedException("The repository is not queryable");
+
+			return queryable;
+		}
+
 		#endregion
 
 
