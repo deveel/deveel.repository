@@ -1,4 +1,5 @@
-[![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![Repository CI/CD](https://github.com/deveel/deveel.repository/actions/workflows/ci.yml/badge.svg)](https://github.com/deveel/deveel.repository/actions/workflows/ci.yml)
+[![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![Repository CI/CD](https://github.com/deveel/deveel.repository/actions/workflows/ci.yml/badge.svg)](https://github.com/deveel/deveel.repository/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/deveel/deveel.repository/graph/badge.svg?token=5US7L3C7ES)](https://codecov.io/gh/deveel/deveel.repository)
+
 # Deveel Repository
 
 This project wants to provide a _low-ambitions_ / _low-expectations_ implementation of the (_infamous_) _[Repository Pattern](https://martinfowler.com/eaaCatalog/repository.html)_ for .NET to support the development of applications that need to access different data sources, using a common interface, respecting the principles of the _[Domain-Driven Design](https://en.wikipedia.org/wiki/Domain-driven_design)_ and the _[SOLID](https://en.wikipedia.org/wiki/SOLID)_ principles.
@@ -34,6 +35,7 @@ The framework is based on a _kernel_ package, that provides the basic interfaces
 | _Deveel.Repository.MongoDb_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.MongoDb.svg)](https://www.nuget.org/packages/Deveel.Repository.MongoDb/) |
 | _Deveel.Repository.EntityFramework_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.EntityFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.EntityFramework/) |
 | _Deveel.Repository.DynamicLinq_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.DynamicLinq.svg)](https://www.nuget.org/packages/Deveel.Repository.DynamicLinq/) |
+| _Deveel.Repository.Manager_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.Manager.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager/) |
 
 ### The Kernel Package
 
@@ -57,7 +59,7 @@ The library provides a set of drivers to access different data sources, that can
 
 | Driver | Package | Description |
 | ------ | ------- | ----------- |
-| _In-Memory_ | `Deveel.Repository.InMemory` | An implementation of the repository pattern that stores the data in-memory. |
+| _In-Memory_ | `Deveel.Repository.InMemory` | A very simple implementation of the repository pattern that stores the data in-memory. |
 | _MongoDB_ | `Deveel.Repository.MongoDb` | An implementation of the repository pattern that stores the data in a MongoDB database. |
 | _Entity Framework Core_ | `Deveel.Repository.EntityFramework` | An implementation of the repository pattern that stores the data in a relational database, using the [Entity Framework Core](https://github.com/dotnet/efcore). |
 
@@ -84,6 +86,8 @@ public void ConfigureServices(IServiceCollection services) {
 ```
 
 The type of the argument of the method is not the type of the entity, but the type of the repository: the library will use reflection to scan the type itself and find all the generic arguments of the `IRepository<TEntity>` interface, and register the repository in the dependency injection container.
+
+### Consuming the Repository
 
 In fact, after that exmaple call above, you will have the following services available to be injected in your application:
 
@@ -349,3 +353,47 @@ services.AddEntityRepository<MyEntity>();
 #### Filtering Data
 
 The `EntityRepository<TEntity>` implements both the `IQueryableRepository<TEntity>` and the `IFilterableRepository<TEntity>` interfaces, and allows to query the data only through the `ExpressionFilter<TEntity>` class or through lambda expressions of type `Expression<Func<TEntity, bool>>`.
+
+## Entity Manager
+
+The framework provides an extension that allows to control the operations performed on the repository, ensuring the consistency of the data (through validation).
+
+The `EntityManager<TEntity>` class wraps around instances of `IRepository<TEntity>`, enriching the basic operations with validation logic, and providing a way to intercept the operations performed on the repository, and preventing exceptions to be thrown without a proper handling.
+
+It is possible to derive from the `EntityManager<TEntity>` class to implement your own business and validation logic, and to intercept the operations performed on the repository.
+
+This class is suited to be used in application contexts, where a higher level of control is required on the operations performed on the repository (such for example in the case of ASP.NET services).
+
+### Instrumentation
+
+To register an instance of `EntityManager<TEntity>` in the dependency injection container, you can use the `AddEntityManager<TManager>` extension method of the `IServiceCollection` interface.
+
+```csharp
+public void ConfigureServices(IServiceCollection services) {
+	services.AddEntityManager<MyEntityManager>();
+}
+```
+
+The method will register an instance of `MyEntityManager` and `EntityManager<TEntity>` in the dependency injection container, ready to be used.
+
+### Entity Validation
+
+It is possible to validate the entities before they are added or updated in the repository, by implementing the `IEntityValidator<TEntity>` interface, and registering an instance of the validator in the dependency injection container.
+
+The `EntityManager<TEntity>` class will check for instances of `IEntityValidator<TEntity>` in the dependency injection container, and will use the first instance found to validate the entities before they are added or updated in the repository.
+
+### Operation Cancellation
+
+The `EntityManager<TEntity>` class provides a way to directly cancel the operations performed on the repository, by passing an argument of type `CancellationToken` to each asynchronous operation, and optionally verifies for instances of `IOperationCancellationSource` that are registered in the dependency injection container.
+
+When the `CancellationToken` argument of an operation is `null`, the `EntityManager<TEntity>` class will check for instances of `IOperationCancellationSource` in the dependency injection container, and will use the first instance found to cancel the operation.
+
+The value of this approach is to be able to attach the cancellation of the operation to a specific context (such as `HttpContext`), and to be able to cancel the operation from a different context (for instance when the HTTP request is cancelled).
+
+## License
+
+The project is licensed under the terms of the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+## Contributing
+
+The project is open to contributions: if you want to contribute to the project, please read the [contributing guidelines](CONTRIBUTING.md) for more information.

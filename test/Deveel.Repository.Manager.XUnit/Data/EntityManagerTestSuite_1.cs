@@ -291,6 +291,21 @@ namespace Deveel.Data {
 			Assert.Equal(person.Id, found.Id);
 		}
 
+		[Fact]
+		public async Task FindFirstDynamicLinq() {
+			var person = People
+				.Where(x => x.FirstName.StartsWith("A"))
+				.OrderBy(x => x.Id)
+				.FirstOrDefault();
+
+			Assert.NotNull(person);
+
+			var found = await Manager.FindFirstAsync("FirstName.StartsWith(\"A\")");
+
+			Assert.NotNull(found);
+			Assert.Equal(person.Id, found.Id);
+		}
+
         [Fact]
         public async Task FindFirst() {
             var person = People
@@ -318,10 +333,40 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
+		public async Task FindAllDynamicLinq() {
+			var people = People
+				.Where(x => x.FirstName.StartsWith("A"))
+				.ToList();
+
+			var found = await Manager.FindAllAsync("FirstName.StartsWith(\"A\")");
+
+			Assert.NotNull(found);
+			Assert.Equal(people.Count, found.Count);
+		}
+
+		[Fact]
+		public async Task FindAll() {
+			var people = People
+				.ToList();
+
+			var found = await Manager.FindAllAsync();
+
+			Assert.NotNull(found);
+			Assert.Equal(people.Count, found.Count);
+		}
+
+		[Fact]
 		public async Task CountAll() {
 			var count = await Manager.CountAsync();
 
 			Assert.Equal(People.Count(), count);
+		}
+
+		[Fact]
+		public async Task CountDynamicLinq() {
+			var count = await Manager.CountAsync("FirstName.StartsWith(\"A\")");
+
+			Assert.Equal(People.Count(x => x.FirstName.StartsWith("A")), count);
 		}
 
 		[Fact]
@@ -355,6 +400,7 @@ namespace Deveel.Data {
         public async Task GetSimplePage() {
             var totalPeople = People.Count();
             var totalPages = (int)Math.Ceiling((double)totalPeople / 10);
+			var perPage = Math.Min(10, totalPeople);
 
             var query = new PageQuery<Person>(1, 10);
             var page = await Manager.GetPageAsync(query);
@@ -365,7 +411,27 @@ namespace Deveel.Data {
             Assert.Equal(totalPages, page.TotalPages);
             Assert.Equal(totalPeople, page.TotalItems);
             Assert.NotNull(page.Items);
-            Assert.Equal(10, page.Items.Count);
+            Assert.Equal(perPage, page.Items.Count);
         }
+
+		[Fact]
+		public async Task GetPage_DynamicLinqFiltered() {
+			var totalPeople = People.Count(x => x.FirstName.StartsWith("A"));
+			var totalPages = (int)Math.Ceiling((double)totalPeople / 10);
+			var perPage = Math.Min(10, totalPeople);
+
+			var query = new PageQuery<Person>(1, 10)
+				.Where("FirstName.StartsWith(\"A\")");
+
+			var page = await Manager.GetPageAsync(query);
+
+			Assert.NotNull(page);
+			Assert.Equal(1, page.Request.Page);
+			Assert.Equal(10, page.Request.Size);
+			Assert.Equal(totalPages, page.TotalPages);
+			Assert.Equal(totalPeople, page.TotalItems);
+			Assert.NotNull(page.Items);
+			Assert.Equal(perPage, page.Items.Count);
+		}
 	}
 }

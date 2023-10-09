@@ -67,18 +67,65 @@ namespace Deveel {
 		/// </summary>
 		public TValue? Value { get; }
 
-		public Task<TValue?> MapAsync(Func<TValue?, Task<TValue?>> action)
-			=> action(Value);
+		/// <summary>
+		/// Maps a result to a new value asynchronously.
+		/// </summary>
+		/// <param name="mapper">
+		/// The function to use to map the value.
+		/// </param>
+		/// <returns>
+		/// Returns a value that is the result of the mapping
+		/// from this result.
+		/// </returns>
+		public Task<TValue?> MapAsync(Func<TValue?, Task<TValue?>> mapper) => mapper(Value);
 
-		public Task MapAsync(Func<TValue?, Task> action)
-			=> action(Value);
+		/// <summary>
+		/// Maps a result to a new value.
+		/// </summary>
+		/// <param name="mapper">
+		/// The function to use to map the value.
+		/// </param>
+		/// <returns>
+		/// Returns a value that is the result of the mapping
+		/// from this result.
+		/// </returns>
+		public TValue? Map(Func<TValue?, TValue?> mapper) => mapper(Value);
 
-		public TValue? Map(Func<TValue?, TValue?> action)
-			=> action(Value);
+		/// <summary>
+		/// Handles the result of the operation asynchronously.
+		/// </summary>
+		/// <param name="handler">
+		/// The function used to handle the result value.
+		/// </param>
+		/// <returns>
+		/// Returns a task that will handle the result value.
+		/// </returns>
+		public Task HandleAsync(Func<TValue?, Task> handler) => handler(Value);
 
-		public void Map(Action<TValue?> action)
-			=> action(Value);
+		/// <summary>
+		/// Handles the result of the operation.
+		/// </summary>
+		/// <param name="handler">
+		/// The function used to handle the result value.
+		/// </param>
+		public void Handle(Action<TValue?> handler) => handler(Value);
 
+		/// <summary>
+		/// Maps the result of the operation to a new value,
+		/// using the provided functions to handle the result.
+		/// </summary>
+		/// <param name="ifSuccess">
+		/// The function to use to map the value if the operation
+		/// was successful.
+		/// </param>
+		/// <param name="ifFailed">
+		/// The function to use to map the value if the operation failed.
+		/// </param>
+		/// <param name="ifNotModified">
+		/// The function to use to map the value if the operation
+		/// caused no changes to the entity.
+		/// </param>
+		/// <returns></returns>
 		public Task<TValue?> MapAsync(Func<TValue?, Task<TValue?>>? ifSuccess = null, Func<TValue?, Task<TValue?>>? ifFailed = null, Func<TValue?, Task<TValue?>>? ifNotModified = null) {
 			return ResultType switch {
 				OperationResultType.Success => ifSuccess?.Invoke(Value) ?? Task.FromResult(Value),

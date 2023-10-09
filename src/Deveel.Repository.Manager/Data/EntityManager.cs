@@ -109,7 +109,8 @@ namespace Deveel.Data {
         public virtual bool IsMultiTenant {
 			get {
 				ThrowIfDisposed();
-				return (Repository is IMultiTenantRepository<TEntity>);
+				return (Repository is IMultiTenantRepository<TEntity> multiTenant) &&
+					!String.IsNullOrWhiteSpace(multiTenant.TenantId);
 			}
 		}
 
@@ -242,6 +243,30 @@ namespace Deveel.Data {
         private void LogEntityUnknownError(object? entityKey, Exception ex) {
             Logger.LogEntityUnknownError(typeof(TEntity), entityKey, ex);
         }
+
+		private void LogEntityNotFound(object? entityKey) {
+			Logger.LogEntityNotFound(typeof(TEntity), entityKey);
+		}
+
+		/// <summary>
+		/// Ensures that a cancellation token is available
+		/// for a cancellable operation.
+		/// </summary>
+		/// <param name="cancellationToken">
+		/// The token that was provided by the caller.
+		/// </param>
+		/// <remarks>
+		/// This method checks if the given cancellation token
+		/// passed to an operation is <c>null</c>, and if so,
+		/// attempts to resolve a cancellation token from the
+		/// context.
+		/// </remarks>
+		/// <returns>
+		/// Returns the cancellation token to be used for 
+		/// an operation.
+		/// </returns>
+		protected CancellationToken GetCancellationToken(CancellationToken? cancellationToken)
+			=> cancellationToken ?? CancellationToken;
 
 
         /// <summary>
@@ -406,17 +431,20 @@ namespace Deveel.Data {
         /// <param name="entity">
         /// The entity to be validated.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the validation operation.
+		/// </param>
         /// <returns>
         /// Returns a list of <see cref="ValidationResult"/> that
         /// describe the validation errors.
         /// </returns>
-		protected virtual async Task<IList<ValidationResult>> ValidateAsync(TEntity entity) {
+		protected virtual async Task<IList<ValidationResult>> ValidateAsync(TEntity entity, CancellationToken cancellationToken) {
 			if (EntityValidator == null)
 				return new List<ValidationResult>();
 
 			var results = new List<ValidationResult>();
 
-			await foreach(var result in EntityValidator.ValidateAsync(this, entity, CancellationToken)) {
+			await foreach(var result in EntityValidator.ValidateAsync(this, entity, cancellationToken)) {
 				if (result != null)
 					results.Add(result);
 			}
@@ -451,7 +479,7 @@ namespace Deveel.Data {
         /// The entity that is being added.
         /// </param>
         /// <remarks>
-        /// When <see cref="AddRangeAsync(IEnumerable{TEntity})"/> is
+        /// When <see cref="AddRangeAsync(IEnumerable{TEntity},CancellationToken?)"/> is
         /// invoked, this method is invoked for each entity in the
         /// range of entities.
         /// </remarks>
@@ -469,17 +497,22 @@ namespace Deveel.Data {
         /// <param name="entity">
         /// The entity to be added.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <returns>
         /// Returns an instance of <see cref="OperationResult"/> that
         /// describes the result of the operation.
         /// </returns>
-		public virtual async Task<OperationResult> AddAsync(TEntity entity) {
+		public virtual async Task<OperationResult> AddAsync(TEntity entity, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			try {
-				Logger.LogAddingEntity();
+				Logger.LogAddingEntity(typeof(TEntity));
 
-				var validation = await ValidateAsync(entity);
+				var token = GetCancellationToken(cancellationToken);
+
+				var validation = await ValidateAsync(entity, token);
 				if (validation != null && validation.Count > 0) {
 					Logger.LogEntityNotValid(typeof(TEntity));
 					return ValidationFailed(EntityErrorCodes.NotValid, validation);
@@ -487,7 +520,7 @@ namespace Deveel.Data {
 
 				entity = await OnAddingEntityAsync(entity);
 
-				await Repository.AddAsync(entity, CancellationToken);
+				await Repository.AddAsync(entity, token);
 
 				Logger.LogEntityAdded(GetEntityKey(entity)!);
 
@@ -504,6 +537,9 @@ namespace Deveel.Data {
         /// <param name="entities">
         /// The range of entities to be added.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <remarks>
         /// The default implementation of this method attempts to
         /// validate each entity in the range before adding it to
@@ -515,22 +551,24 @@ namespace Deveel.Data {
         /// operation.
         /// </returns>
         /// <seealso cref="IRepository{TEntity}.AddRangeAsync(IEnumerable{TEntity}, CancellationToken)"/>
-		public virtual async Task<OperationResult> AddRangeAsync(IEnumerable<TEntity> entities) {
+		public virtual async Task<OperationResult> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken? cancellationToken = null) {
 			try {
-				Logger.LogAddingEntityRange();
+				Logger.LogAddingEntityRange(typeof(TEntity));
+
+				var token = GetCancellationToken(cancellationToken);
 
 				var toBeAdded = new List<TEntity>();
 				foreach (var entity in entities) {
 					var item = await OnAddingEntityAsync(entity);
 
-					var validation = await ValidateAsync(item);
+					var validation = await ValidateAsync(item, token);
 					if (validation != null && validation.Count > 0)
 						return ValidationFailed(EntityErrorCodes.NotValid, validation);
 
 					toBeAdded.Add(item);
 				}
 
-				await Repository.AddRangeAsync(toBeAdded, CancellationToken);
+				await Repository.AddRangeAsync(toBeAdded, token);
 
                 Logger.LogEntityRangeAdded();
 
@@ -600,6 +638,9 @@ namespace Deveel.Data {
         /// <param name="entity">
         /// The entity to be updated.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <remarks>
         /// <para>
         /// The default implementation of this method first
@@ -621,7 +662,7 @@ namespace Deveel.Data {
         /// Returns a result object that describes the result of the
         /// update operation.
         /// </returns>
-		public virtual async Task<OperationResult> UpdateAsync(TEntity entity) {
+		public virtual async Task<OperationResult> UpdateAsync(TEntity entity, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			var entityKey = GetEntityKey(entity);
@@ -630,16 +671,22 @@ namespace Deveel.Data {
 				if (entityKey == null)
 					return Fail(EntityErrorCodes.NotValid, "The entity does not have a valid key");
 
-				Logger.LogUpdatingEntity(entityKey);
+				Logger.LogUpdatingEntity(typeof(TEntity), entityKey);
 
-				var existing = await FindByKeyAsync(entityKey);
-				if (existing == null)
+				var token = GetCancellationToken(cancellationToken);
+
+				var existing = await FindByKeyAsync(entityKey, token);
+				if (existing == null) {
+					LogEntityNotFound(entityKey);
 					return Fail(EntityErrorCodes.NotFound, "The entity was not found in the repository");
+				}
 
-				if (AreEqual(existing, entity))
+				if (AreEqual(existing, entity)) {
+					Logger.LogEntityNotModified(typeof(TEntity), entityKey);
 					return NotModified();
+				}
 
-				var validation = await ValidateAsync(entity);
+				var validation = await ValidateAsync(entity, token);
 				if (validation != null && validation.Count > 0) {
 					Logger.LogEntityNotValid(typeof(TEntity));
 					return ValidationFailed(EntityErrorCodes.NotValid, validation);
@@ -647,7 +694,7 @@ namespace Deveel.Data {
 
 				entity = await OnUpdatingEntityAsync(entity);
 
-				if (!await Repository.UpdateAsync(entity, CancellationToken)) {
+				if (!await Repository.UpdateAsync(entity, token)) {
 					Logger.LogEntityNotModified(typeof(TEntity), entityKey);
 					return NotModified();
 				}
@@ -667,6 +714,9 @@ namespace Deveel.Data {
         /// <param name="entity">
         /// The entity to be removed.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <remarks>
         /// <para>
         /// The default implementation of this method first tries
@@ -684,7 +734,7 @@ namespace Deveel.Data {
         /// Returns an instance of <see cref="OperationResult"/> that
         /// describes the result of the operation.
         /// </returns>
-		public virtual async Task<OperationResult> RemoveAsync(TEntity entity) {
+		public virtual async Task<OperationResult> RemoveAsync(TEntity entity, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			var entityKey = GetEntityKey(entity);
@@ -693,14 +743,18 @@ namespace Deveel.Data {
 				if (entityKey == null)
 					return Fail(EntityErrorCodes.NotValid, "The entity does not have a valid key");
 
-				Logger.LogRemovingEntity(entityKey);
+				var token = GetCancellationToken(cancellationToken);
 
-				var found = await FindByKeyAsync(entityKey);
-				if (found == null)
+				Logger.LogRemovingEntity(typeof(TEntity), entityKey);
+
+				var found = await FindByKeyAsync(entityKey, token);
+				if (found == null) {
+					LogEntityNotFound(entityKey);
 					return Fail(EntityErrorCodes.NotFound, "The entity was not found in the repository");
+				}
 
-				if (!await Repository.RemoveAsync(found, CancellationToken)) {
-					Logger.LogEntityNotRemoved(entityKey);
+				if (!await Repository.RemoveAsync(found, token)) {
+					Logger.LogEntityNotRemoved(typeof(TEntity), entityKey);
 					return NotModified();
 				}
 
@@ -717,19 +771,24 @@ namespace Deveel.Data {
         /// <param name="entities">
         /// The range of entities to be removed.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <returns>
         /// Returns an instance of <see cref="OperationResult"/> that
         /// describes the result of the operation.
         /// </returns>
-		public virtual async Task<OperationResult> RemoveRangeAsync(IEnumerable<TEntity> entities) {
+		public virtual async Task<OperationResult> RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			try {
                 Logger.LogRemovingEntityRange();
 
+				var token = GetCancellationToken(cancellationToken);
+
 				// TODO: should we check for the entities to be valid?
 
-				await Repository.RemoveRangeAsync(entities, CancellationToken);
+				await Repository.RemoveRangeAsync(entities, token);
 
                 Logger.LogEntityRangeRemoved();
 
@@ -746,6 +805,9 @@ namespace Deveel.Data {
         /// <param name="key">
         /// The key of the entity to be found.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <returns>
         /// Returns an instance of <typeparamref name="TEntity"/> that
         /// is identified by the given key, or <c>null</c> if no entity
@@ -756,15 +818,16 @@ namespace Deveel.Data {
         /// </exception>
         // TODO: Is there any use case for using OperationResult<TEntity> here
         //       instead of returning an entity?
-        public virtual async Task<TEntity?> FindByKeyAsync(object key) {
+        public virtual async Task<TEntity?> FindByKeyAsync(object key, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			ArgumentNullException.ThrowIfNull(key, nameof(key));
 
 			try {
-				// TODO: log this operation
+				Logger.LogFindingEntityByKey(typeof(TEntity), key);
 
-				return await Repository.FindByKeyAsync(key, CancellationToken);
+				// TODO: log if the entity was not found
+				return await Repository.FindByKeyAsync(key, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogEntityUnknownError(key, ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
@@ -777,6 +840,9 @@ namespace Deveel.Data {
         /// <param name="filter">
         /// The filter to be used to look for the entity.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <returns>
         /// Returns the first instance of <typeparamref name="TEntity"/> that
         /// matches the given filter, or <c>null</c> if no entity was found.
@@ -793,7 +859,7 @@ namespace Deveel.Data {
         /// <seealso cref="IFilterableRepository{TEntity}.FindAsync(IQueryFilter, CancellationToken)"/>
         // TODO: Is there any use case for using OperationResult<TEntity> here
         //       instead of returning the entity?
-        public virtual async Task<TEntity?> FindFirstAsync(IQueryFilter filter) {
+        public virtual async Task<TEntity?> FindFirstAsync(IQueryFilter filter, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			if (!SupportsFilters)
@@ -802,7 +868,9 @@ namespace Deveel.Data {
             ArgumentNullException.ThrowIfNull(filter, nameof(filter));
 
 			try {
-				return await FilterableRepository.FindAsync(filter, CancellationToken);
+				Logger.LogFindingFirstEntityByQuery(typeof(TEntity));
+
+				return await FilterableRepository.FindAsync(filter, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogUnknownError(ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
@@ -816,13 +884,16 @@ namespace Deveel.Data {
         /// <param name="filter">
         /// The filter expression to be used to look for the entity.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <returns>
         /// Returns the first instance of <typeparamref name="TEntity"/> that
         /// mathces the given filter, or <c>null</c> if no entity was found.
         /// </returns>
-        /// <seealso cref="FindFirstAsync(IQueryFilter)"/>
-		public Task<TEntity?> FindFirstAsync(Expression<Func<TEntity, bool>>? filter = null)
-            => FindFirstAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter));
+        /// <seealso cref="FindFirstAsync(IQueryFilter, CancellationToken?)"/>
+		public Task<TEntity?> FindFirstAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
+            => FindFirstAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter), cancellationToken);
 
         /// <summary>
         /// Finds all the entities in the repository that match the given filter.
@@ -830,6 +901,9 @@ namespace Deveel.Data {
         /// <param name="filter">
         /// The filter to be used to look for the entities.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <returns>
         /// Returns a list of <typeparamref name="TEntity"/> that match the
         /// given filter.
@@ -842,16 +916,16 @@ namespace Deveel.Data {
         /// </exception>
         // TODO: Is there any use case for using OperationResult<IList<TEntity>> here
         //       instead of returning a list of entities?
-		public virtual async Task<IList<TEntity>> FindAllAsync(IQueryFilter filter) {
+		public virtual async Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			if (!SupportsFilters)
 				throw new NotSupportedException("The repository does not support filters");
 
 			try {
-                // TODO: log this operation ...
+				Logger.LogFindingAllEntitiesByQuery(typeof(TEntity));
 
-				return await FilterableRepository.FindAllAsync(filter, CancellationToken);
+				return await FilterableRepository.FindAllAsync(filter, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogUnknownError(ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
@@ -865,8 +939,11 @@ namespace Deveel.Data {
         /// <param name="filter">
         /// The filter expression to be used to look for the entities.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <remarks>
-        /// This method is a shortcut to the <see cref="FindAllAsync(IQueryFilter)"/>
+        /// This method is a shortcut to the <see cref="FindAllAsync(IQueryFilter,CancellationToken?)"/>
         /// using an instance of <see cref="ExpressionQueryFilter{TEntity}"/> as
         /// argument.
         /// </remarks>
@@ -874,13 +951,13 @@ namespace Deveel.Data {
         /// Returns a list of <typeparamref name="TEntity"/> that match the
         /// given filter.
         /// </returns>
-        /// <seealso cref="FindAllAsync(IQueryFilter)"/>
+        /// <seealso cref="FindAllAsync(IQueryFilter,CancellationToken?)"/>
         /// <seealso cref="ExpressionQueryFilter{TEntity}"/>
         /// <exception cref="NotSupportedException">
         /// Thrown when the repository does not support filters.
         /// </exception>
-        public Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>>? filter = null)
-            => FindAllAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter));
+        public Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
+            => FindAllAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter), cancellationToken);
 
         /// <summary>
         /// Counts the number of entities in the repository that match
@@ -889,6 +966,9 @@ namespace Deveel.Data {
         /// <param name="filter">
         /// The filter to be used to look for the entities.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <returns>
         /// Returns the number of entities that match the given filter.
         /// </returns>
@@ -898,7 +978,7 @@ namespace Deveel.Data {
         /// <exception cref="OperationException">
         /// Thrown when an unknown error occurs while looking for the entities.
         /// </exception>
-		public virtual Task<long> CountAsync(IQueryFilter filter) {
+		public virtual Task<long> CountAsync(IQueryFilter filter, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			if (!SupportsFilters)
@@ -907,7 +987,9 @@ namespace Deveel.Data {
 			ArgumentNullException.ThrowIfNull(filter, nameof(filter));
 
 			try {
-				return FilterableRepository.CountAsync(filter, CancellationToken);
+				Logger.LogCountingEntities(typeof(TEntity));
+
+				return FilterableRepository.CountAsync(filter, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogUnknownError(ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
@@ -921,9 +1003,12 @@ namespace Deveel.Data {
         /// <param name="filter">
         /// The filter expression to be used to look for the entities.
         /// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
         /// <remarks>
         /// <para>
-        /// This method is a shortcut to the <see cref="CountAsync(IQueryFilter)"/>
+        /// This method is a shortcut to the <see cref="CountAsync(IQueryFilter,CancellationToken?)"/>
         /// overload, using a <see cref="ExpressionQueryFilter{TEntity}"/> as
         /// argument of the method.
         /// </para>
@@ -936,10 +1021,18 @@ namespace Deveel.Data {
         /// <returns>
         /// Returns the number of entities that match the given filter.
         /// </returns>
-		public Task<long> CountAsync(Expression<Func<TEntity, bool>>? filter = null)
-            => CountAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter));
+		public Task<long> CountAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
+            => CountAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter), cancellationToken);
 
-		public virtual async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> query) {
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="query"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		/// <exception cref="NotSupportedException"></exception>
+		/// <exception cref="OperationException"></exception>
+		public virtual async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> query, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			if (!SupportsPaging)
@@ -948,7 +1041,7 @@ namespace Deveel.Data {
 			try {
 				// TODO: log this operation
 
-				return await PageableRepository.GetPageAsync(query, CancellationToken);
+				return await PageableRepository.GetPageAsync(query, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogUnknownError(ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);

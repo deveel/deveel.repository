@@ -81,6 +81,31 @@ namespace Deveel.Data {
 		/// </summary>
 		public const int RemovingEntityRange = 100106;
 
+		/// <summary>
+		/// Attempting to find an entity by key.
+		/// </summary>
+		public const int FindingEntityByKey = 100107;
+
+		/// <summary>
+		/// Attempting to find the first entity by a query.
+		/// </summary>
+		public const int FindingFirstEntityByQuery = 100108;
+
+		/// <summary>
+		/// Attempting to find all entities by a query.
+		/// </summary>
+		public const int FindingAllEntitiesByQuery = 100109;
+
+		/// <summary>
+		/// Attempting to get a page of entities.
+		/// </summary>
+		public const int GettingEntityPage = 1001010;
+
+		/// <summary>
+		/// Counting the number of entities in the repository.
+		/// </summary>
+		public const int CountingEntities = 1001011;
+
 		// Information
 
 		/// <summary>

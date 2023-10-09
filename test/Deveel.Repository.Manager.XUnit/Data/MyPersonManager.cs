@@ -8,5 +8,9 @@ namespace Deveel.Data {
 			ILoggerFactory? loggerFactory = null) 
 			: base(repository, validator, services, loggerFactory) {
 		}
+
+		public async Task<Person?> FindByEmailAsync(string email, CancellationToken? cancellationToken = null) {
+			return await FindFirstAsync(x => x.Email == email, cancellationToken);
+		}
 	}
 }

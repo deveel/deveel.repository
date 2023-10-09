@@ -20,6 +20,7 @@ namespace Deveel.Data {
 			Assert.NotNull(manager);
 			Assert.True(manager.SupportsPaging);
 			Assert.True(manager.SupportsQueries);
+			Assert.False(manager.IsMultiTenant);
 		}
 
 		[Fact]
@@ -38,6 +39,7 @@ namespace Deveel.Data {
 			Assert.NotNull(manager);
 			Assert.True(manager.SupportsPaging);
 			Assert.True(manager.SupportsQueries);
+			Assert.False(manager.IsMultiTenant);
 		}
 
 		[Fact]
@@ -68,6 +70,20 @@ namespace Deveel.Data {
 
 			Assert.NotNull(source);
 			Assert.IsType<TestCancellationTokenSource>(source);
+		}
+
+		[Fact]
+		public static void AddHttpRequestCancellationSource() {
+			var services = new ServiceCollection();
+			services.AddHttpRequestTokenSource();
+
+			var provider = services.BuildServiceProvider();
+
+			var source = provider.GetService<IOperationCancellationSource>();
+
+			Assert.NotNull(source);
+			Assert.IsType<HttpRequestCancellationSource>(source);
+			Assert.Equal(CancellationToken.None, source.Token);
 		}
 
 		#region NotEntityManager

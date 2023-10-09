@@ -30,27 +30,42 @@ namespace Deveel.Data {
 		[LoggerMessage(EntityManagerEventIds.EntityNotModified, LogLevel.Warning, "The entity of type {EntityType} identified by {EntityId} was not modified during the operation.")]
 		public static partial void LogEntityNotModified(this ILogger logger, Type entityType, object? entityId);
 
-		[LoggerMessage(EntityManagerEventIds.EntityNotFound, LogLevel.Warning, "The entity {EntityId} was not found in the repository.")]
-		public static partial void LogEntityNotFound(this ILogger logger, object? entityId);
+		[LoggerMessage(EntityManagerEventIds.EntityNotFound, LogLevel.Warning, "The entity of type {EntityType} identified by {EntityId} was not found in the repository.")]
+		public static partial void LogEntityNotFound(this ILogger logger, Type entityType, object? entityId);
 
-		[LoggerMessage(EntityManagerEventIds.EntityNotRemoved, LogLevel.Warning, "The entity {EntityId} was not removed from the repository.")]
-		public static partial void LogEntityNotRemoved(this ILogger logger, object? entityId);
+		[LoggerMessage(EntityManagerEventIds.EntityNotRemoved, LogLevel.Warning, "The entity of type {EntityType} identified by {EntityId} was not removed from the repository.")]
+		public static partial void LogEntityNotRemoved(this ILogger logger, Type entityType, object? entityId);
 
         // Debugs
-		[LoggerMessage(EntityManagerEventIds.AddingEntity, LogLevel.Debug, "An entity is being added to the repository.")]
-		public static partial void LogAddingEntity(this ILogger logger);
+		[LoggerMessage(EntityManagerEventIds.AddingEntity, LogLevel.Debug, "An entity of type {EntityType} is being added to the repository.")]
+		public static partial void LogAddingEntity(this ILogger logger, Type entityType);
 
-		[LoggerMessage(EntityManagerEventIds.UpdatingEntity, LogLevel.Debug, "The entity {EntityId} is being updated in the repository.")]
-		public static partial void LogUpdatingEntity(this ILogger logger, object? entityId);
+		[LoggerMessage(EntityManagerEventIds.UpdatingEntity, LogLevel.Debug, "The entity of type {EntityType} identified by {EntityId} is being updated in the repository.")]
+		public static partial void LogUpdatingEntity(this ILogger logger, Type entityType, object? entityId);
 
-		[LoggerMessage(EntityManagerEventIds.RemovingEntity, LogLevel.Debug, "The entity {EntityId} is being removed from the repository.")]
-		public static partial void LogRemovingEntity(this ILogger logger, object? entityId);
+		[LoggerMessage(EntityManagerEventIds.RemovingEntity, LogLevel.Debug, "The entity of tpye {EntityType} identified by {EntityId} is being removed from the repository.")]
+		public static partial void LogRemovingEntity(this ILogger logger, Type entityType, object? entityId);
 
-		[LoggerMessage(EntityManagerEventIds.AddingEntityRange, LogLevel.Debug, "A range of entities is being added to the repository.")]
-		public static partial void LogAddingEntityRange(this ILogger logger);
+		[LoggerMessage(EntityManagerEventIds.AddingEntityRange, LogLevel.Debug, "A range of entities of type {EntityType} is being added to the repository.")]
+		public static partial void LogAddingEntityRange(this ILogger logger, Type entityType);
 
 		[LoggerMessage(EntityManagerEventIds.RemovingEntityRange, LogLevel.Debug, "A range of entities is being removed from the repository.")]
 		public static partial void LogRemovingEntityRange(this ILogger logger);
+
+		[LoggerMessage(EntityManagerEventIds.FindingEntityByKey, LogLevel.Debug, "Attempting to find an entity of type {EntityType} using the key {EntityKey}")]
+		public static partial void LogFindingEntityByKey(this ILogger logger, Type entityType, object? entityKey);
+
+		[LoggerMessage(EntityManagerEventIds.FindingFirstEntityByQuery, LogLevel.Debug, "Attempting to find an entity of type {EntityType} using a query filter")]
+		public static partial void LogFindingFirstEntityByQuery(this ILogger logger, Type entityType);
+
+		[LoggerMessage(EntityManagerEventIds.FindingAllEntitiesByQuery, LogLevel.Debug, "Attempting to find a range of entities of type {EntityType} using a query filter")]
+		public static partial void LogFindingAllEntitiesByQuery(this ILogger logger, Type entityType);
+
+		[LoggerMessage(EntityManagerEventIds.GettingEntityPage, LogLevel.Debug, "Page {PageNumber} of {PageSize} entities of type {EntityType} is being requested from the repository")]
+		public static partial void LogGettingEntityPage(this ILogger logger, Type entityType, int pageNumber, int pageSize);
+
+		[LoggerMessage(EntityManagerEventIds.CountingEntities, LogLevel.Debug, "The count of entities of type {EntityType} is being requested from the repository")]
+		public static partial void LogCountingEntities(this ILogger logger, Type entityType);
 
         // Information
 

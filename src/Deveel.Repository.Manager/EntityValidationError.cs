@@ -15,7 +15,21 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Deveel {
+	/// <summary>
+	/// An implementation of <see cref="IOperationError"/> that
+	/// describes a validation error.
+	/// </summary>
 	public sealed class EntityValidationError : IValidationError {
+		/// <summary>
+		/// Constructs the error with the given error code and
+		/// the list of validation results.
+		/// </summary>
+		/// <param name="errorCode">
+		/// The error code of the validation.
+		/// </param>
+		/// <param name="results">
+		/// The list of validation results.
+		/// </param>
 		public EntityValidationError(string errorCode, IEnumerable<ValidationResult>? results = null) {
 			ArgumentNullException.ThrowIfNull(errorCode, nameof(errorCode));
 
@@ -23,10 +37,12 @@ namespace Deveel {
 			ValidationResults = results?.ToList() ?? new List<ValidationResult>();
 		}
 
+		/// <inheritdoc/>
 		public string ErrorCode { get; }
 
 		string? IOperationError.Message { get; }
 
+		/// <inheritdoc/>
 		public IReadOnlyList<ValidationResult> ValidationResults { get; }
 	}
 }

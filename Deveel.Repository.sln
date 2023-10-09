@@ -42,9 +42,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Deveel.Repository.licenseheader = Deveel.Repository.licenseheader
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Manager", "src\Deveel.Repository.Manager\Deveel.Repository.Manager.csproj", "{C1029341-6EC0-4D83-AC9B-D4DA686237B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager", "src\Deveel.Repository.Manager\Deveel.Repository.Manager.csproj", "{C1029341-6EC0-4D83-AC9B-D4DA686237B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Manager.XUnit", "test\Deveel.Repository.Manager.XUnit\Deveel.Repository.Manager.XUnit.csproj", "{B63DFEE8-7964-4DC3-9DD5-8E11319B8EA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager.XUnit", "test\Deveel.Repository.Manager.XUnit\Deveel.Repository.Manager.XUnit.csproj", "{B63DFEE8-7964-4DC3-9DD5-8E11319B8EA9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Manager.DynamicLinq", "src\Deveel.Repository.Manager.DynamicLinq\Deveel.Repository.Manager.DynamicLinq.csproj", "{638851EF-B000-490C-9035-A962279A3E9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -108,6 +110,10 @@ Global
 		{B63DFEE8-7964-4DC3-9DD5-8E11319B8EA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B63DFEE8-7964-4DC3-9DD5-8E11319B8EA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B63DFEE8-7964-4DC3-9DD5-8E11319B8EA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{638851EF-B000-490C-9035-A962279A3E9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{638851EF-B000-490C-9035-A962279A3E9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{638851EF-B000-490C-9035-A962279A3E9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{638851EF-B000-490C-9035-A962279A3E9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +133,7 @@ Global
 		{201917F4-0557-46AE-B532-A4CC801AF5A7} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 		{C1029341-6EC0-4D83-AC9B-D4DA686237B4} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 		{B63DFEE8-7964-4DC3-9DD5-8E11319B8EA9} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
+		{638851EF-B000-490C-9035-A962279A3E9B} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01FD9B16-84B3-4D99-80C1-11B2F3D65B56}
