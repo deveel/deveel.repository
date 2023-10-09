@@ -246,7 +246,7 @@ namespace Deveel.Data {
 			var person = await RandomPersonAsync();
 			var firstName = person.FirstName;
 
-			var result = await Repository.FindAsync(x => x.FirstName == firstName);
+			var result = await Repository.FindFirstAsync(x => x.FirstName == firstName);
 
 			Assert.NotNull(result);
 			Assert.Equal(firstName, result.FirstName);
@@ -298,7 +298,7 @@ namespace Deveel.Data {
 		public async Task FindById_Sync() {
 			var person = await RandomPersonAsync();
 
-			var result = Repository.FindById(person.Id!);
+			var result = Repository.FindByKey(person.Id!);
 
 			Assert.NotNull(result);
 		}
@@ -307,7 +307,7 @@ namespace Deveel.Data {
 		public async Task FindFirst() {
 			var ordered = NaturalOrder(People).ToList();
 
-			var result = await Repository.FindAsync();
+			var result = await Repository.FindFirstAsync();
 
 			Assert.NotNull(result);
 			Assert.Equal(ordered[0].FirstName, result.FirstName);

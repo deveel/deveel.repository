@@ -11,6 +11,8 @@ namespace Deveel.Data {
 
 		protected override Faker<Person> PersonFaker { get; } = new PersonFaker();
 
+		protected override IEnumerable<Person> NaturalOrder(IEnumerable<Person> source) => source.OrderBy(x => x.Id);
+
 		protected override void ConfigureServices(IServiceCollection services) {
 			AddRepository(services);
 

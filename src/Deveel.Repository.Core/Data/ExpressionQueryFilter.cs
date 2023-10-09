@@ -12,16 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Linq.Expressions;
 
 namespace Deveel.Data {
-	/// <summary>
-	/// An implementation of a query filter that uses a lambda expression
-	/// </summary>
-	/// <typeparam name="TEntity">The type of entity to construct
-	/// the field</typeparam>
-	public sealed class ExpressionQueryFilter<TEntity> : IExpressionQueryFilter where TEntity : class {
+    /// <summary>
+    /// An implementation of a query filter that uses a lambda expression
+    /// </summary>
+    /// <typeparam name="TEntity">The type of entity to construct
+    /// the field</typeparam>
+    public sealed class ExpressionQueryFilter<TEntity> : IExpressionQueryFilter where TEntity : class {
 		/// <summary>
 		/// Constructs the filter with the given expression
 		/// </summary>

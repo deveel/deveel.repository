@@ -1,0 +1,92 @@
+﻿// Copyright 2023 Deveel AS
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+namespace Deveel.Data {
+	/// <summary>
+	/// Extends the <see cref="EntityManager{TEntity}"/> to provide
+	/// filtering capabilities using a dynamic LINQ expression.
+	/// </summary>
+	/// <seealso cref="DynamicLinqFilter"/>
+	public static class EntityManagerExtensions {
+		/// <summary>
+		/// Finds the first entity in the repository that matches the given
+		/// dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to find.
+		/// </typeparam>
+		/// <param name="manager">
+		/// The entity manager to use to find the entity.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entity.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the first entity that matches the given expression, or
+		/// <c>null</c> if no entity was found.
+		/// </returns>
+		public static Task<TEntity?> FindFirstAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
+			where TEntity : class
+			=> manager.FindFirstAsync(new DynamicLinqFilter(expression), cancellationToken);
+
+		/// <summary>
+		/// Finds a range of entities in the repository that matches the given
+		/// dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to find.
+		/// </typeparam>
+		/// <param name="manager">
+		/// The entity manager to use to find the entity.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entity.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a list of entities that matches the given expression.
+		/// </returns>
+		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
+			where TEntity : class
+			=> manager.FindAllAsync(new DynamicLinqFilter(expression), cancellationToken);
+
+		/// <summary>
+		/// Counts the number of entities in the repository that matches the
+		/// dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to count.
+		/// </typeparam>
+		/// <param name="manager">
+		/// The entity manager to use to count the entities.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entity.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the number of entities that matches the given expression.
+		/// </returns>
+		public static Task<long> CountAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
+			where TEntity : class
+			=> manager.CountAsync(new DynamicLinqFilter(expression), cancellationToken);
+	}
+}

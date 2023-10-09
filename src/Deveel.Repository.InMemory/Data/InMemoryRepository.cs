@@ -24,11 +24,12 @@ namespace Deveel.Data {
 		IFilterableRepository<TEntity>,
 		IMultiTenantRepository<TEntity>
 		where TEntity : class {
-		private readonly List<TEntity> entities;
+		// TODO: use a dictionary for faster access
+		private readonly SortedList<string, TEntity> entities;
 		private readonly IEntityFieldMapper<TEntity>? fieldMapper;
 
 		public InMemoryRepository(IEnumerable<TEntity>? list = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null) {
-			entities = list == null ? new List<TEntity>() : new List<TEntity>(list);
+			entities = list == null ? new SortedList<string, TEntity>() : new SortedList<string, TEntity>(list.ToDictionary(x => (string)GetEntityKey(x)!, y => y));
 			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
 			this.fieldMapper = fieldMapper;
 		}
@@ -38,9 +39,9 @@ namespace Deveel.Data {
 			TenantId = tenantId;
 		}
 
-		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => entities.AsQueryable();
+		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => entities.Values.AsQueryable();
 
-		public IReadOnlyList<TEntity> Entities => entities.AsReadOnly();
+		public IReadOnlyList<TEntity> Entities => entities.Values.ToList().AsReadOnly();
 
 		string? IMultiTenantRepository<TEntity>.TenantId => TenantId;
 
@@ -50,9 +51,12 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public virtual object? GetEntityKey(TEntity entity) {
-			if (entity == null)
-				throw new ArgumentNullException(nameof(entity));
+			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
+			return GetEntityId(entity);
+		}
+
+		private string? GetEntityId(TEntity entity) {
 			if (!entity.TryGetMemberValue("Id", out object? idValue))
 				return null;
 
@@ -75,7 +79,7 @@ namespace Deveel.Data {
 
 			try {
 				var lambda = filter.AsLambda<TEntity>();
-				return Task.FromResult(entities.AsQueryable().LongCount(lambda));
+				return Task.FromResult(entities.Values.AsQueryable().LongCount(lambda));
 			} catch (Exception ex) {
 				throw new RepositoryException("Could not count the entities", ex);
 			}
@@ -93,7 +97,7 @@ namespace Deveel.Data {
 				if (entity is IHaveTimeStamp hasTime)
 					hasTime.CreatedAtUtc = SystemTime.UtcNow;
 
-				entities.Add(entity);
+				entities.Add(id, entity);
 
 				return Task.CompletedTask;
 			} catch (RepositoryException) {
@@ -117,7 +121,7 @@ namespace Deveel.Data {
 					if (item is IHaveTimeStamp hasTime)
 						hasTime.CreatedAtUtc = SystemTime.UtcNow;
 
-					this.entities.Add(item);
+					this.entities.Add(id, item);
 				}
 
 				return Task.CompletedTask;
@@ -137,7 +141,11 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				return Task.FromResult(entities.Remove(entity));
+				var entityId = GetEntityId(entity);
+				if (entityId == null)
+					return Task.FromResult(false);
+
+				return Task.FromResult(entities.Remove(entityId));
 			} catch (RepositoryException) {
 
 				throw;
@@ -149,16 +157,29 @@ namespace Deveel.Data {
 		/// <inheritdoc/>
 		public Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
+			
+			ArgumentNullException.ThrowIfNull(entities, nameof(entities));
 
 			try {
+				var toRemove = entities.ToList();
+
 				// if any of the entities is not in the list, we throw an exception
-				foreach (var entity in entities) {
-					if (!this.entities.Contains(entity))
+				foreach (var entity in toRemove) {
+					var id = GetEntityId(entity);
+					if (id == null)
+						throw new RepositoryException("The entity does not have an ID");
+
+					if (!this.entities.TryGetValue(id, out var existing))
 						throw new RepositoryException("The entity is not in the repository");
 				}
 
-				foreach (var entity in entities) {
-					this.entities.Remove(entity);
+				foreach (var entity in toRemove) {
+					var id = GetEntityId(entity);
+					if (id == null)
+						throw new RepositoryException("The entity does not have an ID");
+
+					if (!this.entities.Remove(id))
+						throw new RepositoryException("The entity was not removed from the repository");
 				}
 
 				return Task.CompletedTask;
@@ -176,7 +197,7 @@ namespace Deveel.Data {
 
 			try {
 				var lambda = filter.AsLambda<TEntity>();
-				var result = entities.AsQueryable().Any(lambda);
+				var result = entities.Values.AsQueryable().Any(lambda);
 				return Task.FromResult(result);
 			} catch(Exception ex) {
 				throw new RepositoryException("Could not check if any entities exist in the repository", ex);
@@ -189,7 +210,7 @@ namespace Deveel.Data {
 
 			try {
 				var lambda = filter.AsLambda<TEntity>();
-				var result = entities.AsQueryable().Where(lambda).ToList();
+				var result = entities.Values.AsQueryable().Where(lambda).ToList();
 				return Task.FromResult<IList<TEntity>>(result);
 			} catch (Exception ex) {
 
@@ -203,7 +224,7 @@ namespace Deveel.Data {
 
 			try {
 				var lambda = filter.AsLambda<TEntity>();
-				var result = entities.AsQueryable().FirstOrDefault(lambda);
+				var result = entities.Values.AsQueryable().FirstOrDefault(lambda);
 				return Task.FromResult(result);
 			} catch (Exception ex) {
 				throw new RepositoryException("Error while searching for any entities in the repository matching the filter", ex);
@@ -217,8 +238,13 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var entity = entities.FirstOrDefault(x => x.TryGetMemberValue<object>("Id", out var entityId) && entityId == key);
-				return Task.FromResult(entity);
+                if (!(key is string s))
+                    throw new RepositoryException("The key must be a string");
+
+				if (!entities.TryGetValue(s, out var entity))
+					return Task.FromResult<TEntity?>(null);
+				
+				return Task.FromResult<TEntity?>(entity);
 			} catch (Exception ex) {
 				throw new RepositoryException("Error while searching any entities with the given ID", ex);
 			}
@@ -246,7 +272,7 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var entitySet = entities.AsQueryable();
+				var entitySet = entities.Values.AsQueryable();
 				if (request.Filter != null)
 					entitySet = request.Filter.Apply(entitySet);
 
@@ -278,14 +304,13 @@ namespace Deveel.Data {
 				if (!entity.TryGetMemberValue<string>("Id", out var entityId))
 					return Task.FromResult(false);
 
-				var oldIndex = entities.FindIndex(x => x.TryGetMemberValue<string>("Id", out var id) && id == entityId);
-				if (oldIndex < 0)
+				if (!entities.TryGetValue(entityId, out var _))
 					return Task.FromResult(false);
 
 				if (entity is IHaveTimeStamp hasTime)
 					hasTime.UpdatedAtUtc = SystemTime.UtcNow;
 
-				entities[oldIndex] = entity;
+				entities[entityId] = entity;
 				return Task.FromResult(true);
 			} catch (Exception ex) {
 				throw new RepositoryException("Unable to update the entity", ex);

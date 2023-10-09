@@ -1263,6 +1263,24 @@
             Thrown when the repository is not filterable
             </exception>
         </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.AsQueryable``1(Deveel.Data.IRepository{``0})">
+            <summary>
+            Gets a version of the repository that is queryable.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity to query
+            </typeparam>
+            <param name="repository">
+            The instance of the repository to get the queryable version.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.IQueryableRepository`1"/>
+            if the repository is queryable, otherwise it throws an exception.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository is not queryable
+            </exception>
+        </member>
         <member name="M:Deveel.Data.RepositoryExtensions.Add``1(Deveel.Data.IRepository{``0},``0)">
             <summary>
             Adds a new entity in the repository synchronously
@@ -1421,6 +1439,40 @@
             size is less than zero.
             </exception>
         </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.GetPage``1(Deveel.Data.IRepository{``0},Deveel.Data.PageQuery{``0})">
+            <summary>
+            Gets a page of entities from the repository, given
+            the query object that defines the scope
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The instance of the repository to use to retrieve the page.
+            </param>
+            <param name="query">
+            The query object that defines the scope of the page to retrieve
+            </param>
+            <remarks>
+            <para>
+            This method attempts to cast the given repository to a
+            <see cref="T:Deveel.Data.IPageableRepository`1"/> and invoke the
+            native method <see cref="M:Deveel.Data.IPageableRepository`1.GetPageAsync(Deveel.Data.PageQuery{`0},System.Threading.CancellationToken)"/>.
+            </para>
+            <para>
+            If the repository does not implement the interface, the method
+            attempts to cast it to a <see cref="T:Deveel.Data.IQueryableRepository`1"/>
+            and invoke the a paging operation on the <see cref="T:System.Linq.IQueryable`1"/>.
+            </para>
+            </remarks>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.PageResult`1"/> that
+            represents the paged result of the query.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support paging or querying.
+            </exception>
+        </member>
         <member name="M:Deveel.Data.RepositoryExtensions.ExistsAsync``1(Deveel.Data.IRepository{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
             <summary>
             Checks if an entity exists in the repository,
@@ -1463,6 +1515,18 @@
             <param name="cancellationToken">
             A token used to cancel the operation.
             </param>
+            <remarks>
+            <para>
+            This method attempts to cast the given repository to a
+            <see cref="T:Deveel.Data.IFilterableRepository`1"/> to invoke the
+            native method <see cref="M:Deveel.Data.IFilterableRepository`1.ExistsAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)"/>.
+            </para>
+            <para>
+            When the repository does not implement the interface, the method
+            attempts to cast it to a <see cref="T:Deveel.Data.IQueryableRepository`1"/>
+            to invoke the a query operation on the <see cref="T:System.Linq.IQueryable`1"/>.
+            </para>
+            </remarks>
             <returns>
             Returns <c>true</c> if any entity exists in the repository,
             or <c>false</c> if not.
@@ -1544,11 +1608,78 @@
             <summary>
             Counts the number of entities in the repository
             </summary>
-            <typeparam name="TEntity"></typeparam>
-            <param name="repository"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-            <exception cref="T:System.NotSupportedException"></exception>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The instance of the repository to use to count the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns the number of entities in the repository.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support querying or filtering.
+            </exception>
+            <seealso cref="M:Deveel.Data.IFilterableRepository`1.CountAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)"/>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.Count``1(Deveel.Data.IRepository{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Counts the number of entities in the repository,
+            given a filter expression to match.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The instance of the repository to use to count the entities.
+            </param>
+            <param name="filter">
+            The filter used to count the matching entities.
+            </param>
+            <returns>
+            Returns the number of entities in the repository that match
+            the given filter.
+            </returns>
+            <seealso cref="M:Deveel.Data.RepositoryExtensions.CountAsync``1(Deveel.Data.IRepository{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)"/>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.CountAll``1(Deveel.Data.IRepository{``0})">
+            <summary>
+            Counts the number of entities in the repository
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The instance of the repository to use to count the entities.
+            </param>
+            <returns>
+            Returns the number of entities in the repository.
+            </returns>
+            <seealso cref="M:Deveel.Data.RepositoryExtensions.CountAllAsync``1(Deveel.Data.IRepository{``0},System.Threading.CancellationToken)"/>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindByKey``1(Deveel.Data.IRepository{``0},System.Object)">
+            <summary>
+            Finds a single entity in the repository, given the key
+            that uniquely identifies it
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The instance of the repository to use to find the entity.
+            </param>
+            <param name="key">
+            The key that uniquely identifies the entity to find.
+            </param>
+            <returns>
+            Returns an instance of <typeparamref name="TEntity"/> that
+            is identified by the given key, or <c>null</c> if no entity
+            with the given key exists in the repository.
+            </returns>
+            <seealso cref="M:Deveel.Data.IRepository`1.FindByKeyAsync(System.Object,System.Threading.CancellationToken)"/>
         </member>
         <member name="T:Deveel.Data.RepositoryProviderExtensions">
             <summary>
