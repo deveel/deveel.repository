@@ -238,7 +238,10 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				if (!entities.TryGetValue(key.ToString(), out var entity))
+                if (!(key is string s))
+                    throw new RepositoryException("The key must be a string");
+
+				if (!entities.TryGetValue(s, out var entity))
 					return Task.FromResult<TEntity?>(null);
 				
 				return Task.FromResult<TEntity?>(entity);

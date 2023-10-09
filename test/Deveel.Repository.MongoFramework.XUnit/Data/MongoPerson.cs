@@ -31,7 +31,7 @@ namespace Deveel.Data {
 		public string? Description { get; set; }
 
 		[Column("email")]
-		public string Email { get; set; }
+		public string? Email { get; set; }
 
 		[Column("phone")]
 		public string? PhoneNumber { get; set; }

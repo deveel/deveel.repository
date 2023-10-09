@@ -12,18 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Deveel.Data {
-	/// <summary>
-	/// Lists the event identifiers that can be used to identify
-	/// logged events from the <see cref="EntityManager{TEntity}"/>.
-	/// </summary>
-	public static class EntityManagerEventIds {
+    /// <summary>
+    /// Lists the event identifiers that can be used to identify
+    /// logged events from the <see cref="EntityManager{TEntity}"/>.
+    /// </summary>
+    public static class EntityManagerEventIds {
 		// Errors
 
 		/// <summary>
@@ -94,14 +88,24 @@ namespace Deveel.Data {
 		/// </summary>
 		public const int EntityAdded = 2001;
 
+        /// <summary>
+        /// A range of entities was added to the repository.
+        /// </summary>
+        public const int EntityRangeAdded = 2002;
+
 		/// <summary>
 		/// The entity was updated in the repository.
 		/// </summary>
-		public const int EntityUpdated = 2002;
+		public const int EntityUpdated = 2003;
 
 		/// <summary>
 		/// The entity was removed from the repository.
 		/// </summary>
-		public const int EntityRemoved = 2003;
+		public const int EntityRemoved = 2004;
+
+        /// <summary>
+        /// A range of entities was removed from the repository.
+        /// </summary>
+        public const int EntityRangeRemoved = 2005;
 	}
 }

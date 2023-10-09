@@ -16,17 +16,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Deveel.Data {
 	static partial class LoggerExtensions {
-		[LoggerMessage(EntityManagerEventIds.UnknownError, LogLevel.Error, "An unknown error occurred during the operation.")]
-		public static partial void LogUnknownError(this ILogger logger, Exception exception);
+        // Errors
+		[LoggerMessage(EntityManagerEventIds.UnknownError, LogLevel.Error, "An unknown error occurred during a management operation of entities of type {EntityType}.")]
+		public static partial void LogUnknownError(this ILogger logger, Type entityType, Exception exception);
 
-		[LoggerMessage(EntityManagerEventIds.EntityUnknownError, LogLevel.Error, "An unknown error occurred during the operation on the entity {EntityId}")]
-		public static partial void LogEntityUnknownError(this ILogger logger, object? entityId, Exception exception);
+		[LoggerMessage(EntityManagerEventIds.EntityUnknownError, LogLevel.Error, "An unknown error occurred during the operation on the entity of type {EntityType} identified by {EntityId}")]
+		public static partial void LogEntityUnknownError(this ILogger logger, Type entityType, object? entityId, Exception exception);
 
-		[LoggerMessage(EntityManagerEventIds.EntityNotValid, LogLevel.Error, "The entity to be added or updated is not valid.")]
-		public static partial void LogEntityNotValid(this ILogger logger);
+		[LoggerMessage(EntityManagerEventIds.EntityNotValid, LogLevel.Error, "The entity of type {EntityType} to be added or updated is not valid.")]
+		public static partial void LogEntityNotValid(this ILogger logger, Type entityType);
 
-		[LoggerMessage(EntityManagerEventIds.EntityNotModified, LogLevel.Warning, "The entity {EntityId} was not modified during the operation.")]
-		public static partial void LogEntityNotModified(this ILogger logger, object? entityId);
+        // Warnings
+		[LoggerMessage(EntityManagerEventIds.EntityNotModified, LogLevel.Warning, "The entity of type {EntityType} identified by {EntityId} was not modified during the operation.")]
+		public static partial void LogEntityNotModified(this ILogger logger, Type entityType, object? entityId);
 
 		[LoggerMessage(EntityManagerEventIds.EntityNotFound, LogLevel.Warning, "The entity {EntityId} was not found in the repository.")]
 		public static partial void LogEntityNotFound(this ILogger logger, object? entityId);
@@ -34,6 +36,7 @@ namespace Deveel.Data {
 		[LoggerMessage(EntityManagerEventIds.EntityNotRemoved, LogLevel.Warning, "The entity {EntityId} was not removed from the repository.")]
 		public static partial void LogEntityNotRemoved(this ILogger logger, object? entityId);
 
+        // Debugs
 		[LoggerMessage(EntityManagerEventIds.AddingEntity, LogLevel.Debug, "An entity is being added to the repository.")]
 		public static partial void LogAddingEntity(this ILogger logger);
 
@@ -49,11 +52,19 @@ namespace Deveel.Data {
 		[LoggerMessage(EntityManagerEventIds.RemovingEntityRange, LogLevel.Debug, "A range of entities is being removed from the repository.")]
 		public static partial void LogRemovingEntityRange(this ILogger logger);
 
+        // Information
+
 		[LoggerMessage(EntityManagerEventIds.EntityAdded, LogLevel.Information, "The entity {EntityId} was added to the repository.")]
 		public static partial void LogEntityAdded(this ILogger logger, object? entityId);
 
+        [LoggerMessage(EntityManagerEventIds.EntityRangeAdded, LogLevel.Information, "A range of entities was added to the repository.")]
+        public static partial void LogEntityRangeAdded(this ILogger logger);
+
 		[LoggerMessage(EntityManagerEventIds.EntityRemoved, LogLevel.Information, "The entity {EntityId} was removed from the repository.")]
 		public static partial void LogEntityRemoved(this ILogger logger, object? entityId);
+
+        [LoggerMessage(EntityManagerEventIds.EntityRangeRemoved, LogLevel.Information, "A range of entities was removed from the repository.")]
+        public static partial void LogEntityRangeRemoved(this ILogger logger);
 
 		[LoggerMessage(EntityManagerEventIds.EntityUpdated, LogLevel.Information, "The entity {EntityId} was updated in the repository.")]
 		public static partial void LogEntityUpdated(this ILogger logger, object? entityId);

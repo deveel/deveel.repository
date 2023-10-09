@@ -73,10 +73,44 @@ namespace Deveel {
 		public static bool IsValidationError(this IOperationResult result)
 			=> result.IsError() && result.Error is IValidationError;
 
-		public static Task MapAsync(this IOperationResult result, Func<IOperationResult, Task> action)
-			=> result.IsSuccess() ? action(result) : Task.CompletedTask;
+        /// <summary>
+        /// Handles the given result by executing the given action
+        /// </summary>
+        /// <param name="result">
+        /// The result object to handle.
+        /// </param>
+        /// <param name="action">
+        /// An action to execute to handle the result.
+        /// </param>
+        /// <returns>
+        /// Returns a task that will be completed when the action
+        /// is executed.
+        /// </returns>
+		public static Task HandleAsync(this IOperationResult result, Func<IOperationResult, Task> action)
+            => action(result);
 
-		public static Task MapAsync(this IOperationResult result, Func<Task>? ifSuccess = null, Func<Task>? ifFailed = null, Func<Task>? ifNotModified = null) {
+        /// <summary>
+        /// Handles the given result by executing the given action
+        /// for the specific result type.
+        /// </summary>
+        /// <param name="result">
+        /// The result object to handle.
+        /// </param>
+        /// <param name="ifSuccess">
+        /// The action to execute if the result is a successful operation.
+        /// </param>
+        /// <param name="ifFailed">
+        /// The action to execute if the result is a failed operation.
+        /// </param>
+        /// <param name="ifNotModified">
+        /// The action to execute if the result is an operation that
+        /// caused no changes to the entity.
+        /// </param>
+        /// <returns>
+        /// Returns a task that will be completed when the action
+        /// is executed.
+        /// </returns>
+		public static Task HandleAsync(this IOperationResult result, Func<Task>? ifSuccess = null, Func<Task>? ifFailed = null, Func<Task>? ifNotModified = null) {
 			if (result.IsSuccess()) {
 				if (ifSuccess != null)
 					return ifSuccess();
@@ -90,8 +124,29 @@ namespace Deveel {
 
 			return Task.CompletedTask;
 		}
-
-		public static Task MapAsync(this IOperationResult result, Func<IOperationResult, Task>? ifSuccess = null, Func<IOperationResult, Task>? ifFailed = null, Func<IOperationResult, Task>? ifNotModified = null) {
+        /// <summary>
+        /// Handles the given result by executing the given action
+        /// for the specific result type, passing the result object
+        /// as argument.
+        /// </summary>
+        /// <param name="result">
+        /// The result object to handle.
+        /// </param>
+        /// <param name="ifSuccess">
+        /// The action to execute if the result is a successful operation.
+        /// </param>
+        /// <param name="ifFailed">
+        /// The action to execute if the result is a failed operation.
+        /// </param>
+        /// <param name="ifNotModified">
+        /// The action to execute if the result is an operation that
+        /// caused no changes to the entity.
+        /// </param>
+        /// <returns>
+        /// Returns a task that will be completed when the action
+        /// is executed.
+        /// </returns>
+		public static Task HandleAsync(this IOperationResult result, Func<IOperationResult, Task>? ifSuccess = null, Func<IOperationResult, Task>? ifFailed = null, Func<IOperationResult, Task>? ifNotModified = null) {
 			if (result.IsSuccess()) {
 				if (ifSuccess != null)
 					return ifSuccess(result);

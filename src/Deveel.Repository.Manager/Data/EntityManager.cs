@@ -100,14 +100,27 @@ namespace Deveel.Data {
 		protected virtual CancellationToken CancellationToken 
 			=> Services?.GetService<IOperationCancellationSource>()?.Token ?? default;
 
-		public virtual bool IsMultiTenant {
+        /// <summary>
+        /// Gets a value indicating if the repository is multi-tenant
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">
+        /// Throws when the service has been disposed.
+        /// </exception>
+        public virtual bool IsMultiTenant {
 			get {
 				ThrowIfDisposed();
 				return (Repository is IMultiTenantRepository<TEntity>);
 			}
 		}
 
-		protected virtual string? TenantId {
+        /// <summary>
+        /// When the repository is multi-tenant, gets the identifier
+        /// of the tenant that is being managed by the service.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">
+        /// Throws when the service has been disposed.
+        /// </exception>
+        protected virtual string? TenantId {
 			get {
 				ThrowIfDisposed();
 
@@ -118,7 +131,13 @@ namespace Deveel.Data {
 			}
 		}
 
-		public virtual bool SupportsPaging {
+        /// <summary>
+        /// Gets a value indicating if the repository supports paging
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">
+        /// Throws when the service has been disposed.
+        /// </exception>
+        public virtual bool SupportsPaging {
 			get {
 				ThrowIfDisposed();
 
@@ -126,6 +145,15 @@ namespace Deveel.Data {
 			}
 		}
 
+        /// <summary>
+        /// Gets the repository that supports paging
+        /// </summary>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the repository does not support paging
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        /// Throws when the service has been disposed.
+        /// </exception>
 		protected virtual IPageableRepository<TEntity> PageableRepository {
 			get {
 				ThrowIfDisposed();
@@ -137,7 +165,13 @@ namespace Deveel.Data {
 			}
 		}
 
-		public virtual bool SupportsQueries {
+        /// <summary>
+        /// Gets a value indicating if the repository supports queries
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">
+        /// Throws when the service has been disposed.
+        /// </exception>
+        public virtual bool SupportsQueries {
 			get {
 				ThrowIfDisposed();
 
@@ -145,7 +179,17 @@ namespace Deveel.Data {
 			}
 		}
 
-		protected virtual IQueryable<TEntity> Entities {
+        /// <summary>
+        /// When the repository supports queries, gets the queryable
+        /// instance of the repository.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">
+        /// Throws when the service has been disposed.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the repository does not support queries
+        /// </exception>
+        protected virtual IQueryable<TEntity> Entities {
 			get {
 				ThrowIfDisposed();
 
@@ -156,6 +200,12 @@ namespace Deveel.Data {
 			}
 		}
 
+        /// <summary>
+        /// Gets a value indicating if the repository supports filters
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">
+        /// Thrown when the service has been disposed.
+        /// </exception>
 		public virtual bool SupportsFilters {
 			get {
 				ThrowIfDisposed();
@@ -164,6 +214,15 @@ namespace Deveel.Data {
 			}
 		}
 
+        /// <summary>
+        /// Gets the repository that supports filters
+        /// </summary>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the repository does not support filters
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        /// Thrown when the service has been disposed.
+        /// </exception>
 		protected virtual IFilterableRepository<TEntity> FilterableRepository {
 			get {
 				ThrowIfDisposed();
@@ -175,14 +234,24 @@ namespace Deveel.Data {
 			}
 		}
 
-		/// <summary>
-		/// Checks if the service has been disposed and
-		/// eventually throws an exception.
-		/// </summary>
-		/// <exception cref="ObjectDisposedException">
-		/// Throws when the service has been disposed.
-		/// </exception>
-		protected void ThrowIfDisposed() {
+        // shortcut to the logger method
+        private void LogUnknownError(Exception ex) {
+            Logger.LogUnknownError(typeof(TEntity), ex);
+        }
+
+        private void LogEntityUnknownError(object? entityKey, Exception ex) {
+            Logger.LogEntityUnknownError(typeof(TEntity), entityKey, ex);
+        }
+
+
+        /// <summary>
+        /// Checks if the service has been disposed and
+        /// eventually throws an exception.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">
+        /// Throws when the service has been disposed.
+        /// </exception>
+        protected void ThrowIfDisposed() {
 			if (disposedValue)
 				throw new ObjectDisposedException(GetType().Name);
 		}
@@ -232,7 +301,7 @@ namespace Deveel.Data {
 		/// The default implementation of this method uses the
 		/// <see cref="ErrorFactory"/> to create the error object,
 		/// if any is available, otherwise it creates a new instance
-		/// of <see cref="OperationError"/>.
+		/// of <see cref="Deveel.OperationError"/>.
 		/// </remarks>
 		/// <returns>
 		/// Returns an instance of <see cref="IOperationError"/> that
@@ -241,23 +310,38 @@ namespace Deveel.Data {
 		protected virtual IOperationError OperationError(string errorCode, string? message = null)
 			=> ErrorFactory?.CreateError(errorCode, message) ?? new OperationError(errorCode, message);
 
+        /// <summary>
+        /// Creates a validation error object with the given 
+        /// code and validation results.
+        /// </summary>
+        /// <param name="errorCode">
+        /// The code that identifies the class of validation error.
+        /// </param>
+        /// <param name="validationResults">
+        /// The list of validation results that describe the error.
+        /// </param>
+        /// <returns>
+        /// Returns an instance of <see cref="IValidationError"/> that
+        /// represents a validation error.
+        /// </returns>
 		protected virtual IValidationError ValidationError(string errorCode, IList<ValidationResult> validationResults)
 			=> ErrorFactory?.CreateValidationError(errorCode, validationResults) ?? new EntityValidationError(errorCode, validationResults);
 
-		/// <summary>
-		/// Creates an error object with the given code and message
-		/// </summary>
-		/// <param name="errorCode">
-		/// The code that identifies the class of error.
-		/// </param>
-		/// <param name="message">
-		/// A message that describes the error.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of <see cref="OperationResult"/> that
-		/// represents a failed operation.
-		/// </returns>
-		protected OperationResult Fail(string errorCode, string? message = null)
+        /// <summary>
+        /// Creates an error object with the given code and message
+        /// </summary>
+        /// <param name="errorCode">
+        /// The code that identifies the class of error.
+        /// </param>
+        /// <param name="message">
+        /// A message that describes the error.
+        /// </param>
+        /// <returns>
+        /// Returns an instance of <see cref="OperationResult"/> that
+        /// represents a failed operation.
+        /// </returns>
+        /// <see cref="OperationError(string, string?)"/>
+        protected OperationResult Fail(string errorCode, string? message = null)
 			=> OperationResult.Fail(OperationError(errorCode, message));
 
 		/// <summary>
@@ -266,12 +350,18 @@ namespace Deveel.Data {
 		/// <param name="error">
 		/// The exception that caused the error.
 		/// </param>
+        /// <remarks>
+        /// The default implementation of this method uses the
+        /// information from the given exception to create an error
+        /// invoking the <see cref="Fail(string, string?)"/> method.
+        /// </remarks>
 		/// <returns>
 		/// Returns an instance of <see cref="OperationResult"/> that
 		/// represents a failed operation.
 		/// </returns>
+        /// <seealso cref="Fail(string, string?)"/>
 		protected OperationResult Fail(OperationException error)
-			=> OperationResult.Fail(error);
+			=> Fail(error.ErrorCode, error.Message);
 
 		/// <summary>
 		/// Creates an error object from a validation error.
@@ -286,6 +376,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="OperationResult"/> that
 		/// represents a failed validation of an entity.
 		/// </returns>
+        /// <see cref="ValidationError(string, IList{ValidationResult})"/>
 		protected OperationResult ValidationFailed(string errorCode, IList<ValidationResult> validationResults)
 			=> OperationResult.Fail(ValidationError(errorCode, validationResults));
 
@@ -302,10 +393,23 @@ namespace Deveel.Data {
 		/// Creates a result object that represents an operation that
 		/// has not modified the state of the entity.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+        /// Returns an instance of <see cref="OperationResult"/> that
+        /// represents an operation that has not modified the state of
+        /// an entity.
+        /// </returns>
 		protected OperationResult NotModified() => OperationResult.NotModified;
 
-
+        /// <summary>
+        /// Validates the given entity before it is added or updated
+        /// </summary>
+        /// <param name="entity">
+        /// The entity to be validated.
+        /// </param>
+        /// <returns>
+        /// Returns a list of <see cref="ValidationResult"/> that
+        /// describe the validation errors.
+        /// </returns>
 		protected virtual async Task<IList<ValidationResult>> ValidateAsync(TEntity entity) {
 			if (EntityValidator == null)
 				return new List<ValidationResult>();
@@ -320,14 +424,55 @@ namespace Deveel.Data {
 			return results;
 		}
 
+        /// <summary>
+        /// Gets the key of the given entity
+        /// </summary>
+        /// <param name="entity">
+        /// The entity to get the key from.
+        /// </param>
+        /// <remarks>
+        /// The default implementation of this method uses the
+        /// <see cref="IRepository{TEntity}.GetEntityKey(TEntity)"/>
+        /// method to get the key of the entity.
+        /// </remarks>
+        /// <returns>
+        /// Returns an object that represents the key of the entity,
+        /// or <c>null</c> if the entity does not have a valid key.
+        /// </returns>
 		protected virtual object? GetEntityKey(TEntity entity) {
 			return Repository.GetEntityKey(entity);
 		}
 
+        /// <summary>
+        /// A callback invoked when an entity is being added 
+        /// to the repository.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity that is being added.
+        /// </param>
+        /// <remarks>
+        /// When <see cref="AddRangeAsync(IEnumerable{TEntity})"/> is
+        /// invoked, this method is invoked for each entity in the
+        /// range of entities.
+        /// </remarks>
+        /// <returns>
+        /// Returns the entity that is being added, after
+        /// any modification done by the callback.
+        /// </returns>
 		protected virtual Task<TEntity> OnAddingEntityAsync(TEntity entity) {
 			return Task.FromResult(entity);
 		}
 
+        /// <summary>
+        /// Adds the given entity to the repository.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity to be added.
+        /// </param>
+        /// <returns>
+        /// Returns an instance of <see cref="OperationResult"/> that
+        /// describes the result of the operation.
+        /// </returns>
 		public virtual async Task<OperationResult> AddAsync(TEntity entity) {
 			ThrowIfDisposed();
 
@@ -336,7 +481,7 @@ namespace Deveel.Data {
 
 				var validation = await ValidateAsync(entity);
 				if (validation != null && validation.Count > 0) {
-					Logger.LogEntityNotValid();
+					Logger.LogEntityNotValid(typeof(TEntity));
 					return ValidationFailed(EntityErrorCodes.NotValid, validation);
 				}
 
@@ -348,11 +493,28 @@ namespace Deveel.Data {
 
 				return Success();
 			} catch(Exception ex) {
-				Logger.LogUnknownError(ex);
+				LogUnknownError(ex);
 				return Fail(EntityErrorCodes.UnknownError, "An unknown error occurred while adding the entity");
 			}
 		}
 
+        /// <summary>
+        /// Adds the given range of entities to the repository.
+        /// </summary>
+        /// <param name="entities">
+        /// The range of entities to be added.
+        /// </param>
+        /// <remarks>
+        /// The default implementation of this method attempts to
+        /// validate each entity in the range before adding it to
+        /// the repository, and if any validation error is found,
+        /// the method returns a failure result.
+        /// </remarks>
+        /// <returns>
+        /// Returns a result object that describes the result of the
+        /// operation.
+        /// </returns>
+        /// <seealso cref="IRepository{TEntity}.AddRangeAsync(IEnumerable{TEntity}, CancellationToken)"/>
 		public virtual async Task<OperationResult> AddRangeAsync(IEnumerable<TEntity> entities) {
 			try {
 				Logger.LogAddingEntityRange();
@@ -370,26 +532,95 @@ namespace Deveel.Data {
 
 				await Repository.AddRangeAsync(toBeAdded, CancellationToken);
 
-				// TODO: log the entities added
+                Logger.LogEntityRangeAdded();
 
 				return Success();
 			} catch (Exception ex) {
-				Logger.LogUnknownError(ex);
+				LogUnknownError(ex);
 				return Fail(EntityErrorCodes.UnknownError, "An unknown error occurred while adding the entities");
 			}
 		}
 
+        /// <summary>
+        /// A callback invoked when an entity is being updated
+        /// </summary>
+        /// <param name="entity">
+        /// The entity that is being updated.
+        /// </param>
+        /// <returns>
+        /// Returns the entity that is being updated, after
+        /// the callback has modified it.
+        /// </returns>
 		protected virtual Task<TEntity> OnUpdatingEntityAsync(TEntity entity) {
 			return Task.FromResult(entity);
 		}
 
-		protected virtual bool AreEqual(TEntity entity1, TEntity entity2) {
-			if (typeof(IEquatable<TEntity>).IsAssignableFrom(typeof(TEntity)))
-				return ((IEquatable<TEntity>)entity1).Equals(entity2);
+        /// <summary>
+        /// Checks if the given entities are equal.
+        /// </summary>
+        /// <param name="existing">
+        /// The entity already in the repository.
+        /// </param>
+        /// <param name="other">
+        /// The entity provided by the caller for update.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// This method is used by the update operation to check
+        /// if the entity in the repository is the same as the one
+        /// provided by the caller, and eventually skip the update
+        /// on the repository, to ensure idempotency.
+        /// </para>
+        /// <para>
+        /// The default implementation of this method tries to
+        /// use the <see cref="IEquatable{T}.Equals(T)"/> method
+        /// to check if the entities are equal, otherwise it uses
+        /// the native <see cref="object.Equals(object)"/> method.
+        /// </para>
+        /// </remarks>
+        /// <returns>
+        /// Returns <c>true</c> if the entities are equal, otherwise
+        /// it returns <c>false</c>.
+        /// </returns>
+        protected virtual bool AreEqual(TEntity existing, TEntity other) {
+            if (existing == null && other == null)
+                return true;
+            if (existing == null)
+                return false;
 
-			return entity1.Equals(entity2);
+			if (typeof(IEquatable<TEntity>).IsAssignableFrom(typeof(TEntity)))
+				return ((IEquatable<TEntity>)existing).Equals(other);
+
+			return existing.Equals(other);
 		}
 
+        /// <summary>
+        /// Updates the given entity in the repository.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity to be updated.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// The default implementation of this method first
+        /// attempts to find an entity in the repository with
+        /// the same key of the given entity, and if found, it
+        /// verifies the equality of the two entities using the
+        /// <see cref="AreEqual(TEntity, TEntity)"/> function.
+        /// If the two entities are equal, the method returns
+        /// quickly an instance of <see cref="OperationResult"/>
+        /// that indicates the entity was not modified.
+        /// </para>
+        /// <para>
+        /// The method can reurn a failure result if the entity 
+        /// does not have an associated key, or if the entity is 
+        /// not found in the repository.
+        /// </para>
+        /// </remarks>
+        /// <returns>
+        /// Returns a result object that describes the result of the
+        /// update operation.
+        /// </returns>
 		public virtual async Task<OperationResult> UpdateAsync(TEntity entity) {
 			ThrowIfDisposed();
 
@@ -410,14 +641,14 @@ namespace Deveel.Data {
 
 				var validation = await ValidateAsync(entity);
 				if (validation != null && validation.Count > 0) {
-					Logger.LogEntityNotValid();
+					Logger.LogEntityNotValid(typeof(TEntity));
 					return ValidationFailed(EntityErrorCodes.NotValid, validation);
 				}
 
 				entity = await OnUpdatingEntityAsync(entity);
 
 				if (!await Repository.UpdateAsync(entity, CancellationToken)) {
-					Logger.LogEntityNotModified(entityKey);
+					Logger.LogEntityNotModified(typeof(TEntity), entityKey);
 					return NotModified();
 				}
 
@@ -425,11 +656,34 @@ namespace Deveel.Data {
 
 				return Success();
 			} catch (Exception ex) {
-				Logger.LogEntityUnknownError(entityKey, ex);
+				LogEntityUnknownError(entityKey, ex);
 				return Fail(EntityErrorCodes.UnknownError, "An unknown error occurred while updating the entity");
 			}
 		}
 
+        /// <summary>
+        /// Removes the given entity from the repository.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity to be removed.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// The default implementation of this method first tries
+        /// to find an entity in the repository with the same key
+        /// and if not found, it returns a failure result.
+        /// </para>
+        /// <para>
+        /// If the entity is found, the method attempts to remove
+        /// it from the repository, and if the operation is not
+        /// performed by the repository, it returns a result that
+        /// indicates the entity was not modified.
+        /// </para>
+        /// </remarks>
+        /// <returns>
+        /// Returns an instance of <see cref="OperationResult"/> that
+        /// describes the result of the operation.
+        /// </returns>
 		public virtual async Task<OperationResult> RemoveAsync(TEntity entity) {
 			ThrowIfDisposed();
 
@@ -452,28 +706,57 @@ namespace Deveel.Data {
 
 				return Success();
 			} catch (Exception ex) {
-				Logger.LogEntityUnknownError(entityKey, ex);
+				LogEntityUnknownError(entityKey, ex);
 				return Fail(EntityErrorCodes.UnknownError, "An unknown error occurred while removing the entity");
 			}
 		}
 
+        /// <summary>
+        /// Removes the given range of entities from the repository.
+        /// </summary>
+        /// <param name="entities">
+        /// The range of entities to be removed.
+        /// </param>
+        /// <returns>
+        /// Returns an instance of <see cref="OperationResult"/> that
+        /// describes the result of the operation.
+        /// </returns>
 		public virtual async Task<OperationResult> RemoveRangeAsync(IEnumerable<TEntity> entities) {
 			ThrowIfDisposed();
 
 			try {
-				// TODO: log this operation
+                Logger.LogRemovingEntityRange();
+
 				// TODO: should we check for the entities to be valid?
 
 				await Repository.RemoveRangeAsync(entities, CancellationToken);
 
+                Logger.LogEntityRangeRemoved();
+
 				return Success();
 			} catch (Exception ex) {
-				Logger.LogUnknownError(ex);
+				LogUnknownError(ex);
 				return Fail(EntityErrorCodes.UnknownError, "An unknown error occurred while removing the entities");
 			}
 		}
 
-		public virtual async Task<TEntity?> FindByKeyAsync(object key) {
+        /// <summary>
+        /// Finds an entity in the repository with the given key.
+        /// </summary>
+        /// <param name="key">
+        /// The key of the entity to be found.
+        /// </param>
+        /// <returns>
+        /// Returns an instance of <typeparamref name="TEntity"/> that
+        /// is identified by the given key, or <c>null</c> if no entity
+        /// was found for the given key.
+        /// </returns>
+        /// <exception cref="OperationException">
+        /// Thrown when an unknown error occurs while looking for the entity.
+        /// </exception>
+        // TODO: Is there any use case for using OperationResult<TEntity> here
+        //       instead of returning an entity?
+        public virtual async Task<TEntity?> FindByKeyAsync(object key) {
 			ThrowIfDisposed();
 
 			ArgumentNullException.ThrowIfNull(key, nameof(key));
@@ -482,36 +765,83 @@ namespace Deveel.Data {
 				// TODO: log this operation
 
 				return await Repository.FindByKeyAsync(key, CancellationToken);
-			} catch (OperationException ex) {
-				Logger.LogEntityUnknownError(key, ex);
-				throw;
 			} catch (Exception ex) {
-				Logger.LogEntityUnknownError(key, ex);
+				LogEntityUnknownError(key, ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
 			}
 		}
 
-		public virtual async Task<TEntity?> FindAsync(IQueryFilter filter) {
+        /// <summary>
+        /// Finds an entity in the repository that matches the given filter.
+        /// </summary>
+        /// <param name="filter">
+        /// The filter to be used to look for the entity.
+        /// </param>
+        /// <returns>
+        /// Returns the first instance of <typeparamref name="TEntity"/> that
+        /// matches the given filter, or <c>null</c> if no entity was found.
+        /// </returns>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the repository does not support filters.
+        /// </exception>
+        /// <exception cref="OperationException">
+        /// Thrown when an unknown error occurs while looking for the entity.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when the given filter is <c>null</c>.
+        /// </exception>
+        /// <seealso cref="IFilterableRepository{TEntity}.FindAsync(IQueryFilter, CancellationToken)"/>
+        // TODO: Is there any use case for using OperationResult<TEntity> here
+        //       instead of returning the entity?
+        public virtual async Task<TEntity?> FindFirstAsync(IQueryFilter filter) {
 			ThrowIfDisposed();
 
 			if (!SupportsFilters)
 				throw new NotSupportedException("The repository does not support filters");
 
+            ArgumentNullException.ThrowIfNull(filter, nameof(filter));
+
 			try {
 				return await FilterableRepository.FindAsync(filter, CancellationToken);
-			} catch (OperationException ex) {
-				Logger.LogUnknownError(ex);
-				throw;
 			} catch (Exception ex) {
-				Logger.LogUnknownError(ex);
+				LogUnknownError(ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
 			}
 		}
 
-		public Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> filter) {
-			return FindAsync(QueryFilter.Where(filter));
-		}
+        /// <summary>
+        /// Finds the first entity in the repository that matches the 
+        /// given filter expression.
+        /// </summary>
+        /// <param name="filter">
+        /// The filter expression to be used to look for the entity.
+        /// </param>
+        /// <returns>
+        /// Returns the first instance of <typeparamref name="TEntity"/> that
+        /// mathces the given filter, or <c>null</c> if no entity was found.
+        /// </returns>
+        /// <seealso cref="FindFirstAsync(IQueryFilter)"/>
+		public Task<TEntity?> FindFirstAsync(Expression<Func<TEntity, bool>>? filter = null)
+            => FindFirstAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter));
 
+        /// <summary>
+        /// Finds all the entities in the repository that match the given filter.
+        /// </summary>
+        /// <param name="filter">
+        /// The filter to be used to look for the entities.
+        /// </param>
+        /// <returns>
+        /// Returns a list of <typeparamref name="TEntity"/> that match the
+        /// given filter.
+        /// </returns>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the repository does not support filters.
+        /// </exception>
+        /// <exception cref="OperationException">
+        /// Thrown when an unknown error occurs while looking for the entities.
+        /// </exception>
+        // TODO: Is there any use case for using OperationResult<IList<TEntity>> here
+        //       instead of returning a list of entities?
 		public virtual async Task<IList<TEntity>> FindAllAsync(IQueryFilter filter) {
 			ThrowIfDisposed();
 
@@ -519,20 +849,55 @@ namespace Deveel.Data {
 				throw new NotSupportedException("The repository does not support filters");
 
 			try {
+                // TODO: log this operation ...
+
 				return await FilterableRepository.FindAllAsync(filter, CancellationToken);
-			} catch (OperationException ex) {
-				Logger.LogUnknownError(ex);
-				throw;
 			} catch (Exception ex) {
-				Logger.LogUnknownError(ex);
+				LogUnknownError(ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
 			}
 		}
 
-		public virtual Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> filter) {
-			return FindAllAsync(QueryFilter.Where(filter));
-		}
+        /// <summary>
+        /// Finds all the entities in the repository that match the given 
+        /// filter expression.
+        /// </summary>
+        /// <param name="filter">
+        /// The filter expression to be used to look for the entities.
+        /// </param>
+        /// <remarks>
+        /// This method is a shortcut to the <see cref="FindAllAsync(IQueryFilter)"/>
+        /// using an instance of <see cref="ExpressionQueryFilter{TEntity}"/> as
+        /// argument.
+        /// </remarks>
+        /// <returns>
+        /// Returns a list of <typeparamref name="TEntity"/> that match the
+        /// given filter.
+        /// </returns>
+        /// <seealso cref="FindAllAsync(IQueryFilter)"/>
+        /// <seealso cref="ExpressionQueryFilter{TEntity}"/>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the repository does not support filters.
+        /// </exception>
+        public Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>>? filter = null)
+            => FindAllAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter));
 
+        /// <summary>
+        /// Counts the number of entities in the repository that match
+        /// the given filter.
+        /// </summary>
+        /// <param name="filter">
+        /// The filter to be used to look for the entities.
+        /// </param>
+        /// <returns>
+        /// Returns the number of entities that match the given filter.
+        /// </returns>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the repository does not support filters.
+        /// </exception>
+        /// <exception cref="OperationException">
+        /// Thrown when an unknown error occurs while looking for the entities.
+        /// </exception>
 		public virtual Task<long> CountAsync(IQueryFilter filter) {
 			ThrowIfDisposed();
 
@@ -544,14 +909,35 @@ namespace Deveel.Data {
 			try {
 				return FilterableRepository.CountAsync(filter, CancellationToken);
 			} catch (Exception ex) {
-				Logger.LogUnknownError(ex);
+				LogUnknownError(ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
 			}
 		}
 
-		public virtual Task<long> CountAsync(Expression<Func<TEntity, bool>>? filter = null) {
-			return CountAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter));
-		}
+        /// <summary>
+        /// Counts the number of entities in the repository that match
+        /// the given filter expression.
+        /// </summary>
+        /// <param name="filter">
+        /// The filter expression to be used to look for the entities.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// This method is a shortcut to the <see cref="CountAsync(IQueryFilter)"/>
+        /// overload, using a <see cref="ExpressionQueryFilter{TEntity}"/> as
+        /// argument of the method.
+        /// </para>
+        /// <para>
+        /// When the given filter is <c>null</c>, the method uses an
+        /// instance of <see cref="QueryFilter.Empty"/> as argument,
+        /// that has the effect to count all the entities in the repository.
+        /// </para>
+        /// </remarks>
+        /// <returns>
+        /// Returns the number of entities that match the given filter.
+        /// </returns>
+		public Task<long> CountAsync(Expression<Func<TEntity, bool>>? filter = null)
+            => CountAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter));
 
 		public virtual async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> query) {
 			ThrowIfDisposed();
@@ -564,7 +950,7 @@ namespace Deveel.Data {
 
 				return await PageableRepository.GetPageAsync(query, CancellationToken);
 			} catch (Exception ex) {
-				Logger.LogUnknownError(ex);
+				LogUnknownError(ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
 			}
 		}

@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Xunit.Abstractions;
@@ -265,8 +267,17 @@ namespace Deveel.Data {
 			Assert.Null(found);
 		}
 
+        [Fact]
+        public async Task FindByKey_WrongKey() {
+            var key = Random.Shared.Next(0, 100);
+
+            var error = await Assert.ThrowsAsync<OperationException>(() => Manager.FindByKeyAsync(key));
+
+            Assert.Equal(EntityErrorCodes.UnknownError, error.ErrorCode);
+        }
+
 		[Fact]
-		public async Task FindOneFiltered() {
+		public async Task FindFirstFiltered() {
 			var person = People
 				.Where(x => x.FirstName.StartsWith("A"))
 				.OrderBy(x => x.Id)
@@ -274,11 +285,25 @@ namespace Deveel.Data {
 
 			Assert.NotNull(person);
 
-			var found = await Manager.FindAsync(x => x.FirstName.StartsWith("A"));
+			var found = await Manager.FindFirstAsync(x => x.FirstName.StartsWith("A"));
 
 			Assert.NotNull(found);
 			Assert.Equal(person.Id, found.Id);
 		}
+
+        [Fact]
+        public async Task FindFirst() {
+            var person = People
+                .OrderBy(x => x.Id)
+                .FirstOrDefault();
+
+            Assert.NotNull(person);
+
+            var found = await Manager.FindFirstAsync();
+
+            Assert.NotNull(found);
+            Assert.Equal(person.Id, found.Id);
+        }
 
 		[Fact]
 		public async Task FindAllFiltered() {
@@ -305,5 +330,42 @@ namespace Deveel.Data {
 
 			Assert.Equal(People.Count(x => x.FirstName.StartsWith("A")), count);
 		}
+
+        [Fact]
+        public void QueryEntities() {
+            var people = People
+                .Where(x => x.FirstName.StartsWith("A"))
+                .ToList();
+
+            var entities = (Manager.GetType()
+                .GetProperty("Entities", BindingFlags.Instance | BindingFlags.NonPublic)?
+                .GetValue(Manager) as IQueryable<Person>);
+
+            Assert.NotNull(entities);
+
+            var found = entities
+                .Where(x => x.FirstName.StartsWith("A"))
+                .ToList();
+
+            Assert.NotNull(found);
+            Assert.Equal(people.Count, found.Count);
+        }
+
+        [Fact]
+        public async Task GetSimplePage() {
+            var totalPeople = People.Count();
+            var totalPages = (int)Math.Ceiling((double)totalPeople / 10);
+
+            var query = new PageQuery<Person>(1, 10);
+            var page = await Manager.GetPageAsync(query);
+
+            Assert.NotNull(page);
+            Assert.Equal(1, page.Request.Page);
+            Assert.Equal(10, page.Request.Size);
+            Assert.Equal(totalPages, page.TotalPages);
+            Assert.Equal(totalPeople, page.TotalItems);
+            Assert.NotNull(page.Items);
+            Assert.Equal(10, page.Items.Count);
+        }
 	}
 }

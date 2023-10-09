@@ -43,10 +43,10 @@ namespace Deveel.Data {
 			return connection.GetDatabase();
 		}
 
-		public static new MongoDbConnection<TContext> FromUrl(MongoUrl url)
+		public static MongoDbConnection<TContext> FromUrl(MongoUrl url)
 			=> new MongoDbConnection<TContext>(MongoDbConnection.FromUrl(url));
 
-		public static new MongoDbConnection<TContext> FromConnectionString(string connectionString)
+		public static MongoDbConnection<TContext> FromConnectionString(string connectionString)
 			=> new MongoDbConnection<TContext>(MongoDbConnection.FromConnectionString(connectionString));
 	}
 }

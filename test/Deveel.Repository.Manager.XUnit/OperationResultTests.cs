@@ -134,19 +134,42 @@ namespace Deveel {
 			Assert.Equal(default, result.Value);
 		}
 
+        [Theory]
+        [InlineData(OperationResultType.Success, "success invoked")]
+        [InlineData(OperationResultType.Error, "failed invoked")]
+        [InlineData(OperationResultType.NotModified, "not modified invoked")]
+        public static async Task HandleAsync(OperationResultType resultType, string expected) {
+            var result = new OperationResult(resultType);
+
+            string? invoked = null;
+
+            await result.HandleAsync(r => {
+                invoked = r.ResultType switch {
+                    OperationResultType.Success => "success invoked",
+                    OperationResultType.Error => "failed invoked",
+                    OperationResultType.NotModified => "not modified invoked",
+                    _ => throw new InvalidOperationException()
+                };
+
+                return Task.CompletedTask;
+            });
+
+            Assert.Equal(expected, invoked);
+        }
+
 		[Theory]
 		[InlineData(OperationResultType.Success, "success invoked")]
 		[InlineData(OperationResultType.Error, "failed invoked")]
 		[InlineData(OperationResultType.NotModified, "not modified invoked")]
-		public static async Task MapAsync_NoArgs(OperationResultType resultType, string expected) {
+		public static async Task HandleAsync_NoArgs(OperationResultType resultType, string expected) {
 			var result = new OperationResult(resultType);
 
 			string? invoked = null;
-			await result.MapAsync(
+			await result.HandleAsync(
 				ifSuccess: () => {
 					invoked = "success invoked";
 					return Task.CompletedTask;
-			},
+			    },
 				ifFailed: () => {
 					invoked = "failed invoked";
 					return Task.CompletedTask;
@@ -163,11 +186,11 @@ namespace Deveel {
 		[InlineData(OperationResultType.Success, "success invoked")]
 		[InlineData(OperationResultType.Error, "failed invoked")]
 		[InlineData(OperationResultType.NotModified, "not modified invoked")]
-		public static async Task MapAsync_WithArgs(OperationResultType resultType, string expected) {
+		public static async Task HandleAsync_WithArgs(OperationResultType resultType, string expected) {
 			var result = new OperationResult(resultType);
 
 			string? invoked = null;
-			await result.MapAsync(
+			await result.HandleAsync(
 				ifSuccess: success => {
 					invoked = "success invoked";
 					return Task.CompletedTask;

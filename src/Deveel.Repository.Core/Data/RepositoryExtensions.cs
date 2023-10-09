@@ -306,15 +306,46 @@ namespace Deveel.Data {
 		/// </exception>
 		public static Task<PageResult<TEntity>> GetPageAsync<TEntity>(this IRepository<TEntity> repository, int page, int size, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.RequirePageable().GetPageAsync(new PageQuery<TEntity>(page, size), cancellationToken);
+			=> repository.GetPageAsync(new PageQuery<TEntity>(page, size), cancellationToken);
 
-
-		public static PageResult<TEntity> GetPage<TEntity>(this IRepository<TEntity> repository, PageQuery<TEntity> request)
+        /// <summary>
+        /// Gets a page of entities from the repository, given
+        /// the query object that defines the scope
+        /// </summary>
+        /// <typeparam name="TEntity">
+        /// The type of entity handled by the repository.
+        /// </typeparam>
+        /// <param name="repository">
+        /// The instance of the repository to use to retrieve the page.
+        /// </param>
+        /// <param name="query">
+        /// The query object that defines the scope of the page to retrieve
+        /// </param>
+		/// <remarks>
+		/// <para>
+		/// This method attempts to cast the given repository to a
+		/// <see cref="IPageableRepository{TEntity}"/> and invoke the
+		/// native method <see cref="IPageableRepository{TEntity}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>.
+		/// </para>
+		/// <para>
+		/// If the repository does not implement the interface, the method
+		/// attempts to cast it to a <see cref="IQueryableRepository{TEntity}"/>
+		/// and invoke the a paging operation on the <see cref="IQueryable{T}"/>.
+		/// </para>
+		/// </remarks>
+        /// <returns>
+        /// Returns an instance of <see cref="PageResult{TEntity}"/> that
+        /// represents the paged result of the query.
+        /// </returns>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the repository does not support paging or querying.
+        /// </exception>
+		public static PageResult<TEntity> GetPage<TEntity>(this IRepository<TEntity> repository, PageQuery<TEntity> query)
 			where TEntity : class {
 			if (repository.IsPageable())
-				return repository.RequirePageable().GetPage(request);
+				return repository.RequirePageable().GetPage(query);
 			if (repository.IsQueryable())
-				return repository.RequireQueryable().GetPage(request);
+				return repository.RequireQueryable().GetPage(query);
 
 			throw new NotSupportedException("The repository does not support paging");
 		}
@@ -366,6 +397,18 @@ namespace Deveel.Data {
 		/// <param name="cancellationToken">
 		/// A token used to cancel the operation.
 		/// </param>
+        /// <remarks>
+        /// <para>
+        /// This method attempts to cast the given repository to a
+        /// <see cref="IFilterableRepository{TEntity}"/> to invoke the
+        /// native method <see cref="IFilterableRepository{TEntity}.ExistsAsync(IQueryFilter, CancellationToken)"/>.
+        /// </para>
+        /// <para>
+        /// When the repository does not implement the interface, the method
+        /// attempts to cast it to a <see cref="IQueryableRepository{TEntity}"/>
+        /// to invoke the a query operation on the <see cref="IQueryable{T}"/>.
+        /// </para>
+        /// </remarks>
 		/// <returns>
 		/// Returns <c>true</c> if any entity exists in the repository,
 		/// or <c>false</c> if not.
@@ -471,11 +514,22 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Counts the number of entities in the repository
 		/// </summary>
-		/// <typeparam name="TEntity"></typeparam>
-		/// <param name="repository"></param>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
-		/// <exception cref="NotSupportedException"></exception>
+		/// <typeparam name="TEntity">
+        /// The type of entity handled by the repository.
+        /// </typeparam>
+		/// <param name="repository">
+        /// The instance of the repository to use to count the entities.
+        /// </param>
+		/// <param name="cancellationToken">
+        /// A token used to cancel the operation.
+        /// </param>
+		/// <returns>
+        /// Returns the number of entities in the repository.
+        /// </returns>
+		/// <exception cref="NotSupportedException">
+        /// Thrown when the repository does not support querying or filtering.
+        /// </exception>
+        /// <seealso cref="IFilterableRepository{TEntity}.CountAsync(IQueryFilter, CancellationToken)"/>
 		public static Task<long> CountAllAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
@@ -486,10 +540,41 @@ namespace Deveel.Data {
 			throw new NotSupportedException("The repository does not support querying");
 		}
 
+        /// <summary>
+        /// Counts the number of entities in the repository,
+        /// given a filter expression to match.
+        /// </summary>
+        /// <typeparam name="TEntity">
+        /// The type of entity handled by the repository.
+        /// </typeparam>
+        /// <param name="repository">
+        /// The instance of the repository to use to count the entities.
+        /// </param>
+        /// <param name="filter">
+        /// The filter used to count the matching entities.
+        /// </param>
+        /// <returns>
+        /// Returns the number of entities in the repository that match
+        /// the given filter.
+        /// </returns>
+        /// <seealso cref="CountAsync{TEntity}(IRepository{TEntity}, Expression{Func{TEntity, bool}}, CancellationToken)"/>
         public static long Count<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter)
             where TEntity : class
             => repository.CountAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
 
+        /// <summary>
+        /// Counts the number of entities in the repository
+        /// </summary>
+        /// <typeparam name="TEntity">
+        /// The type of entity handled by the repository.
+        /// </typeparam>
+        /// <param name="repository">
+        /// The instance of the repository to use to count the entities.
+        /// </param>
+        /// <returns>
+        /// Returns the number of entities in the repository.
+        /// </returns>
+        /// <seealso cref="CountAllAsync{TEntity}(IRepository{TEntity}, CancellationToken)"/>
 		public static long CountAll<TEntity>(this IRepository<TEntity> repository)
 			where TEntity : class
 			=> repository.CountAllAsync().ConfigureAwait(false).GetAwaiter().GetResult();
@@ -498,34 +583,53 @@ namespace Deveel.Data {
 
         #region FindById
 
-        public static TEntity? FindById<TEntity>(this IRepository<TEntity> store, string id)
+        /// <summary>
+        /// Finds a single entity in the repository, given the key
+        /// that uniquely identifies it
+        /// </summary>
+        /// <typeparam name="TEntity">
+        /// The type of entity handled by the repository.
+        /// </typeparam>
+        /// <param name="repository">
+        /// The instance of the repository to use to find the entity.
+        /// </param>
+        /// <param name="key">
+        /// The key that uniquely identifies the entity to find.
+        /// </param>
+        /// <returns>
+        /// Returns an instance of <typeparamref name="TEntity"/> that
+        /// is identified by the given key, or <c>null</c> if no entity
+        /// with the given key exists in the repository.
+        /// </returns>
+        /// <seealso cref="IRepository{TEntity}.FindByKeyAsync(object, CancellationToken)"/>
+        public static TEntity? FindByKey<TEntity>(this IRepository<TEntity> repository, object key)
             where TEntity : class
-            => store.FindByKeyAsync(id).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.FindByKeyAsync(key).ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion
 
         #region FindFirst
 
-        public static Task<TEntity?> FindAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.RequireFilterable().FindAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
 
-        public static Task<TEntity?> FindAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
+        public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.RequireFilterable().FindAsync(QueryFilter.Empty, cancellationToken);
 
-        public static TEntity? Find<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
+        public static TEntity? FindFirst<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
             where TEntity : class
             => repository.RequireFilterable().FindAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public static TEntity? Find<TEntity>(this IRepository<TEntity> repository)
+        public static TEntity? FindFirst<TEntity>(this IRepository<TEntity> repository)
             where TEntity : class
-            => repository.RequireFilterable().Find(QueryFilter.Empty);
+            => repository.RequireFilterable().FindFirst(QueryFilter.Empty);
 
         #endregion
 
 
-        #region Find
+        #region FindAll
 
         public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
