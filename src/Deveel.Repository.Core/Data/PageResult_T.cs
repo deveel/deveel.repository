@@ -39,7 +39,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the <paramref name="request"/> is <c>null</c>.
 		/// </exception>
-		public PageResult(PageQuery<TEntity> request, int totalItems, IEnumerable<TEntity>? items = null){
+		public PageResult(PageQuery<TEntity> request, int totalItems, IEnumerable<TEntity>? items = null) {
 			if (totalItems < 0)
 				throw new ArgumentOutOfRangeException(nameof(totalItems), "The number of total items must be zero or more");
 

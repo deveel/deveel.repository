@@ -253,6 +253,14 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
+		public void FindFirstSync() {
+			var result = Repository.FindFirst();
+
+			Assert.NotNull(result);
+			Assert.NotNull(result.Id);
+		}
+
+		[Fact]
 		public async Task ExistsFiltered() {
 			var person = await RandomPersonAsync();
 			var firstName = person.FirstName;
@@ -355,16 +363,17 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task GetSimplePage() {
-			var request = new PageQuery<TPerson>(1, 10);
+			var totalItems = People.Count;
+			var totalPages = (int)Math.Ceiling((double)totalItems / 10);
 
-			var result = await Repository.GetPageAsync(request);
+			var result = await Repository.GetPageAsync(1, 10);
 
 			Assert.NotNull(result);
-			Assert.Equal(10, result.TotalPages);
-			Assert.Equal(100, result.TotalItems);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(totalItems, result.TotalItems);
 			Assert.NotNull(result.Items);
 			Assert.NotEmpty(result.Items);
-			Assert.Equal(10, result.Items.Count());
+			Assert.Equal(10, result.Items.Count);
 		}
 
 		[Fact]

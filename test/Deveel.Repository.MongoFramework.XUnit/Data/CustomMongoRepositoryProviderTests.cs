@@ -47,7 +47,7 @@ namespace Deveel.Data {
         }
 
         protected virtual void AddMongoDbContext(IServiceCollection services) {
-            services.AddMongoDbContext<PersonsDbContext>((tenant, builder) => builder.UseConnection(tenant.ConnectionString!));
+            services.AddMongoDbContext<PersonsDbContext>((tenant, builder) => builder.UseConnection(tenant!.ConnectionString!));
             AddRepository(services);
         }
 

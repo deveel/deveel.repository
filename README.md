@@ -37,6 +37,10 @@ The framework is based on a _kernel_ package, that provides the basic interfaces
 | _Deveel.Repository.DynamicLinq_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.DynamicLinq.svg)](https://www.nuget.org/packages/Deveel.Repository.DynamicLinq/) |
 | _Deveel.Repository.Manager_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.Manager.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager/) |
 
+### Requirements
+
+The library is built on top of the _[.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)_ and requires a runtime that supports it: ensure that your application is configured to use the latest version of the runtime.
+
 ### The Kernel Package
 
 If you are interested developing a driver for a specific data source, you can use the _kernel_ package as a dependency, and implement the interfaces to access the data source: you will still receive many benefits by using the abstractions provided by the library, simplifying your development and usage.
@@ -353,6 +357,22 @@ services.AddEntityRepository<MyEntity>();
 #### Filtering Data
 
 The `EntityRepository<TEntity>` implements both the `IQueryableRepository<TEntity>` and the `IFilterableRepository<TEntity>` interfaces, and allows to query the data only through the `ExpressionFilter<TEntity>` class or through lambda expressions of type `Expression<Func<TEntity, bool>>`.
+
+## Reposory Providers
+
+Some scenarios of multi-tenant applications require to have a different repository for each tenant, and to be able to switch between the repositories according to the tenant that is currently active.
+
+The preferred approach of the library is to use the [Finbuckle.MultiTenant](https://www.finbuckle.com/MultiTenant) framework to implement multi-tenant applications, and to use the `ITenantInfo` interface to retrieve the current tenant information: this is obtained by scanning the current HTTP request, and retrieving the tenant information from the request.
+
+In some cases, like in background services, where the identity of the tenant is not available through the user (eg. _machine-to-machine_ communication), it is possible to obtain the repository for a specific tenant by using the `IRepositoryProvider<TEntity>` interface: these are still drivers-specific, and produce instances of the repository for a specific tenant and specific driver.
+
+### The `IRepositoryProvider<TEntity>` interface
+
+The `IRepositoryProvider<TEntity>` exposes a single method that allows to obtain an instance of `IRepository<TEntity>` for a specific tenant.
+
+```csharp
+Task<IRepository<TEntity>> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken = default);
+```
 
 ## Entity Manager
 

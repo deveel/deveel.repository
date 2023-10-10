@@ -610,10 +610,51 @@ namespace Deveel.Data {
 
         #region FindFirst
 
+		/// <summary>
+		/// Finds the first entity in the repository that matches
+		/// the given filter expression
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entity.
+		/// </param>
+		/// <param name="filter">
+		/// The filter expression used to find the entity.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <typeparamref name="TEntity"/> that
+		/// can be identified by the given filter, or <c>null</c> if no
+		/// entity matches the given filter.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support filtering.
+		/// </exception>
         public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.RequireFilterable().FindAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
 
+		/// <summary>
+		/// Finds the first entity in the repository, naturally ordered.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entity.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <typeparamref name="TEntity"/> that
+		/// is the first entity in the repository, or <c>null</c> if the
+		/// repository is empty.
+		/// </returns>
         public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.RequireFilterable().FindAsync(QueryFilter.Empty, cancellationToken);

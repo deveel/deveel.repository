@@ -42,7 +42,7 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 
 			services.AddMongoDbContext<MongoDbContext>((tenant, builder) => {
-				builder.UseConnection(tenant.ConnectionString);
+				builder.UseConnection(tenant!.ConnectionString!);
 			});
 
 			services.AddSingleton<ITenantInfo>(new TenantInfo {

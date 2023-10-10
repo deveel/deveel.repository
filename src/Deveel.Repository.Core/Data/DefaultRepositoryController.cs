@@ -96,14 +96,6 @@ namespace Deveel.Data {
 			LogTrace("Resolving a repository for entity of type {EntityType}", typeof(TEntity).Name);
 
 			var repository = serviceProvider.GetService<IRepository<TEntity>>();
-
-			//if (repository == null) {
-			//	LogTrace("No generic repository handling the entity '{EntityType}' was found: trying the base forms", typeof(TEntity).Name);
-
-			//	// less optimal lookup
-			//	repository = serviceProvider.GetServices<IRepository>()
-			//		.FirstOrDefault(x => x.EntityType == typeof(TEntity));
-			//}
 			
 			if (repository == null)
 				throw new NotSupportedException($"Unable to resolve any repository for entities of type {typeof(TEntity)}");
@@ -113,19 +105,6 @@ namespace Deveel.Data {
 
 			return repository as IControllableRepository;
 		}
-
-		//private IControllableRepository? RequireControllable(IRepository repository) {
-		//	if (!(repository is IControllableRepository controllable)) {
-		//		if (!options.IgnoreNotControllable)
-		//			throw new NotSupportedException($"The repository of type '{repository.GetType()}' is not controllable");
-
-		//		LogTrace("The repository {RepositoryType} is not controllable and the service is ignoring it", repository.GetType().Name);
-
-		//		return null;
-		//	}
-
-		//	return controllable;
-		//}
 
 		private IRepositoryProvider<TEntity> RequireRepositoryProvider<TEntity>()
 			where TEntity : class {
