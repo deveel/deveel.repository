@@ -19,18 +19,10 @@ jobs:
         min-versions-to-keep: 10
         delete-only-pre-release-versions: "true"
 
-    - name: Remove the Old Deveel.Repository.EntityModel Package
+    - name: Remove the Old Deveel.Repository.DynamicLinq Package
       uses: actions/delete-package-versions@v4
       with:
-        package-name: 'Deveel.Repository.EntityModel'
-        package-type: 'nuget'
-        min-versions-to-keep: 10
-        delete-only-pre-release-versions: "true"
-
-    - name: Remove the Old Deveel.Repository.Filters Package
-      uses: actions/delete-package-versions@v4
-      with:
-        package-name: 'Deveel.Repository.Filters'
+        package-name: 'Deveel.Repository.DynamicLinq'
         package-type: 'nuget'
         min-versions-to-keep: 10
         delete-only-pre-release-versions: "true"
@@ -43,14 +35,6 @@ jobs:
         min-versions-to-keep: 10
         delete-only-pre-release-versions: "true"
 
-    - name: Remove the Old Deveel.Repository.MongoDb Package
-      uses: actions/delete-package-versions@v4
-      with:
-        package-name: 'Deveel.Repository.MongoDb'
-        package-type: 'nuget'
-        min-versions-to-keep: 10
-        delete-only-pre-release-versions: "true"
-
     - name: Remove the Old Deveel.Repository.MongoFramework Package
       uses: actions/delete-package-versions@v4
       with:
@@ -59,10 +43,27 @@ jobs:
         min-versions-to-keep: 10
         delete-only-pre-release-versions: "true"
 
-    - name: Remove the Old Deveel.Repository.WebModels Package
+    - name: Remove the Old Deveel.Repository.EntityFramework Package
       uses: actions/delete-package-versions@v4
       with:
-        package-name: 'Deveel.Repository.WebModels'
+        package-name: 'Deveel.Repository.EntityFramework'
+        package-type: 'nuget'
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: "true"
+
+
+    - name: Remove the Old Deveel.Repository.Manager Package
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: 'Deveel.Repository.Manager'
+        package-type: 'nuget'
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: "true"
+
+    - name: Remove the Old Deveel.Repository.Manager.DynamicLinq Package
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: 'Deveel.Repository.Manager.DynamicLinq'
         package-type: 'nuget'
         min-versions-to-keep: 10
         delete-only-pre-release-versions: "true"
