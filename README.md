@@ -32,7 +32,7 @@ The framework is based on a _kernel_ package, that provides the basic interfaces
 | ------- | ----- |
 | _Deveel.Repository.Core_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.Core.svg)](https://www.nuget.org/packages/Deveel.Repository.Core/) |
 | _Deveel.Repository.InMemory_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.InMemory.svg)](https://www.nuget.org/packages/Deveel.Repository.InMemory/) |
-| _Deveel.Repository.MongoDb_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.MongoDb.svg)](https://www.nuget.org/packages/Deveel.Repository.MongoDb/) |
+| _Deveel.Repository.MongoFramework_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.MongoFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.MongoFramework/) |
 | _Deveel.Repository.EntityFramework_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.EntityFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.EntityFramework/) |
 | _Deveel.Repository.DynamicLinq_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.DynamicLinq.svg)](https://www.nuget.org/packages/Deveel.Repository.DynamicLinq/) |
 | _Deveel.Repository.Manager_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.Manager.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager/) |
@@ -60,7 +60,7 @@ The library provides a set of drivers to access different data sources, that can
 | Driver | Package | Description |
 | ------ | ------- | ----------- |
 | _In-Memory_ | `Deveel.Repository.InMemory` | A very simple implementation of the repository pattern that stores the data in-memory. |
-| _MongoDB_ | `Deveel.Repository.MongoDb` | An implementation of the repository pattern that stores the data in a MongoDB database. |
+| _MongoDB_ | `Deveel.Repository.MongoFramework` | An implementation of the repository pattern that stores the data in a MongoDB database (using the [MongoFramework](https://github.com/turnersoftware/mongoframework) library). |
 | _Entity Framework Core_ | `Deveel.Repository.EntityFramework` | An implementation of the repository pattern that stores the data in a relational database, using the [Entity Framework Core](https://github.com/dotnet/efcore). |
 
 ## Instrumentation
