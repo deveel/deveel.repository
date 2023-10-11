@@ -358,7 +358,7 @@ services.AddEntityRepository<MyEntity>();
 
 The `EntityRepository<TEntity>` implements both the `IQueryableRepository<TEntity>` and the `IFilterableRepository<TEntity>` interfaces, and allows to query the data only through the `ExpressionFilter<TEntity>` class or through lambda expressions of type `Expression<Func<TEntity, bool>>`.
 
-## Reposory Providers
+## Repository Providers
 
 Some scenarios of multi-tenant applications require to have a different repository for each tenant, and to be able to switch between the repositories according to the tenant that is currently active.
 
