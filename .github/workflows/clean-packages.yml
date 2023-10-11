@@ -48,7 +48,7 @@ jobs:
       with:
         package-name: 'Deveel.Repository.EntityFramework'
         package-type: 'nuget'
-        min-versions-to-keep: 1
+        min-versions-to-keep: 10
         delete-only-pre-release-versions: "true"
 
 
