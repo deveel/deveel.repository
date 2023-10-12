@@ -659,11 +659,46 @@ namespace Deveel.Data {
             where TEntity : class
             => repository.RequireFilterable().FindAsync(QueryFilter.Empty, cancellationToken);
 
-        public static TEntity? FindFirst<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
+		/// <summary>
+		/// Finds the first entity in the repository that matches
+		/// the given filter expression
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entity.
+		/// </param>
+		/// <param name="filter">
+		/// The filter expression used to find the entity.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <typeparamref name="TEntity"/> that
+		/// can be identified by the given filter, or <c>null</c> if no
+		/// entity matches the given filter.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support filtering.
+		/// </exception>
+		public static TEntity? FindFirst<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
             where TEntity : class
             => repository.RequireFilterable().FindAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public static TEntity? FindFirst<TEntity>(this IRepository<TEntity> repository)
+		/// <summary>
+		/// Finds the first entity in the repository, naturally ordered.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entity.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <typeparamref name="TEntity"/> that
+		/// is the first entity in the repository, or <c>null</c> if the
+		/// repository is empty.
+		/// </returns>
+		public static TEntity? FindFirst<TEntity>(this IRepository<TEntity> repository)
             where TEntity : class
             => repository.RequireFilterable().FindFirst(QueryFilter.Empty);
 
@@ -691,18 +726,6 @@ namespace Deveel.Data {
         public static IList<TEntity> FindAll<TEntity>(this IRepository<TEntity> repository)
             where TEntity : class
             => repository.FindAll(QueryFilter.Empty);
-
-        #endregion
-
-        #region States
-
-        public static void AddState<TEntity, TStatus>(this IStateRepository<TEntity, TStatus> repository, TEntity entity, EntityStateInfo<TStatus> stateInfo)
-            where TEntity : class
-            => repository.AddStateAsync(entity, stateInfo).ConfigureAwait(false).GetAwaiter().GetResult();
-
-        public static void RemoveState<TEntity, TStatus>(this IStateRepository<TEntity, TStatus> repository, TEntity entity, EntityStateInfo<TStatus> stateInfo)
-            where TEntity : class
-            => repository.RemoveStateAsync(entity, stateInfo).ConfigureAwait(false).GetAwaiter().GetResult();
 
         #endregion
     }

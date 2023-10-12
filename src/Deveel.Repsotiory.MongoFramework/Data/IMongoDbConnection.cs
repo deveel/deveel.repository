@@ -15,6 +15,15 @@
 using MongoFramework;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// A connection to a MongoDB database that is 
+	/// specific to a given <see cref="MongoDbContext"/>
+	/// </summary>
+	/// <typeparam name="TContext">
+	/// The type of the <see cref="MongoDbContext"/> that
+	/// this connection is specific to.
+	/// </typeparam>
+	/// <seealso cref="IMongoDbConnection"/>
 	public interface IMongoDbConnection<TContext> : IMongoDbConnection where TContext : class, IMongoDbContext {
 	}
 }

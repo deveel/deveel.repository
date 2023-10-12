@@ -1,4 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Async method lacks 'await' operators and will run synchronously
+#pragma warning disable CS1998
+
+using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -96,7 +100,8 @@ namespace Deveel.Data {
 		#region PersonValidator
 
 		class PersonValidator : IEntityValidator<Person> {
-			public async IAsyncEnumerable<ValidationResult> ValidateAsync(EntityManager<Person> manager, Person entity, CancellationToken cancellationToken = default) {
+
+			public async IAsyncEnumerable<ValidationResult> ValidateAsync(EntityManager<Person> manager, Person entity, [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 				yield return new ValidationResult("Test error");
 			}
 		}
