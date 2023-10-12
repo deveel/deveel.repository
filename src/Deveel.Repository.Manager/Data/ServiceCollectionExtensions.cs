@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using Deveel.Data;
+using Deveel.Data.Caching;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -117,6 +118,50 @@ namespace Deveel.Data {
 
 			return services;
         }
+
+		public static IServiceCollection AddEntityCacheOptions<TEntity>(this IServiceCollection services, Action<EntityCacheOptions> configure) where TEntity : class {
+			ArgumentNullException.ThrowIfNull(configure, nameof(configure));
+
+			services.AddOptions<EntityCacheOptions<TEntity>>()
+				.Configure(options => {
+					configure(options);
+				});
+
+			return services;
+		}
+
+		public static IServiceCollection AddEntityCacheOptions<TEntity>(this IServiceCollection services, string configSectionPath) where TEntity : class {
+			ArgumentNullException.ThrowIfNull(configSectionPath, nameof(configSectionPath));
+
+			services.AddOptions<EntityCacheOptions<TEntity>>()
+				.BindConfiguration(configSectionPath);
+
+			return services;
+		}
+
+		public static IServiceCollection AddEntityCacheKeyGenerator(this IServiceCollection services, Type generatorType, ServiceLifetime lifetime = ServiceLifetime.Singleton) {
+			if (!generatorType.IsClass || generatorType.IsAbstract)
+				throw new ArgumentException($"The type {generatorType} is not a valid generator type");
+
+			var inheritance = generatorType.GetInterfaces()
+				.Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEntityCacheKeyGenerator<>));
+
+			foreach (var interfaceType in inheritance) {
+				var entityType = interfaceType.GetGenericArguments()[0];
+				var compareType = typeof(IEntityCacheKeyGenerator<>).MakeGenericType(entityType);
+
+				services.TryAdd(new ServiceDescriptor(compareType, generatorType, lifetime));
+			}
+
+			services.Add(new ServiceDescriptor(generatorType, generatorType, lifetime));
+
+			return services;
+		}
+
+		public static IServiceCollection AddEntityCacheKeyGenerator<TGenerator>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+			where TGenerator : class {
+			return AddEntityCacheKeyGenerator(services, typeof(TGenerator), lifetime);
+		}
 
 		/// <summary>
 		/// Registers an entity validation service in the collection of services.
