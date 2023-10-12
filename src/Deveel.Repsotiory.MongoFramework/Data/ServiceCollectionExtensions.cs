@@ -20,12 +20,54 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using MongoFramework;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// Extends the <see cref="IServiceCollection"/> to provide methods
+	/// to register a <see cref="IMongoDbContext"/> in service collections.
+	/// </summary>
     public static class ServiceCollectionExtensions {
+		/// <summary>
+		/// Adds a <see cref="IMongoDbContext"/> to the service collection
+		/// for a given tenant.
+		/// </summary>
+		/// <typeparam name="TContext">
+		/// The type of the context to register.
+		/// </typeparam>
+		/// <param name="services">
+		/// The service collection to add the context to.
+		/// </param>
+		/// <param name="connectionBuilder">
+		/// A delegate to a method that builds the connection string
+		/// for a given tenant.
+		/// </param>
+		/// <param name="lifetime">
+		/// The lifetime of the context in the service collection.
+		/// </param>
+		/// <returns>
+		/// Returns the service collection for chaining.
+		/// </returns>
 		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<ITenantInfo?, MongoConnectionBuilder> connectionBuilder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TContext : class, IMongoDbContext {
 			return services.AddMongoDbContext<TContext>((provider, builder) => connectionBuilder(provider.GetService<ITenantInfo>(), builder), lifetime);
 		}
 
+		/// <summary>
+		/// Adds a <see cref="IMongoDbContext"/> to the service collection.
+		/// </summary>
+		/// <typeparam name="TContext">
+		/// The type of the context to register.
+		/// </typeparam>
+		/// <param name="services">
+		/// The service collection to add the context to.
+		/// </param>
+		/// <param name="connectionBuilder">
+		/// A delegate to a method that builds the connection string.
+		/// </param>
+		/// <param name="lifetime">
+		/// The lifetime of the context in the service collection.
+		/// </param>
+		/// <returns>
+		/// Returns the service collection for chaining.
+		/// </returns>
 		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<MongoConnectionBuilder> connectionBuilder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TContext : class, IMongoDbContext {
 			return services.AddMongoDbContext<TContext>((IServiceProvider provider, MongoConnectionBuilder builder) => connectionBuilder(builder), lifetime);
@@ -50,6 +92,24 @@ namespace Deveel.Data {
 			services.TryAdd(new ServiceDescriptor(typeof(IMongoDbConnection), connectionFactory, lifetime));
 		}
 
+		/// <summary>
+		/// Adds a <see cref="IMongoDbContext"/> to the service collection.
+		/// </summary>
+		/// <typeparam name="TContext">
+		/// The type of the context to register.
+		/// </typeparam>
+		/// <param name="services">
+		/// The service collection to add the context to.
+		/// </param>
+		/// <param name="connectionBuilder">
+		/// A delegate to a method that builds the connection string.
+		/// </param>
+		/// <param name="lifetime">
+		/// The lifetime of the context in the service collection.
+		/// </param>
+		/// <returns>
+		/// Returns the service collection for chaining.
+		/// </returns>
 		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<IServiceProvider, MongoConnectionBuilder>? connectionBuilder = null, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TContext : class, IMongoDbContext {
 
