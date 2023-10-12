@@ -12,20 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Finbuckle.MultiTenant;
-
 using MongoDB.Driver;
 
 using MongoFramework;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// An object that is used to build a <see cref="IMongoDbConnection"/>
+	/// using a fluent pattern.
+	/// </summary>
 	public class MongoConnectionBuilder {
 		private MongoUrl? mongoUrl;
 		private Action<MongoClientSettings>? settings;
 
+		/// <summary>
+		/// Constructs the builder.
+		/// </summary>
 		public MongoConnectionBuilder() {
 		}
 
+		/// <summary>
+		/// Gets the connection instance built by this builder.
+		/// </summary>
 		public virtual IMongoDbConnection Connection {
 			get {
 				if (mongoUrl == null)
@@ -35,6 +43,18 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <summary>
+		/// Uses the specified connection string to build the connection.
+		/// </summary>
+		/// <param name="connectionString">
+		/// The connection string to use to build the connection.
+		/// </param>
+		/// <returns>
+		/// Returns this builder to allow chaining.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the given <paramref name="connectionString"/> is <c>null</c>.
+		/// </exception>
 		public MongoConnectionBuilder UseConnection(string connectionString) {
 			ArgumentNullException.ThrowIfNull(connectionString);
 
@@ -42,6 +62,18 @@ namespace Deveel.Data {
 			return this;
 		}
 
+		/// <summary>
+		/// Uses the specified encoded MongoDB URL to build the connection.
+		/// </summary>
+		/// <param name="url">
+		/// The instance of <see cref="MongoUrl"/> to use to build the connection.
+		/// </param>
+		/// <returns>
+		/// Returns this builder to allow chaining.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the given <paramref name="url"/> is <c>null</c>.
+		/// </exception>
 		public MongoConnectionBuilder UseUrl(MongoUrl url) {
 			ArgumentNullException.ThrowIfNull(url);
 
@@ -49,6 +81,15 @@ namespace Deveel.Data {
 			return this;
 		}
 
+		/// <summary>
+		/// Configures the settings of the connection.
+		/// </summary>
+		/// <param name="settings">
+		/// The action to use to configure the settings.
+		/// </param>
+		/// <returns>
+		/// Returns this builder to allow chaining.
+		/// </returns>
 		public MongoConnectionBuilder UseSettings(Action<MongoClientSettings> settings) {
 			ArgumentNullException.ThrowIfNull(settings);
 

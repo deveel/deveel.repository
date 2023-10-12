@@ -4,6 +4,17 @@
         <name>Deveel.Repository.MongoFramework</name>
     </assembly>
     <members>
+        <member name="T:Deveel.Data.IMongoDbConnection`1">
+            <summary>
+            A connection to a MongoDB database that is 
+            specific to a given <see cref="T:MongoFramework.MongoDbContext"/>
+            </summary>
+            <typeparam name="TContext">
+            The type of the <see cref="T:MongoFramework.MongoDbContext"/> that
+            this connection is specific to.
+            </typeparam>
+            <seealso cref="T:MongoFramework.IMongoDbConnection"/>
+        </member>
         <member name="T:Deveel.Data.LoggerExtensions.__TraceFindingByIdForTenantStruct">
             <summary> This API supports the logging infrastructure and is not intended to be used directly from your code. It is subject to change in the future. </summary>
         </member>
@@ -203,6 +214,74 @@
             Thrown when an error occurs while creating the entity in the
             underlying database.
             </exception>
+        </member>
+        <member name="T:Deveel.Data.ServiceCollectionExtensions">
+            <summary>
+            Extends the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to provide methods
+            to register a <see cref="T:MongoFramework.IMongoDbContext"/> in service collections.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddMongoDbContext``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Finbuckle.MultiTenant.ITenantInfo,Deveel.Data.MongoConnectionBuilder},Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Adds a <see cref="T:MongoFramework.IMongoDbContext"/> to the service collection
+            for a given tenant.
+            </summary>
+            <typeparam name="TContext">
+            The type of the context to register.
+            </typeparam>
+            <param name="services">
+            The service collection to add the context to.
+            </param>
+            <param name="connectionBuilder">
+            A delegate to a method that builds the connection string
+            for a given tenant.
+            </param>
+            <param name="lifetime">
+            The lifetime of the context in the service collection.
+            </param>
+            <returns>
+            Returns the service collection for chaining.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddMongoDbContext``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Deveel.Data.MongoConnectionBuilder},Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Adds a <see cref="T:MongoFramework.IMongoDbContext"/> to the service collection.
+            </summary>
+            <typeparam name="TContext">
+            The type of the context to register.
+            </typeparam>
+            <param name="services">
+            The service collection to add the context to.
+            </param>
+            <param name="connectionBuilder">
+            A delegate to a method that builds the connection string.
+            </param>
+            <param name="lifetime">
+            The lifetime of the context in the service collection.
+            </param>
+            <returns>
+            Returns the service collection for chaining.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddMongoDbContext``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{System.IServiceProvider,Deveel.Data.MongoConnectionBuilder},Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Adds a <see cref="T:MongoFramework.IMongoDbContext"/> to the service collection.
+            </summary>
+            <typeparam name="TContext">
+            The type of the context to register.
+            </typeparam>
+            <param name="services">
+            The service collection to add the context to.
+            </param>
+            <param name="connectionBuilder">
+            A delegate to a method that builds the connection string.
+            </param>
+            <param name="lifetime">
+            The lifetime of the context in the service collection.
+            </param>
+            <returns>
+            Returns the service collection for chaining.
+            </returns>
         </member>
     </members>
 </doc>
