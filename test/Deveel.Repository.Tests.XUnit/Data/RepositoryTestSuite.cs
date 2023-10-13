@@ -116,6 +116,24 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
+		public async Task AddNewPerson_Sync() {
+			var person = GeneratePerson();
+
+			Repository.Add(person);
+
+			var id = Repository.GetEntityKey(person);
+
+			Assert.NotNull(id);
+
+			var found = await Repository.FindByKeyAsync(id);
+			
+			Assert.NotNull(found);
+			Assert.Equal(person.FirstName, found.FirstName);
+			Assert.Equal(person.LastName, found.LastName);
+			Assert.Equal(person.Email, found.Email);
+		}
+
+		[Fact]
 		public async Task AddNewPersons() {
 			var entities = GeneratePeople(10);
 
@@ -153,7 +171,7 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task RemoveById_Existing() {
+		public async Task RemoveByKey_Existing() {
 			var key = Repository.GetEntityKey(People.Random()!);
 
 			Assert.NotNull(key);
@@ -164,7 +182,18 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task RemoveById_NotExisting() {
+		public void RemoveByKeySync_Existing() {
+			var key = Repository.GetEntityKey(People.Random()!);
+
+			Assert.NotNull(key);
+
+			var result = Repository.RemoveByKey(key);
+
+			Assert.True(result);
+		}
+
+		[Fact]
+		public async Task RemoveByKey_NotExisting() {
 			var id = GeneratePersonId();
 
 			var result = await Repository.RemoveByKeyAsync(id);
@@ -226,6 +255,17 @@ namespace Deveel.Data {
 			var peopleCount = People.Count(x => x.FirstName == firstName);
 
 			var count = await Repository.CountAsync(p => p.FirstName == firstName);
+
+			Assert.Equal(peopleCount, count);
+		}
+
+		[Fact]
+		public async Task CountFiltered_Sync() {
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
+			var peopleCount = People.Count(x => x.FirstName == firstName);
+
+			var count = Repository.Count(p => p.FirstName == firstName);
 
 			Assert.Equal(peopleCount, count);
 		}
@@ -531,6 +571,22 @@ namespace Deveel.Data {
 			person.FirstName = "John";
 
 			var result = await Repository.UpdateAsync(person);
+
+			Assert.True(result);
+
+			var updated = await Repository.FindByKeyAsync(person.Id!);
+
+			Assert.NotNull(updated);
+			Assert.Equal(person.FirstName, updated.FirstName);
+		}
+
+		[Fact]
+		public async Task UpdateExistins_Sync() {
+			var person = await RandomPersonAsync(x => x.FirstName != "John");
+
+			person.FirstName = "John";
+
+			var result = Repository.Update(person);
 
 			Assert.True(result);
 

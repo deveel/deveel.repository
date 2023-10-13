@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>Deveel</RootNamespace>
-    <VersionPrefix>1.1.7</VersionPrefix>
+    <VersionPrefix>1.2.0</VersionPrefix>
     <Authors>Antonello Provenzano</Authors>
     <Company>Deveel AS</Company>
     <Copyright>(C) 2022-2023 Deveel AS</Copyright>

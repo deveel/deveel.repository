@@ -205,7 +205,7 @@ namespace Deveel.Data {
 		/// otherwise it returns <c>false</c>.
 		/// </returns>
 		/// <seealso cref="IRepository{TEntity}.RemoveAsync(TEntity, CancellationToken)"/>
-        public static bool RemoveByKey<TEntity>(this IRepository<TEntity> repository, string key)
+        public static bool RemoveByKey<TEntity>(this IRepository<TEntity> repository, object key)
             where TEntity : class
             => repository.RemoveByKeyAsync(key).ConfigureAwait(false).GetAwaiter().GetResult();
 

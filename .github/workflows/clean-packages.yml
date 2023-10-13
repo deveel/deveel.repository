@@ -67,3 +67,11 @@ jobs:
         package-type: 'nuget'
         min-versions-to-keep: 10
         delete-only-pre-release-versions: "true"
+
+    - name: Remove the Old Deveel.Repository.Manager.EasyCaching Package
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: 'Deveel.Repository.Manager.EasyCaching'
+        package-type: 'nuget'
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: "true"

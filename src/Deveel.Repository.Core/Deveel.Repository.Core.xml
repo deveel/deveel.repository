@@ -1257,7 +1257,7 @@
             otherwise it returns <c>false</c>.
             </returns>
         </member>
-        <member name="M:Deveel.Data.RepositoryExtensions.RemoveByKey``1(Deveel.Data.IRepository{``0},System.String)">
+        <member name="M:Deveel.Data.RepositoryExtensions.RemoveByKey``1(Deveel.Data.IRepository{``0},System.Object)">
             <summary>
             Synchronously removes an entity, identified by the given key,
             from the repository
