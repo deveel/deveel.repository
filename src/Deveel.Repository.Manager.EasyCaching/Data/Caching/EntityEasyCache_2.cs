@@ -1,4 +1,18 @@
-﻿using EasyCaching.Core;
+﻿// Copyright 2023 Deveel AS
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using EasyCaching.Core;
 
 using Microsoft.Extensions.Options;
 
@@ -50,31 +64,6 @@ namespace Deveel.Data.Caching {
 		/// Gets the expiration time for the cached entities.
 		/// </summary>
 		protected virtual TimeSpan Expiration => options?.Expiration ?? TimeSpan.FromMinutes(5);
-
-		/// <summary>
-		/// Generates all the possible keys for the given entity
-		/// </summary>
-		/// <param name="entity">
-		/// The entity to generate the keys for.
-		/// </param>
-		/// <remarks>
-		/// The default implementation of this method will use the
-		/// instance of <see cref="IEntityCacheKeyGenerator{TEntity}"/>
-		/// availble in the execution context.
-		/// </remarks>
-		/// <returns>
-		/// Returns an array of strings that are the keys
-		/// for the given entity in the cache.
-		/// </returns>
-		/// <exception cref="NotSupportedException">
-		/// Thrown if the key generation is not supported by the cache.
-		/// </exception>
-		protected virtual string[] GenerateCacheKeys(TEntity entity) {
-			if (keyGenerator == null)
-				throw new NotSupportedException("The key generator is not defined for this cache");
-
-			return keyGenerator.GenerateAllKeys(entity);
-		}
 
 		/// <summary>
 		/// Attempts to convert the given entity to a version
@@ -135,16 +124,21 @@ namespace Deveel.Data.Caching {
 		}
 
 		/// <inheritdoc/>
+		public virtual string[] GenerateKeys(TEntity entity) {
+			if (keyGenerator == null)
+				throw new NotSupportedException("The key generator is not defined for this cache");
+
+			return keyGenerator.GenerateAllKeys(entity);
+		}
+
+		/// <inheritdoc/>
 		public async Task<TEntity?> GetOrSetAsync(string cacheKey, Func<Task<TEntity?>> valueFactory, CancellationToken cancellationToken = default) {
 			try {
 				var factory = Factory(valueFactory, cancellationToken);
 
 				var result = await cacheProvider.GetAsync<TCached>(cacheKey, factory, Expiration, cancellationToken);
 
-				if (result.HasValue)
-					return ConvertFromCached(result.Value);
-
-				return null;
+				return result.HasValue ? (result.IsNull ? null : ConvertFromCached(result.Value)) : null;
 			} catch (Exception ex) {
 
 				throw new RepositoryException("Could not get or set the entity in the cache", ex);
@@ -152,24 +146,20 @@ namespace Deveel.Data.Caching {
 		}
 
 		/// <inheritdoc/>
-		public async Task RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public async Task RemoveAsync(string[] cacheKeys, CancellationToken cancellationToken = default) {
 			try {
-				var keys = GenerateCacheKeys(entity);
-
-				await cacheProvider.RemoveAllAsync(keys, cancellationToken);
+				await cacheProvider.RemoveAllAsync(cacheKeys, cancellationToken);
 			} catch (Exception ex) {
 				throw new RepositoryException("Unable to remove the entity from the cache", ex);
 			}
 		}
 
 		/// <inheritdoc/>
-		public async Task SetAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public async Task SetAsync(string[] cacheKeys, TEntity entity, CancellationToken cancellationToken = default) {
 			try {
-				var keys = GenerateCacheKeys(entity);
-
-				foreach (var key in keys) {
-					await cacheProvider.SetAsync(key, entity, Expiration, cancellationToken);
-				}
+				var cached = ConvertToCached(entity);
+				var pairs = cacheKeys.ToDictionary(x => x, y => cached);
+				await cacheProvider.SetAllAsync(pairs, Expiration, cancellationToken);
 			} catch (Exception ex) {
 				throw new RepositoryException("Unable to set the entity in the cache", ex);
 			}

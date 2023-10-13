@@ -25,6 +25,7 @@ namespace Deveel.Data {
 			Assert.True(manager.SupportsPaging);
 			Assert.True(manager.SupportsQueries);
 			Assert.False(manager.IsMultiTenant);
+			Assert.Null(manager.TenantId);
 		}
 
 		[Fact]
@@ -44,6 +45,7 @@ namespace Deveel.Data {
 			Assert.True(manager.SupportsPaging);
 			Assert.True(manager.SupportsQueries);
 			Assert.False(manager.IsMultiTenant);
+			Assert.Null(manager.TenantId);
 		}
 
 		[Fact]

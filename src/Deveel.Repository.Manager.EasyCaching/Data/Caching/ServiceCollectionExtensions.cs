@@ -1,4 +1,18 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿// Copyright 2023 Deveel AS
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Deveel.Data.Caching {
@@ -90,17 +104,72 @@ namespace Deveel.Data.Caching {
 			return AddEntityEasyCache(services, typeof(TCache), lifetime);
 		}
 
+		/// <summary>
+		/// Registers the default <see cref="EntityEasyCache{TEntity}"/>
+		/// for the given entity type.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to cache.
+		/// </typeparam>
+		/// <param name="services">
+		/// The collection of services to register the cache.
+		/// </param>
+		/// <param name="lifetime">
+		/// The desired lifetime of the cache.
+		/// </param>
+		/// <returns>
+		/// Returns the given collection of services for chaining calls.
+		/// </returns>
 		public static IServiceCollection AddEntityEasyCacheFor<TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TEntity : class {
 			return AddEntityEasyCache(services, typeof(EntityEasyCache<TEntity>), lifetime);
 		}
 
+		/// <summary>
+		/// Registers the default <see cref="EntityEasyCache{TEntity}"/>
+		/// for the given entity type.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to cache.
+		/// </typeparam>
+		/// <param name="services">
+		/// The collection of services to register the cache.
+		/// </param>
+		/// <param name="configure">
+		/// A function that configures the options of the cache.
+		/// </param>
+		/// <param name="lifetime">
+		/// The desired lifetime of the cache.
+		/// </param>
+		/// <returns>
+		/// Returns the given collection of services for chaining calls.
+		/// </returns>
 		public static IServiceCollection AddEntityEasyCacheFor<TEntity>(this IServiceCollection services, Action<EntityCacheOptions> configure, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TEntity : class {
 			services.AddEntityCacheOptions<TEntity>(configure);
 			return services.AddEntityEasyCacheFor<TEntity>(lifetime);
 		}
 
+		/// <summary>
+		/// Registers the default <see cref="EntityEasyCache{TEntity}"/>
+		/// for the given entity type.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to cache.
+		/// </typeparam>
+		/// <param name="services">
+		/// The collection of services to register the cache.
+		/// </param>
+		/// <param name="configSectionPath">
+		/// The path of the configuration section that contains the options
+		/// to configure the cache.
+		/// </param>
+		/// <param name="lifetime">
+		/// The desired lifetime of the cache.
+		/// </param>
+		/// <returns>
+		/// Returns the given collection of services for chaining calls.
+		/// </returns>
 		public static IServiceCollection AddEntityEasyCacheFor<TEntity>(this IServiceCollection services, string configSectionPath, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TEntity : class {
 			services.AddEntityCacheOptions<TEntity>(configSectionPath);

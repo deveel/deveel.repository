@@ -72,17 +72,45 @@ namespace Deveel.Data {
 		public static Delegate Compile(Type[] paramTypes, string[] paramNames, string expression)
 			=> Compile(null, paramTypes, paramNames, expression);
 
+		/// <summary>
+		/// Compiles the given expression string into a function
+		/// that can be used to filter a collection of objects.
+		/// </summary>
+		/// <param name="cache">
+		/// An object that provides a cache for the compiled functions,
+		/// to avoid recompilation of the same expression.
+		/// </param>
+		/// <param name="paramTypes">
+		/// The array of types of the parameters to be used in the expressios.
+		/// </param>
+		/// <param name="paramNames">
+		/// The array of names of the parameters to be used in the expression.
+		/// </param>
+		/// <param name="expression">
+		/// The expression string to be compiled.
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="Delegate"/> that can be used to filter a collection
+		/// of objects.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown when the given <paramref name="paramTypes"/> or <paramref name="paramNames"/>
+		/// are <c>null</c>.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the given <paramref name="expression"/> is <c>null</c> 
+		/// or whitespace, or when the given <paramref name="paramTypes"/> and
+		/// <paramref name="paramNames"/> arrays are not the same size.
+		/// </exception>
+		/// <exception cref="InvalidOperationException"></exception>
 		public static Delegate Compile(IFilterCache? cache, Type[] paramTypes, string[] paramNames, string expression) {
-			if (paramTypes is null)
-				throw new ArgumentNullException(nameof(paramTypes));
-			if (paramNames is null)
-				throw new ArgumentNullException(nameof(paramNames));
+			ArgumentNullException.ThrowIfNull(paramTypes, nameof(paramTypes));
+			ArgumentNullException.ThrowIfNull(paramNames, nameof(paramNames));
+
 			if (string.IsNullOrWhiteSpace(expression))
 				throw new ArgumentException($"'{nameof(expression)}' cannot be null or whitespace.", nameof(expression));
 
-			var func = cache?.Get(expression);
-
-			if (func == null) {
+			if (cache == null || !cache.TryGet(expression, out var func)) {
 				if (paramTypes.Length != paramNames.Length)
 					throw new ArgumentException("The types and the names arrays are not the same size");
 
@@ -102,6 +130,9 @@ namespace Deveel.Data {
 				func = exp.Compile();
 				cache?.Set(expression, func);
 			}
+
+			if (func == null)
+				throw new InvalidOperationException("Could not compile the expression");
 
 			return func;
 		}
