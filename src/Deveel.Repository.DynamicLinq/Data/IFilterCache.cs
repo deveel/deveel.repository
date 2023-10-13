@@ -13,9 +13,37 @@
 // limitations under the License.
 
 namespace Deveel.Data {
+	/// <summary>
+	/// A cache of compiled filter expressions,
+	/// that is aimed to be used to avoid re-compilation
+	/// </summary>
 	public interface IFilterCache {
-		Delegate Get(string expression);
+		/// <summary>
+		/// Tries to get a compiled filter expression
+		/// from the cache.
+		/// </summary>
+		/// <param name="expression">
+		/// The expression string to be parsed
+		/// </param>
+		/// <param name="labda">
+		/// The compiled lambda expression that was cached,
+		/// or <c>null</c> if the expression was not found
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the expression was found
+		/// in the cache, otherwise <c>false</c>.
+		/// </returns>
+		bool TryGet(string expression, out Delegate? labda);
 
+		/// <summary>
+		/// Sets a compiled filter expression in the cache
+		/// </summary>
+		/// <param name="expression">
+		/// The expression string to be parsed
+		/// </param>
+		/// <param name="lambda">
+		/// The compiled lambda expression to be cached
+		/// </param>
 		void Set(string expression, Delegate lambda);
 	}
 }

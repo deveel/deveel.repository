@@ -1643,6 +1643,45 @@
             repository is empty.
             </returns>
         </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindFirst``1(Deveel.Data.IRepository{``0},Deveel.Data.IQueryFilter)">
+            <summary>
+            Finds the first entity in the repository that matches
+            the given filter expression
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The repository instance to use to find the entity.
+            </param>
+            <param name="filter">
+            The filter expression used to find the entity.
+            </param>
+            <returns>
+            Returns an instance of <typeparamref name="TEntity"/> that
+            can be identified by the given filter, or <c>null</c> if no
+            entity matches the given filter.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support filtering.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindFirst``1(Deveel.Data.IRepository{``0})">
+            <summary>
+            Finds the first entity in the repository, naturally ordered.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The repository instance to use to find the entity.
+            </param>
+            <returns>
+            Returns an instance of <typeparamref name="TEntity"/> that
+            is the first entity in the repository, or <c>null</c> if the
+            repository is empty.
+            </returns>
+        </member>
         <member name="T:Deveel.Data.RepositoryProviderExtensions">
             <summary>
             Extends the <see cref="T:Deveel.Data.IRepositoryProvider`1"/> interface

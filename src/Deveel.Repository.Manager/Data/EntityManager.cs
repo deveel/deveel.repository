@@ -15,6 +15,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 
+using Deveel.Data.Caching;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -40,6 +42,10 @@ namespace Deveel.Data {
 		/// An optional service used to validate the entity before it is added
 		/// or updated in the repository.
 		/// </param>
+		/// <param name="cache">
+		/// An optional service used to cache the entities
+		/// for faster access.
+		/// </param>
 		/// <param name="services">
 		/// The services used to resolve the dependencies of the manager.
 		/// </param>
@@ -49,11 +55,13 @@ namespace Deveel.Data {
 		public EntityManager(
 			IRepository<TEntity> repository, 
 			IEntityValidator<TEntity>? validator = null,
+			IEntityCache<TEntity>? cache = null,
 			IServiceProvider? services = null, 
 			ILoggerFactory? loggerFactory = null) {
 			ArgumentNullException.ThrowIfNull(repository, nameof(repository));
 
 			Repository = repository;
+			EntityCache = cache;
 			EntityValidator = validator;
 			Services = services;
 			Logger = loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance;
@@ -76,6 +84,17 @@ namespace Deveel.Data {
 		/// Gets the instance of the factory used to create errors
 		/// </summary>
 		protected IOperationErrorFactory? ErrorFactory => Services?.GetService<IOperationErrorFactory>();
+
+		/// <summary>
+		/// Gets an instance of the cache used to store entities
+		/// </summary>
+		protected IEntityCache<TEntity>? EntityCache { get; }
+
+		/// <summary>
+		/// Gets an instance of the generator used to create the
+		/// keys for caching entities.
+		/// </summary>
+		protected IEntityCacheKeyGenerator<TEntity>? EntityCacheKeyGenerator => Services?.GetService<IEntityCacheKeyGenerator<TEntity>>();
 
 		/// <summary>
 		/// Gets the service used to validate the entity before
@@ -121,7 +140,7 @@ namespace Deveel.Data {
         /// <exception cref="ObjectDisposedException">
         /// Throws when the service has been disposed.
         /// </exception>
-        protected virtual string? TenantId {
+        public virtual string? TenantId {
 			get {
 				ThrowIfDisposed();
 
@@ -268,6 +287,29 @@ namespace Deveel.Data {
 		protected CancellationToken GetCancellationToken(CancellationToken? cancellationToken)
 			=> cancellationToken ?? CancellationToken;
 
+		private static string GenerateCacheKeyFrom(object key) {
+			var typeName = typeof(TEntity).Name.ToLowerInvariant();
+			// TODO: support combined keys
+			return $"{typeName}:{key}";
+		}
+
+		/// <summary>
+		/// Generates a cache key for the given entity primary key.
+		/// </summary>
+		/// <param name="key">
+		/// The primary key of the entity.
+		/// </param>
+		/// <returns>
+		/// Returns a string that is the key to be used to cache
+		/// entities in the cache.
+		/// </returns>
+		protected virtual string GenerateCacheKey(object key) {
+			var generator = EntityCacheKeyGenerator;
+			if (generator == null)
+				return GenerateCacheKeyFrom(key);
+
+			return generator.GenerateKey(key);
+		}
 
         /// <summary>
         /// Checks if the service has been disposed and
@@ -491,6 +533,119 @@ namespace Deveel.Data {
 			return Task.FromResult(entity);
 		}
 
+		/// <summary>
+		/// Generates the cache keys for the given entity.
+		/// </summary>
+		/// <param name="entity">
+		/// The entity to generate the keys for.
+		/// </param>
+		/// <remarks>
+		/// The default implementation of this method uses the
+		/// the <see cref="IEntityCache{TEntity}.GenerateKeys(TEntity)"/>
+		/// method, if any is available, otherwise it returns an
+		/// empty array, that means that the entity will not be
+		/// cached.
+		/// </remarks>
+		/// <returns>
+		/// Returns an array of strings that are the keys that
+		/// are used to identify the entity in the cache.
+		/// </returns>
+		protected virtual string[] GenerateCacheKeys(TEntity entity) {
+			if (EntityCache == null)
+				return Array.Empty<string>();
+
+			return EntityCache.GenerateKeys(entity);
+		}
+
+		private async Task SetToCacheAsync(TEntity entity, CancellationToken cancellationToken) {
+			if (EntityCache == null)
+				return;
+
+			try {
+				// TODO: optimize this
+				var keys = GenerateCacheKeys(entity);
+				await EntityCache.SetAsync(keys, entity, cancellationToken);
+			} catch (Exception ex) {
+				Logger.LogEntityNotCached(ex, typeof(TEntity), GetEntityKey(entity));
+			}
+		}
+
+		private async Task EvictAsync(TEntity entity, CancellationToken cancellationToken) {
+			if (EntityCache == null)
+				return;
+
+			try {
+				var keys = GenerateCacheKeys(entity);
+				await EntityCache.RemoveAsync(keys, cancellationToken);
+			} catch (Exception ex) {
+				Logger.LogEntityNotEvicted(ex, typeof(TEntity), GetEntityKey(entity));
+			}
+		}
+
+		/// <summary>
+		/// Attempts to get the entity with the given entity key from the cache,
+		/// and eventually uses the given factory to create the entity
+		/// to return.
+		/// </summary>
+		/// <param name="key">
+		/// The key of the entity to get from the cache.
+		/// </param>
+		/// <param name="valueFactory">
+		/// A function that is used to create the entity to cache,
+		/// when this was not found in the cache.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <remarks>
+		/// This overload of the method uses the <see cref="GenerateCacheKey(object)"/>
+		/// to generate the cache key for the given entity key, and
+		/// it is better suited to be used by the <see cref="FindByKeyAsync(object, CancellationToken?)"/>
+		/// methods and its overridden implementations.
+		/// </remarks>
+		/// <returns>
+		/// Returns the entity from the cache, if available, or
+		/// it returns <c>null</c> if the entity was not found
+		/// in the cache and the factory was not able to create it.
+		/// </returns>
+		protected async Task<TEntity?> GetOrSetByKeyAsync(object key, Func<Task<TEntity?>> valueFactory, CancellationToken cancellationToken) {
+			return await GetOrSetAsync(GenerateCacheKey(key), valueFactory, cancellationToken);
+		}
+
+		/// <summary>
+		/// Attempts to get the entity with the given cache key from the cache,
+		/// and eventually uses the given factory to create the entity
+		/// to be cached and returned.
+		/// </summary>
+		/// <param name="cacheKey">
+		/// The cache key of the entity to get from the cache.
+		/// </param>
+		/// <param name="valueFactory">
+		/// A function that is used to create the entity to cache,
+		/// when this was not found in the cache.
+		/// </param>
+		/// <remarks>
+		/// This method should be used with care for the key management, 
+		/// since when it cannot find an item in cache with the given key,
+		/// it will invoke the factory to create the entity to cache: this
+		/// means that the entity will be surviving a removal of the entity
+		/// from the repository, if the key is not then made available
+		/// from an instance of <see cref="IEntityCacheKeyGenerator{TEntity}"/>.
+		/// </remarks>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		protected async Task<TEntity?> GetOrSetAsync(string cacheKey, Func<Task<TEntity?>> valueFactory, CancellationToken cancellationToken) {
+			if (EntityCache == null)
+				return await valueFactory();
+
+			try {
+				return await EntityCache.GetOrSetAsync(cacheKey, valueFactory, cancellationToken);
+			} catch (Exception ex) {
+				Logger.LogEntityNotCached(ex, typeof(TEntity), null);
+				return await valueFactory();
+			}
+		}
+
         /// <summary>
         /// Adds the given entity to the repository.
         /// </summary>
@@ -523,6 +678,8 @@ namespace Deveel.Data {
 				await Repository.AddAsync(entity, token);
 
 				Logger.LogEntityAdded(GetEntityKey(entity)!);
+
+				await SetToCacheAsync(entity, token);
 
 				return Success();
 			} catch(Exception ex) {
@@ -571,6 +728,10 @@ namespace Deveel.Data {
 				await Repository.AddRangeAsync(toBeAdded, token);
 
                 Logger.LogEntityRangeAdded();
+
+				foreach (var item in entities) {
+					await SetToCacheAsync(item, token);
+				}
 
 				return Success();
 			} catch (Exception ex) {
@@ -701,6 +862,8 @@ namespace Deveel.Data {
 
 				Logger.LogEntityUpdated(entityKey);
 
+				await SetToCacheAsync(entity, token);
+
 				return Success();
 			} catch (Exception ex) {
 				LogEntityUnknownError(entityKey, ex);
@@ -758,6 +921,8 @@ namespace Deveel.Data {
 					return NotModified();
 				}
 
+				await EvictAsync(entity, token);
+
 				return Success();
 			} catch (Exception ex) {
 				LogEntityUnknownError(entityKey, ex);
@@ -791,6 +956,10 @@ namespace Deveel.Data {
 				await Repository.RemoveRangeAsync(entities, token);
 
                 Logger.LogEntityRangeRemoved();
+
+				foreach (var entity in entities) {
+					await EvictAsync(entity, token);
+				}
 
 				return Success();
 			} catch (Exception ex) {
@@ -826,8 +995,16 @@ namespace Deveel.Data {
 			try {
 				Logger.LogFindingEntityByKey(typeof(TEntity), key);
 
-				// TODO: log if the entity was not found
-				return await Repository.FindByKeyAsync(key, GetCancellationToken(cancellationToken));
+				var token = GetCancellationToken(cancellationToken);
+				var result = await GetOrSetByKeyAsync(key, () => Repository.FindByKeyAsync(key, token), token);
+
+				if (result == null) {
+					Logger.LogEntityNotFound(typeof(TEntity), key);
+				} else {
+					Logger.LogEntityFoundByKey(typeof(TEntity), key);
+				}
+
+				return result;
 			} catch (Exception ex) {
 				LogEntityUnknownError(key, ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);

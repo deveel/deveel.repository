@@ -4,6 +4,17 @@
         <name>Deveel.Repository.MongoFramework</name>
     </assembly>
     <members>
+        <member name="T:Deveel.Data.IMongoDbConnection`1">
+            <summary>
+            A connection to a MongoDB database that is 
+            specific to a given <see cref="T:MongoFramework.MongoDbContext"/>
+            </summary>
+            <typeparam name="TContext">
+            The type of the <see cref="T:MongoFramework.MongoDbContext"/> that
+            this connection is specific to.
+            </typeparam>
+            <seealso cref="T:MongoFramework.IMongoDbConnection"/>
+        </member>
         <member name="T:Deveel.Data.LoggerExtensions.__TraceFindingByIdForTenantStruct">
             <summary> This API supports the logging infrastructure and is not intended to be used directly from your code. It is subject to change in the future. </summary>
         </member>
@@ -24,6 +35,99 @@
         </member>
         <member name="T:Deveel.Data.LoggerExtensions.__TraceUpdatedForTenantStruct">
             <summary> This API supports the logging infrastructure and is not intended to be used directly from your code. It is subject to change in the future. </summary>
+        </member>
+        <member name="T:Deveel.Data.MongoConnectionBuilder">
+            <summary>
+            An object that is used to build a <see cref="T:MongoFramework.IMongoDbConnection"/>
+            using a fluent pattern.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.MongoConnectionBuilder.#ctor">
+            <summary>
+            Constructs the builder.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.MongoConnectionBuilder.Connection">
+            <summary>
+            Gets the connection instance built by this builder.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.MongoConnectionBuilder.UseConnection(System.String)">
+            <summary>
+            Uses the specified connection string to build the connection.
+            </summary>
+            <param name="connectionString">
+            The connection string to use to build the connection.
+            </param>
+            <returns>
+            Returns this builder to allow chaining.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the given <paramref name="connectionString"/> is <c>null</c>.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.MongoConnectionBuilder.UseUrl(MongoDB.Driver.MongoUrl)">
+            <summary>
+            Uses the specified encoded MongoDB URL to build the connection.
+            </summary>
+            <param name="url">
+            The instance of <see cref="T:MongoDB.Driver.MongoUrl"/> to use to build the connection.
+            </param>
+            <returns>
+            Returns this builder to allow chaining.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the given <paramref name="url"/> is <c>null</c>.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.MongoConnectionBuilder.UseSettings(System.Action{MongoDB.Driver.MongoClientSettings})">
+            <summary>
+            Configures the settings of the connection.
+            </summary>
+            <param name="settings">
+            The action to use to configure the settings.
+            </param>
+            <returns>
+            Returns this builder to allow chaining.
+            </returns>
+        </member>
+        <member name="T:Deveel.Data.MongoConnectionBuilder`1">
+            <summary>
+            A typed builder for a <see cref="T:MongoFramework.IMongoDbConnection"/> that
+            is specific for a given <see cref="T:MongoFramework.IMongoDbContext"/>.
+            </summary>
+            <typeparam name="TContext">
+            The type of the <see cref="T:MongoFramework.IMongoDbContext"/> that is
+            this builder is specific for.
+            </typeparam>
+        </member>
+        <member name="P:Deveel.Data.MongoConnectionBuilder`1.Connection">
+            <inheritdoc/>
+        </member>
+        <member name="T:Deveel.Data.MongoQueryFilter`1">
+            <summary>
+            A query filter that is based on a MongoDB filter definition.
+            </summary>
+            <typeparam name="TDocument">
+            The type of document that is used to build the filter.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.MongoQueryFilter`1.#ctor(MongoDB.Driver.FilterDefinition{`0})">
+            <summary>
+            Constructs the filter with the given MongoDB filter definition.
+            </summary>
+            <param name="filter">
+            The instance of <see cref="T:MongoDB.Driver.FilterDefinition`1"/> that
+            represents the filter to apply.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the given <paramref name="filter"/> is <c>null</c>.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.MongoQueryFilter`1.Filter">
+            <summary>
+            Gets the MongoDB filter definition that is used to build the filter.
+            </summary>
         </member>
         <member name="T:Deveel.Data.MongoRepository`1">
             <summary>
@@ -159,6 +263,19 @@
             Thrown when the given query filter is not supported by this repository.
             </exception>
         </member>
+        <member name="M:Deveel.Data.MongoRepository`1.Field(System.String)">
+            <summary>
+            Resolves a given field name to an expression that can be used
+            to access the field in the entity.
+            </summary>
+            <param name="fieldName">
+            The name of the field to be resolved.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:System.Linq.Expressions.Expression`1"/> that
+            is used to access the field in the entity.
+            </returns>
+        </member>
         <member name="M:Deveel.Data.MongoRepository`1.CollectionExistsAsync(System.Threading.CancellationToken)">
             <summary>
             Verifies if the repository exists in the underlying database.
@@ -203,6 +320,74 @@
             Thrown when an error occurs while creating the entity in the
             underlying database.
             </exception>
+        </member>
+        <member name="T:Deveel.Data.ServiceCollectionExtensions">
+            <summary>
+            Extends the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to provide methods
+            to register a <see cref="T:MongoFramework.IMongoDbContext"/> in service collections.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddMongoDbContext``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Finbuckle.MultiTenant.ITenantInfo,Deveel.Data.MongoConnectionBuilder},Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Adds a <see cref="T:MongoFramework.IMongoDbContext"/> to the service collection
+            for a given tenant.
+            </summary>
+            <typeparam name="TContext">
+            The type of the context to register.
+            </typeparam>
+            <param name="services">
+            The service collection to add the context to.
+            </param>
+            <param name="connectionBuilder">
+            A delegate to a method that builds the connection string
+            for a given tenant.
+            </param>
+            <param name="lifetime">
+            The lifetime of the context in the service collection.
+            </param>
+            <returns>
+            Returns the service collection for chaining.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddMongoDbContext``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Deveel.Data.MongoConnectionBuilder},Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Adds a <see cref="T:MongoFramework.IMongoDbContext"/> to the service collection.
+            </summary>
+            <typeparam name="TContext">
+            The type of the context to register.
+            </typeparam>
+            <param name="services">
+            The service collection to add the context to.
+            </param>
+            <param name="connectionBuilder">
+            A delegate to a method that builds the connection string.
+            </param>
+            <param name="lifetime">
+            The lifetime of the context in the service collection.
+            </param>
+            <returns>
+            Returns the service collection for chaining.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddMongoDbContext``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{System.IServiceProvider,Deveel.Data.MongoConnectionBuilder},Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Adds a <see cref="T:MongoFramework.IMongoDbContext"/> to the service collection.
+            </summary>
+            <typeparam name="TContext">
+            The type of the context to register.
+            </typeparam>
+            <param name="services">
+            The service collection to add the context to.
+            </param>
+            <param name="connectionBuilder">
+            A delegate to a method that builds the connection string.
+            </param>
+            <param name="lifetime">
+            The lifetime of the context in the service collection.
+            </param>
+            <returns>
+            Returns the service collection for chaining.
+            </returns>
         </member>
     </members>
 </doc>

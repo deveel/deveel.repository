@@ -26,6 +26,12 @@ namespace Deveel.Data {
 		[LoggerMessage(EntityManagerEventIds.EntityNotValid, LogLevel.Error, "The entity of type {EntityType} to be added or updated is not valid.")]
 		public static partial void LogEntityNotValid(this ILogger logger, Type entityType);
 
+		[LoggerMessage(EntityManagerEventIds.EntityNotCached, LogLevel.Error, "The entity of type {EntityType} identified by {EntityId} was not cached.")]
+		public static partial void LogEntityNotCached(this ILogger logger, Exception error, Type entityType, object? entityId);
+
+		[LoggerMessage(EntityManagerEventIds.EntityNotEvicted, LogLevel.Error, "The entity of type {EntityType} identified by {EntityId} was not removed from the cache.")]
+		public static partial void LogEntityNotEvicted(this ILogger logger, Exception error, Type entityType, object? entityId);
+
         // Warnings
 		[LoggerMessage(EntityManagerEventIds.EntityNotModified, LogLevel.Warning, "The entity of type {EntityType} identified by {EntityId} was not modified during the operation.")]
 		public static partial void LogEntityNotModified(this ILogger logger, Type entityType, object? entityId);
@@ -66,6 +72,9 @@ namespace Deveel.Data {
 
 		[LoggerMessage(EntityManagerEventIds.CountingEntities, LogLevel.Debug, "The count of entities of type {EntityType} is being requested from the repository")]
 		public static partial void LogCountingEntities(this ILogger logger, Type entityType);
+
+		[LoggerMessage(EntityManagerEventIds.EntityFoundByKey, LogLevel.Debug, "An entity of type {EntityType} identified by {EntityKey} has been found repository")]
+		public static partial void LogEntityFoundByKey(this ILogger logger, Type entityType, object? entityKey);
 
         // Information
 

@@ -36,6 +36,16 @@ namespace Deveel.Data {
 		/// </summary>
 		public const int EntityNotValid = -10010;
 
+		/// <summary>
+		/// The entity was not cached.
+		/// </summary>
+		public const int EntityNotCached = -10023;
+
+		/// <summary>
+		/// The entity was not removed from the cache.
+		/// </summary>
+		public const int EntityNotEvicted = -10024;
+
 		// Warnings
 
 		/// <summary>
@@ -132,5 +142,10 @@ namespace Deveel.Data {
         /// A range of entities was removed from the repository.
         /// </summary>
         public const int EntityRangeRemoved = 2005;
+
+		/// <summary>
+		/// An entity was found in the repository.
+		/// </summary>
+		public const int EntityFoundByKey = 2006;
 	}
 }

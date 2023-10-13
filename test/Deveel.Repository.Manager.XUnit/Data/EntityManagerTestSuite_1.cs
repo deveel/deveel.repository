@@ -23,7 +23,7 @@ namespace Deveel.Data {
 
 		protected IQueryable<Person> People => Repository.AsQueryable().AsQueryable();
 
-		protected EntityManager<Person> Manager => Services.GetRequiredService<EntityManager<Person>>();
+		protected TManager Manager => Services.GetRequiredService<TManager>();
 
 		private void CreateServices() {
 			var services = new ServiceCollection();

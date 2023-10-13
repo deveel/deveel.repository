@@ -288,7 +288,17 @@ namespace Deveel.Data {
 			throw new RepositoryException($"The query filter type '{filter.GetType()}' is not supported by Mongo");
 		}
 
-
+		/// <summary>
+		/// Resolves a given field name to an expression that can be used
+		/// to access the field in the entity.
+		/// </summary>
+		/// <param name="fieldName">
+		/// The name of the field to be resolved.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="Expression{TDelegate}"/> that
+		/// is used to access the field in the entity.
+		/// </returns>
 		protected virtual Expression<Func<TEntity, object>> Field(string fieldName) {
 			var param = Expression.Parameter(typeof(TEntity), "x");
 			var body = Expression.PropertyOrField(param, fieldName);

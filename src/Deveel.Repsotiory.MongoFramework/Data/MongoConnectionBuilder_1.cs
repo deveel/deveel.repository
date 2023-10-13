@@ -15,6 +15,14 @@
 using MongoFramework;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// A typed builder for a <see cref="IMongoDbConnection"/> that
+	/// is specific for a given <see cref="IMongoDbContext"/>.
+	/// </summary>
+	/// <typeparam name="TContext">
+	/// The type of the <see cref="IMongoDbContext"/> that is
+	/// this builder is specific for.
+	/// </typeparam>
 	public sealed class MongoConnectionBuilder<TContext> : MongoConnectionBuilder where TContext : class, IMongoDbContext  {
 		private readonly MongoConnectionBuilder builder;
 
@@ -22,6 +30,7 @@ namespace Deveel.Data {
 			this.builder = builder;
 		}
 
+		/// <inheritdoc/>
 		public override IMongoDbConnection Connection => new MongoDbConnection<TContext>(builder.Connection);
 	}
 }
