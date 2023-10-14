@@ -25,11 +25,14 @@ namespace Deveel.Data {
 
 		protected TManager Manager => Services.GetRequiredService<TManager>();
 
+		protected ISystemTime TestTime { get; } = new TestSystemTime();
+
 		private void CreateServices() {
 			var services = new ServiceCollection();
 
 			services.AddLogging(logging => logging.AddXUnit(TestOutput));
 			services.AddSingleton<IOperationCancellationSource>(new TestCancellationTokenSource());
+			services.AddSystemTime(TestTime);
 
 			ConfigureServices(services);
 
@@ -62,6 +65,9 @@ namespace Deveel.Data {
 
 			Assert.True(result.IsSuccess());
 			Assert.NotNull(person.Id);
+			Assert.NotNull(person.CreatedAtUtc);
+			Assert.Null(person.UpdatedAtUtc);
+			Assert.Equal(TestTime.UtcNow, person.CreatedAtUtc.Value);
 
 			var found = await Repository.FindByKeyAsync(person.Id);
 
@@ -146,6 +152,9 @@ namespace Deveel.Data {
 			var result = await Manager.UpdateAsync(copy);
 			Assert.False(result.IsValidationError());
 			Assert.True(result.IsSuccess());
+
+			Assert.NotNull(copy.UpdatedAtUtc);
+			Assert.Equal(TestTime.UtcNow, copy.UpdatedAtUtc.Value);
 		}
 
 		[Fact]
@@ -156,6 +165,9 @@ namespace Deveel.Data {
 
 			Assert.True(result.IsNotModified());
 			Assert.False(result.IsSuccess());
+			Assert.Null(result.Error);
+
+			Assert.Null(person.UpdatedAtUtc);
 		}
 
 		[Fact]
@@ -432,6 +444,17 @@ namespace Deveel.Data {
 			Assert.Equal(totalPeople, page.TotalItems);
 			Assert.NotNull(page.Items);
 			Assert.Equal(perPage, page.Items.Count);
+		}
+
+		private class TestSystemTime : ISystemTime {
+			public TestSystemTime() {
+				UtcNow = DateTimeOffset.UtcNow;
+				Now = DateTimeOffset.Now;
+			}
+
+			public DateTimeOffset UtcNow { get; }
+
+			public DateTimeOffset Now { get; }
 		}
 	}
 }

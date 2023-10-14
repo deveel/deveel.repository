@@ -41,12 +41,12 @@ namespace Deveel.Data {
 
 		protected virtual void ConfigureServices(IServiceCollection services) {
 			if (TestOutput != null)
-				services.AddLogging(logging => logging.AddXUnit(TestOutput));
+				services.AddLogging(logging => { logging.ClearProviders(); logging.AddXUnit(TestOutput); });
 		}
 
 		private void BuildServices() {
 			var services = new ServiceCollection();
-			services.AddSingleton<ISystemTime>(TestTime);
+			services.AddSystemTime(TestTime);
 
 			ConfigureServices(services);
 
@@ -113,6 +113,9 @@ namespace Deveel.Data {
 
 			var found = await Repository.FindByKeyAsync(id);
 			Assert.NotNull(found);
+			Assert.Equal(person.FirstName, found.FirstName);
+			Assert.Equal(person.LastName, found.LastName);
+			Assert.Equal(person.Email, found.Email);
 		}
 
 		[Fact]
@@ -578,10 +581,13 @@ namespace Deveel.Data {
 
 			Assert.NotNull(updated);
 			Assert.Equal(person.FirstName, updated.FirstName);
+			Assert.Equal(person.LastName, updated.LastName);
+			Assert.Equal(person.Email, updated.Email);
+			Assert.Equal(person.DateOfBirth, updated.DateOfBirth);
 		}
 
 		[Fact]
-		public async Task UpdateExistins_Sync() {
+		public async Task UpdateExisting_Sync() {
 			var person = await RandomPersonAsync(x => x.FirstName != "John");
 
 			person.FirstName = "John";
@@ -594,6 +600,9 @@ namespace Deveel.Data {
 
 			Assert.NotNull(updated);
 			Assert.Equal(person.FirstName, updated.FirstName);
+			Assert.Equal(person.LastName, updated.LastName);
+			Assert.Equal(person.Email, updated.Email);
+			Assert.Equal(person.DateOfBirth, updated.DateOfBirth);
 		}
 
 		[Fact]
