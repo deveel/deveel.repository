@@ -33,6 +33,7 @@ namespace Deveel.Data {
 			services.AddLogging(logging => logging.AddXUnit(TestOutput));
 			services.AddSingleton<IOperationCancellationSource>(new TestCancellationTokenSource());
 			services.AddSystemTime(TestTime);
+			services.AddOperationErrorFactory<Person, PersonErrorFactory>();
 
 			ConfigureServices(services);
 
@@ -181,7 +182,7 @@ namespace Deveel.Data {
 			Assert.True(result.IsError());
 			Assert.False(result.IsSuccess());
 			Assert.NotNull(result.Error);
-			Assert.Equal(EntityErrorCodes.NotFound, result.Error.ErrorCode);
+			Assert.Equal(PersonErrorCodes.NotFound, result.Error.ErrorCode);
 		}
 
 		[Fact]
@@ -194,7 +195,7 @@ namespace Deveel.Data {
 			Assert.True(result.IsError());
 			Assert.False(result.IsSuccess());
 			Assert.NotNull(result.Error);
-			Assert.Equal(EntityErrorCodes.NotValid, result.Error.ErrorCode);
+			Assert.Equal(PersonErrorCodes.NotValid, result.Error.ErrorCode);
 		}
 
 		[Fact]
@@ -223,7 +224,7 @@ namespace Deveel.Data {
 			Assert.True(result.IsError());
 			Assert.False(result.IsSuccess());
 			Assert.NotNull(result.Error);
-			Assert.Equal(EntityErrorCodes.NotFound, result.Error.ErrorCode);
+			Assert.Equal(PersonErrorCodes.NotFound, result.Error.ErrorCode);
 		}
 
 		[Fact]
@@ -236,7 +237,7 @@ namespace Deveel.Data {
 			Assert.True(result.IsError());
 			Assert.False(result.IsSuccess());
 			Assert.NotNull(result.Error);
-			Assert.Equal(EntityErrorCodes.NotValid, result.Error.ErrorCode);
+			Assert.Equal(PersonErrorCodes.NotValid, result.Error.ErrorCode);
 		}
 
 		[Fact]

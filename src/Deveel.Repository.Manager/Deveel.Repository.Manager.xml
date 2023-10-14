@@ -1,0 +1,1926 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Deveel.Repository.Manager</name>
+    </assembly>
+    <members>
+        <member name="T:Deveel.Data.Caching.EntityCacheOptions">
+            <summary>
+            Provides a set of options for the caching of entities.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.Caching.EntityCacheOptions.Expiration">
+            <summary>
+            Gets or sets the maximum expiration
+            time for the cached entities.
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.Caching.EntityCacheOptions`1">
+            <summary>
+            A strongly-typed set of options for the caching of entities.
+            </summary>
+            <typeparam name="TEntity"></typeparam>
+        </member>
+        <member name="T:Deveel.Data.Caching.IEntityCache`1">
+            <summary>
+            Provides a contract for caching entities of a given type.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity to cache.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.Caching.IEntityCache`1.GenerateKeys(`0)">
+            <summary>
+            Generates all the keys that can be used to identify
+            the given entity in the cache.
+            </summary>
+            <param name="entity">
+            The instance of the entity to generate the keys for.
+            </param>
+            <returns>
+            Returns an array of strings that are the keys that
+            will be used to identify the entity in the cache.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Caching.IEntityCache`1.GetOrSetAsync(System.String,System.Func{System.Threading.Tasks.Task{`0}},System.Threading.CancellationToken)">
+            <summary>
+            Gets the given entity from the cache, if available,
+            and uses the given factory to create the entity if to
+            then cache it.
+            </summary>
+            <param name="cacheKey">
+            The unique key used to identify the entity in the cache.
+            </param>
+            <param name="valueFactory">
+            A function that is used to create the entity to cache,
+            if this was not found in the cache.
+            </param>
+            <param name="cancellationToken">
+            A cancellation token that can be used to cancel the operation.
+            </param>
+            <returns>
+            Returns the entity from the cache, if available, or
+            <c>null</c> if the entity was not found in the cache
+            and the factory was not able to create it.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Caching.IEntityCache`1.SetAsync(System.String[],`0,System.Threading.CancellationToken)">
+            <summary>
+            Sets the given entity in the cache with the given key.
+            </summary>
+            <param name="cacheKeys">
+            An array of keys used to identify the entity in the cache.
+            </param>
+            <param name="entity">
+            The instance of the entity to cache.
+            </param>
+            <param name="cancellationToken">
+            A cancellation token that can be used to cancel the operation.
+            </param>
+            <returns>
+            Returns a task that when completed will set the entity
+            in the cache.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Caching.IEntityCache`1.RemoveAsync(System.String[],System.Threading.CancellationToken)">
+            <summary>
+            Removes a given entity from the cache with the given key.
+            </summary>
+            <param name="cacheKeys">
+            A set of keys used to identify the entity in the cache.
+            </param>
+            <param name="cancellationToken">
+            A cancellation token that can be used to cancel the operation.
+            </param>
+            <returns>
+            Returns a task that when completed will remove the entity
+            from the cache.
+            </returns>
+        </member>
+        <member name="T:Deveel.Data.Caching.IEntityCacheKeyGenerator`1">
+            <summary>
+            A service that is used to generate the keys for caching
+            a given entity.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity to cache.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.Caching.IEntityCacheKeyGenerator`1.GenerateKey(System.Object)">
+            <summary>
+            Generates the given cache key using the given primary
+            key of the entity.
+            </summary>
+            <param name="key">
+            The instance of the primary key of the entity.
+            </param>
+            <returns>
+            Returns a string that is the key to be used to cache
+            or return the entity.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Caching.IEntityCacheKeyGenerator`1.GenerateAllKeys(`0)">
+            <summary>
+            Generates the keys for the given entity.
+            </summary>
+            <param name="entity">
+            The instance of the entity to generate the keys for.
+            </param>
+            <returns>
+            Returns an array of strings that are the keys to be used
+            to cache the entity.
+            </returns>
+        </member>
+        <member name="T:Deveel.Data.EntityErrorCodes">
+            <summary>
+            Provides a set of error codes that can be used to identify
+            the type of error that occurred during an operation.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityErrorCodes.NotValid">
+            <summary>
+            The entity to be added or updated is not valid.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityErrorCodes.NotFound">
+            <summary>
+            The entity was not found in the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityErrorCodes.UnknownError">
+            <summary>
+            An unknown error occurred during the operation.
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.EntityManager`1">
+            <summary>
+            A service that provides a set of operations to manage a specific
+            entities in a repository.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity managed by the service.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.#ctor(Deveel.Data.IRepository{`0},Deveel.Data.IEntityValidator{`0},Deveel.Data.Caching.IEntityCache{`0},Deveel.Data.ISystemTime,Deveel.Data.IOperationErrorFactory{`0},System.IServiceProvider,Microsoft.Extensions.Logging.ILoggerFactory)">
+            <summary>
+            Constructs the service with the given repository.
+            </summary>
+            <param name="repository">
+            The repository that is providing the data access to the entities.
+            </param>
+            <param name="validator">
+            An optional service used to validate the entity before it is added
+            or updated in the repository.
+            </param>
+            <param name="cache">
+            An optional service used to cache the entities
+            for faster access.
+            </param>
+            <param name="systemTime">
+            A service used to get the current system time.
+            </param>
+            <param name="services">
+            The services used to resolve the dependencies of the manager.
+            </param>
+            <param name="loggerFactory">
+            A factory used to create a logger for the manager.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.Finalize">
+            <summary>
+            Destructs the instance of the service.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.Services">
+            <summary>
+            Gets the instance of the service provider used to resolve
+            the dependencies of the service.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.Time">
+            <summary>
+            Gets the instance of the service used to get the current
+            time of the system.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.ErrorFactory">
+            <summary>
+            Gets the instance of the factory used to create errors
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.EntityCache">
+            <summary>
+            Gets an instance of the cache used to store entities
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.EntityCacheKeyGenerator">
+            <summary>
+            Gets an instance of the generator used to create the
+            keys for caching entities.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.EntityValidator">
+            <summary>
+            Gets the service used to validate the entity before
+            it is added or updated in the repository.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.Logger">
+            <summary>
+            Gets the logger used to log messages from the service.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.Repository">
+            <summary>
+            Gets the repository that is providing the data access
+            to the entities.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.CancellationToken">
+            <summary>
+            Gets the cancellation token used to cancel operations
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.IsMultiTenant">
+            <summary>
+            Gets a value indicating if the repository is multi-tenant
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            Throws when the service has been disposed.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.TenantId">
+            <summary>
+            When the repository is multi-tenant, gets the identifier
+            of the tenant that is being managed by the service.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            Throws when the service has been disposed.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.SupportsPaging">
+            <summary>
+            Gets a value indicating if the repository supports paging
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            Throws when the service has been disposed.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.PageableRepository">
+            <summary>
+            Gets the repository that supports paging
+            </summary>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support paging
+            </exception>
+            <exception cref="T:System.ObjectDisposedException">
+            Throws when the service has been disposed.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.SupportsQueries">
+            <summary>
+            Gets a value indicating if the repository supports queries
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            Throws when the service has been disposed.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.Entities">
+            <summary>
+            When the repository supports queries, gets the queryable
+            instance of the repository.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            Throws when the service has been disposed.
+            </exception>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support queries
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.SupportsFilters">
+            <summary>
+            Gets a value indicating if the repository supports filters
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            Thrown when the service has been disposed.
+            </exception>
+        </member>
+        <member name="P:Deveel.Data.EntityManager`1.FilterableRepository">
+            <summary>
+            Gets the repository that supports filters
+            </summary>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support filters
+            </exception>
+            <exception cref="T:System.ObjectDisposedException">
+            Thrown when the service has been disposed.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.GetCancellationToken(System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Ensures that a cancellation token is available
+            for a cancellable operation.
+            </summary>
+            <param name="cancellationToken">
+            The token that was provided by the caller.
+            </param>
+            <remarks>
+            This method checks if the given cancellation token
+            passed to an operation is <c>null</c>, and if so,
+            attempts to resolve a cancellation token from the
+            context.
+            </remarks>
+            <returns>
+            Returns the cancellation token to be used for 
+            an operation.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.GenerateCacheKey(System.Object)">
+            <summary>
+            Generates a cache key for the given entity primary key.
+            </summary>
+            <param name="key">
+            The primary key of the entity.
+            </param>
+            <returns>
+            Returns a string that is the key to be used to cache
+            entities in the cache.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.ThrowIfDisposed">
+            <summary>
+            Checks if the service has been disposed and
+            eventually throws an exception.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            Throws when the service has been disposed.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.Dispose(System.Boolean)">
+            <summary>
+            Actively disposes the service.
+            </summary>
+            <param name="disposing">
+            Indicates whether the service is being disposed.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.DisposeAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.OperationError(System.String,System.String)">
+            <summary>
+            Creates an error object with the given code and message.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of error.
+            </param>
+            <param name="message">
+            An optional message that describes the error.
+            </param>
+            <remarks>
+            The default implementation of this method uses the
+            <see cref="P:Deveel.Data.EntityManager`1.ErrorFactory"/> to create the error object,
+            if any is available, otherwise it creates a new instance
+            of <see cref="T:Deveel.OperationError"/>.
+            </remarks>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.IOperationError"/> that
+            describes the error.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.ValidationError(System.String,System.Collections.Generic.IList{System.ComponentModel.DataAnnotations.ValidationResult})">
+            <summary>
+            Creates a validation error object with the given 
+            code and validation results.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of validation error.
+            </param>
+            <param name="validationResults">
+            The list of validation results that describe the error.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.IValidationError"/> that
+            represents a validation error.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.Fail(System.String,System.String)">
+            <summary>
+            Creates an error object with the given code and message
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of error.
+            </param>
+            <param name="message">
+            A message that describes the error.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult"/> that
+            represents a failed operation.
+            </returns>
+            <see cref="M:Deveel.Data.EntityManager`1.OperationError(System.String,System.String)"/>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.Fail(Deveel.OperationException)">
+            <summary>
+            Creates an error object from the given operation exception.
+            </summary>
+            <param name="error">
+            The exception that caused the error.
+            </param>
+            <remarks>
+            The default implementation of this method uses the
+            information from the given exception to create an error
+            invoking the <see cref="M:Deveel.Data.EntityManager`1.Fail(System.String,System.String)"/> method.
+            </remarks>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult"/> that
+            represents a failed operation.
+            </returns>
+            <seealso cref="M:Deveel.Data.EntityManager`1.Fail(System.String,System.String)"/>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.ValidationFailed(System.String,System.Collections.Generic.IList{System.ComponentModel.DataAnnotations.ValidationResult})">
+            <summary>
+            Creates an error object from a validation error.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of validation error.
+            </param>
+            <param name="validationResults">
+            The list of validation results that describe the error.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult"/> that
+            represents a failed validation of an entity.
+            </returns>
+            <see cref="M:Deveel.Data.EntityManager`1.ValidationError(System.String,System.Collections.Generic.IList{System.ComponentModel.DataAnnotations.ValidationResult})"/>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.Success">
+            <summary>
+            Creates a result object that represents a successful operation.
+            </summary>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult"/> that
+            represents a successful operation.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.NotModified">
+            <summary>
+            Creates a result object that represents an operation that
+            has not modified the state of the entity.
+            </summary>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult"/> that
+            represents an operation that has not modified the state of
+            an entity.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.ValidateAsync(`0,System.Threading.CancellationToken)">
+            <summary>
+            Validates the given entity before it is added or updated
+            </summary>
+            <param name="entity">
+            The entity to be validated.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the validation operation.
+            </param>
+            <returns>
+            Returns a list of <see cref="T:System.ComponentModel.DataAnnotations.ValidationResult"/> that
+            describe the validation errors.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.GetEntityKey(`0)">
+            <summary>
+            Gets the key of the given entity
+            </summary>
+            <param name="entity">
+            The entity to get the key from.
+            </param>
+            <remarks>
+            The default implementation of this method uses the
+            <see cref="M:Deveel.Data.IRepository`1.GetEntityKey(`0)"/>
+            method to get the key of the entity.
+            </remarks>
+            <returns>
+            Returns an object that represents the key of the entity,
+            or <c>null</c> if the entity does not have a valid key.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.OnAddingEntityAsync(`0)">
+            <summary>
+            A callback invoked when an entity is being added 
+            to the repository.
+            </summary>
+            <param name="entity">
+            The entity that is being added.
+            </param>
+            <remarks>
+            When <see cref="M:Deveel.Data.EntityManager`1.AddRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Nullable{System.Threading.CancellationToken})"/> is
+            invoked, this method is invoked for each entity in the
+            range of entities.
+            </remarks>
+            <returns>
+            Returns the entity that is being added, after
+            any modification done by the callback.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.GenerateCacheKeys(`0)">
+            <summary>
+            Generates the cache keys for the given entity.
+            </summary>
+            <param name="entity">
+            The entity to generate the keys for.
+            </param>
+            <remarks>
+            The default implementation of this method uses the
+            the <see cref="M:Deveel.Data.Caching.IEntityCache`1.GenerateKeys(`0)"/>
+            method, if any is available, otherwise it returns an
+            empty array, that means that the entity will not be
+            cached.
+            </remarks>
+            <returns>
+            Returns an array of strings that are the keys that
+            are used to identify the entity in the cache.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.GetOrSetByKeyAsync(System.Object,System.Func{System.Threading.Tasks.Task{`0}},System.Threading.CancellationToken)">
+            <summary>
+            Attempts to get the entity with the given entity key from the cache,
+            and eventually uses the given factory to create the entity
+            to return.
+            </summary>
+            <param name="key">
+            The key of the entity to get from the cache.
+            </param>
+            <param name="valueFactory">
+            A function that is used to create the entity to cache,
+            when this was not found in the cache.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <remarks>
+            This overload of the method uses the <see cref="M:Deveel.Data.EntityManager`1.GenerateCacheKey(System.Object)"/>
+            to generate the cache key for the given entity key, and
+            it is better suited to be used by the <see cref="M:Deveel.Data.EntityManager`1.FindByKeyAsync(System.Object,System.Nullable{System.Threading.CancellationToken})"/>
+            methods and its overridden implementations.
+            </remarks>
+            <returns>
+            Returns the entity from the cache, if available, or
+            it returns <c>null</c> if the entity was not found
+            in the cache and the factory was not able to create it.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.GetOrSetAsync(System.String,System.Func{System.Threading.Tasks.Task{`0}},System.Threading.CancellationToken)">
+            <summary>
+            Attempts to get the entity with the given cache key from the cache,
+            and eventually uses the given factory to create the entity
+            to be cached and returned.
+            </summary>
+            <param name="cacheKey">
+            The cache key of the entity to get from the cache.
+            </param>
+            <param name="valueFactory">
+            A function that is used to create the entity to cache,
+            when this was not found in the cache.
+            </param>
+            <remarks>
+            This method should be used with care for the key management, 
+            since when it cannot find an item in cache with the given key,
+            it will invoke the factory to create the entity to cache: this
+            means that the entity will be surviving a removal of the entity
+            from the repository, if the key is not then made available
+            from an instance of <see cref="T:Deveel.Data.Caching.IEntityCacheKeyGenerator`1"/>.
+            </remarks>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.AddAsync(`0,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Adds the given entity to the repository.
+            </summary>
+            <param name="entity">
+            The entity to be added.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult"/> that
+            describes the result of the operation.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.AddRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Adds the given range of entities to the repository.
+            </summary>
+            <param name="entities">
+            The range of entities to be added.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <remarks>
+            The default implementation of this method attempts to
+            validate each entity in the range before adding it to
+            the repository, and if any validation error is found,
+            the method returns a failure result.
+            </remarks>
+            <returns>
+            Returns a result object that describes the result of the
+            operation.
+            </returns>
+            <seealso cref="M:Deveel.Data.IRepository`1.AddRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)"/>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.OnUpdatingEntityAsync(`0)">
+            <summary>
+            A callback invoked when an entity is being updated
+            </summary>
+            <param name="entity">
+            The entity that is being updated.
+            </param>
+            <returns>
+            Returns the entity that is being updated, after
+            the callback has modified it.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.AreEqual(`0,`0)">
+            <summary>
+            Checks if the given entities are equal.
+            </summary>
+            <param name="existing">
+            The entity already in the repository.
+            </param>
+            <param name="other">
+            The entity provided by the caller for update.
+            </param>
+            <remarks>
+            <para>
+            This method is used by the update operation to check
+            if the entity in the repository is the same as the one
+            provided by the caller, and eventually skip the update
+            on the repository, to ensure idempotency.
+            </para>
+            <para>
+            The default implementation of this method tries to
+            use the <see cref="M:System.IEquatable`1.Equals(`0)"/> method
+            to check if the entities are equal, otherwise it uses
+            the native <see cref="M:System.Object.Equals(System.Object)"/> method.
+            </para>
+            </remarks>
+            <returns>
+            Returns <c>true</c> if the entities are equal, otherwise
+            it returns <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.UpdateAsync(`0,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Updates the given entity in the repository.
+            </summary>
+            <param name="entity">
+            The entity to be updated.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <remarks>
+            <para>
+            The default implementation of this method first
+            attempts to find an entity in the repository with
+            the same key of the given entity, and if found, it
+            verifies the equality of the two entities using the
+            <see cref="M:Deveel.Data.EntityManager`1.AreEqual(`0,`0)"/> function.
+            If the two entities are equal, the method returns
+            quickly an instance of <see cref="T:Deveel.OperationResult"/>
+            that indicates the entity was not modified.
+            </para>
+            <para>
+            The method can reurn a failure result if the entity 
+            does not have an associated key, or if the entity is 
+            not found in the repository.
+            </para>
+            </remarks>
+            <returns>
+            Returns a result object that describes the result of the
+            update operation.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.RemoveAsync(`0,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Removes the given entity from the repository.
+            </summary>
+            <param name="entity">
+            The entity to be removed.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <remarks>
+            <para>
+            The default implementation of this method first tries
+            to find an entity in the repository with the same key
+            and if not found, it returns a failure result.
+            </para>
+            <para>
+            If the entity is found, the method attempts to remove
+            it from the repository, and if the operation is not
+            performed by the repository, it returns a result that
+            indicates the entity was not modified.
+            </para>
+            </remarks>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult"/> that
+            describes the result of the operation.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.RemoveRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Removes the given range of entities from the repository.
+            </summary>
+            <param name="entities">
+            The range of entities to be removed.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult"/> that
+            describes the result of the operation.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.FindByKeyAsync(System.Object,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Finds an entity in the repository with the given key.
+            </summary>
+            <param name="key">
+            The key of the entity to be found.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns an instance of <typeparamref name="TEntity"/> that
+            is identified by the given key, or <c>null</c> if no entity
+            was found for the given key.
+            </returns>
+            <exception cref="T:Deveel.OperationException">
+            Thrown when an unknown error occurs while looking for the entity.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.FindFirstAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Finds an entity in the repository that matches the given filter.
+            </summary>
+            <param name="filter">
+            The filter to be used to look for the entity.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns the first instance of <typeparamref name="TEntity"/> that
+            matches the given filter, or <c>null</c> if no entity was found.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support filters.
+            </exception>
+            <exception cref="T:Deveel.OperationException">
+            Thrown when an unknown error occurs while looking for the entity.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when the given filter is <c>null</c>.
+            </exception>
+            <seealso cref="M:Deveel.Data.IFilterableRepository`1.FindAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)"/>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.FindFirstAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Finds the first entity in the repository that matches the 
+            given filter expression.
+            </summary>
+            <param name="filter">
+            The filter expression to be used to look for the entity.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns the first instance of <typeparamref name="TEntity"/> that
+            mathces the given filter, or <c>null</c> if no entity was found.
+            </returns>
+            <seealso cref="M:Deveel.Data.EntityManager`1.FindFirstAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})"/>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.FindAllAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Finds all the entities in the repository that match the given filter.
+            </summary>
+            <param name="filter">
+            The filter to be used to look for the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns a list of <typeparamref name="TEntity"/> that match the
+            given filter.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support filters.
+            </exception>
+            <exception cref="T:Deveel.OperationException">
+            Thrown when an unknown error occurs while looking for the entities.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.FindAllAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Finds all the entities in the repository that match the given 
+            filter expression.
+            </summary>
+            <param name="filter">
+            The filter expression to be used to look for the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <remarks>
+            This method is a shortcut to the <see cref="M:Deveel.Data.EntityManager`1.FindAllAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})"/>
+            using an instance of <see cref="T:Deveel.Data.ExpressionQueryFilter`1"/> as
+            argument.
+            </remarks>
+            <returns>
+            Returns a list of <typeparamref name="TEntity"/> that match the
+            given filter.
+            </returns>
+            <seealso cref="M:Deveel.Data.EntityManager`1.FindAllAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})"/>
+            <seealso cref="T:Deveel.Data.ExpressionQueryFilter`1"/>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support filters.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.CountAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Counts the number of entities in the repository that match
+            the given filter.
+            </summary>
+            <param name="filter">
+            The filter to be used to look for the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns the number of entities that match the given filter.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support filters.
+            </exception>
+            <exception cref="T:Deveel.OperationException">
+            Thrown when an unknown error occurs while looking for the entities.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.CountAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Counts the number of entities in the repository that match
+            the given filter expression.
+            </summary>
+            <param name="filter">
+            The filter expression to be used to look for the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <remarks>
+            <para>
+            This method is a shortcut to the <see cref="M:Deveel.Data.EntityManager`1.CountAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})"/>
+            overload, using a <see cref="T:Deveel.Data.ExpressionQueryFilter`1"/> as
+            argument of the method.
+            </para>
+            <para>
+            When the given filter is <c>null</c>, the method uses an
+            instance of <see cref="F:Deveel.Data.QueryFilter.Empty"/> as argument,
+            that has the effect to count all the entities in the repository.
+            </para>
+            </remarks>
+            <returns>
+            Returns the number of entities that match the given filter.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityManager`1.GetPageAsync(Deveel.Data.PageQuery{`0},System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            
+            </summary>
+            <param name="query"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+            <exception cref="T:System.NotSupportedException"></exception>
+            <exception cref="T:Deveel.OperationException"></exception>
+        </member>
+        <member name="T:Deveel.Data.EntityManagerEventIds">
+            <summary>
+            Lists the event identifiers that can be used to identify
+            logged events from the <see cref="T:Deveel.Data.EntityManager`1"/>.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.UnknownError">
+            <summary>
+            An unknown error occurred during the operation.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityUnknownError">
+            <summary>
+            An unknown error occurred during the operation
+            on an entity.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityNotValid">
+            <summary>
+            The entity to be added or updated is not valid.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityNotCached">
+            <summary>
+            The entity was not cached.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityNotEvicted">
+            <summary>
+            The entity was not removed from the cache.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityNotModified">
+            <summary>
+            The entity was not modified during the operation.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityNotFound">
+            <summary>
+            The entity was not found in the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityNotRemoved">
+            <summary>
+            The entity was not removed from the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.AddingEntity">
+            <summary>
+            An entity is being added to the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.AddingEntityRange">
+            <summary>
+            A range of entities is being added to the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.UpdatingEntity">
+            <summary>
+            An entity is being updated in the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.RemovingEntity">
+            <summary>
+            An entity is being removed from the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.RemovingEntityRange">
+            <summary>
+            A range of entities is being removed from the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.FindingEntityByKey">
+            <summary>
+            Attempting to find an entity by key.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.FindingFirstEntityByQuery">
+            <summary>
+            Attempting to find the first entity by a query.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.FindingAllEntitiesByQuery">
+            <summary>
+            Attempting to find all entities by a query.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.GettingEntityPage">
+            <summary>
+            Attempting to get a page of entities.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.CountingEntities">
+            <summary>
+            Counting the number of entities in the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityAdded">
+            <summary>
+            The entity was added to the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityRangeAdded">
+            <summary>
+            A range of entities was added to the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityUpdated">
+            <summary>
+            The entity was updated in the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityRemoved">
+            <summary>
+            The entity was removed from the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityRangeRemoved">
+            <summary>
+            A range of entities was removed from the repository.
+            </summary>
+        </member>
+        <member name="F:Deveel.Data.EntityManagerEventIds.EntityFoundByKey">
+            <summary>
+            An entity was found in the repository.
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.IEntityValidator`1">
+            <summary>
+            A service used by the <see cref="T:Deveel.Data.EntityManager`1"/>
+            to validate an entity before it is saved.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity to be validated.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.IEntityValidator`1.ValidateAsync(Deveel.Data.EntityManager{`0},`0,System.Threading.CancellationToken)">
+            <summary>
+            Validates the given <paramref name="entity"/> asynchronously
+            </summary>
+            <param name="manager">
+            The instance of the <see cref="T:Deveel.Data.EntityManager`1"/> that
+            is performing the validation.
+            </param>
+            <param name="entity">
+            The instance of the entity to be validated.
+            </param>
+            <param name="cancellationToken">
+            A token that can be used to cancel the validation.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:System.Collections.Generic.IAsyncEnumerable`1"/> that
+            can be used to iterate over the validation results.
+            </returns>
+        </member>
+        <member name="T:Deveel.Data.IOperationErrorFactory">
+            <summary>
+            A service that creates instances of <see cref="T:Deveel.IOperationError"/>
+            that can be used to report errors in an operation.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.IOperationErrorFactory.CreateError(System.String,System.String)">
+            <summary>
+            Creates an instance of <see cref="T:Deveel.IOperationError"/>
+            with the given error code and message.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of the error.
+            </param>
+            <param name="message">
+            A message that describes the error.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.IOperationError"/>
+            with the given error code and message.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when the given <paramref name="errorCode"/> is <c>null</c>
+            or empty.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.IOperationErrorFactory.CreateValidationError(System.String,System.Collections.Generic.IList{System.ComponentModel.DataAnnotations.ValidationResult})">
+            <summary>
+            Creates an instance of <see cref="T:Deveel.IValidationError"/>
+            with the given error code and validation results.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of the error.
+            </param>
+            <param name="validationResults">
+            The list of validation results that describe the error.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.IValidationError"/>
+            that represents a failed validation of an entity.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.IOperationErrorFactory.CreateError(System.Exception)">
+            <summary>
+            Creates an instance of <see cref="T:Deveel.IOperationError"/>
+            from the given <paramref name="exception"/>.
+            </summary>
+            <param name="exception">
+            The exception that caused the error.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.IOperationError"/>
+            with the given <paramref name="exception"/>.
+            </returns>
+        </member>
+        <member name="T:Deveel.Data.IOperationErrorFactory`1">
+            <summary>
+            A service that creates instances of <see cref="T:Deveel.IOperationError"/>
+            that can be used to report errors in an operation
+            for a specific entity.
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.LoggerExtensions.__LogGettingEntityPageStruct">
+            <summary> This API supports the logging infrastructure and is not intended to be used directly from your code. It is subject to change in the future. </summary>
+        </member>
+        <member name="T:Deveel.Data.OperationErrorFactory">
+            <summary>
+            A default implementation of <see cref="T:Deveel.Data.IOperationErrorFactory"/>
+            providing methods to create instances of <see cref="T:Deveel.IOperationError"/>.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.OperationErrorFactory.ResolveErrorCode(System.String)">
+            <summary>
+            Normalizes the given error code to a standard format.
+            </summary>
+            <param name="errorCode">
+            The error code to normalize.
+            </param>
+            <remarks>
+            The aim of this method is to provide a way to map
+            a given error code to a normalized format, so that
+            multiple factories can be registered for the same
+            application.
+            </remarks>
+            <returns>
+            Returns an error code normalized to a standard format.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.OperationErrorFactory.GetErrorMessage(System.String)">
+            <summary>
+            Gets the error message for the given error code.
+            </summary>
+            <param name="errorCode">
+            The error code for which to get the message.
+            </param>
+            <returns>
+            Returns a string containing the error message for the given
+            code or <c>null</c> if no message is available.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.OperationErrorFactory.CreateError(System.String,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.OperationErrorFactory.CreateError(System.Exception)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.OperationErrorFactory.CreateValidationError(System.String,System.Collections.Generic.IList{System.ComponentModel.DataAnnotations.ValidationResult})">
+            <inheritdoc/>
+        </member>
+        <member name="T:Deveel.Data.ServiceCollectionExtensions">
+            <summary>
+            Extends the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to provide methods
+            to register the <see cref="T:Deveel.Data.EntityManager`1"/> service.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddEntityManager``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers a <see cref="T:Deveel.Data.EntityManager`1"/> service
+            in the given collection of services.
+            </summary>
+            <typeparam name="TManager">
+            The type of the <see cref="T:Deveel.Data.EntityManager`1"/> to register.
+            </typeparam>
+            <param name="services">
+            The collection of services to register the manager.
+            </param>
+            <param name="lifetime">
+            The desired lifetime of the manager.
+            </param>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+            <seealso cref="M:Deveel.Data.ServiceCollectionExtensions.AddEntityManager(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)"/>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddManagerFor``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Adds and instance of <see cref="T:Deveel.Data.EntityManager`1"/> for the given
+            entity type in the collection of services.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity to manage.
+            </typeparam>
+            <param name="services">
+            The collection of services to register the manager.
+            </param>
+            <param name="lifetime">
+            The desired lifetime of the manager.
+            </param>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddEntityManager(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers a <see cref="T:Deveel.Data.EntityManager`1"/> service
+            in the given collection of services.
+            </summary>
+            <param name="services">
+            The collection of services to register the manager.
+            </param>
+            <param name="managerType">
+            The type of the <see cref="T:Deveel.Data.EntityManager`1"/> to register.
+            </param>
+            <param name="lifetime">
+            The desired lifetime of the manager.
+            </param>
+            <remarks>
+            This method iterates through the base types of the given <paramref name="managerType"/>
+            to find the <see cref="T:Deveel.Data.EntityManager`1"/> instances from
+            which the service derives, and registers the service for each of them.
+            </remarks>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+            <exception cref="T:System.ArgumentException">
+            Thrown when the given <paramref name="managerType"/> is not a concrete class,
+            or if the type is not a valid <see cref="T:Deveel.Data.EntityManager`1"/>.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddEntityValidator``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers an entity validation service in the collection of services.
+            </summary>
+            <typeparam name="TValidator">
+            The type of the entity validator to register.
+            </typeparam>
+            <param name="services">
+            The collection of services to register the validator.
+            </param>
+            <param name="lifetime">
+            The desired lifetime of the validator.
+            </param>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+            <seealso cref="M:Deveel.Data.ServiceCollectionExtensions.AddEntityValidator(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)"/>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddEntityValidator(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Adds an entity validator service in the collection of services.
+            </summary>
+            <param name="services">
+            The collection of services to register the validator.
+            </param>
+            <param name="validatorType"></param>
+            <param name="lifetime"></param>
+            <returns></returns>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="T:Deveel.EntityValidationError">
+            <summary>
+            An implementation of <see cref="T:Deveel.IOperationError"/> that
+            describes a validation error.
+            </summary>
+        </member>
+        <member name="M:Deveel.EntityValidationError.#ctor(System.String,System.Collections.Generic.IEnumerable{System.ComponentModel.DataAnnotations.ValidationResult})">
+            <summary>
+            Constructs the error with the given error code and
+            the list of validation results.
+            </summary>
+            <param name="errorCode">
+            The error code of the validation.
+            </param>
+            <param name="results">
+            The list of validation results.
+            </param>
+        </member>
+        <member name="P:Deveel.EntityValidationError.ErrorCode">
+            <inheritdoc/>
+        </member>
+        <member name="P:Deveel.EntityValidationError.ValidationResults">
+            <inheritdoc/>
+        </member>
+        <member name="T:Deveel.HttpRequestCancellationSource">
+            <summary>
+            An implementation of <see cref="T:Deveel.IOperationCancellationSource"/> that
+            uses the <see cref="P:Microsoft.AspNetCore.Http.HttpContext.RequestAborted"/> token.
+            </summary>
+            <remarks>
+            This implementation requires the <see cref="T:Microsoft.AspNetCore.Http.IHttpContextAccessor"/> to
+            be registered in the context of the application.
+            </remarks>
+        </member>
+        <member name="M:Deveel.HttpRequestCancellationSource.#ctor(Microsoft.AspNetCore.Http.IHttpContextAccessor)">
+            <summary>
+            Constructs the cancellation source using the given <see cref="T:Microsoft.AspNetCore.Http.IHttpContextAccessor"/>.
+            </summary>
+            <param name="httpContextAccessor"></param>
+        </member>
+        <member name="P:Deveel.HttpRequestCancellationSource.Token">
+            <summary>
+            Gets the cancellation token from the current HTTP context.
+            </summary>
+        </member>
+        <member name="T:Deveel.IOperationCancellationSource">
+            <summary>
+            A source of cancellation token for an operation.
+            </summary>
+        </member>
+        <member name="P:Deveel.IOperationCancellationSource.Token">
+            <summary>
+            Gets a cancellation token that can be used to cancel
+            an operation.
+            </summary>
+        </member>
+        <member name="T:Deveel.IOperationError">
+            <summary>
+            An object that describes an error that occurred
+            during an operation.
+            </summary>
+            <remarks>
+            The objective of this contract is not to provide a
+            full stack trace of the error, but rather a simple
+            descriptor that can be used to inform the user of
+            the kind of error that occurred.
+            </remarks>
+        </member>
+        <member name="P:Deveel.IOperationError.ErrorCode">
+            <summary>
+            Gets the code that identifies the class of the error.
+            </summary>
+        </member>
+        <member name="P:Deveel.IOperationError.Message">
+            <summary>
+            Gets a message that describes the error.
+            </summary>
+        </member>
+        <member name="T:Deveel.IOperationResult">
+            <summary>
+            Represents the result of an operation.
+            </summary>
+        </member>
+        <member name="P:Deveel.IOperationResult.ResultType">
+            <summary>
+            Gets the type of the result of the operation.
+            </summary>
+        </member>
+        <member name="P:Deveel.IOperationResult.Error">
+            <summary>
+            When the result type is <see cref="F:Deveel.OperationResultType.Error"/>,
+            this property contains the error that caused the failure.
+            </summary>
+        </member>
+        <member name="T:Deveel.IValidationError">
+            <summary>
+            Provides an interface to an error that is caused by a validation
+            of an entity.
+            </summary>
+        </member>
+        <member name="P:Deveel.IValidationError.ValidationResults">
+            <summary>
+            Gets the list of validation results that caused the error.
+            </summary>
+        </member>
+        <member name="T:Deveel.OperationError">
+            <summary>
+            An implementation of <see cref="T:Deveel.IOperationError"/> that
+            describes an error in an operation.
+            </summary>
+        </member>
+        <member name="M:Deveel.OperationError.#ctor(System.String,System.String)">
+            <summary>
+            Constructs an error with the given error code and message.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of the error.
+            </param>
+            <param name="message">
+            A message that describes the error.
+            </param>
+        </member>
+        <member name="P:Deveel.OperationError.ErrorCode">
+            <inheritdoc/>
+        </member>
+        <member name="P:Deveel.OperationError.Message">
+            <inheritdoc/>
+        </member>
+        <member name="T:Deveel.OperationException">
+            <summary>
+            An exception that is thrown when an operation fails.
+            </summary>
+            <remarks>
+            Throwing exceptions of this type is discouraged, since
+            it causes memory allocations and it's not a good practice,
+            but if the operation is not expected to fail, this can be
+            a provisional solution to expose the <see cref="T:Deveel.IOperationError"/>
+            to an operation result.
+            </remarks>
+            <seealso cref="T:Deveel.IOperationError"/>
+        </member>
+        <member name="M:Deveel.OperationException.#ctor(System.String)">
+            <summary>
+            Constructs the exception with the given error code.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of the error.
+            </param>
+        </member>
+        <member name="M:Deveel.OperationException.#ctor(System.String,System.String)">
+            <summary>
+            Constructs the exception with the given error code and message.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of the error.
+            </param>
+            <param name="message">
+            A message that describes the error.
+            </param>
+        </member>
+        <member name="M:Deveel.OperationException.#ctor(System.String,System.String,System.Exception)">
+            <summary>
+            Constructs the exception with the given error code, message
+            and the inner exception that caused the error.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of the error.
+            </param>
+            <param name="message">
+            A message that describes the error.
+            </param>
+            <param name="innerException">
+            An exception that caused the error.
+            </param>
+        </member>
+        <member name="P:Deveel.OperationException.ErrorCode">
+            <inheritdoc />
+        </member>
+        <member name="T:Deveel.OperationResult">
+            <summary>
+            An implementation of <see cref="T:Deveel.IOperationResult"/> that
+            represents the result of an operation.
+            </summary>
+        </member>
+        <member name="M:Deveel.OperationResult.#ctor(Deveel.OperationResultType,Deveel.IOperationError)">
+            <summary>
+            Constructs the result of an operation with the given
+            type and optionally an error object.
+            </summary>
+            <param name="resultType"></param>
+            <param name="error"></param>
+        </member>
+        <member name="P:Deveel.OperationResult.ResultType">
+            <inheritdoc/>
+        </member>
+        <member name="P:Deveel.OperationResult.Error">
+            <inheritdoc/>
+        </member>
+        <member name="F:Deveel.OperationResult.Success">
+            <summary>
+            A result that indicates a successful operation.
+            </summary>
+        </member>
+        <member name="F:Deveel.OperationResult.NotModified">
+            <summary>
+            A result that indicates an operation that caused no changes
+            to the entity.
+            </summary>
+        </member>
+        <member name="M:Deveel.OperationResult.Fail(Deveel.IOperationError)">
+            <summary>
+            Creates a result that indicates a failed operation.
+            </summary>
+            <param name="error">
+            The error that caused the failure.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult"/> that
+            represents a failed operation.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResult.Fail(System.String,System.String)">
+            <summary>
+            Creates a result that indicates a failed operation.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of the error.
+            </param>
+            <param name="message">
+            A message that describes the error.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult"/> that
+            represents a failed operation.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResult.ValidationFailed(System.String,System.Collections.Generic.IList{System.ComponentModel.DataAnnotations.ValidationResult})">
+            <summary>
+            Creates a result that indicates a failed operation
+            caused by a validation error.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of the validation error.
+            </param>
+            <param name="results"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Deveel.OperationResultExtensions">
+            <summary>
+            Extensions for <see cref="T:Deveel.IOperationResult"/> that provide
+            more convenient methods to check the result of an operation.
+            </summary>
+        </member>
+        <member name="M:Deveel.OperationResultExtensions.IsSuccess(Deveel.IOperationResult)">
+            <summary>
+            Checks if the given result is a successful operation.
+            </summary>
+            <param name="result">
+            The result object to check.
+            </param>
+            <returns>
+            Returns <c>true</c> if the given <paramref name="result"/>
+            represents a successful operation, otherwise <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResultExtensions.IsError(Deveel.IOperationResult)">
+            <summary>
+            Checks if the given result is a failed operation.
+            </summary>
+            <param name="result">
+            The result object to check.
+            </param>
+            <returns>
+            Returns <c>true</c> if the given <paramref name="result"/>
+            represents a failed operation, otherwise <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResultExtensions.IsNotModified(Deveel.IOperationResult)">
+            <summary>
+            Checks if the given result represents an operation that
+            caused no changes to the entity.
+            </summary>
+            <param name="result">
+            The result object to check.
+            </param>
+            <returns>
+            Returns <c>true</c> if the given <paramref name="result"/>
+            represents an operation that caused no changes to the entity,
+            otherwise <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResultExtensions.IsValidationError(Deveel.IOperationResult)">
+            <summary>
+            Checks if the given result represents a validation error.
+            </summary>
+            <param name="result">
+            The result object to check.
+            </param>
+            <returns>
+            Returns <c>true</c> if the given <paramref name="result"/>
+            represents a validation error, otherwise <c>false</c>.
+            </returns>
+            <seealso cref="M:Deveel.OperationResultExtensions.IsError(Deveel.IOperationResult)"/>
+        </member>
+        <member name="M:Deveel.OperationResultExtensions.HandleAsync(Deveel.IOperationResult,System.Func{Deveel.IOperationResult,System.Threading.Tasks.Task})">
+            <summary>
+            Handles the given result by executing the given action
+            </summary>
+            <param name="result">
+            The result object to handle.
+            </param>
+            <param name="action">
+            An action to execute to handle the result.
+            </param>
+            <returns>
+            Returns a task that will be completed when the action
+            is executed.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResultExtensions.HandleAsync(Deveel.IOperationResult,System.Func{System.Threading.Tasks.Task},System.Func{System.Threading.Tasks.Task},System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            Handles the given result by executing the given action
+            for the specific result type.
+            </summary>
+            <param name="result">
+            The result object to handle.
+            </param>
+            <param name="ifSuccess">
+            The action to execute if the result is a successful operation.
+            </param>
+            <param name="ifFailed">
+            The action to execute if the result is a failed operation.
+            </param>
+            <param name="ifNotModified">
+            The action to execute if the result is an operation that
+            caused no changes to the entity.
+            </param>
+            <returns>
+            Returns a task that will be completed when the action
+            is executed.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResultExtensions.HandleAsync(Deveel.IOperationResult,System.Func{Deveel.IOperationResult,System.Threading.Tasks.Task},System.Func{Deveel.IOperationResult,System.Threading.Tasks.Task},System.Func{Deveel.IOperationResult,System.Threading.Tasks.Task})">
+            <summary>
+            Handles the given result by executing the given action
+            for the specific result type, passing the result object
+            as argument.
+            </summary>
+            <param name="result">
+            The result object to handle.
+            </param>
+            <param name="ifSuccess">
+            The action to execute if the result is a successful operation.
+            </param>
+            <param name="ifFailed">
+            The action to execute if the result is a failed operation.
+            </param>
+            <param name="ifNotModified">
+            The action to execute if the result is an operation that
+            caused no changes to the entity.
+            </param>
+            <returns>
+            Returns a task that will be completed when the action
+            is executed.
+            </returns>
+        </member>
+        <member name="T:Deveel.OperationResultType">
+            <summary>
+            The possible types of the result of an operation.
+            </summary>
+        </member>
+        <member name="F:Deveel.OperationResultType.Success">
+            <summary>
+            The operation was successful.
+            </summary>
+        </member>
+        <member name="F:Deveel.OperationResultType.NotModified">
+            <summary>
+            The operation caused no changes
+            to the entity.
+            </summary>
+        </member>
+        <member name="F:Deveel.OperationResultType.Error">
+            <summary>
+            The operation failed.
+            </summary>
+        </member>
+        <member name="T:Deveel.OperationResult`1">
+            <summary>
+            Represents the result of an operation that
+            returns a value.
+            </summary>
+            <typeparam name="TValue">
+            The type of the value returned by the operation.
+            </typeparam>
+            <remarks>
+            The value returned by the operation is available
+            only when the <see cref="P:Deveel.OperationResult`1.ResultType"/> is not a 
+            <see cref="F:Deveel.OperationResultType.Error"/>.
+            </remarks>
+        </member>
+        <member name="M:Deveel.OperationResult`1.#ctor(Deveel.OperationResultType,`0)">
+            <summary>
+            Constructs the result of an operation with the given
+            type and the value returned by the operation.
+            </summary>
+            <param name="resultType">
+            The type of the result of the operation.
+            </param>
+            <param name="value">
+            The value returned by the operation.
+            </param>
+        </member>
+        <member name="M:Deveel.OperationResult`1.#ctor(Deveel.IOperationError)">
+            <summary>
+            Constructs the result of an operation with the given error.
+            </summary>
+            <param name="error">
+            The error that caused the failure.
+            </param>
+        </member>
+        <member name="P:Deveel.OperationResult`1.ResultType">
+            <inheritdoc/>
+        </member>
+        <member name="P:Deveel.OperationResult`1.Error">
+            <inheritdoc/>
+        </member>
+        <member name="P:Deveel.OperationResult`1.Value">
+            <summary>
+            Gets the value returned by the operation.
+            </summary>
+        </member>
+        <member name="M:Deveel.OperationResult`1.MapAsync(System.Func{`0,System.Threading.Tasks.Task{`0}})">
+            <summary>
+            Maps a result to a new value asynchronously.
+            </summary>
+            <param name="mapper">
+            The function to use to map the value.
+            </param>
+            <returns>
+            Returns a value that is the result of the mapping
+            from this result.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResult`1.Map(System.Func{`0,`0})">
+            <summary>
+            Maps a result to a new value.
+            </summary>
+            <param name="mapper">
+            The function to use to map the value.
+            </param>
+            <returns>
+            Returns a value that is the result of the mapping
+            from this result.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResult`1.HandleAsync(System.Func{`0,System.Threading.Tasks.Task})">
+            <summary>
+            Handles the result of the operation asynchronously.
+            </summary>
+            <param name="handler">
+            The function used to handle the result value.
+            </param>
+            <returns>
+            Returns a task that will handle the result value.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResult`1.Handle(System.Action{`0})">
+            <summary>
+            Handles the result of the operation.
+            </summary>
+            <param name="handler">
+            The function used to handle the result value.
+            </param>
+        </member>
+        <member name="M:Deveel.OperationResult`1.MapAsync(System.Func{`0,System.Threading.Tasks.Task{`0}},System.Func{`0,System.Threading.Tasks.Task{`0}},System.Func{`0,System.Threading.Tasks.Task{`0}})">
+            <summary>
+            Maps the result of the operation to a new value,
+            using the provided functions to handle the result.
+            </summary>
+            <param name="ifSuccess">
+            The function to use to map the value if the operation
+            was successful.
+            </param>
+            <param name="ifFailed">
+            The function to use to map the value if the operation failed.
+            </param>
+            <param name="ifNotModified">
+            The function to use to map the value if the operation
+            caused no changes to the entity.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:Deveel.OperationResult`1.op_Implicit(`0)~Deveel.OperationResult{`0}">
+            <summary>
+            Implicitly converts the given <paramref name="value"/>
+            to an instance of <see cref="T:Deveel.OperationResult`1"/>
+            that represents a successful operation.
+            </summary>
+            <param name="value">
+            The value returned by the operation.
+            </param>
+        </member>
+        <member name="M:Deveel.OperationResult`1.op_Implicit(Deveel.OperationResult)~Deveel.OperationResult{`0}">
+            <summary>
+            Implicitly converts the given <paramref name="result"/>
+            to an instance of <see cref="T:Deveel.OperationResult`1"/>
+            that has no value.
+            </summary>
+            <param name="result">
+            The result of the operation.
+            </param>
+        </member>
+        <member name="M:Deveel.OperationResult`1.Success(`0)">
+            <summary>
+            Creates a result that indicates a successful operation.
+            </summary>
+            <param name="value">
+            The value returned by the operation.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult`1"/> that
+            represents a successful operation.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResult`1.Fail(Deveel.IOperationError)">
+            <summary>
+            Creates a result that indicates a failed operation.
+            </summary>
+            <param name="error">
+            An instance of <see cref="T:Deveel.IOperationError"/> that
+            describes the failure.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult`1"/> that
+            represents a failed operation.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResult`1.Fail(System.String,System.String)">
+            <summary>
+            Creates a result that indicates a failed operation.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of the error.
+            </param>
+            <param name="message">
+            A message that describes the error.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult`1"/> that
+            represents a failed operation.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResult`1.ValidationFailed(System.String,System.Collections.Generic.IList{System.ComponentModel.DataAnnotations.ValidationResult})">
+            <summary>
+            Creates a result that indicates a failed operation
+            caused by a validation error.
+            </summary>
+            <param name="errorCode">
+            The code that identifies the class of the validation error.
+            </param>
+            <param name="results">
+            A list of <see cref="T:System.ComponentModel.DataAnnotations.ValidationResult"/> that describe
+            the validation errors.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult`1"/> that
+            represents a failed operation caused by a validation error.
+            </returns>
+        </member>
+        <member name="M:Deveel.OperationResult`1.NotModified(`0)">
+            <summary>
+            Creates a result that indicates an operation that 
+            caused no changes to the entity.
+            </summary>
+            <param name="value">
+            The value returned by the operation.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.OperationResult`1"/> that
+            represents an operation that caused no changes to the entity.
+            </returns>
+        </member>
+        <member name="T:Deveel.ServiceCollectionExtensions">
+            <summary>
+            Provides methods to register entity management services
+            in a collection of services.
+            </summary>
+        </member>
+        <member name="M:Deveel.ServiceCollectionExtensions.AddOperationErrorFactory(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,System.Type)">
+            <summary>
+            Registers a <see cref="T:Deveel.Data.IOperationErrorFactory"/> service in the
+            collection of services.
+            </summary>
+            <param name="services">
+            The collection of services to register the factory.
+            </param>
+            <param name="entityType">
+            The type of the entity for which the factory is registered.
+            </param>
+            <param name="factoryType">
+            The type of the operation error factory to register.
+            </param>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+        </member>
+        <member name="M:Deveel.ServiceCollectionExtensions.AddOperationTokenSource``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers the operation cancellation source in the 
+            collection of services.
+            </summary>
+            <typeparam name="TSource">
+            The type of the operation cancellation source to register.
+            </typeparam>
+            <param name="services">
+            The collection of services to register the source.
+            </param>
+            <param name="lifetime">
+            The desired lifetime of the cancellation source.
+            </param>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+        </member>
+        <member name="M:Deveel.ServiceCollectionExtensions.AddHttpRequestTokenSource(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers a singleton instance of the <see cref="T:Deveel.HttpRequestCancellationSource"/> 
+            in the collection of services.
+            </summary>
+            <param name="services">
+            The collection of services to register the source.
+            </param>
+            <remarks>
+            This method also tries to register the <see cref="T:Microsoft.AspNetCore.Http.IHttpContextAccessor"/>
+            into the collection of services, if not already registered.
+            </remarks>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+        </member>
+    </members>
+</doc>

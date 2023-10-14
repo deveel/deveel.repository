@@ -14,7 +14,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Deveel {
+namespace Deveel.Data {
 	/// <summary>
 	/// A service that creates instances of <see cref="IOperationError"/>
 	/// that can be used to report errors in an operation.

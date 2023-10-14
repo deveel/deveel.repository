@@ -60,6 +60,7 @@ namespace Deveel.Data {
 			IEntityValidator<TEntity>? validator = null,
 			IEntityCache<TEntity>? cache = null,
 			ISystemTime? systemTime = null,
+			IOperationErrorFactory<TEntity>? errorFactory = null,
 			IServiceProvider? services = null, 
 			ILoggerFactory? loggerFactory = null) {
 			ArgumentNullException.ThrowIfNull(repository, nameof(repository));
@@ -68,6 +69,7 @@ namespace Deveel.Data {
 			Time = systemTime ?? SystemTime.Default;
 			EntityCache = cache;
 			EntityValidator = validator;
+			ErrorFactory = errorFactory;
 			Services = services;
 			Logger = loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance;
 		}
@@ -94,7 +96,7 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Gets the instance of the factory used to create errors
 		/// </summary>
-		protected IOperationErrorFactory? ErrorFactory => Services?.GetService<IOperationErrorFactory>();
+		protected IOperationErrorFactory? ErrorFactory { get; }
 
 		/// <summary>
 		/// Gets an instance of the cache used to store entities
@@ -698,7 +700,7 @@ namespace Deveel.Data {
 				return Success();
 			} catch(Exception ex) {
 				LogUnknownError(ex);
-				return Fail(EntityErrorCodes.UnknownError, "An unknown error occurred while adding the entity");
+				return Fail(EntityErrorCodes.UnknownError);
 			}
 		}
 
@@ -750,7 +752,7 @@ namespace Deveel.Data {
 				return Success();
 			} catch (Exception ex) {
 				LogUnknownError(ex);
-				return Fail(EntityErrorCodes.UnknownError, "An unknown error occurred while adding the entities");
+				return Fail(EntityErrorCodes.UnknownError);
 			}
 		}
 
@@ -853,7 +855,7 @@ namespace Deveel.Data {
 				var existing = await FindByKeyAsync(entityKey, token);
 				if (existing == null) {
 					LogEntityNotFound(entityKey);
-					return Fail(EntityErrorCodes.NotFound, "The entity was not found in the repository");
+					return Fail(EntityErrorCodes.NotFound);
 				}
 
 				if (AreEqual(existing, entity)) {
@@ -881,7 +883,7 @@ namespace Deveel.Data {
 				return Success();
 			} catch (Exception ex) {
 				LogEntityUnknownError(entityKey, ex);
-				return Fail(EntityErrorCodes.UnknownError, "An unknown error occurred while updating the entity");
+				return Fail(EntityErrorCodes.UnknownError);
 			}
 		}
 
@@ -927,7 +929,7 @@ namespace Deveel.Data {
 				var found = await FindByKeyAsync(entityKey, token);
 				if (found == null) {
 					LogEntityNotFound(entityKey);
-					return Fail(EntityErrorCodes.NotFound, "The entity was not found in the repository");
+					return Fail(EntityErrorCodes.NotFound);
 				}
 
 				if (!await Repository.RemoveAsync(found, token)) {
@@ -940,7 +942,7 @@ namespace Deveel.Data {
 				return Success();
 			} catch (Exception ex) {
 				LogEntityUnknownError(entityKey, ex);
-				return Fail(EntityErrorCodes.UnknownError, "An unknown error occurred while removing the entity");
+				return Fail(EntityErrorCodes.UnknownError);
 			}
 		}
 
@@ -978,7 +980,7 @@ namespace Deveel.Data {
 				return Success();
 			} catch (Exception ex) {
 				LogUnknownError(ex);
-				return Fail(EntityErrorCodes.UnknownError, "An unknown error occurred while removing the entities");
+				return Fail(EntityErrorCodes.UnknownError);
 			}
 		}
 

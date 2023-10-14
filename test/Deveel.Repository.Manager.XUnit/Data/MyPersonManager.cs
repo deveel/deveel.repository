@@ -8,9 +8,10 @@ namespace Deveel.Data {
 			IEntityValidator<Person>? validator = null, 
 			IEntityCache<Person>? cache = null,
 			ISystemTime? systemTime = null,
+			IOperationErrorFactory<Person>? errorFactory = null,
 			IServiceProvider? services = null, 
 			ILoggerFactory? loggerFactory = null) 
-			: base(repository, validator, cache, systemTime, services, loggerFactory) {
+			: base(repository, validator, cache, systemTime, errorFactory, services, loggerFactory) {
 		}
 
 		public async Task<Person?> FindByEmailAsync(string email, CancellationToken? cancellationToken = null) {

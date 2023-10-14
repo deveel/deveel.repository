@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Deveel.Repository.InMemory</name>
+    </assembly>
+    <members>
+        <member name="M:Deveel.Data.InMemoryRepository`1.GetEntityKey(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.CountAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.AddAsync(`0,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.AddRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.RemoveAsync(`0,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.RemoveRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.ExistsAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.FindAllAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.FindAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.FindByKeyAsync(System.Object,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.GetPageAsync(Deveel.Data.PageQuery{`0},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.UpdateAsync(`0,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+    </members>
+</doc>

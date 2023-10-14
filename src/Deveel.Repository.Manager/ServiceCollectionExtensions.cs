@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.ComponentModel.DataAnnotations;
+
+using Deveel.Data;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -26,23 +30,39 @@ namespace Deveel {
 		/// Registers a <see cref="IOperationErrorFactory"/> service in the
 		/// collection of services.
 		/// </summary>
-		/// <typeparam name="TFactory">
-		/// The type of the operation error factory to register.
-		/// </typeparam>
 		/// <param name="services">
 		/// The collection of services to register the factory.
 		/// </param>
-		/// <param name="lifetime">
-		/// The desired lifetime of the factory.
+		/// <param name="entityType">
+		/// The type of the entity for which the factory is registered.
+		/// </param>
+		/// <param name="factoryType">
+		/// The type of the operation error factory to register.
 		/// </param>
 		/// <returns>
 		/// Returns the given collection of services for chaining calls.
 		/// </returns>
-		public static IServiceCollection AddOperationErrorFactory<TFactory>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
-			where TFactory : class, IOperationErrorFactory {
-			services.TryAdd(new ServiceDescriptor(typeof(IOperationErrorFactory), typeof(TFactory), lifetime));
-			services.Add(new ServiceDescriptor(typeof(TFactory), typeof(TFactory), lifetime));
+		public static IServiceCollection AddOperationErrorFactory(this IServiceCollection services, Type entityType, Type factoryType) {
+			if (!typeof(IOperationErrorFactory).IsAssignableFrom(factoryType))
+				throw new ArgumentException($"The given type '{factoryType}' is not assignable to '{typeof(IOperationErrorFactory)}'");
+			if (!factoryType.IsClass || factoryType.IsAbstract)
+				throw new ArgumentException($"The given type '{factoryType}' is not a concrete class");
+
+			var serviceType = typeof(IOperationErrorFactory<>).MakeGenericType(entityType);
+
+			services.TryAdd(ServiceDescriptor.Singleton(serviceType, sp => { 
+				var decoratorType = typeof(OperationErrorFactoryDecorator<>).MakeGenericType(entityType);
+				var instance = sp.GetRequiredService(factoryType); 
+				return Activator.CreateInstance(decoratorType, instance)!;
+			}));
+			services.Add(ServiceDescriptor.Singleton(factoryType, factoryType));
 			return services;
+		}
+
+		public static IServiceCollection AddOperationErrorFactory<TEntity, TFactory>(this IServiceCollection services)
+			where TEntity : class
+			where TFactory : class, IOperationErrorFactory {
+			return services.AddOperationErrorFactory(typeof(TEntity), typeof(TFactory));
 		}
 
 		/// <summary>
@@ -88,6 +108,23 @@ namespace Deveel {
 			services.AddOperationTokenSource<HttpRequestCancellationSource>(ServiceLifetime.Singleton);
 
 			return services;
+		}
+
+		class OperationErrorFactoryDecorator<TEntity> : IOperationErrorFactory<TEntity> where TEntity : class {
+			private readonly OperationErrorFactory errorFactory;
+
+			public OperationErrorFactoryDecorator(OperationErrorFactory errorFactory) {
+				this.errorFactory = errorFactory;
+			}
+
+			public IOperationError CreateError(string errorCode, string? message = null) 
+				=> errorFactory.CreateError(errorCode, message);
+
+			public IOperationError CreateError(Exception exception) 
+				=> errorFactory.CreateError(exception);
+
+			public IValidationError CreateValidationError(string errorCode, IList<ValidationResult> validationResults) 
+				=> errorFactory.CreateValidationError(errorCode, validationResults);
 		}
 	}
 }

@@ -79,6 +79,29 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
+		public static void AddDefaultOperationErrorFactory() {
+			var services = new ServiceCollection();
+			services.AddOperationErrorFactory<Person, OperationErrorFactory>();
+
+			var provider = services.BuildServiceProvider();
+
+			Assert.NotNull(provider.GetService<IOperationErrorFactory<Person>>());
+			Assert.NotNull(provider.GetService<OperationErrorFactory>());
+		}
+
+		[Fact]
+		public static void AddCustomOperationErrorFactory() {
+			var services = new ServiceCollection();
+			services.AddOperationErrorFactory<Person, PersonErrorFactory>();
+
+			var provider = services.BuildServiceProvider();
+
+			Assert.NotNull(provider.GetService<IOperationErrorFactory<Person>>());
+			Assert.NotNull(provider.GetService<PersonErrorFactory>());
+			Assert.Null(provider.GetService<OperationErrorFactory>());
+		}
+
+		[Fact]
 		public static void AddHttpRequestCancellationSource() {
 			var services = new ServiceCollection();
 			services.AddHttpRequestTokenSource();
