@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Bogus;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -7,7 +9,8 @@ using Xunit.Abstractions;
 
 namespace Deveel.Data {
 	[Collection(nameof(MongoSingleDatabaseCollection))]
-	public abstract class MongoRepositoryTestSuite<TPerson> : RepositoryTestSuite<TPerson> where TPerson : MongoPerson {
+	public abstract class MongoRepositoryTestSuite<TPerson> : RepositoryTestSuite<TPerson, MongoPersonRelationship> 
+		where TPerson : MongoPerson {
 		private MongoSingleDatabase mongo;
 
 		protected MongoRepositoryTestSuite(MongoSingleDatabase mongo, ITestOutputHelper? testOutput) : base(testOutput) {
@@ -22,9 +25,27 @@ namespace Deveel.Data {
 
 		protected override string GeneratePersonId() => ObjectId.GenerateNewId().ToString();
 
+		protected override Faker<MongoPersonRelationship> RelationshipFaker => new MongoPersonRelationshipFaker();
+
 		protected IMongoCollection<TPerson> MongoCollection => new MongoClient(mongo.ConnectionString)
 			.GetDatabase(DatabaseName)
 			.GetCollection<TPerson>("persons");
+
+		protected override Task AddRelationshipAsync(TPerson person, MongoPersonRelationship relationship) {
+			if (person.Relationships == null)
+				person.Relationships = new List<MongoPersonRelationship>();
+
+			person.Relationships.Add(relationship);
+
+			return Task.CompletedTask;
+		}
+
+		protected override Task RemoveRelationshipAsync(TPerson person, MongoPersonRelationship relationship) {
+			if (person.Relationships != null)
+				person.Relationships.Remove(relationship);
+
+			return Task.CompletedTask;
+		}
 
 		protected override async Task InitializeAsync() {
 			var controller = Services.GetRequiredService<IRepositoryController>();

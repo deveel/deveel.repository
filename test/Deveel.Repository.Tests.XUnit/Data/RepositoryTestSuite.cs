@@ -7,11 +7,14 @@ using Bogus;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-	public abstract class RepositoryTestSuite<TPerson> : IAsyncLifetime where TPerson : class, IPerson {
+	public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifetime 
+		where TPerson : class, IPerson
+		where TRelationship : class, IRelationship {
 		private IServiceProvider? services;
 		private AsyncServiceScope scope;
 
@@ -31,7 +34,11 @@ namespace Deveel.Data {
 
 		protected abstract Faker<TPerson> PersonFaker { get; }
 
+		protected abstract Faker<TRelationship> RelationshipFaker { get; }
+
 		protected TPerson GeneratePerson() => PersonFaker.Generate();
+
+		protected TRelationship GenerateRelationship() => RelationshipFaker.Generate();
 
 		protected ISystemTime TestTime { get; } = new TestTime();
 
@@ -86,6 +93,10 @@ namespace Deveel.Data {
 		protected virtual IEnumerable<TPerson> NaturalOrder(IEnumerable<TPerson> source) {
 			return source;
 		}
+
+		protected abstract Task AddRelationshipAsync(TPerson person, TRelationship relationship);
+
+		protected abstract Task RemoveRelationshipAsync(TPerson person, TRelationship relationship);
 
 		protected virtual Task<TPerson?> FindPersonAsync(object id) {
 			var entity = People.FirstOrDefault(x => Repository.GetEntityKey(x) == id);
@@ -324,7 +335,7 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FindById_Existing() {
+		public async Task FindByKey_Existing() {
 			var person = await RandomPersonAsync();
 
 			var result = await Repository.FindByKeyAsync(person.Id!);
@@ -337,7 +348,7 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FindById_NotFound() {
+		public async Task FindByKey_NotFound() {
 			var id = GeneratePersonId();
 
 			var result = await Repository.FindByKeyAsync(id);
@@ -346,12 +357,26 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FindById_Sync() {
+		public async Task FindByKey_Sync() {
 			var person = await RandomPersonAsync();
 
 			var result = Repository.FindByKey(person.Id!);
 
 			Assert.NotNull(result);
+			Assert.Equal(person.Id, result.Id);
+		}
+
+		[Fact]
+		public async Task FindByKey_WithRelationsips() {
+			var person = People.Random(x => x.Relationships?.Any() ?? false);
+
+			Assert.NotNull(person);
+
+			var result = await Repository.FindByKeyAsync(person.Id!);
+
+			Assert.NotNull(result);
+			Assert.NotNull(result.Relationships);
+			Assert.NotEmpty(result.Relationships);
 		}
 
 		[Fact]
@@ -362,6 +387,20 @@ namespace Deveel.Data {
 
 			Assert.NotNull(result);
 			Assert.Equal(ordered[0].FirstName, result.FirstName);
+		}
+
+		[Fact]
+		public async Task FindFirstFiltered_Sync() {
+			var person = await RandomPersonAsync(x => x.FirstName != null);
+			var ordered = NaturalOrder(People.Where(x => x.FirstName == person.FirstName)).ToList();
+
+			// TODO: make an extension method for this
+			var result = Repository.FindFirst(QueryFilter.Where<TPerson>(x => x.FirstName == person.FirstName));
+
+			Assert.NotNull(result);
+			Assert.Equal(ordered[0].Id, result.Id);
+			Assert.Equal(ordered[0].FirstName, result.FirstName);
+			Assert.Equal(ordered[0].LastName, result.LastName);
 		}
 
 		[Fact]
@@ -571,38 +610,46 @@ namespace Deveel.Data {
 		public async Task UpdateExisting() {
 			var person = await RandomPersonAsync(x => x.FirstName != "John");
 
-			person.FirstName = "John";
+			var toUpdate = await Repository.FindByKeyAsync(person.Id!);
 
-			var result = await Repository.UpdateAsync(person);
+			Assert.NotNull(toUpdate);
+
+			toUpdate.FirstName = "John";
+
+			var result = await Repository.UpdateAsync(toUpdate);
 
 			Assert.True(result);
 
 			var updated = await Repository.FindByKeyAsync(person.Id!);
 
 			Assert.NotNull(updated);
-			Assert.Equal(person.FirstName, updated.FirstName);
-			Assert.Equal(person.LastName, updated.LastName);
-			Assert.Equal(person.Email, updated.Email);
-			Assert.Equal(person.DateOfBirth, updated.DateOfBirth);
+			Assert.Equal(toUpdate.FirstName, updated.FirstName);
+			Assert.Equal(toUpdate.LastName, updated.LastName);
+			Assert.Equal(toUpdate.Email, updated.Email);
+			Assert.Equal(toUpdate.DateOfBirth, updated.DateOfBirth);
 		}
 
 		[Fact]
 		public async Task UpdateExisting_Sync() {
 			var person = await RandomPersonAsync(x => x.FirstName != "John");
 
-			person.FirstName = "John";
+			var toUpdate = await Repository.FindByKeyAsync(person.Id!);
 
-			var result = Repository.Update(person);
+			Assert.NotNull(toUpdate);
+
+			toUpdate.FirstName = "John";
+
+			var result = Repository.Update(toUpdate);
 
 			Assert.True(result);
 
 			var updated = await Repository.FindByKeyAsync(person.Id!);
 
 			Assert.NotNull(updated);
-			Assert.Equal(person.FirstName, updated.FirstName);
-			Assert.Equal(person.LastName, updated.LastName);
-			Assert.Equal(person.Email, updated.Email);
-			Assert.Equal(person.DateOfBirth, updated.DateOfBirth);
+			Assert.Equal(toUpdate.FirstName, updated.FirstName);
+			Assert.Equal(toUpdate.LastName, updated.LastName);
+			Assert.Equal(toUpdate.Email, updated.Email);
+			Assert.Equal(toUpdate.DateOfBirth, updated.DateOfBirth);
 		}
 
 		[Fact]
@@ -614,6 +661,71 @@ namespace Deveel.Data {
 			var result = await Repository.UpdateAsync(person);
 
 			Assert.False(result);
+		}
+
+		[Fact]
+		public async Task UpdateExisting_NoChange() {
+			var person = await RandomPersonAsync();
+
+			var toUpdate = await Repository.FindByKeyAsync(person.Id!);
+
+			Assert.NotNull(toUpdate);
+
+			await Repository.UpdateAsync(toUpdate);
+
+			var updated = await Repository.FindByKeyAsync(person.Id!);
+			Assert.NotNull(updated);
+			Assert.Equal(toUpdate, updated);
+		}
+
+		[Fact]
+		public async Task UpdateExisting_AddNewRelationship() {
+			var person = People.Random(x => x.Relationships == null || !x.Relationships.Any());
+
+			Assert.NotNull(person);
+
+			var relationship = GenerateRelationship();
+
+			var toUpdate = await Repository.FindByKeyAsync(person.Id!);
+
+			Assert.NotNull(toUpdate);
+
+			await AddRelationshipAsync(toUpdate, relationship);
+
+			var result = await Repository.UpdateAsync(toUpdate);
+
+			Assert.True(result);
+
+			var updated = await Repository.FindByKeyAsync(person.Id!);
+
+			Assert.NotNull(updated);
+			Assert.NotNull(updated.Relationships);
+			Assert.NotEmpty(updated.Relationships);
+			Assert.Single(updated.Relationships);
+		}
+
+		[Fact]
+		public async Task UpdateExisting_RemoveRelationship() {
+			var person = People.Random(x => x.Relationships?.Any() ?? false);
+
+			Assert.NotNull(person);
+
+			var toUpdate = await Repository.FindByKeyAsync(person.Id!);
+
+			Assert.NotNull(toUpdate);
+
+			var relCount = toUpdate.Relationships.Count();
+
+			await RemoveRelationshipAsync(toUpdate, (TRelationship) toUpdate.Relationships!.First());
+
+			var result = await Repository.UpdateAsync(toUpdate);
+
+			Assert.True(result);
+
+			var updated = await Repository.FindByKeyAsync(person.Id!);
+			Assert.NotNull(updated);
+			Assert.NotNull(updated.Relationships);
+			Assert.Equal(relCount - 1, updated.Relationships.Count());
 		}
 	}
 }

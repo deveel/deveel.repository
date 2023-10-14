@@ -79,8 +79,8 @@ namespace Deveel.Data {
 		}
 
 		protected class PersonRepositoryProvider : MongoRepositoryProvider<PersonsDbContext, MongoTenantPerson, TenantInfo> {
-            public PersonRepositoryProvider(IEnumerable<IMultiTenantStore<TenantInfo>> stores, ISystemTime? systemTime = null, ILoggerFactory? loggerFactory = null) 
-				:base(stores, systemTime, loggerFactory) {
+            public PersonRepositoryProvider(IEnumerable<IMultiTenantStore<TenantInfo>> stores, ILoggerFactory? loggerFactory = null) 
+				:base(stores, loggerFactory) {
             }
 
             protected override PersonsDbContext CreateContext(IMongoDbConnection connection, TenantInfo tenantInfo) {
@@ -89,13 +89,13 @@ namespace Deveel.Data {
 
             protected override MongoRepository<MongoTenantPerson> CreateRepository(PersonsDbContext context) {
                 var logger = LoggerFactory.CreateLogger<PersonRepository>();
-                return new PersonRepository(context, SystemTime, logger);
+                return new PersonRepository(context, logger);
             }
         }
 
         protected class PersonRepository : MongoRepository<MongoTenantPerson> {
-            public PersonRepository(PersonsDbContext context, ISystemTime? systemTime, ILogger<PersonRepository>? logger = null) 
-				: base(context, systemTime, logger) {
+            public PersonRepository(PersonsDbContext context, ILogger<PersonRepository>? logger = null) 
+				: base(context, logger) {
             }
         }
 

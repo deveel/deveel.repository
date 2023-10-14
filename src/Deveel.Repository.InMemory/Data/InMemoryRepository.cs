@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq.Expressions;
+using System.Runtime.Serialization;
 
 namespace Deveel.Data {
     public class InMemoryRepository<TEntity> : 
@@ -22,21 +25,30 @@ namespace Deveel.Data {
 		IQueryableRepository<TEntity>, 
 		IPageableRepository<TEntity>, 
 		IFilterableRepository<TEntity>,
-		IMultiTenantRepository<TEntity>
+		IMultiTenantRepository<TEntity>,
+		IDisposable
 		where TEntity : class {
 		// TODO: use a dictionary for faster access
-		private readonly SortedList<string, TEntity> entities;
+		private SortedList<string, TEntity> entities;
+		private bool disposedValue;
 		private readonly IEntityFieldMapper<TEntity>? fieldMapper;
 
-		public InMemoryRepository(IEnumerable<TEntity>? list = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null) {
-			entities = list == null ? new SortedList<string, TEntity>() : new SortedList<string, TEntity>(list.ToDictionary(x => (string)GetEntityKey(x)!, y => y));
-			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
+		public InMemoryRepository(
+			IEnumerable<TEntity>? list = null,
+			IEntityFieldMapper<TEntity>? fieldMapper = null) {
+			entities = CopyList(list ?? Enumerable.Empty<TEntity>());
 			this.fieldMapper = fieldMapper;
 		}
 
-		protected InMemoryRepository(string tenantId, IEnumerable<TEntity>? list = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
-			: this(list, systemTime, fieldMapper) {
+		protected InMemoryRepository(string tenantId, 
+			IEnumerable<TEntity>? list = null,
+			IEntityFieldMapper<TEntity>? fieldMapper = null)
+			: this(list, fieldMapper) {
 			TenantId = tenantId;
+		}
+
+		~InMemoryRepository() {
+			Dispose(disposing: false);
 		}
 
 		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => entities.Values.AsQueryable();
@@ -47,7 +59,17 @@ namespace Deveel.Data {
 
 		protected virtual string? TenantId { get; }
 
-		protected ISystemTime SystemTime { get; }
+		private SortedList<string, TEntity> CopyList(IEnumerable<TEntity> source) {
+			return new SortedList<string, TEntity>(source.ToDictionary(x => (string)GetEntityKey(x)!, y => Clone(y)));
+		}
+
+		private static TEntity Clone(TEntity entity) {
+			var serializer = new DataContractSerializer(typeof(TEntity));
+			using var stream = new MemoryStream();
+			serializer.WriteObject(stream, entity);
+			stream.Position = 0;
+			return (TEntity)serializer.ReadObject(stream)!;
+		}
 
 		/// <inheritdoc/>
 		public virtual object? GetEntityKey(TEntity entity) {
@@ -94,10 +116,7 @@ namespace Deveel.Data {
 				if (!entity.TrySetMemberValue("Id", id))
 					throw new RepositoryException("Unable to set the ID of the entity");
 
-				if (entity is IHaveTimeStamp hasTime)
-					hasTime.CreatedAtUtc = SystemTime.UtcNow;
-
-				entities.Add(id, entity);
+				entities.Add(id, Clone(entity));
 
 				return Task.CompletedTask;
 			} catch (RepositoryException) {
@@ -118,10 +137,7 @@ namespace Deveel.Data {
 					if (!item.TrySetMemberValue("Id", id))
 						throw new RepositoryException("Unable to set the ID of the entity");
 
-					if (item is IHaveTimeStamp hasTime)
-						hasTime.CreatedAtUtc = SystemTime.UtcNow;
-
-					this.entities.Add(id, item);
+					this.entities.Add(id, Clone(item));
 				}
 
 				return Task.CompletedTask;
@@ -204,13 +220,18 @@ namespace Deveel.Data {
 			}
 		}
 
+
 		/// <inheritdoc/>
 		public Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
 				var lambda = filter.AsLambda<TEntity>();
-				var result = entities.Values.AsQueryable().Where(lambda).ToList();
+				var result = entities.Values
+					.AsQueryable()
+					.Where(lambda)
+					.ToList();
+
 				return Task.FromResult<IList<TEntity>>(result);
 			} catch (Exception ex) {
 
@@ -224,7 +245,11 @@ namespace Deveel.Data {
 
 			try {
 				var lambda = filter.AsLambda<TEntity>();
-				var result = entities.Values.AsQueryable().FirstOrDefault(lambda);
+				var result = entities.Values
+					.AsQueryable()
+					.Where(lambda)
+					.FirstOrDefault();
+
 				return Task.FromResult(result);
 			} catch (Exception ex) {
 				throw new RepositoryException("Error while searching for any entities in the repository matching the filter", ex);
@@ -243,7 +268,7 @@ namespace Deveel.Data {
 
 				if (!entities.TryGetValue(s, out var entity))
 					return Task.FromResult<TEntity?>(null);
-				
+
 				return Task.FromResult<TEntity?>(entity);
 			} catch (Exception ex) {
 				throw new RepositoryException("Error while searching any entities with the given ID", ex);
@@ -287,7 +312,10 @@ namespace Deveel.Data {
 				}
 
 				var itemCount = entitySet.Count();
-				var items = entitySet.Skip(request.Offset).Take(request.Size);
+				var items = entitySet
+					.Skip(request.Offset)
+					.Take(request.Size)
+					.ToList();
 
 				var result = new PageResult<TEntity>(request, itemCount,items);
 				return Task.FromResult(result);
@@ -300,15 +328,15 @@ namespace Deveel.Data {
 		public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
+			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
+
 			try {
-				if (!entity.TryGetMemberValue<string>("Id", out var entityId))
+				var entityId = GetEntityId(entity);
+				if (entityId == null)
 					return Task.FromResult(false);
 
-				if (!entities.TryGetValue(entityId, out var _))
+				if (!entities.TryGetValue(entityId, out var existing))
 					return Task.FromResult(false);
-
-				if (entity is IHaveTimeStamp hasTime)
-					hasTime.UpdatedAtUtc = SystemTime.UtcNow;
 
 				entities[entityId] = entity;
 				return Task.FromResult(true);
@@ -316,8 +344,24 @@ namespace Deveel.Data {
 				throw new RepositoryException("Unable to update the entity", ex);
 			}
 		}
-		
-		internal static InMemoryRepository<TEntity> Create(string tenantId, IList<TEntity>? entities = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
-			=> new InMemoryRepository<TEntity>(tenantId, entities, systemTime, fieldMapper);
+
+		internal static InMemoryRepository<TEntity> Create(string tenantId, IList<TEntity>? entities = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
+			=> new InMemoryRepository<TEntity>(tenantId, entities, fieldMapper);
+
+		protected virtual void Dispose(bool disposing) {
+			if (!disposedValue) {
+				if (disposing) {
+					entities.Clear();
+				}
+
+				entities = null!;
+				disposedValue = true;
+			}
+		}
+
+		public void Dispose() {
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
 	}
 }

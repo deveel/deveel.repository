@@ -11,5 +11,7 @@
 		DateTime? DateOfBirth { get; set; }
 
 		string? PhoneNumber { get; set; }
+
+		IEnumerable<IRelationship> Relationships { get; }
 	}
 }

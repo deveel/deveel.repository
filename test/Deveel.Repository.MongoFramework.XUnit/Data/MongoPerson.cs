@@ -41,18 +41,18 @@ namespace Deveel.Data {
 
 		[Column("updated_at")]
 		public DateTimeOffset? UpdatedAtUtc { get; set; }
+
+		[Column("relationships")]
+		public List<MongoPersonRelationship>? Relationships { get; set; }
+
+		IEnumerable<IRelationship> IPerson.Relationships => Relationships ?? Enumerable.Empty<IRelationship>();
 	}
 
-	//public interface IPerson {
-	//	string? Id { get; }
+	public class MongoPersonRelationship : IRelationship {
+		[Column("type")]
+		public string Type { get; set; }
 
-	//	public string FirstName { get; }
-
-	//	public string LastName { get; }
-
-	//	public DateTime? BirthDate { get; }
-
-	//	public string? Description { get; }
-	//}
-
+		[Column("full_name")]
+		public string FullName { get; set; }
+	}
 }

@@ -18,9 +18,10 @@ namespace Deveel.Data {
 
 		public string? Description { get; set; }
 
-		public IList<DbPersonRelationship>? Relationships { get; set; }
+		public virtual List<DbRelationship>? Relationships { get; set; }
 
-		// IEnumerable<IRelationship> IPerson.Relationships => Relationships;
+		IEnumerable<IRelationship> IPerson.Relationships
+			=> Relationships ?? Enumerable.Empty<IRelationship>();
 
 		public string? Email { get; set; }
 
@@ -30,7 +31,7 @@ namespace Deveel.Data {
 	}
 
 	[Table("person_relationships")]
-	public class DbPersonRelationship {
+	public class DbRelationship : IRelationship {
 		[Key]
 		public Guid Id { get; set; }
 

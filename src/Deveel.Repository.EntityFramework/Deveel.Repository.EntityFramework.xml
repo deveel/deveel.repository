@@ -112,6 +112,17 @@
         <member name="M:Deveel.Data.EntityRepository`1.RemoveRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
+        <member name="M:Deveel.Data.EntityRepository`1.OnEntityFoundByKeyAsync(System.Object,`0,System.Threading.CancellationToken)">
+            <summary>
+            A callback invoked when an entity is found by its key.
+            </summary>
+            <param name="key">
+            The key used to find the entity.
+            </param>
+            <param name="entity"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
         <member name="M:Deveel.Data.EntityRepository`1.FindByKeyAsync(System.Object,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>

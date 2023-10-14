@@ -31,16 +31,12 @@ namespace Deveel.Data {
 
 		public MongoRepositoryProvider(
 			IEnumerable<IMultiTenantStore<TTenantInfo>>? stores = null,
-			ISystemTime? systemTime = null,
 			ILoggerFactory? loggerFactory = null) {
 			this.stores = stores;
-			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
 			LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 		}
 
 		protected ILoggerFactory LoggerFactory { get; }
-
-		protected ISystemTime SystemTime { get; }
 
 		protected virtual async Task<TTenantInfo?> GetTenantInfoAsync(string tenantId, CancellationToken cancellationToken) {
 			if (stores == null)
@@ -132,7 +128,7 @@ namespace Deveel.Data {
 		}
 
 		protected virtual MongoRepository<TEntity> CreateRepository(TContext context, ILogger logger) {
-			return new MongoRepository<TEntity>(context, SystemTime, logger);
+			return new MongoRepository<TEntity>(context, logger);
 		}
 
         protected virtual MongoRepository<TEntity> CreateRepository(TContext context) {

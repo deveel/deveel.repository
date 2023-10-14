@@ -112,7 +112,7 @@ namespace Deveel.Data {
 
 			foreach (var person in people) {
 				Assert.NotNull(person.Id);
-				Assert.Contains(person, found);
+				Assert.Contains(found, x => x.Id == person.Id);
 			}
 		}
 

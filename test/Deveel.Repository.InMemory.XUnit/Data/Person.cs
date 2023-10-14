@@ -18,5 +18,15 @@ namespace Deveel.Data {
 		public DateTimeOffset? CreatedAtUtc { get; set; }
 
 		public DateTimeOffset? UpdatedAtUtc { get; set; }
+
+		public List<PersonRelationship> Relationships { get; set; }
+
+		IEnumerable<IRelationship> IPerson.Relationships => Relationships ?? Enumerable.Empty<IRelationship>();
+	}
+
+	public class PersonRelationship : IRelationship {
+		public string Type { get; set; }
+
+		public string FullName { get; set; }
 	}
 }

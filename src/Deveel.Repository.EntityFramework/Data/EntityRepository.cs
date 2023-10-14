@@ -20,6 +20,7 @@ using Finbuckle.MultiTenant;
 using Finbuckle.MultiTenant.EntityFrameworkCore;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -191,7 +192,7 @@ namespace Deveel.Data {
 		public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
-            if (entity is null) throw new ArgumentNullException(nameof(entity));
+			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
             Logger.TraceCreatingEntity(typeof(TEntity), TenantId);
 
@@ -230,7 +231,7 @@ namespace Deveel.Data {
 		public virtual async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
-			if (entity is null) throw new ArgumentNullException(nameof(entity));
+			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			try {
                 var entityId = GetEntityKey(entity)!;
@@ -285,11 +286,30 @@ namespace Deveel.Data {
 			}
 		}
 
+
+		/// <summary>
+		/// A callback invoked when an entity is found by its key.
+		/// </summary>
+		/// <param name="key">
+		/// The key used to find the entity.
+		/// </param>
+		/// <param name="entity"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		protected virtual Task<TEntity> OnEntityFoundByKeyAsync(object key, TEntity entity, CancellationToken cancellationToken = default) {
+			return Task.FromResult(entity);
+		}
+
 		/// <inheritdoc/>
 		public virtual async Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
 			try {
 				// TODO: add support for composite keys
-				return await Entities.FindAsync(new object?[] { ConvertEntityKey(key) }, cancellationToken);
+				var result = await Entities.FindAsync(new object?[] { ConvertEntityKey(key) }, cancellationToken);
+
+				if (result != null)
+					result = await OnEntityFoundByKeyAsync(key, result, cancellationToken);
+
+				return result;
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unable to find an entity in the repository because of an error", ex);
@@ -300,8 +320,7 @@ namespace Deveel.Data {
 		public virtual async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
-			if (entity == null)
-				throw new ArgumentNullException(nameof(entity));
+			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			try {
 				var entityId = GetEntityKey(entity)!;
@@ -309,11 +328,6 @@ namespace Deveel.Data {
 				Logger.TraceUpdatingEntity(typeof(TEntity), entityId, TenantId);
 
 				var entry = Context.Entry(entity);
-
-				if (entry.State != EntityState.Modified) {
-					Logger.WarnEntityNotUpdated(typeof(TEntity), entityId, TenantId);
-					return false;
-				}
 
 				var count = await Context.SaveChangesAsync(cancellationToken);
 
@@ -448,7 +462,7 @@ namespace Deveel.Data {
         }
 
 		/// <inheritdoc/>
-        public IQueryable<TEntity> AsQueryable() => Entities.AsQueryable();
+        public virtual IQueryable<TEntity> AsQueryable() => Entities.AsQueryable();
 
 		/// <summary>
 		/// Disposes the repository and frees all the resources used by it.
@@ -474,7 +488,7 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 
 			try {
-				var querySet = Entities.AsQueryable();
+				var querySet = AsQueryable();
 				if (request.Filter != null) {
 					querySet = request.Filter.Apply(querySet);
 				}
@@ -487,7 +501,10 @@ namespace Deveel.Data {
 
 				var total = await querySet.CountAsync(cancellationToken);
 
-				var items = await querySet.Skip(request.Offset).Take(request.Size).ToListAsync(cancellationToken);
+				var items = await querySet
+					.Skip(request.Offset)
+					.Take(request.Size)
+					.ToListAsync(cancellationToken);
 
 				return new PageResult<TEntity>(request, total, items);
 			} catch (Exception ex) {

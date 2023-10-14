@@ -18,7 +18,7 @@ namespace Deveel.Data {
 	public class InMemoryRepositoryProvider<TEntity> : IRepositoryProvider<TEntity>, IDisposable
 		where TEntity : class {
 
-		public InMemoryRepositoryProvider(IDictionary<string, IList<TEntity>>? list = null, ISystemTime? systemTime = null, IEntityFieldMapper<TEntity>? fieldMapper = null) {
+		public InMemoryRepositoryProvider(IDictionary<string, IList<TEntity>>? list = null, IEntityFieldMapper<TEntity>? fieldMapper = null) {
 			var repos = list?.ToDictionary(x => x.Key, y => CreateRepository(y.Key, y.Value));
 			if (repos == null) {
 				repositories = new Dictionary<string, InMemoryRepository<TEntity>>();
@@ -26,7 +26,6 @@ namespace Deveel.Data {
 				repositories = new Dictionary<string, InMemoryRepository<TEntity>>(repos);
 			}
 
-			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
 			FieldMapper = fieldMapper;
 		}
 
@@ -34,8 +33,6 @@ namespace Deveel.Data {
 		private bool disposedValue;
 
 		protected virtual IEntityFieldMapper<TEntity>? FieldMapper { get; }
-
-		protected ISystemTime SystemTime { get; }
 
 		public InMemoryRepository<TEntity> GetRepository(string tenantId) {
 			lock (repositories) {
@@ -48,7 +45,7 @@ namespace Deveel.Data {
 		}
 
 		public virtual InMemoryRepository<TEntity> CreateRepository(string tenantId, IList<TEntity>? entities = null) {
-			return InMemoryRepository<TEntity>.Create(tenantId, entities, SystemTime, FieldMapper);
+			return InMemoryRepository<TEntity>.Create(tenantId, entities, FieldMapper);
 		}
 
 		Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken) {

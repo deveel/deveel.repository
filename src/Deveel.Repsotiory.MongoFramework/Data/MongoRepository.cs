@@ -53,15 +53,11 @@ namespace Deveel.Data {
 		/// <param name="context">
 		/// The context that is used to handle the connection to the MongoDB server.
 		/// </param>
-		/// <param name="systemTime">
-		/// A service that provides the current system time.
-		/// </param>
 		/// <param name="logger">
 		/// A logger instance that is used to log messages from the repository.
 		/// </param>
-		protected internal MongoRepository(IMongoDbContext context, ISystemTime? systemTime = null, ILogger? logger = null) {
+		protected internal MongoRepository(IMongoDbContext context, ILogger? logger = null) {
 			Context = context;
-			SystemTime = systemTime ?? Data.SystemTime.Default;
 			Logger = logger ?? NullLogger.Instance;
 
 			if (context is IMongoDbTenantContext tenantContext)
@@ -80,8 +76,8 @@ namespace Deveel.Data {
 		/// <param name="logger">
 		/// A logger instance that is used to log messages from the repository.
 		/// </param>
-		public MongoRepository(IMongoDbContext context, ISystemTime? systemTime = null, ILogger<MongoRepository<TEntity>>? logger = null)
-			: this(context, systemTime, (ILogger?)logger) {
+		public MongoRepository(IMongoDbContext context, ILogger<MongoRepository<TEntity>>? logger = null)
+			: this(context, (ILogger?)logger) {
 		}
 
 		/// <summary>
@@ -374,9 +370,6 @@ namespace Deveel.Data {
 		/// Returns the entity that is about to be created.
 		/// </returns>
 		protected virtual TEntity OnAddEntity(TEntity entity) {
-			if (entity is IHaveTimeStamp hasTime)
-				hasTime.CreatedAtUtc = SystemTime.UtcNow;
-
 			return entity;
 		}
 
@@ -446,9 +439,6 @@ namespace Deveel.Data {
 		#region Update
 
 		protected virtual TEntity OnEntityUpdate(TEntity entity) {
-			if (entity is IHaveTimeStamp hasTime)
-				hasTime.UpdatedAtUtc = SystemTime.UtcNow;
-
 			return entity;
 		}
 

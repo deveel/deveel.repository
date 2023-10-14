@@ -11,9 +11,14 @@ namespace Deveel.Data {
 			modelBuilder.Entity<DbPerson>()
 				.HasMany(x => x.Relationships)
 				.WithOne(x => x.Person)
-				.HasForeignKey(x => x.PersonId);
+				.HasForeignKey(x => x.PersonId)
+				.OnDelete(DeleteBehavior.Cascade);
 
-			modelBuilder.Entity<DbPersonRelationship>();
+			modelBuilder.Entity<DbRelationship>()
+				.HasOne(x => x.Person)
+				.WithMany(x => x.Relationships)
+				.HasForeignKey(x => x.PersonId)
+				.IsRequired(false);
 		}
 	}
 }

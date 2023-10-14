@@ -1,11 +1,11 @@
 ﻿namespace Deveel.Data {
 	public class PersonRepository : InMemoryRepository<Person> {
-		public PersonRepository(ISystemTime? systemTime = null) 
-			: base(null, systemTime) {
+		public PersonRepository() 
+			: base((IList<Person>) null) {
 		}
 
-		internal PersonRepository(string tenantId, IList<Person>? entities = null, ISystemTime? systemTime = null) 
-			: base(tenantId, entities, systemTime) {
+		internal PersonRepository(string tenantId, IList<Person>? entities = null) 
+			: base(tenantId, entities) {
 		}
 	}
 }

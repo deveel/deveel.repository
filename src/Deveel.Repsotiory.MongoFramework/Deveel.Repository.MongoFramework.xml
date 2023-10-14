@@ -138,21 +138,18 @@
             The type of the entity that is stored in the repository.
             </typeparam>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`1.#ctor(MongoFramework.IMongoDbContext,Deveel.Data.ISystemTime,Microsoft.Extensions.Logging.ILogger)">
+        <member name="M:Deveel.Data.MongoRepository`1.#ctor(MongoFramework.IMongoDbContext,Microsoft.Extensions.Logging.ILogger)">
             <summary>
             Constructs the repository with the given context and logger.
             </summary>
             <param name="context">
             The context that is used to handle the connection to the MongoDB server.
             </param>
-            <param name="systemTime">
-            A service that provides the current system time.
-            </param>
             <param name="logger">
             A logger instance that is used to log messages from the repository.
             </param>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`1.#ctor(MongoFramework.IMongoDbContext,Deveel.Data.ISystemTime,Microsoft.Extensions.Logging.ILogger{Deveel.Data.MongoRepository{`0}})">
+        <member name="M:Deveel.Data.MongoRepository`1.#ctor(MongoFramework.IMongoDbContext,Microsoft.Extensions.Logging.ILogger{Deveel.Data.MongoRepository{`0}})">
             <summary>
             Constructs the repository with the given context and logger.
             </summary>

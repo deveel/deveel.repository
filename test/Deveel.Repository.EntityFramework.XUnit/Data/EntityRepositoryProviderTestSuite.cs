@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Deveel.Data {
 	[Collection(nameof(SqlTenantConnectionCollection))]
-    public class EntityRepositoryProviderTestSuite : RepositoryTestSuite<DbTenantPerson> {
+    public class EntityRepositoryProviderTestSuite : RepositoryTestSuite<DbTenantPerson, DbTenantPersonRelationship> {
         private readonly SqliteConnection sqliteConnection;
 
         public EntityRepositoryProviderTestSuite(SqlTestConnection sql, ITestOutputHelper outputHelper) : base(outputHelper) {
@@ -29,7 +29,9 @@ namespace Deveel.Data {
 
         protected override Faker<DbTenantPerson> PersonFaker { get; }
 
-        protected TenantInfo TenantInfo { get; }
+		protected override Faker<DbTenantPersonRelationship> RelationshipFaker => new DbTenantPersonRelationshipFaker();
+
+		protected TenantInfo TenantInfo { get; }
 
 		protected string TenantId => TenantInfo.Id;
 
@@ -39,6 +41,22 @@ namespace Deveel.Data {
         protected override IRepository<DbTenantPerson> Repository => RepositoryProvider.GetRepository(TenantId);
 
 		protected override IEnumerable<DbTenantPerson> NaturalOrder(IEnumerable<DbTenantPerson> source) => source.OrderBy(x => x.Id);
+
+		protected override Task AddRelationshipAsync(DbTenantPerson person, DbTenantPersonRelationship relationship) {
+			if (person.Relationships == null)
+				person.Relationships = new List<DbTenantPersonRelationship>();
+
+			person.Relationships.Add(relationship);
+
+			return Task.CompletedTask;
+		}
+
+		protected override Task RemoveRelationshipAsync(DbTenantPerson person, DbTenantPersonRelationship relationship) {
+			if (person.Relationships != null)
+				person.Relationships.Remove(relationship);
+
+			return Task.CompletedTask;
+		}
 
 		protected override void ConfigureServices(IServiceCollection services) {
 			services.AddMultiTenant<TenantInfo>()

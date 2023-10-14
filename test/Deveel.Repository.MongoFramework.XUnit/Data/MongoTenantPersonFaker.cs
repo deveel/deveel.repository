@@ -10,6 +10,10 @@ namespace Deveel.Data {
 			RuleFor(x => x.TenantId, tenantId);
 			RuleFor(x => x.Email, f => f.Internet.Email().OrNull(f));
 			RuleFor(x => x.PhoneNumber, f => f.Phone.PhoneNumber().OrNull(f));
+			RuleFor(x => x.Relationships, f => {
+				var faker = new MongoPersonRelationshipFaker();
+				return f.Random.Bool() ? faker.Generate(f.Random.Number(1, 5)) : null;
+			});
 		}
 	}
 }

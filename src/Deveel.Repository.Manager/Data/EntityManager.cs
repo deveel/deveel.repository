@@ -49,6 +49,10 @@ namespace Deveel.Data {
 		/// <param name="systemTime">
 		/// A service used to get the current system time.
 		/// </param>
+		/// <param name="errorFactory">
+		/// An optional factory used to create errors specific
+		/// for the entity manager.
+		/// </param>
 		/// <param name="services">
 		/// The services used to resolve the dependencies of the manager.
 		/// </param>
@@ -107,7 +111,8 @@ namespace Deveel.Data {
 		/// Gets an instance of the generator used to create the
 		/// keys for caching entities.
 		/// </summary>
-		protected IEntityCacheKeyGenerator<TEntity>? EntityCacheKeyGenerator => Services?.GetService<IEntityCacheKeyGenerator<TEntity>>();
+		protected IEntityCacheKeyGenerator<TEntity>? EntityCacheKeyGenerator 
+			=> Services?.GetService<IEntityCacheKeyGenerator<TEntity>>();
 
 		/// <summary>
 		/// Gets the service used to validate the entity before
@@ -767,6 +772,9 @@ namespace Deveel.Data {
         /// the callback has modified it.
         /// </returns>
 		protected virtual Task<TEntity> OnUpdatingEntityAsync(TEntity entity) {
+			if (entity is IHaveTimeStamp haveTimeStamp && Time != null)
+				haveTimeStamp.UpdatedAtUtc = Time.UtcNow;
+
 			return Task.FromResult(entity);
 		}
 
