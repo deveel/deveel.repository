@@ -207,6 +207,21 @@
             The type of <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/> used to manage the entities
             </typeparam>
         </member>
+        <member name="M:Deveel.Data.EntityRepositoryProvider`2.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{`1},System.Collections.Generic.IEnumerable{Finbuckle.MultiTenant.IMultiTenantStore{Finbuckle.MultiTenant.TenantInfo}},Microsoft.Extensions.Logging.ILoggerFactory)">
+            <summary>
+            Constructs the provider with the given options and tenant stores.
+            </summary>
+            <param name="options">
+            The options to use to construct the <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/> instances
+            for the tenants.
+            </param>
+            <param name="tenantStores">
+            A list of the available stores to retrieve the tenants from.
+            </param>
+            <param name="loggerFactory">
+            A factory to create loggers for the repositories.
+            </param>
+        </member>
         <member name="M:Deveel.Data.EntityRepositoryProvider`2.Finalize">
             <summary>
             Destroys the instance of the provider.

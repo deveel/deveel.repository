@@ -1,11 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Bogus;
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
 	[Collection(nameof(SqlConnectionCollection))]
-	public abstract class EntityRepositoryTestSuite : RepositoryTestSuite<DbPerson> {
+	public class EntityRepositoryTestSuite : RepositoryTestSuite<DbPerson> {
 		private readonly SqlTestConnection sql;
 
 		public EntityRepositoryTestSuite(SqlTestConnection sql, ITestOutputHelper? testOutput) : base(testOutput) {
@@ -13,6 +15,8 @@ namespace Deveel.Data {
 		}
 
 		protected string ConnectionString => sql.Connection.ConnectionString;
+
+		protected override Faker<DbPerson> PersonFaker => new DbPersonFaker();
 
 		protected override void ConfigureServices(IServiceCollection services) {
 			services.AddDbContext<DbContext, PersonDbContext>(builder => {

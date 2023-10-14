@@ -14,5 +14,9 @@ namespace Deveel.Data {
 		public DateTime? DateOfBirth { get; set; }
 
 		public string? PhoneNumber { get; set; }
+
+		public DateTimeOffset? CreatedAtUtc { get; set; }
+
+		public DateTimeOffset? UpdatedAtUtc { get; set; }
 	}
 }

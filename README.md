@@ -1,4 +1,8 @@
-[![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![Repository CI/CD](https://github.com/deveel/deveel.repository/actions/workflows/ci.yml/badge.svg)](https://github.com/deveel/deveel.repository/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/deveel/deveel.repository/graph/badge.svg?token=5US7L3C7ES)](https://codecov.io/gh/deveel/deveel.repository)
+![GitHub release](https://img.shields.io/github/v/release/deveel/deveel.repository)
+![GitHub license](https://img.shields.io/github/license/deveel/deveel.repository?color=blue)
+ ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/deveel/deveel.repository/ci.yml?logo=github)
+ [![codecov](https://codecov.io/gh/deveel/deveel.repository/graph/badge.svg?token=5US7L3C7ES)](https://codecov.io/gh/deveel/deveel.repository) ![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/deveel/deveel.repository)
+
 
 # Deveel Repository
 
@@ -36,6 +40,8 @@ The framework is based on a _kernel_ package, that provides the basic interfaces
 | _Deveel.Repository.EntityFramework_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.EntityFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.EntityFramework/) |
 | _Deveel.Repository.DynamicLinq_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.DynamicLinq.svg)](https://www.nuget.org/packages/Deveel.Repository.DynamicLinq/) |
 | _Deveel.Repository.Manager_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.Manager.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager/) |
+| _Deveel.Repository.Manager.DynamicLinq_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.Manager.DynamicLinq.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager.DynamicLinq/) |
+| _Deveel.Repository.Manager.EasyCaching_ | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.Manager.EasyCaching.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager.EasyCaching/) |
 
 ### Requirements
 
@@ -413,6 +419,45 @@ The value of this approach is to be able to attach the cancellation of the opera
 ## License
 
 The project is licensed under the terms of the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+### Caching
+
+The `EntityManager<TEntity>` class provides a way to cache the entities retrieved from the repository, and to use the cached entities instead of querying the repository, through the `IEntityCache<TEntity>` service optionally available in the dependency injection container.
+
+To enable the caching feature in the application, you can register an instance of the entity cache specific provider.
+
+For example, to use the [EasyCaching](https://easycaching.readthedocs.io/en/latest/) library, you can use the following code:
+
+```csharp
+public void ConfigureServices(IServiceCollection services) {
+	services.AddEasyCaching(options => {
+		options.UseInMemory("default");
+	});
+	
+	services.AddEntityEasyCacheFor<MyEntity>();
+}
+```
+
+The above code will register an instance of `IEntityCache<MyEntity>` in the dependency injection container, that will be used by the `EntityManager<TEntity>` class to cache the entities of type `MyEntity`.
+
+The `EntityManager<TEntity>` class will interface the instance of `IEntityCache<TEntity>` with the following methods:
+
+| Method | Cache Operation | Description |
+| ------ | --------------- | ----------- |
+| `FindByKeyAsync` | `GetOrSetAsync` | Retrieves an entity from the cache, using a key generated from the given primary key, and if not found it will invoke a the Repository method to retrieve the entity, and cache it (if found) |
+| `AddAsync` | `SetAsync` | Adds an entity to the cache, using a set of keys generated from the entity added. |
+| `AddRangeAsync` | `SetAsync` | Adds a set of entities to the cache, using a set of keys generated from the entities added. |
+| `UpdateAsync` | `SetAsync` | Updates an entity in the cache, using a set of keys generated from the entity updated. |
+| `RemoveAsync` | `RemoveAsync` | Removes an entity from the cache, using a set of keys generated from the entity removed. |
+| `RemoveRangeAsync` | `RemoveAsync` | Removes a set of entities from the cache, using a set of keys generated from the entities removed. |
+
+By default, the `EntityManager<TEntity>` class will use the primary key of the entity to generate the keys used to store the entity in the cache: this behavior can be overridden by implementing the `IEntityCacheKeyGenerator<TEntity>` interface, and registering an instance of the generator in the dependency injection container.
+
+Implementations of the `EntityManager<TEntity>` have the option to override the default behavior for generating keys for the entities.
+
+#### Cache Serialization
+
+In some scenarios, the entities retrieved from the repository need to be converted to another version of the entity, that is capable of being serialized before being stored in the cache, and deserialized when retrieved from the cache.
 
 ## Contributing
 

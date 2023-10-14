@@ -89,12 +89,13 @@ namespace Deveel.Data {
 
             protected override MongoRepository<MongoTenantPerson> CreateRepository(PersonsDbContext context) {
                 var logger = LoggerFactory.CreateLogger<PersonRepository>();
-                return new PersonRepository(context, logger);
+                return new PersonRepository(context, SystemTime, logger);
             }
         }
 
         protected class PersonRepository : MongoRepository<MongoTenantPerson> {
-            public PersonRepository(PersonsDbContext context, ILogger<PersonRepository>? logger = null) : base(context, null, logger) {
+            public PersonRepository(PersonsDbContext context, ISystemTime? systemTime, ILogger<PersonRepository>? logger = null) 
+				: base(context, systemTime, logger) {
             }
         }
 

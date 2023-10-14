@@ -61,7 +61,7 @@ namespace Deveel.Data {
 		/// </param>
 		protected internal MongoRepository(IMongoDbContext context, ISystemTime? systemTime = null, ILogger? logger = null) {
 			Context = context;
-			SystemTime = systemTime ?? Deveel.Data.SystemTime.Default;
+			SystemTime = systemTime ?? Data.SystemTime.Default;
 			Logger = logger ?? NullLogger.Instance;
 
 			if (context is IMongoDbTenantContext tenantContext)
@@ -178,20 +178,6 @@ namespace Deveel.Data {
 
 			return _dbSet;
 		}
-
-		//string? IRepository<TEntity>.GetEntityId(TEntity entity) {
-		//	var value = GetEntityId(entity);
-
-		//	if (value == null)
-		//		return null;
-
-		//	if (value is string s)
-		//		return s;
-		//	if (value is ObjectId id)
-		//		return id.ToEntityId();
-
-		//	return Convert.ToString(value, CultureInfo.InvariantCulture);
-		//}
 
 		object? IRepository<TEntity>.GetEntityKey(TEntity entity)
 			=> GetEntityKey(entity);
@@ -387,7 +373,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the entity that is about to be created.
 		/// </returns>
-		protected virtual TEntity OnCreating(TEntity entity) {
+		protected virtual TEntity OnAddEntity(TEntity entity) {
 			if (entity is IHaveTimeStamp hasTime)
 				hasTime.CreatedAtUtc = SystemTime.UtcNow;
 
@@ -410,7 +396,7 @@ namespace Deveel.Data {
 		/// Thrown when an error occurs while creating the entity in the
 		/// underlying database.
 		/// </exception>
-		public async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -421,7 +407,7 @@ namespace Deveel.Data {
 			}
 
 			try {
-				entity = OnCreating(entity);
+				entity = OnAddEntity(entity);
 
 				DbSet.Add(entity);
 				await DbSet.Context.SaveChangesAsync(cancellationToken);
@@ -439,12 +425,13 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				entities = entities.Select(OnCreating);
+				entities = entities.Select(OnAddEntity);
 
 				DbSet.AddRange(entities);
 				await DbSet.Context.SaveChangesAsync(cancellationToken);
@@ -458,14 +445,15 @@ namespace Deveel.Data {
 
 		#region Update
 
-		protected virtual TEntity OnUpdating(TEntity entity) {
+		protected virtual TEntity OnEntityUpdate(TEntity entity) {
 			if (entity is IHaveTimeStamp hasTime)
 				hasTime.UpdatedAtUtc = SystemTime.UtcNow;
 
 			return entity;
 		}
 
-		public async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		/// <inheritdoc/>
+		public virtual async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			if (entity is null) 
 				throw new ArgumentNullException(nameof(entity));
 
@@ -488,7 +476,7 @@ namespace Deveel.Data {
 				if (entry == null || entry.State == EntityEntryState.Deleted)
 					return false;
 
-				entity = OnUpdating(entity);
+				entity = OnEntityUpdate(entity);
 
 				DbSet.Update(entity);
 				var updated = entry.State == EntityEntryState.Updated;
@@ -514,7 +502,8 @@ namespace Deveel.Data {
 
 		#region Remove
 
-		public async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		/// <inheritdoc/>
+		public virtual async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			if (entity is null) 
 				throw new ArgumentNullException(nameof(entity));
 

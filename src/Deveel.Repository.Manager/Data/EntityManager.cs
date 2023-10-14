@@ -46,6 +46,9 @@ namespace Deveel.Data {
 		/// An optional service used to cache the entities
 		/// for faster access.
 		/// </param>
+		/// <param name="systemTime">
+		/// A service used to get the current system time.
+		/// </param>
 		/// <param name="services">
 		/// The services used to resolve the dependencies of the manager.
 		/// </param>
@@ -56,11 +59,13 @@ namespace Deveel.Data {
 			IRepository<TEntity> repository, 
 			IEntityValidator<TEntity>? validator = null,
 			IEntityCache<TEntity>? cache = null,
+			ISystemTime? systemTime = null,
 			IServiceProvider? services = null, 
 			ILoggerFactory? loggerFactory = null) {
 			ArgumentNullException.ThrowIfNull(repository, nameof(repository));
 
 			Repository = repository;
+			Time = systemTime ?? SystemTime.Default;
 			EntityCache = cache;
 			EntityValidator = validator;
 			Services = services;
@@ -79,6 +84,12 @@ namespace Deveel.Data {
 		/// the dependencies of the service.
 		/// </summary>
 		protected IServiceProvider? Services { get; private set; }
+
+		/// <summary>
+		/// Gets the instance of the service used to get the current
+		/// time of the system.
+		/// </summary>
+		protected ISystemTime Time { get; }
 
 		/// <summary>
 		/// Gets the instance of the factory used to create errors
@@ -530,6 +541,9 @@ namespace Deveel.Data {
         /// any modification done by the callback.
         /// </returns>
 		protected virtual Task<TEntity> OnAddingEntityAsync(TEntity entity) {
+			if (entity is IHaveTimeStamp haveTimeStamp && Time != null)
+				haveTimeStamp.CreatedAtUtc = Time.UtcNow;
+
 			return Task.FromResult(entity);
 		}
 

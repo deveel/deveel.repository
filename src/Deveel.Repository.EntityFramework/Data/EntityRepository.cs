@@ -72,7 +72,7 @@ namespace Deveel.Data {
 		/// <param name="logger">
 		/// The logger used to log the operations of the repository.
 		/// </param>
-        public EntityRepository(DbContext context, ITenantInfo? tenantInfo, ILogger<EntityRepository<TEntity>>? logger = null)
+		public EntityRepository(DbContext context, ITenantInfo? tenantInfo, ILogger<EntityRepository<TEntity>>? logger = null)
             : this(context, tenantInfo, (ILogger?) logger) {
         }
 
@@ -188,7 +188,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
             if (entity is null) throw new ArgumentNullException(nameof(entity));
@@ -213,7 +213,7 @@ namespace Deveel.Data {
         }
 
 		/// <inheritdoc/>
-		public async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public virtual async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
 			try {
@@ -227,7 +227,7 @@ namespace Deveel.Data {
         }
 
 		/// <inheritdoc/>
-		public async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public virtual async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			if (entity is null) throw new ArgumentNullException(nameof(entity));
@@ -272,7 +272,7 @@ namespace Deveel.Data {
         }
 
 		/// <inheritdoc/>
-		public async Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public virtual async Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			try {
@@ -286,7 +286,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
+		public virtual async Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
 			try {
 				// TODO: add support for composite keys
 				return await Entities.FindAsync(new object?[] { ConvertEntityKey(key) }, cancellationToken);
@@ -297,43 +297,36 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public virtual async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
             ThrowIfDisposed();
 
 			if (entity == null)
 				throw new ArgumentNullException(nameof(entity));
 
-            try {
-                var entityId = GetEntityKey(entity)!;
+			try {
+				var entityId = GetEntityKey(entity)!;
 
-                Logger.TraceUpdatingEntity(typeof(TEntity), entityId, TenantId);
+				Logger.TraceUpdatingEntity(typeof(TEntity), entityId, TenantId);
 
-				// TODO: is it there any better way to do this with EF?
+				var entry = Context.Entry(entity);
 
-                var existing = await FindByKeyAsync(entityId, cancellationToken);
-                if (existing == null) {
-                    Logger.WarnEntityNotUpdated(typeof(TEntity), entityId, TenantId);
-                    return false;
-                }
+				if (entry.State != EntityState.Modified) {
+					Logger.WarnEntityNotUpdated(typeof(TEntity), entityId, TenantId);
+					return false;
+				}
 
-                var update = Entities.Update(entity);
-                if (update.State != EntityState.Modified) {
-                    Logger.WarnEntityNotUpdated(typeof(TEntity), entityId, TenantId);
-                    return false;
-                }
+				var count = await Context.SaveChangesAsync(cancellationToken);
 
-                var count = await Context.SaveChangesAsync(cancellationToken);
+				var updated = count > 0;
 
-                var updated = count > 0;
+				if (updated) {
+					Logger.LogEntityUpdated(typeof(TEntity), entityId, TenantId);
+				} else {
+					Logger.WarnEntityNotUpdated(typeof(TEntity), entityId, TenantId);
+				}
 
-                if (updated) {
-                    Logger.LogEntityUpdated(typeof(TEntity), entityId, TenantId);
-                } else {
-                    Logger.WarnEntityNotUpdated(typeof(TEntity), entityId, TenantId);
-                }
-
-                return updated;
-            } catch (Exception ex) {
+				return updated;
+			} catch (Exception ex) {
                 Logger.LogUnknownError(ex, typeof(TEntity));
                 throw new RepositoryException("Unable to update the entity because of an error", ex);
             }
@@ -364,7 +357,7 @@ namespace Deveel.Data {
 		/// that matches the given filter, otherwise <c>false</c>.
 		/// </returns>
 		/// <exception cref="RepositoryException"></exception>
-		public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default) {
+		public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default) {
 			try {
 				return await Entities.AnyAsync(EnsureFilter(filter), cancellationToken);
 			} catch (Exception ex) {
@@ -384,7 +377,7 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation.
 		/// </param>
 		/// <returns></returns>
-        public async Task<long> CountAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
+        public virtual async Task<long> CountAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
             => await Entities.LongCountAsync(EnsureFilter(filter), cancellationToken);
 
 		Task<long> IFilterableRepository<TEntity>.CountAsync(IQueryFilter filter, CancellationToken cancellationToken)
@@ -403,11 +396,11 @@ namespace Deveel.Data {
 		/// Returns the first entity that matches the given filter, or <c>null</c>
 		/// if no entity is found.
 		/// </returns>
-        public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default) {
+        public virtual async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default) {
 			try {
 				return await Entities.FirstOrDefaultAsync(EnsureFilter(filter), cancellationToken);
 			} catch (Exception ex) {
-
+				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unknown error while trying to find an entity", ex);
 			}
         }
@@ -445,10 +438,11 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns a list of entities that match the given filter.
 		/// </returns>
-		public async Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
+		public virtual async Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
 			try {
 				return await Entities.Where(filter).ToListAsync(cancellationToken);
 			} catch (Exception ex) {
+				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unable to list the entities", ex);
 			}
         }
@@ -476,7 +470,7 @@ namespace Deveel.Data {
         }
 
 		/// <inheritdoc/>
-		public async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
+		public virtual async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			try {

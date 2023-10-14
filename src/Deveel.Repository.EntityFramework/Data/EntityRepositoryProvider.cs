@@ -44,6 +44,19 @@ namespace Deveel.Data {
         private IDictionary<string, EntityRepository<TEntity>>? repositories;
         private bool disposedValue;
 
+		/// <summary>
+		/// Constructs the provider with the given options and tenant stores.
+		/// </summary>
+		/// <param name="options">
+		/// The options to use to construct the <see cref="DbContext"/> instances
+		/// for the tenants.
+		/// </param>
+		/// <param name="tenantStores">
+		/// A list of the available stores to retrieve the tenants from.
+		/// </param>
+		/// <param name="loggerFactory">
+		/// A factory to create loggers for the repositories.
+		/// </param>
         public EntityRepositoryProvider(DbContextOptions<TContext> options, IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null) {
             this.options = options;
             this.tenantStores = tenantStores;

@@ -292,7 +292,7 @@
             collection in the underlying database.
             </exception>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`1.OnCreating(`0)">
+        <member name="M:Deveel.Data.MongoRepository`1.OnAddEntity(`0)">
             <summary>
             A callback method that is invoked before the entity is created.
             </summary>
@@ -320,6 +320,15 @@
             Thrown when an error occurs while creating the entity in the
             underlying database.
             </exception>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`1.AddRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`1.UpdateAsync(`0,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.MongoRepository`1.RemoveAsync(`0,System.Threading.CancellationToken)">
+            <inheritdoc/>
         </member>
         <member name="T:Deveel.Data.ServiceCollectionExtensions">
             <summary>
