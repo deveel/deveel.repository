@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PackageTags>repository;manager;dynamiclinq;linq;filter;dynamic;query</PackageTags>
+    <Description>Provides additional extenstions to the EntityManager for filtering data of a repository using Dynamic LINQ filters</Description>
+    <DocumentationFile>./Deveel.Repository.Manager.DynamicLinq.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

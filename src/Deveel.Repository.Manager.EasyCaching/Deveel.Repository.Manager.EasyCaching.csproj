@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PackageTags>repository;manager;entitymanager;entity;cache;caching;easycaching</PackageTags>
+    <Description>Extends the Entity Manager with an implementation of the entity cache backed by EasyCaching</Description>
+    <DocumentationFile>./Deveel.Repository.Manager.EasyCaching.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
