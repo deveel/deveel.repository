@@ -48,9 +48,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager.X
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager.DynamicLinq", "src\Deveel.Repository.Manager.DynamicLinq\Deveel.Repository.Manager.DynamicLinq.csproj", "{638851EF-B000-490C-9035-A962279A3E9B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Manager.EasyCaching", "src\Deveel.Repository.Manager.EasyCaching\Deveel.Repository.Manager.EasyCaching.csproj", "{84D55BE2-7DAD-4CA3-A3E2-EFB4D41FA3CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager.EasyCaching", "src\Deveel.Repository.Manager.EasyCaching\Deveel.Repository.Manager.EasyCaching.csproj", "{84D55BE2-7DAD-4CA3-A3E2-EFB4D41FA3CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Manager.EasyCaching.XUnit", "test\Deveel.Repository.Manager.EasyCaching.XUnit\Deveel.Repository.Manager.EasyCaching.XUnit.csproj", "{F47C196B-758D-4C05-8918-FB63C61649EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager.EasyCaching.XUnit", "test\Deveel.Repository.Manager.EasyCaching.XUnit\Deveel.Repository.Manager.EasyCaching.XUnit.csproj", "{F47C196B-758D-4C05-8918-FB63C61649EB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.MartenDb", "src\Deveel.Repository.MartenDb\Deveel.Repository.MartenDb.csproj", "{96284897-30DC-4F27-866C-355F06D02DFB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.MartenDb.XUnit", "test\Deveel.Repository.MartenDb.XUnit\Deveel.Repository.MartenDb.XUnit.csproj", "{8CAC793C-A886-42C8-B754-7E5F7D8DE1F2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Aggregate.Model", "src\Deveel.Repository.Aggregate.Model\Deveel.Repository.Aggregate.Model.csproj", "{D7403F7B-AD31-4F06-876B-1D97103B931A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -126,6 +132,18 @@ Global
 		{F47C196B-758D-4C05-8918-FB63C61649EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F47C196B-758D-4C05-8918-FB63C61649EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F47C196B-758D-4C05-8918-FB63C61649EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96284897-30DC-4F27-866C-355F06D02DFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96284897-30DC-4F27-866C-355F06D02DFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96284897-30DC-4F27-866C-355F06D02DFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96284897-30DC-4F27-866C-355F06D02DFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CAC793C-A886-42C8-B754-7E5F7D8DE1F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CAC793C-A886-42C8-B754-7E5F7D8DE1F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CAC793C-A886-42C8-B754-7E5F7D8DE1F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CAC793C-A886-42C8-B754-7E5F7D8DE1F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7403F7B-AD31-4F06-876B-1D97103B931A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7403F7B-AD31-4F06-876B-1D97103B931A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7403F7B-AD31-4F06-876B-1D97103B931A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7403F7B-AD31-4F06-876B-1D97103B931A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -148,6 +166,9 @@ Global
 		{638851EF-B000-490C-9035-A962279A3E9B} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 		{84D55BE2-7DAD-4CA3-A3E2-EFB4D41FA3CA} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 		{F47C196B-758D-4C05-8918-FB63C61649EB} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
+		{96284897-30DC-4F27-866C-355F06D02DFB} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
+		{8CAC793C-A886-42C8-B754-7E5F7D8DE1F2} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
+		{D7403F7B-AD31-4F06-876B-1D97103B931A} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01FD9B16-84B3-4D99-80C1-11B2F3D65B56}

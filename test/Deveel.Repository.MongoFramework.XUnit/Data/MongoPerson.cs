@@ -13,10 +13,7 @@ namespace Deveel.Data {
 		public ObjectId Id { get; set; }
 
 
-		string? IPerson.Id {
-			get => Id.ToEntityId();
-			set => Id = ObjectId.Parse(value);
-		}
+		string? IPerson.Id => Id.ToEntityId();
 
 		[Column("first_name")]
 		public string FirstName { get; set; }

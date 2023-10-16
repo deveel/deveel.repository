@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageTags>repository;event;eventsourcing;events;aggregate;model</PackageTags>
+    <Description>The library provides the models and abstractions to implement event aggregates to be supported by event-sourcing compatible repositories</Description>
+    <DocumentationFile>./Deveel.EventSourcing.Model.xml</DocumentationFile>
+  </PropertyGroup>
+
+</Project>

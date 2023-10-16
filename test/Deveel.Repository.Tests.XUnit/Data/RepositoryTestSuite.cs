@@ -47,13 +47,14 @@ namespace Deveel.Data {
 		protected virtual string GeneratePersonId() => Guid.NewGuid().ToString();
 
 		protected virtual void ConfigureServices(IServiceCollection services) {
-			if (TestOutput != null)
-				services.AddLogging(logging => { logging.ClearProviders(); logging.AddXUnit(TestOutput); });
 		}
 
 		private void BuildServices() {
 			var services = new ServiceCollection();
 			services.AddSystemTime(TestTime);
+
+			if (TestOutput != null)
+				services.AddLogging(logging => { logging.ClearProviders(); logging.AddXUnit(TestOutput); });
 
 			ConfigureServices(services);
 
@@ -90,6 +91,10 @@ namespace Deveel.Data {
 			await repository.AddRangeAsync(People);
 		}
 
+		protected virtual async Task<IList<TPerson>> FindAllPeopleAsync() {
+			return await Repository.FindAllAsync();
+		}
+
 		protected virtual IEnumerable<TPerson> NaturalOrder(IEnumerable<TPerson> source) {
 			return source;
 		}
@@ -111,6 +116,16 @@ namespace Deveel.Data {
 
 			return Task.FromResult(result);
 		}
+
+		protected virtual void SetPersonId(TPerson person, string id) {
+			throw new NotSupportedException();
+		}
+
+		protected virtual void SetFirstName(TPerson person, string firstName) {
+			throw new NotSupportedException();
+		}
+
+		#region CRUD Tests
 
 		[Fact]
 		public async Task AddNewPerson() {
@@ -177,7 +192,7 @@ namespace Deveel.Data {
 		public async Task RemoveNotExisting() {
 			var entity = GeneratePerson();
 
-			entity.Id = GeneratePersonId();
+			SetPersonId(entity, GeneratePersonId());
 
 			var result = await Repository.RemoveAsync(entity);
 
@@ -222,7 +237,7 @@ namespace Deveel.Data {
 
 			await Repository.RemoveRangeAsync(people);
 
-			var result = await Repository.FindAllAsync();
+			var result = await FindAllPeopleAsync();
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
 			Assert.Equal(peopleCount - 10, result.Count);
@@ -234,54 +249,16 @@ namespace Deveel.Data {
 			var people = People.Take(9).ToList();
 
 			var entity = GeneratePerson();
-			entity.Id = GeneratePersonId();
+			SetPersonId(entity, GeneratePersonId());
 
 			people.Add(entity);
 
 			await Assert.ThrowsAsync<RepositoryException>(() => Repository.RemoveRangeAsync(people));
 
-			var result = await Repository.FindAllAsync();
+			var result = await FindAllPeopleAsync();
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
 			Assert.Equal(peopleCount, result.Count);
-		}
-
-		[Fact]
-		public async Task CountAll() {
-			var result = await Repository.CountAllAsync();
-
-			Assert.NotEqual(0, result);
-			Assert.Equal(People.Count, result);
-		}
-
-		[Fact]
-		public void CountAll_Sync() {
-			var result = Repository.CountAll();
-
-			Assert.NotEqual(0, result);
-			Assert.Equal(People.Count, result);
-		}
-
-		[Fact]
-		public async Task CountFiltered() {
-			var person = await RandomPersonAsync();
-			var firstName = person.FirstName;
-			var peopleCount = People.Count(x => x.FirstName == firstName);
-
-			var count = await Repository.CountAsync(p => p.FirstName == firstName);
-
-			Assert.Equal(peopleCount, count);
-		}
-
-		[Fact]
-		public async Task CountFiltered_Sync() {
-			var person = await RandomPersonAsync();
-			var firstName = person.FirstName;
-			var peopleCount = People.Count(x => x.FirstName == firstName);
-
-			var count = Repository.Count(p => p.FirstName == firstName);
-
-			Assert.Equal(peopleCount, count);
 		}
 
 		[Fact]
@@ -293,45 +270,6 @@ namespace Deveel.Data {
 
 			Assert.NotNull(result);
 			Assert.Equal(id, result.Id);
-		}
-
-		[Fact]
-		public async Task FindFirstFiltered() {
-			var person = await RandomPersonAsync();
-			var firstName = person.FirstName;
-
-			var result = await Repository.FindFirstAsync(x => x.FirstName == firstName);
-
-			Assert.NotNull(result);
-			Assert.Equal(firstName, result.FirstName);
-		}
-
-		[Fact]
-		public void FindFirstSync() {
-			var result = Repository.FindFirst();
-
-			Assert.NotNull(result);
-			Assert.NotNull(result.Id);
-		}
-
-		[Fact]
-		public async Task ExistsFiltered() {
-			var person = await RandomPersonAsync();
-			var firstName = person.FirstName;
-
-			var result = await Repository.ExistsAsync(x => x.FirstName == firstName);
-
-			Assert.True(result);
-		}
-
-		[Fact]
-		public async Task ExistsFiltered_Sync() {
-			var person = await RandomPersonAsync();
-			var firstName =person.FirstName;
-
-			var result = Repository.Exists(x => x.FirstName == firstName);
-
-			Assert.True(result);
 		}
 
 		[Fact]
@@ -380,223 +318,6 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task FindFirst() {
-			var ordered = NaturalOrder(People).ToList();
-
-			var result = await Repository.FindFirstAsync();
-
-			Assert.NotNull(result);
-			Assert.Equal(ordered[0].FirstName, result.FirstName);
-		}
-
-		[Fact]
-		public async Task FindFirstFiltered_Sync() {
-			var person = await RandomPersonAsync(x => x.FirstName != null);
-			var ordered = NaturalOrder(People.Where(x => x.FirstName == person.FirstName)).ToList();
-
-			// TODO: make an extension method for this
-			var result = Repository.FindFirst(QueryFilter.Where<TPerson>(x => x.FirstName == person.FirstName));
-
-			Assert.NotNull(result);
-			Assert.Equal(ordered[0].Id, result.Id);
-			Assert.Equal(ordered[0].FirstName, result.FirstName);
-			Assert.Equal(ordered[0].LastName, result.LastName);
-		}
-
-		[Fact]
-		public async Task FindAll() {
-			var result = await Repository.FindAllAsync();
-
-			Assert.NotNull(result);
-			Assert.NotEmpty(result);
-			Assert.Equal(People.Count, result.Count);
-		}
-
-		[Fact]
-		public void FindAll_Sync() {
-			var result = Repository.FindAll();
-
-			Assert.NotNull(result);
-			Assert.NotEmpty(result);
-			Assert.Equal(People.Count, result.Count);
-		}
-
-		[Fact]
-		public async Task FindAllFiltered() {
-			var person = await RandomPersonAsync();
-			var firstName = person.FirstName;
-			var peopleCount = People.Count(x => x.FirstName == firstName);
-
-			var result = await Repository.FindAllAsync(x => x.FirstName == firstName);
-
-			Assert.NotNull(result);
-			Assert.NotEmpty(result);
-			Assert.Equal(peopleCount, result.Count);
-		}
-
-		[Fact]
-		public async Task FindAllFiltered_BadFilter() {
-			var person = await RandomPersonAsync();
-			var firstName = person.FirstName;
-
-			var result = await Assert.ThrowsAsync<RepositoryException>(
-				() => Repository.FindAllAsync(QueryFilter.Where<MailAddress>(m => m.Address == null)));
-		}
-
-		[Fact]
-		public async Task GetSimplePage() {
-			var totalItems = People.Count;
-			var totalPages = (int)Math.Ceiling((double)totalItems / 10);
-
-			var result = await Repository.GetPageAsync(1, 10);
-
-			Assert.NotNull(result);
-			Assert.Equal(totalPages, result.TotalPages);
-			Assert.Equal(totalItems, result.TotalItems);
-			Assert.NotNull(result.Items);
-			Assert.NotEmpty(result.Items);
-			Assert.Equal(10, result.Items.Count);
-		}
-
-		[Fact]
-		public async Task GetSimplePage_WithParameters() {
-			var totalItems = People.Count;
-			var totalPages = (int)Math.Ceiling((double)totalItems / 10);
-
-			var result = await Repository.GetPageAsync(1, 10);
-
-			Assert.NotNull(result);
-			Assert.Equal(totalPages, result.TotalPages);
-			Assert.Equal(totalItems, result.TotalItems);
-			Assert.NotNull(result.Items);
-			Assert.NotEmpty(result.Items);
-			Assert.Equal(10, result.Items.Count);
-		}
-
-		[Fact]
-		public async Task GetFilteredPage() {
-			var person = await RandomPersonAsync();
-			var firstName = person.FirstName;
-			var peopleCount = People.Count(x => x.FirstName == firstName);
-			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
-			var perPage = Math.Min(peopleCount, 10);
-
-			var request = new PageQuery<TPerson>(1, 10)
-				.Where(x => x.FirstName == firstName);
-
-			var result = await Repository.GetPageAsync(request);
-			Assert.NotNull(result);
-			Assert.Equal(totalPages, result.TotalPages);
-			Assert.Equal(peopleCount, result.TotalItems);
-			Assert.NotNull(result.Items);
-			Assert.NotEmpty(result.Items);
-			Assert.Equal(perPage, result.Items.Count());
-		}
-
-		[Fact]
-		public async Task GetPage_MultipleFilters() {
-			var person = await RandomPersonAsync(x => x.LastName != null);
-			var firstName = person.FirstName;
-			var lastName = person.LastName;
-
-			var peopleCount = People.Count(x => x.FirstName == firstName && x.LastName == lastName);
-			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
-			var perPage = Math.Min(peopleCount, 10);
-
-			var request = new PageQuery<TPerson>(1, 10)
-				.Where(x => x.FirstName == firstName && x.LastName == lastName);
-
-			var result = await Repository.GetPageAsync(request);
-			Assert.NotNull(result);
-			Assert.Equal(totalPages, result.TotalPages);
-			Assert.Equal(peopleCount, result.TotalItems);
-			Assert.NotNull(result.Items);
-			Assert.NotEmpty(result.Items);
-			Assert.Equal(perPage, result.Items.Count);
-		}
-
-		[Fact]
-		public async Task GetPage_ChainedFilters() {
-			var person = await RandomPersonAsync(x => x.DateOfBirth != null);
-			var firstName = person.FirstName;
-			var birthDate = person.DateOfBirth!.Value;
-
-			var peopleCount = People
-				.Where(x => x.FirstName == firstName)
-				.Where(x => x.DateOfBirth >= birthDate)
-				.Count();
-
-			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
-			var perPage = Math.Min(peopleCount, 10);
-
-			var request = new PageQuery<TPerson>(1, 10)
-				.Where(x => x.FirstName == firstName)
-				.Where(x => x.DateOfBirth >= birthDate);
-
-			var result = await Repository.GetPageAsync(request);
-			Assert.NotNull(result);
-			Assert.Equal(totalPages, result.TotalPages);
-			Assert.Equal(peopleCount, result.TotalItems);
-			Assert.NotNull(result.Items);
-			Assert.NotEmpty(result.Items);
-			Assert.Equal(perPage, result.Items.Count);
-		}
-
-
-		[Fact]
-		public async Task GetDescendingSortedPage() {
-			var sorted = People.Where(x => x.LastName != null).OrderByDescending(x => x.LastName).Skip(0).Take(10).ToList();
-
-			var request = new PageQuery<TPerson>(1, 10)
-				.OrderByDescending(x => x.LastName);
-
-			var result = await Repository.GetPageAsync(request);
-			Assert.NotNull(result);
-			Assert.Equal(10, result.TotalPages);
-			Assert.Equal(100, result.TotalItems);
-			Assert.NotNull(result.Items);
-			Assert.NotEmpty(result.Items);
-			Assert.Equal(10, result.Items.Count());
-
-			for (int i = 0; i < sorted.Count; i++) {
-				Assert.Equal(sorted[i].LastName, result.Items.ElementAt(i).LastName);
-			}
-		}
-
-		[Fact]
-		public async Task GetSortedPage() {
-			var totalPages = (int)Math.Ceiling((double)People.Count / 10);
-
-			var request = new PageQuery<TPerson>(1, 10)
-				.OrderBy(x => x.FirstName);
-
-			var result = await Repository.GetPageAsync(request);
-
-			Assert.NotNull(result);
-			Assert.Equal(totalPages, result.TotalPages);
-			Assert.Equal(People.Count, result.TotalItems);
-			Assert.NotNull(result.Items);
-			Assert.NotEmpty(result.Items);
-			Assert.Equal(10, result.Items.Count);
-		}
-
-		[Fact]
-		public void GetPage_Sync() {
-			var totalPages = (int)Math.Ceiling((double)People.Count / 10);
-
-			var request = new PageQuery<TPerson>(1, 10);
-
-			var result = Repository.GetPage(request);
-
-			Assert.NotNull(result);	
-			Assert.Equal(totalPages, result.TotalPages);
-			Assert.Equal(People.Count, result.TotalItems);
-			Assert.NotNull(result.Items);
-			Assert.NotEmpty(result.Items);
-			Assert.Equal(10, result.Items.Count);
-		}
-
-		[Fact]
 		public async Task GetPersonId() {
 			var person = await RandomPersonAsync();
 
@@ -614,7 +335,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(toUpdate);
 
-			toUpdate.FirstName = "John";
+			SetFirstName(toUpdate, "John");
 
 			var result = await Repository.UpdateAsync(toUpdate);
 
@@ -637,7 +358,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(toUpdate);
 
-			toUpdate.FirstName = "John";
+			SetFirstName(toUpdate, "John");
 
 			var result = Repository.Update(toUpdate);
 
@@ -656,7 +377,7 @@ namespace Deveel.Data {
 		public async Task UpdateNotExisting() {
 			var person = GeneratePerson();
 
-			person.Id = GeneratePersonId();
+			SetPersonId(person, GeneratePersonId());
 
 			var result = await Repository.UpdateAsync(person);
 
@@ -675,7 +396,13 @@ namespace Deveel.Data {
 
 			var updated = await Repository.FindByKeyAsync(person.Id!);
 			Assert.NotNull(updated);
-			Assert.Equal(toUpdate, updated);
+			Assert.Equal(toUpdate.FirstName, updated.FirstName);
+			Assert.Equal(toUpdate.LastName, updated.LastName);
+			Assert.Equal(toUpdate.Email, updated.Email);
+			Assert.Equal(toUpdate.PhoneNumber, updated.PhoneNumber);
+			Assert.Equal(toUpdate.DateOfBirth, updated.DateOfBirth);
+
+			// TODO: check the relationships to be equal
 		}
 
 		[Fact]
@@ -716,7 +443,7 @@ namespace Deveel.Data {
 
 			var relCount = toUpdate.Relationships.Count();
 
-			await RemoveRelationshipAsync(toUpdate, (TRelationship) toUpdate.Relationships!.First());
+			await RemoveRelationshipAsync(toUpdate, (TRelationship)toUpdate.Relationships!.First());
 
 			var result = await Repository.UpdateAsync(toUpdate);
 
@@ -726,6 +453,313 @@ namespace Deveel.Data {
 			Assert.NotNull(updated);
 			Assert.NotNull(updated.Relationships);
 			Assert.Equal(relCount - 1, updated.Relationships.Count());
+		}
+
+		#endregion
+
+		#region Filtering Tests
+
+		[Fact]
+		public virtual async Task CountAll() {
+			var result = await Repository.CountAllAsync();
+
+			Assert.NotEqual(0, result);
+			Assert.Equal(People.Count, result);
+		}
+
+		[Fact]
+		public virtual void CountAll_Sync() {
+			var result = Repository.CountAll();
+
+			Assert.NotEqual(0, result);
+			Assert.Equal(People.Count, result);
+		}
+
+		[Fact]
+		public virtual async Task CountFiltered() {
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
+			var peopleCount = People.Count(x => x.FirstName == firstName);
+
+			var count = await Repository.CountAsync(p => p.FirstName == firstName);
+
+			Assert.Equal(peopleCount, count);
+		}
+
+		[Fact]
+		public virtual async Task CountFiltered_Sync() {
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
+			var peopleCount = People.Count(x => x.FirstName == firstName);
+
+			var count = Repository.Count(p => p.FirstName == firstName);
+
+			Assert.Equal(peopleCount, count);
+		}
+
+		[Fact]
+		public virtual async Task FindFirstFiltered() {
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
+
+			var result = await Repository.FindFirstAsync(x => x.FirstName == firstName);
+
+			Assert.NotNull(result);
+			Assert.Equal(firstName, result.FirstName);
+		}
+
+		[Fact]
+		public virtual void FindFirstSync() {
+			var result = Repository.FindFirst();
+
+			Assert.NotNull(result);
+			Assert.NotNull(result.Id);
+		}
+
+		[Fact]
+		public virtual async Task ExistsFiltered() {
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
+
+			var result = await Repository.ExistsAsync(x => x.FirstName == firstName);
+
+			Assert.True(result);
+		}
+
+		[Fact]
+		public virtual async Task ExistsFiltered_Sync() {
+			var person = await RandomPersonAsync();
+			var firstName =person.FirstName;
+
+			var result = Repository.Exists(x => x.FirstName == firstName);
+
+			Assert.True(result);
+		}
+
+		[Fact]
+		public virtual async Task FindFirst() {
+			var ordered = NaturalOrder(People).ToList();
+
+			var result = await Repository.FindFirstAsync();
+
+			Assert.NotNull(result);
+			Assert.Equal(ordered[0].FirstName, result.FirstName);
+		}
+
+		[Fact]
+		public virtual async Task FindFirstFiltered_Sync() {
+			var person = await RandomPersonAsync(x => x.FirstName != null);
+			var ordered = NaturalOrder(People.Where(x => x.FirstName == person.FirstName)).ToList();
+
+			// TODO: make an extension method for this
+			var result = Repository.FindFirst(QueryFilter.Where<TPerson>(x => x.FirstName == person.FirstName));
+
+			Assert.NotNull(result);
+			Assert.Equal(ordered[0].Id, result.Id);
+			Assert.Equal(ordered[0].FirstName, result.FirstName);
+			Assert.Equal(ordered[0].LastName, result.LastName);
+		}
+
+		[Fact]
+		public virtual async Task FindAll() {
+			var result = await Repository.FindAllAsync();
+
+			Assert.NotNull(result);
+			Assert.NotEmpty(result);
+			Assert.Equal(People.Count, result.Count);
+		}
+
+		[Fact]
+		public virtual void FindAll_Sync() {
+			var result = Repository.FindAll();
+
+			Assert.NotNull(result);
+			Assert.NotEmpty(result);
+			Assert.Equal(People.Count, result.Count);
+		}
+
+		[Fact]
+		public virtual async Task FindAllFiltered() {
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
+			var peopleCount = People.Count(x => x.FirstName == firstName);
+
+			var result = await Repository.FindAllAsync(x => x.FirstName == firstName);
+
+			Assert.NotNull(result);
+			Assert.NotEmpty(result);
+			Assert.Equal(peopleCount, result.Count);
+		}
+
+		[Fact]
+		public virtual async Task FindAllFiltered_BadFilter() {
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
+
+			var result = await Assert.ThrowsAsync<RepositoryException>(
+				() => Repository.FindAllAsync(QueryFilter.Where<MailAddress>(m => m.Address == null)));
+		}
+
+		#endregion
+
+		[Fact]
+		public virtual async Task GetSimplePage() {
+			var totalItems = People.Count;
+			var totalPages = (int)Math.Ceiling((double)totalItems / 10);
+
+			var result = await Repository.GetPageAsync(1, 10);
+
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(totalItems, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(10, result.Items.Count);
+		}
+
+		[Fact]
+		public virtual async Task GetSimplePage_WithParameters() {
+			var totalItems = People.Count;
+			var totalPages = (int)Math.Ceiling((double)totalItems / 10);
+
+			var result = await Repository.GetPageAsync(1, 10);
+
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(totalItems, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(10, result.Items.Count);
+		}
+
+		[Fact]
+		public virtual async Task GetFilteredPage() {
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
+			var peopleCount = People.Count(x => x.FirstName == firstName);
+			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
+			var perPage = Math.Min(peopleCount, 10);
+
+			var request = new PageQuery<TPerson>(1, 10)
+				.Where(x => x.FirstName == firstName);
+
+			var result = await Repository.GetPageAsync(request);
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(peopleCount, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(perPage, result.Items.Count());
+		}
+
+		[Fact]
+		public virtual async Task GetPage_MultipleFilters() {
+			var person = await RandomPersonAsync(x => x.LastName != null);
+			var firstName = person.FirstName;
+			var lastName = person.LastName;
+
+			var peopleCount = People.Count(x => x.FirstName == firstName && x.LastName == lastName);
+			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
+			var perPage = Math.Min(peopleCount, 10);
+
+			var request = new PageQuery<TPerson>(1, 10)
+				.Where(x => x.FirstName == firstName && x.LastName == lastName);
+
+			var result = await Repository.GetPageAsync(request);
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(peopleCount, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(perPage, result.Items.Count);
+		}
+
+		[Fact]
+		public virtual async Task GetPage_ChainedFilters() {
+			var person = await RandomPersonAsync(x => x.DateOfBirth != null);
+			var firstName = person.FirstName;
+			var birthDate = person.DateOfBirth!.Value;
+
+			var peopleCount = People
+				.Where(x => x.FirstName == firstName)
+				.Where(x => x.DateOfBirth >= birthDate)
+				.Count();
+
+			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
+			var perPage = Math.Min(peopleCount, 10);
+
+			var request = new PageQuery<TPerson>(1, 10)
+				.Where(x => x.FirstName == firstName)
+				.Where(x => x.DateOfBirth >= birthDate);
+
+			var result = await Repository.GetPageAsync(request);
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(peopleCount, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(perPage, result.Items.Count);
+		}
+
+
+		[Fact]
+		public virtual async Task GetDescendingSortedPage() {
+			var sorted = People.Where(x => x.LastName != null)
+				.OrderByDescending(x => x.LastName)
+				.Skip(0).Take(10).ToList();
+
+			var totalItems = People.Count(x => x.LastName != null);
+			var totalPages = (int)Math.Ceiling((double)totalItems / 10);
+			var pageItems = Math.Min(totalItems, 10);
+
+			var request = new PageQuery<TPerson>(1, 10)
+				.Where(x => x.LastName != null)
+				.OrderByDescending(x => x.LastName);
+
+			var result = await Repository.GetPageAsync(request);
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(totalItems, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(pageItems, result.Items.Count);
+
+			for (int i = 0; i < sorted.Count; i++) {
+				Assert.Equal(sorted[i].LastName, result.Items.ElementAt(i).LastName);
+			}
+		}
+
+		[Fact]
+		public virtual async Task GetSortedPage() {
+			var totalPages = (int)Math.Ceiling((double)People.Count / 10);
+
+			var request = new PageQuery<TPerson>(1, 10)
+				.OrderBy(x => x.FirstName);
+
+			var result = await Repository.GetPageAsync(request);
+
+			Assert.NotNull(result);
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(People.Count, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(10, result.Items.Count);
+		}
+
+		[Fact]
+		public virtual void GetPage_Sync() {
+			var totalPages = (int)Math.Ceiling((double)People.Count / 10);
+
+			var request = new PageQuery<TPerson>(1, 10);
+
+			var result = Repository.GetPage(request);
+
+			Assert.NotNull(result);	
+			Assert.Equal(totalPages, result.TotalPages);
+			Assert.Equal(People.Count, result.TotalItems);
+			Assert.NotNull(result.Items);
+			Assert.NotEmpty(result.Items);
+			Assert.Equal(10, result.Items.Count);
 		}
 	}
 }

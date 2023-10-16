@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageTags>repository;events;event;eventsourcing;event-sourcing;marten;postgres</PackageTags>
+    <Description>The implementation of the repository pattern that is based on the MartenDB event storage system</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Marten" Version="6.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Deveel.Repository.Aggregate.Model\Deveel.Repository.Aggregate.Model.csproj" />
+    <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -31,6 +31,14 @@ namespace Deveel.Data {
 			.GetDatabase(DatabaseName)
 			.GetCollection<TPerson>("persons");
 
+		protected override void SetPersonId(TPerson person, string id) {
+			person.Id = ObjectId.Parse(id);
+		}
+
+		protected override void SetFirstName(TPerson person, string firstName) {
+			person.FirstName = firstName;
+		}
+
 		protected override Task AddRelationshipAsync(TPerson person, MongoPersonRelationship relationship) {
 			if (person.Relationships == null)
 				person.Relationships = new List<MongoPersonRelationship>();

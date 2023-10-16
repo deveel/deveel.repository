@@ -7,10 +7,7 @@ namespace Deveel.Data {
 		[Key]
 		public Guid? Id { get; set; }
 
-		string? IPerson.Id {
-			get => Id.ToString();
-			set => Id = value == null ? null : Guid.Parse(value);
-		}
+		string? IPerson.Id =>  Id.ToString();
 
 		public string FirstName { get; set; }
 

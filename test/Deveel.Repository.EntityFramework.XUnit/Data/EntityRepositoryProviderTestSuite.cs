@@ -42,6 +42,14 @@ namespace Deveel.Data {
 
 		protected override IEnumerable<DbTenantPerson> NaturalOrder(IEnumerable<DbTenantPerson> source) => source.OrderBy(x => x.Id);
 
+		protected override void SetPersonId(DbTenantPerson person, string id) {
+			person.Id = Guid.Parse(id);
+		}
+
+		protected override void SetFirstName(DbTenantPerson person, string firstName) {
+			person.FirstName = firstName;
+		}
+
 		protected override Task AddRelationshipAsync(DbTenantPerson person, DbTenantPersonRelationship relationship) {
 			if (person.Relationships == null)
 				person.Relationships = new List<DbTenantPersonRelationship>();

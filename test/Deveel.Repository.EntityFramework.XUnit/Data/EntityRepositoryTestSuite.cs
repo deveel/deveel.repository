@@ -22,6 +22,14 @@ namespace Deveel.Data {
 
 		protected DbPersonRepository PersonRepository => (DbPersonRepository)Repository;
 
+		protected override void SetFirstName(DbPerson person, string firstName) {
+			person.FirstName = firstName;
+		}
+
+		protected override void SetPersonId(DbPerson person, string id) {
+			person.Id = Guid.Parse(id);
+		}
+
 		protected override Task AddRelationshipAsync(DbPerson person, DbRelationship relationship) {
 			if (person.Relationships == null)
 				person.Relationships = new List<DbRelationship>();

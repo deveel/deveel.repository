@@ -1,16 +1,16 @@
 ﻿namespace Deveel.Data {
 	public interface IPerson {
-		string? Id { get; set; }
+		string? Id { get; }
 
-		string FirstName { get; set; }
+		string FirstName { get; }
 
-		string LastName { get; set; }
+		string LastName { get; }
 
-		string? Email { get; set; }
+		string? Email { get; }
 
-		DateTime? DateOfBirth { get; set; }
+		DateTime? DateOfBirth { get; }
 
-		string? PhoneNumber { get; set; }
+		string? PhoneNumber { get; }
 
 		IEnumerable<IRelationship> Relationships { get; }
 	}

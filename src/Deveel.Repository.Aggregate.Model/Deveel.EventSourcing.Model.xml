@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Deveel.Repository.Aggregate.Model</name>
+    </assembly>
+    <members>
+        <member name="T:Deveel.Data.Aggregate">
+            <summary>
+            Provides a base implementation of an object
+            that aggregates a stream of events to form
+            its state.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.Aggregate.#ctor(System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            Constructs the aggregate from the initial set of
+            committed events.
+            </summary>
+            <param name="committedEvents"></param>
+        </member>
+        <member name="P:Deveel.Data.Aggregate.Events">
+            <summary>
+            Gets the stream of events that are applied to
+            the aggregate.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.Aggregate.Version">
+            <summary>
+            Gets the version of the aggregate.
+            </summary>
+            <remarks>
+            The default implementation returns the total number
+            of events in the stream.
+            </remarks>
+        </member>
+        <member name="M:Deveel.Data.Aggregate.Apply(System.Object)">
+            <summary>
+            Applies the given event to the aggregate, changing
+            its state and incrementing the version.
+            </summary>
+            <param name="event">
+            The event to apply to the aggregate.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.Aggregate.ApplyEvent(System.Object)">
+            <summary>
+            When overridden in a derived class, applies the given
+            event to the aggregate, changing its state.
+            </summary>
+            <param name="event">
+            The event to apply to the aggregate.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.Aggregate.Commit">
+            <summary>
+            Commits the current stream of events to the aggregate.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.Aggregate.Rollback">
+            <summary>
+            Rolls back the current stream of uncommitted events 
+            to the aggregate.
+            </summary>
+        </member>
+        <member name="T:Deveel.Data.EventCollection">
+            <summary>
+            A collection of events that are applied to an aggregate.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.EventCollection.#ctor(Deveel.Data.Aggregate,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            Constructs the collection from the initial
+            set of committed events.
+            </summary>
+            <param name="aggregate">
+            The aggregate that the events are applied to.
+            </param>
+            <param name="committedEvents">
+            The initial set of events that are committed to
+            form the aggregate.
+            </param>
+        </member>
+        <member name="P:Deveel.Data.EventCollection.Aggregate">
+            <summary>
+            Gets the aggregate that the events are applied to.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EventCollection.Count">
+            <summary>
+            Gets the total number of events in the collection.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.EventCollection.Committed">
+            <inheritdoc/>
+        </member>
+        <member name="P:Deveel.Data.EventCollection.Uncommitted">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.EventCollection.Add(System.Object)">
+            <summary>
+            Adds a new event to the collection as uncommitted.
+            </summary>
+            <param name="event">
+            The event to add to the collection.
+            </param>
+            <remarks>
+            The event is added to the collection as uncommitted,
+            that means that it is not yet part of the aggregate
+            and that can be removed or cleared.
+            </remarks>
+        </member>
+        <member name="M:Deveel.Data.EventCollection.Clear">
+            <summary>
+            Clears all the uncommitted events from the collection.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.EventCollection.Contains(System.Object)">
+            <summary>
+            Checks if the given event is contained in the collection.
+            </summary>
+            <param name="event">
+            The event to check.
+            </param>
+            <returns>
+            Returns <c>true</c> if the event is contained in the
+            collection, otherwise <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EventCollection.GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="T:Deveel.Data.VersionAttribute">
+            <summary>
+            An attribute that is used to identify a property of an
+            aggregate that is used to obtain its version.
+            </summary>
+        </member>
+    </members>
+</doc>
