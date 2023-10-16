@@ -927,6 +927,44 @@
             that can be requested from the repository
             </summary>
         </member>
+        <member name="P:Deveel.Data.PageResult`1.IsFirstPage">
+            <summary>
+            Gets a value indicating if the current page is the first
+            in the context of the request
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResult`1.IsLastPage">
+            <summary>
+            Gets a value indicating if the current page is the last
+            in the context of the request
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResult`1.HasNextPage">
+            <summary>
+            Gets a value indicating if there is a next page
+            in the context of the request
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResult`1.HasPreviousPage">
+            <summary>
+            Gets a value indicating if there is a previous page
+            in the context of the request
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResult`1.NextPage">
+            <summary>
+            When there is a next page, gets the number of the next page
+            in the context of the request, or <c>null</c> if there is no
+            page after the current one.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.PageResult`1.PreviousPage">
+            <summary>
+            When there is a previous page, gets the number of the previous page
+            in the context of the request, or <c>null</c> if there is no
+            page before the current one.
+            </summary>
+        </member>
         <member name="M:Deveel.Data.PageResult`1.Empty(Deveel.Data.PageQuery{`0})">
             <summary>
             Creates an empty page response to the given request
@@ -1839,6 +1877,33 @@
             Thrown when the given <paramref name="repositoryType"/> is not a valid
             repository type.
             </exception>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddRepositoryProvider(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers a repository provider of the given type in 
+            the service collection.
+            </summary>
+            <param name="services">
+            The service collection to register the repository provider.
+            </param>
+            <param name="providerType">
+            The type of the repository provider to register, that
+            must implement <see cref="T:Deveel.Data.IRepositoryProvider`1"/>.
+            </param>
+            <param name="lifetime">
+            The lifetime of the repository provider in the service collection.
+            </param>
+            <returns>
+            Returns the same <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to allow chaining.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when the given <paramref name="providerType"/> is <c>null</c>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            Thrown when the given <paramref name="providerType"/> is not
+            implementing <see cref="T:Deveel.Data.IRepositoryProvider`1"/>.
+            </exception>
+            <exception cref="T:Deveel.Data.RepositoryException"></exception>
         </member>
         <member name="M:Deveel.Data.ServiceCollectionExtensions.AddSystemTime``1(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>

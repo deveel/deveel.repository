@@ -71,6 +71,44 @@ namespace Deveel.Data {
 		public int TotalPages => (int)Math.Ceiling((double)TotalItems / Request.Size);
 
 		/// <summary>
+		/// Gets a value indicating if the current page is the first
+		/// in the context of the request
+		/// </summary>
+		public bool IsFirstPage => Request.Page == 1;
+
+		/// <summary>
+		/// Gets a value indicating if the current page is the last
+		/// in the context of the request
+		/// </summary>
+		public bool IsLastPage => Request.Page == TotalPages;
+
+		/// <summary>
+		/// Gets a value indicating if there is a next page
+		/// in the context of the request
+		/// </summary>
+		public bool HasNextPage => !IsLastPage;
+
+		/// <summary>
+		/// Gets a value indicating if there is a previous page
+		/// in the context of the request
+		/// </summary>
+		public bool HasPreviousPage => !IsFirstPage;
+
+		/// <summary>
+		/// When there is a next page, gets the number of the next page
+		/// in the context of the request, or <c>null</c> if there is no
+		/// page after the current one.
+		/// </summary>
+		public int? NextPage => HasNextPage ? Request.Page + 1 : null;
+
+		/// <summary>
+		/// When there is a previous page, gets the number of the previous page
+		/// in the context of the request, or <c>null</c> if there is no
+		/// page before the current one.
+		/// </summary>
+		public int? PreviousPage => HasPreviousPage ? Request.Page - 1 : null;
+
+		/// <summary>
 		/// Creates an empty page response to the given request
 		/// </summary>
 		/// <param name="page">
