@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Deveel.Data {
-	[CollectionDefinition(nameof(MongoSingleDatabaseCollection), DisableParallelization = true)]
+	[CollectionDefinition(nameof(MongoSingleDatabaseCollection))]
 	public class MongoSingleDatabaseCollection : ICollectionFixture<MongoSingleDatabase> {
 
 	}
