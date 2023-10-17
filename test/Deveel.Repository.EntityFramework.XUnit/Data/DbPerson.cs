@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
+using NetTopologySuite.Geometries;
+
 namespace Deveel.Data {
 	[Table("people")]
 	public class DbPerson : IPerson {
@@ -17,6 +19,8 @@ namespace Deveel.Data {
 		public string LastName { get; set; }
 
 		public string? Description { get; set; }
+
+		public Point? Location { get; set; }
 
 		public virtual List<DbRelationship>? Relationships { get; set; }
 

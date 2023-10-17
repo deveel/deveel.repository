@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Linq.Expressions;
 using System.Net.Mail;
 
@@ -7,7 +6,6 @@ using Bogus;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
 
 using Xunit.Abstractions;
 

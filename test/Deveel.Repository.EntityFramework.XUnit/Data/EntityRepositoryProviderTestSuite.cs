@@ -66,12 +66,10 @@ namespace Deveel.Data {
 
 			services.AddDbContext<DbContext, TestDbContext>(builder => {
 				builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-				builder.UseSqlite(sqliteConnection);
+				builder.UseSqlite(sqliteConnection, x => x.UseNetTopologySuite());
 				builder.LogTo(TestOutput!.WriteLine);
 			})
 				.AddRepositoryProvider<EntityRepositoryProvider<DbTenantPerson, TestDbContext>>();
-
-			// AddRepository(services);
 
 			base.ConfigureServices(services);
 		}

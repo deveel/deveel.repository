@@ -159,9 +159,6 @@
             Gets the lambda filter expression
             </summary>
         </member>
-        <member name="M:Deveel.Data.ExpressionQueryFilter`1.Deveel#Data#IExpressionQueryFilter#AsLambda``1">
-            <inheritdoc/>
-        </member>
         <member name="T:Deveel.Data.ExpressionResultSort`1">
             <summary>
             Describes a sorting rule that uses an expression to 
@@ -428,6 +425,25 @@
             implementation of the repository
             </exception>
             <seealso cref="T:Deveel.Data.PageResult`1"/>
+        </member>
+        <member name="T:Deveel.Data.IQueryableFilter`1">
+            <summary>
+            A filter that can be applied to a <see cref="T:System.Linq.IQueryable`1"/>
+            object to restrict the results of a query.
+            </summary>
+            <typeparam name="TEntity"></typeparam>
+        </member>
+        <member name="M:Deveel.Data.IQueryableFilter`1.Apply(System.Linq.IQueryable{`0})">
+            <summary>
+            Applies the filter to the given queryable object.
+            </summary>
+            <param name="queryable">
+            The queryable object to apply the filter to.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:System.Linq.IQueryable`1"/> that
+            is filtered by the conditions of this object.
+            </returns>
         </member>
         <member name="T:Deveel.Data.IQueryableRepository`1">
             <summary>

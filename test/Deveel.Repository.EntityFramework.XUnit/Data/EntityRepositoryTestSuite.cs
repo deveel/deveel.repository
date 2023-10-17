@@ -41,7 +41,9 @@ namespace Deveel.Data {
 		protected override void ConfigureServices(IServiceCollection services) {
 			services.AddDbContext<DbContext, PersonDbContext>(builder => {
 				builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-				builder.UseSqlite(sql.Connection);
+				builder.UseSqlite(sql.Connection, sqlite => {
+					sqlite.UseNetTopologySuite();
+				});
 			})
 			.AddRepository<DbPersonRepository>();
 
@@ -95,6 +97,16 @@ namespace Deveel.Data {
 
 			Assert.NotNull(updated);
 			Assert.Equal(newEmail, updated.Email);
+		}
+
+		[Fact]
+		public async Task FindByLocationWithinDistance() {
+			var person = await RandomPersonAsync(x => x.Location != null);
+
+			var found = await PersonRepository.FindAllAsync(x => x.Location.Distance(person.Location) <= 1000);
+			Assert.NotNull(found);
+			Assert.NotEmpty(found);
+			Assert.Contains(found, x => x.Id == person.Id);
 		}
 	}
 }

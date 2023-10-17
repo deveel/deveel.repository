@@ -5,6 +5,10 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using MongoDB.Bson;
+using MongoDB.Driver.GeoJsonObjectModel;
+
+using MongoFramework;
+using MongoFramework.Attributes;
 
 namespace Deveel.Data {
 	[Table("persons")]
@@ -44,6 +48,10 @@ namespace Deveel.Data {
 
 		[Column("relationships")]
 		public List<MongoPersonRelationship>? Relationships { get; set; }
+
+		[Column("location")]
+		[Index(IndexType.Geo2dSphere)]
+		public GeoJsonPoint<GeoJson2DGeographicCoordinates>? Location { get; set; }
 
 		IEnumerable<IRelationship> IPerson.Relationships => Relationships ?? Enumerable.Empty<IRelationship>();
 	}

@@ -43,18 +43,8 @@ namespace Deveel.Data {
 
 		protected override async Task DisposeAsync() {
 			var result = await MongoCollection.DeleteManyAsync(x => true);
-		}
 
-		[Fact]
-		public async Task FindAll_MongoQueryFiltered() {
-			var firstName = People.Random()!.FirstName;
-			var peopleCount = People.Count(x => x.FirstName == firstName);
-
-			var result = await Repository.FindAllAsync(new MongoQueryFilter<MongoPerson>(Builders<MongoPerson>.Filter.Where(x => x.FirstName == firstName)));
-
-			Assert.NotNull(result);
-			Assert.NotEmpty(result);
-			Assert.Equal(peopleCount, result.Count);
+			await base.DisposeAsync();
 		}
 
 		[Fact]

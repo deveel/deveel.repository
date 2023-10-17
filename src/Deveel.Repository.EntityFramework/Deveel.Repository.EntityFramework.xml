@@ -129,7 +129,7 @@
         <member name="M:Deveel.Data.EntityRepository`1.UpdateAsync(`0,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
-        <member name="M:Deveel.Data.EntityRepository`1.ExistsAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.EntityRepository`1.ExistsAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
             <summary>
             Checks if the repository contains an entity that matches 
             the given filter.
@@ -146,7 +146,7 @@
             </returns>
             <exception cref="T:Deveel.Data.RepositoryException"></exception>
         </member>
-        <member name="M:Deveel.Data.EntityRepository`1.CountAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.EntityRepository`1.CountAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
             <summary>
             Counts the number of entities in the repository that match 
             the given filter.
@@ -159,7 +159,7 @@
             </param>
             <returns></returns>
         </member>
-        <member name="M:Deveel.Data.EntityRepository`1.FindAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.EntityRepository`1.FindAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
             <summary>
             Finds the first entity in the repository that matches the given filter.
             </summary>
@@ -174,7 +174,7 @@
             if no entity is found.
             </returns>
         </member>
-        <member name="M:Deveel.Data.EntityRepository`1.FindAllAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.EntityRepository`1.FindAllAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
             <summary>
             Finds all the entities in the repository that match the given filter.
             </summary>

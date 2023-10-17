@@ -1,5 +1,7 @@
 ﻿using Bogus;
 
+using MongoDB.Driver.GeoJsonObjectModel;
+
 namespace Deveel.Data {
 	public class MongoPersonFaker : Faker<MongoPerson> {
 		public MongoPersonFaker() {
@@ -9,6 +11,8 @@ namespace Deveel.Data {
 			RuleFor(x => x.Description, f => f.Lorem.Sentence().OrNull(f));
 			RuleFor(x => x.Email, f => f.Internet.Email().OrNull(f));
 			RuleFor(x => x.PhoneNumber, f => f.Phone.PhoneNumber().OrNull(f));
+			RuleFor(x => x.Location, f => (new GeoJsonPoint<GeoJson2DGeographicCoordinates>(new GeoJson2DGeographicCoordinates(f.Random.Double(), f.Random.Double()))).OrNull(f));
+
 			RuleFor(x => x.Relationships, f => {
 				var faker = new MongoPersonRelationshipFaker();
 				return f.Random.Bool() ? faker.Generate(f.Random.Number(1, 5)) : null;

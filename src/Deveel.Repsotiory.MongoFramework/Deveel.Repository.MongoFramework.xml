@@ -4,6 +4,35 @@
         <name>Deveel.Repository.MongoFramework</name>
     </assembly>
     <members>
+        <member name="T:Deveel.Data.GeoPoint">
+            <summary>
+            A structure that represents a point in the Earth surface
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.GeoPoint.#ctor(System.Double,System.Double)">
+            <summary>
+            Constructs the point with the given latitude and longitude
+            </summary>
+            <param name="latitude">
+            The latitude of the point
+            </param>
+            <param name="longitude">
+            The longitude of the point
+            </param>
+        </member>
+        <member name="P:Deveel.Data.GeoPoint.Latitude">
+            <summary>
+            Gets the latitude of the point
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.GeoPoint.Longitude">
+            <summary>
+            Gets the longitude of the point
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.GeoPoint.ToString">
+            <inheritdoc />
+        </member>
         <member name="T:Deveel.Data.IMongoDbConnection`1">
             <summary>
             A connection to a MongoDB database that is 
@@ -104,29 +133,54 @@
         <member name="P:Deveel.Data.MongoConnectionBuilder`1.Connection">
             <inheritdoc/>
         </member>
-        <member name="T:Deveel.Data.MongoQueryFilter`1">
+        <member name="T:Deveel.Data.MongoGeoDistanceFilter`1">
             <summary>
-            A query filter that is based on a MongoDB filter definition.
+            A filter that can be used to filter a <see cref="T:System.Linq.IQueryable`1"/>
+            for entities that are within a given distance from a center point.
             </summary>
-            <typeparam name="TDocument">
-            The type of document that is used to build the filter.
+            <typeparam name="TEntity">
+            The type of the entity to be filtered.
             </typeparam>
         </member>
-        <member name="M:Deveel.Data.MongoQueryFilter`1.#ctor(MongoDB.Driver.FilterDefinition{`0})">
+        <member name="M:Deveel.Data.MongoGeoDistanceFilter`1.#ctor(System.Linq.Expressions.Expression{System.Func{`0,System.Object}},Deveel.Data.GeoPoint,System.Nullable{System.Double},System.Nullable{System.Double})">
             <summary>
-            Constructs the filter with the given MongoDB filter definition.
+            Constructs the filter by specifying the field that contains
+            the location of the entity, the center point and the maximum
+            distance from the center point.
             </summary>
-            <param name="filter">
-            The instance of <see cref="T:MongoDB.Driver.FilterDefinition`1"/> that
-            represents the filter to apply.
+            <param name="field">
+            The expression that identifies the field that contains the
+            location of the entity.
             </param>
-            <exception cref="T:System.ArgumentNullException">
-            Thrown if the given <paramref name="filter"/> is <c>null</c>.
-            </exception>
+            <param name="center">
+            The center point to calculate the distance from.
+            </param>
+            <param name="maxDistance">
+            The maximum distance from the center point.
+            </param>
+            <param name="minDistance">
+            The minimum distance from the center point.
+            </param>
         </member>
-        <member name="P:Deveel.Data.MongoQueryFilter`1.Filter">
+        <member name="P:Deveel.Data.MongoGeoDistanceFilter`1.LocationField">
             <summary>
-            Gets the MongoDB filter definition that is used to build the filter.
+            Gets the expression that identifies the field that contains
+            the location of the entity.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.MongoGeoDistanceFilter`1.Center">
+            <summary>
+            Gets the center point to calculate the distance from.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.MongoGeoDistanceFilter`1.MaxDistance">
+            <summary>
+            Gets the maximum distance from the center point.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.MongoGeoDistanceFilter`1.MinDistance">
+            <summary>
+            Gets the minimum distance from the center point.
             </summary>
         </member>
         <member name="T:Deveel.Data.MongoRepository`1">
@@ -245,21 +299,6 @@
             property of the entity managed by this repository.
             </exception>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`1.GetFilterDefinition(Deveel.Data.IQueryFilter)">
-            <summary>
-            Gets the MongoDB filter definition for the given query filter.
-            </summary>
-            <param name="filter">
-            The query filter to be converted to a MongoDB filter definition.
-            </param>
-            <returns>
-            Returns an instance of <see cref="T:MongoDB.Driver.FilterDefinition`1"/> that
-            is mapped from the given query filter.
-            </returns>
-            <exception cref="T:System.ArgumentException">
-            Thrown when the given query filter is not supported by this repository.
-            </exception>
-        </member>
         <member name="M:Deveel.Data.MongoRepository`1.Field(System.String)">
             <summary>
             Resolves a given field name to an expression that can be used
@@ -326,6 +365,40 @@
         </member>
         <member name="M:Deveel.Data.MongoRepository`1.RemoveAsync(`0,System.Threading.CancellationToken)">
             <inheritdoc/>
+        </member>
+        <member name="T:Deveel.Data.RepositoryExtensions">
+            <summary>
+            Extends the <see cref="T:Deveel.Data.IRepository`1"/> interface
+            to provide additional methods for MongoDB.
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindFirstByGeoDistanceAsync``1(Deveel.Data.IRepository{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Object}},Deveel.Data.GeoPoint,System.Nullable{System.Double})">
+            <summary>
+            Finds the first entity in the repository that matches the given
+            geo-distance filter.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity to be found.
+            </typeparam>
+            <param name="repository">
+            The repository to search into.
+            </param>
+            <param name="field">
+            The expression that identifies the field to be used for the
+            identification of the location of the entity.
+            </param>
+            <param name="point">
+            The point to be used as the center of the search.
+            </param>
+            <param name="maxDistance">
+            The maximum distance from the center point to search for.
+            </param>
+            <returns>
+            Returns an instance of <typeparamref name="TEntity"/> that
+            matches the given filter, or <c>null</c> if no entity is found.
+            </returns>
+            <exception cref="T:System.ArgumentException"></exception>
+            <seealso cref="T:Deveel.Data.MongoGeoDistanceFilter`1"/>
         </member>
         <member name="T:Deveel.Data.ServiceCollectionExtensions">
             <summary>

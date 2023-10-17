@@ -20,6 +20,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.GeoJsonObjectModel;
 
 using MongoFramework;
 using MongoFramework.Infrastructure;
@@ -246,31 +247,6 @@ namespace Deveel.Data {
 		}
 
 		/// <summary>
-		/// Gets the MongoDB filter definition for the given query filter.
-		/// </summary>
-		/// <param name="filter">
-		/// The query filter to be converted to a MongoDB filter definition.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of <see cref="FilterDefinition{TEntity}"/> that
-		/// is mapped from the given query filter.
-		/// </returns>
-		/// <exception cref="ArgumentException">
-		/// Thrown when the given query filter is not supported by this repository.
-		/// </exception>
-		protected virtual FilterDefinition<TEntity> GetFilterDefinition(IQueryFilter? filter) {
-			if (filter == null || filter.IsEmpty())
-				return Builders<TEntity>.Filter.Empty;
-
-			if (filter is ExpressionQueryFilter<TEntity> expr)
-				return Builders<TEntity>.Filter.Where(expr.Expression);
-			if (filter is MongoQueryFilter<TEntity> filterDef)
-				return filterDef.Filter;
-
-			throw new RepositoryException($"The query filter type '{filter.GetType()}' is not supported by Mongo");
-		}
-
-		/// <summary>
 		/// Resolves a given field name to an expression that can be used
 		/// to access the field in the entity.
 		/// </summary>
@@ -325,8 +301,9 @@ namespace Deveel.Data {
 			}
 		}
 
-		Task IControllableRepository.CreateAsync(CancellationToken cancellationToken) {
-			return CreateCollectionAsync(cancellationToken);
+		async Task IControllableRepository.CreateAsync(CancellationToken cancellationToken) {
+			await CreateCollectionAsync(cancellationToken);
+			await CreateIndicesAsync(cancellationToken);
 		}
 
 		public async Task CreateCollectionAsync(CancellationToken cancellationToken = default) {
@@ -334,15 +311,65 @@ namespace Deveel.Data {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
 				// TODO: should we also create the indices here?
-				await Context.Connection.GetDatabase().CreateCollectionAsync(entityDef.CollectionName, null, cancellationToken);
+				await Context.Connection.GetDatabase()
+					.CreateCollectionAsync(entityDef.CollectionName, null, cancellationToken);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex);
 				throw new RepositoryException("Unable to create the repository", ex);
 			}
 		}
 
-		Task IControllableRepository.DropAsync(CancellationToken cancellationToken) {
-			return DropCollectionAsync(cancellationToken);
+		public async Task CreateIndicesAsync(CancellationToken cancellationToken = default) {
+			try {
+				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
+
+				foreach (var indexDef in entityDef.Indexes) {
+					var keysBuilder = new IndexKeysDefinitionBuilder<TEntity>();
+					var indices = new List<CreateIndexModel<TEntity>>();
+					foreach (var path in indexDef.IndexPaths) {
+						var fieldDef = new StringFieldDefinition<TEntity>(path.Path);
+						IndexKeysDefinition<TEntity>? keysDef = null;
+						if (path.IndexType == IndexType.Standard) {
+							keysDef = path.SortOrder == IndexSortOrder.Descending
+								? keysBuilder.Descending(fieldDef)
+								: keysBuilder.Ascending(fieldDef);
+						} else if (path.IndexType == IndexType.Geo2dSphere) {
+							keysDef = keysBuilder.Geo2DSphere(fieldDef);
+						} else if (path.IndexType == IndexType.Text) {
+							keysDef = keysBuilder.Text(fieldDef);
+						}
+
+						if (keysDef != null) {
+							var options = new CreateIndexOptions {
+								Unique = indexDef.IsUnique,
+								Name = indexDef.IndexName
+							};
+
+							var indexModel = new CreateIndexModel<TEntity>(keysDef, options);
+							indices.Add(indexModel);
+						}
+					}
+
+					await Collection.Indexes.CreateManyAsync(indices, cancellationToken);
+				}
+			} catch (Exception ex) {
+
+				throw new RepositoryException("Unable to create the indices for the repository", ex);
+			}
+		}
+
+		async Task IControllableRepository.DropAsync(CancellationToken cancellationToken) {
+			await DropIndicesAsync(cancellationToken);
+			await DropCollectionAsync(cancellationToken);
+		}
+
+		public async Task DropIndicesAsync(CancellationToken cancellationToken = default) {
+			try {
+				await Collection.Indexes.DropAllAsync(cancellationToken);
+			} catch (Exception ex) {
+
+				throw new RepositoryException("Unable to drop the indices", ex);
+			}
 		}
 
 		public async Task DropCollectionAsync(CancellationToken cancellationToken = default) {
@@ -490,8 +517,6 @@ namespace Deveel.Data {
 
 		#endregion
 
-		#region Remove
-
 		/// <inheritdoc/>
 		public virtual async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			if (entity is null) 
@@ -551,9 +576,6 @@ namespace Deveel.Data {
 			}
 		}
 
-		#endregion
-
-		#region FindById
 
 		public async Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
@@ -592,63 +614,32 @@ namespace Deveel.Data {
 			}
 		}
 
-		#endregion
-
-		#region Find
-
-		public Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default)
-			=> FindAsync(GetFilterDefinition(filter), cancellationToken);
-
-		//public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
-		//	try {
-		//		return await DbSet.Where(filter).FirstOrDefaultAsync(cancellationToken);
-		//	} catch (Exception ex) {
-
-		//		throw new RepositoryException("Unable to execute the query", ex);
-		//	}
-		//}
-
-		public async Task<TEntity?> FindAsync(FilterDefinition<TEntity> filter, CancellationToken cancellationToken = default) {
+		public async Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
-				var options = new FindOptions<TEntity> { Limit = 1 };
+				var query = DbSet.AsQueryable();
+				if (filter != null) {
+					query = filter.Apply(query);
+				}
 
-				var result = await Collection.FindAsync(filter, options, cancellationToken);
-
-				return await result.FirstOrDefaultAsync(cancellationToken);
+				return await query.FirstOrDefaultAsync(cancellationToken);
 			} catch (Exception ex) {
-
 				throw new RepositoryException("Unable to find the entity", ex);
 			}
 		}
 
-		#endregion
-
-		#region FindAll
-
-		public Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default)
-			=> FindAllAsync(GetFilterDefinition(filter), cancellationToken);
-
-		//public async Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
-		//	try {
-		//		return await DbSet.Where(filter).ToListAsync(cancellationToken);
-		//	} catch (Exception ex) {
-		//		throw new RepositoryException("Unable to execute the query", ex);
-		//	}
-		//}
-
-		public async Task<IList<TEntity>> FindAllAsync(FilterDefinition<TEntity> filter, CancellationToken cancellationToken = default) {
+		public async Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
-				var result = await Collection.FindAsync(filter, null, cancellationToken);
-				return await result.ToListAsync(cancellationToken);
+				var query = DbSet.AsQueryable();
+				if (filter != null) {
+					query = filter.Apply(query);
+				}
+
+				return await query.ToListAsync(cancellationToken);
 			} catch (Exception ex) {
 
-				throw new RepositoryException("Unable to execute the query", ex);
+				throw new RepositoryException("Unable to find the entities", ex);
 			}
 		}
-
-		#endregion
-
-		#region GetPage
 
 		public async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
 			try {
@@ -690,58 +681,32 @@ namespace Deveel.Data {
 			}
 		}
 
-		#endregion
-
-		#region Exists
-
-		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default)
-			=> ExistsAsync(GetFilterDefinition(filter), cancellationToken);
-
-		//public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
-		//	try {
-		//		return await DbSet.Where(filter).AnyAsync(cancellationToken);
-		//	} catch (Exception ex) {
-
-		//		throw new RepositoryException("Unable to execute the query", ex);
-		//	}
-		//}
-
-		public async Task<bool> ExistsAsync(FilterDefinition<TEntity> filter, CancellationToken cancellationToken = default) {
+		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
-				var result = await Collection.CountDocumentsAsync(filter, null, cancellationToken);
+				var query = DbSet.AsQueryable();
+				if (filter != null) {
+					query = filter.Apply(query);
+				}
 
-				return result > 0;
-			} catch (Exception ex) {
-				throw new RepositoryException("Unable to execute the query", ex);
-			}
-		}
-
-		#endregion
-
-		#region Count
-
-		public Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default)
-			=> CountAsync(GetFilterDefinition(filter), cancellationToken);
-
-		//public async Task<long> CountAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
-		//	try {
-		//		return await DbSet.Where(filter).CountAsync(cancellationToken);
-		//	} catch (Exception ex) {
-
-		//		throw new RepositoryException("Unable to execute the query", ex);
-		//	}
-		//}
-
-		public async Task<long> CountAsync(FilterDefinition<TEntity> filter, CancellationToken cancellationToken) {
-			try {
-				return await Collection.CountDocumentsAsync(filter, null, cancellationToken);
+				return query.AnyAsync(cancellationToken);
 			} catch (Exception ex) {
 
 				throw new RepositoryException("Unable to execute the query", ex);
 			}
 		}
 
-		#endregion
+		public async Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+			try {
+				var query = DbSet.AsQueryable();
+				if (filter != null) {
+					query = filter.Apply(query);
+				}
+
+				return await query.CountAsync(cancellationToken);
+			} catch (Exception ex) {
+				throw new RepositoryException("Unable to count the entities", ex);
+			}
+		}
 
 		#region Dispose
 

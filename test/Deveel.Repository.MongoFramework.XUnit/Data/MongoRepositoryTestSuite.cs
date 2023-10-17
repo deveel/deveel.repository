@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.GeoJsonObjectModel;
 
 using Xunit.Abstractions;
 
@@ -16,19 +17,20 @@ namespace Deveel.Data {
 		protected MongoRepositoryTestSuite(MongoSingleDatabase mongo, ITestOutputHelper? testOutput) : base(testOutput) {
 			this.mongo = mongo;
 
-			ConnectionString = mongo.SetDatabase(DatabaseName);
+			// ConnectionString = mongo.SetDatabase(DatabaseName);
+			ConnectionString = mongo.ConnectionString;
 		}
 
 		protected string ConnectionString { get; }
 
-		protected string DatabaseName => "test_db";
+		// protected string DatabaseName => "test_db";
 
 		protected override string GeneratePersonId() => ObjectId.GenerateNewId().ToString();
 
 		protected override Faker<MongoPersonRelationship> RelationshipFaker => new MongoPersonRelationshipFaker();
 
 		protected IMongoCollection<TPerson> MongoCollection => new MongoClient(mongo.ConnectionString)
-			.GetDatabase(DatabaseName)
+			.GetDatabase(new MongoUrl(ConnectionString).DatabaseName)
 			.GetCollection<TPerson>("persons");
 
 		protected override Task AddRelationshipAsync(TPerson person, MongoPersonRelationship relationship) {
@@ -78,6 +80,29 @@ namespace Deveel.Data {
 			var found = await Repository.FindByKeyAsync(personId.ToString());
 
 			Assert.Null(found);
+		}
+
+		[Fact]
+		public async Task FindFirstByGeoDistance() {
+			var person = await RandomPersonAsync(x => x.Location != null);
+
+			var point = new GeoPoint(person.Location!.Coordinates.Latitude, person.Location.Coordinates.Longitude);
+			var found = await Repository.FindFirstByGeoDistanceAsync(x => x.Location, point, 100);
+
+			Assert.NotNull(found);
+			Assert.Equal(person.Id, found.Id);
+		}
+
+		[Fact]
+		public async Task FindAllByGeoDistance() {
+			var person = await RandomPersonAsync(x => x.Location != null);
+
+			var point = new GeoPoint(person.Location!.Coordinates.Latitude, person.Location.Coordinates.Longitude);
+			var found = await Repository.FindAllByGeoDistanceAsync(x => x.Location, point, 100);
+
+			Assert.NotNull(found);
+			Assert.NotEmpty(found);
+			Assert.Contains(found, x => x.Id == person.Id);
 		}
 	}
 }

@@ -48,9 +48,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager.X
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager.DynamicLinq", "src\Deveel.Repository.Manager.DynamicLinq\Deveel.Repository.Manager.DynamicLinq.csproj", "{638851EF-B000-490C-9035-A962279A3E9B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Manager.EasyCaching", "src\Deveel.Repository.Manager.EasyCaching\Deveel.Repository.Manager.EasyCaching.csproj", "{84D55BE2-7DAD-4CA3-A3E2-EFB4D41FA3CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager.EasyCaching", "src\Deveel.Repository.Manager.EasyCaching\Deveel.Repository.Manager.EasyCaching.csproj", "{84D55BE2-7DAD-4CA3-A3E2-EFB4D41FA3CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Manager.EasyCaching.XUnit", "test\Deveel.Repository.Manager.EasyCaching.XUnit\Deveel.Repository.Manager.EasyCaching.XUnit.csproj", "{F47C196B-758D-4C05-8918-FB63C61649EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager.EasyCaching.XUnit", "test\Deveel.Repository.Manager.EasyCaching.XUnit\Deveel.Repository.Manager.EasyCaching.XUnit.csproj", "{F47C196B-758D-4C05-8918-FB63C61649EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

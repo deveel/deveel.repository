@@ -100,8 +100,8 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var lambda = filter.AsLambda<TEntity>();
-				return Task.FromResult(entities.Values.AsQueryable().LongCount(lambda));
+				var result = entities.Values.AsQueryable().LongCount(filter);
+				return Task.FromResult(result);
 			} catch (Exception ex) {
 				throw new RepositoryException("Could not count the entities", ex);
 			}
@@ -212,8 +212,7 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var lambda = filter.AsLambda<TEntity>();
-				var result = entities.Values.AsQueryable().Any(lambda);
+				var result = entities.Values.AsQueryable().Any(filter);
 				return Task.FromResult(result);
 			} catch(Exception ex) {
 				throw new RepositoryException("Could not check if any entities exist in the repository", ex);
@@ -226,11 +225,9 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var lambda = filter.AsLambda<TEntity>();
 				var result = entities.Values
 					.AsQueryable()
-					.Where(lambda)
-					.ToList();
+					.ToList(filter);
 
 				return Task.FromResult<IList<TEntity>>(result);
 			} catch (Exception ex) {
@@ -244,11 +241,9 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var lambda = filter.AsLambda<TEntity>();
 				var result = entities.Values
 					.AsQueryable()
-					.Where(lambda)
-					.FirstOrDefault();
+					.FirstOrDefault(filter);
 
 				return Task.FromResult(result);
 			} catch (Exception ex) {

@@ -6,7 +6,8 @@ namespace Deveel.Data {
 		[Fact]
 		public static void AddEntityRepository() {
 			var services = new ServiceCollection();
-			services.AddDbContext<DbContext, PersonDbContext>(options => options.UseSqlite("Data Source=:memory:"));
+			services.AddDbContext<DbContext, PersonDbContext>(options =>
+				options.UseSqlite("Data Source=:memory:", x => x.UseNetTopologySuite()));
 			services.AddEntityRepository<DbPerson>(ServiceLifetime.Scoped);
 
 			var provider = services.BuildServiceProvider();
