@@ -5,14 +5,14 @@ using MongoDB.Driver;
 using Testcontainers.MongoDb;
 
 namespace Deveel.Data {
-	public class MongoSingleDatabase : IAsyncLifetime {
+	public class MongoSingleDatabase : IAsyncLifetime, IDisposable {
 		private readonly MongoDbContainer container;
+		private bool disposedValue;
 
 		public MongoSingleDatabase() {
 			container = new MongoDbBuilder()
 				.WithUsername("")
 				.WithPassword("")
-				.WithPortBinding(27017)
 				.Build();
 		}
 
@@ -28,19 +28,23 @@ namespace Deveel.Data {
 		}
 
 		public async Task DisposeAsync() {
-			var client = new MongoClient(ConnectionString);
-			await client.DropDatabaseAsync(DatabaseName);
+			if (!disposedValue) {
+				await container.StopAsync();
+				while (container.State != TestcontainersStates.Exited) {
+					await Task.Delay(100);
+				}
 
-			await container.StopAsync();
-			while(container.State != TestcontainersStates.Exited) {
-				await Task.Delay(100);
+				await container.DisposeAsync();
+				disposedValue = true;
 			}
-
-			await container.DisposeAsync();
 		}
 
 		public Task InitializeAsync() {
 			return container.StartAsync();
+		}
+
+		public void Dispose() {
+			DisposeAsync().GetAwaiter().GetResult();
 		}
 	}
 }
