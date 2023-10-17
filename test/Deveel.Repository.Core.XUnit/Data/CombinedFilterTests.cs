@@ -1,6 +1,23 @@
 ﻿namespace Deveel.Data {
 	public static class CombinedFilterTests {
 		[Fact]
+		public static void CombineCombinedInstance() {
+			var filter1 = new ExpressionQueryFilter<Person>(x => x.FirstName == "John");
+			var filter2 = new ExpressionQueryFilter<Person>(x => x.LastName == "Doe");
+
+			var combined1 = QueryFilter.Combine(filter1, filter2);
+			var combined2 = combined1.Combine(QueryFilter.Empty);
+
+			Assert.NotNull(combined2);
+			var filter = Assert.IsType<CombinedQueryFilter>(combined2);
+			Assert.NotNull(filter);
+			Assert.Equal(3, filter.Filters.Count);
+			Assert.Equal(filter1, filter.Filters[0]);
+			Assert.Equal(filter2, filter.Filters[1]);
+			Assert.Equal(QueryFilter.Empty, filter.Filters[2]);
+		}
+
+		[Fact]
 		public static void CombineExpressionFilters() {
 			var filter1 = new ExpressionQueryFilter<Person>(x => x.FirstName == "John");
 			var filter2 = new ExpressionQueryFilter<Person>(x => x.LastName == "Doe");

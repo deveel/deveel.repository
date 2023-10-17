@@ -14,10 +14,21 @@
 
 namespace Deveel.Data {
 	/// <summary>
-	/// A service that creates instances of <see cref="IOperationError"/>
-	/// that can be used to report errors in an operation
-	/// for a specific entity.
+	/// A filter that can be applied to a <see cref="IQueryable{T}"/>
+	/// object to restrict the results of a query.
 	/// </summary>
-	public interface IOperationErrorFactory<TEntity> : IOperationErrorFactory where TEntity : class {
+	/// <typeparam name="TEntity"></typeparam>
+	public interface IQueryableFilter<TEntity> : IQueryFilter where TEntity : class {
+		/// <summary>
+		/// Applies the filter to the given queryable object.
+		/// </summary>
+		/// <param name="queryable">
+		/// The queryable object to apply the filter to.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="IQueryable{TEntity}"/> that
+		/// is filtered by the conditions of this object.
+		/// </returns>
+		IQueryable<TEntity> Apply(IQueryable<TEntity> queryable);
 	}
 }

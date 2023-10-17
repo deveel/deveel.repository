@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Containers;
+﻿using DotNet.Testcontainers.Containers;
 
 using MongoDB.Driver;
 
@@ -23,16 +16,26 @@ namespace Deveel.Data {
 				.Build();
 		}
 
-		public string ConnectionString => container.GetConnectionString();
+		public const string DatabaseName = "test_db";
 
-		public string SetDatabase(string database) {
-			var urlBuilder = new MongoUrlBuilder(ConnectionString);
+		public string ConnectionString =>
+				SetDatabase(container.GetConnectionString(), DatabaseName);
+
+		private static string SetDatabase(string connectionString, string database) {
+			var urlBuilder = new MongoUrlBuilder(connectionString);
 			urlBuilder.DatabaseName = database;
 			return urlBuilder.ToString();
 		}
 
 		public async Task DisposeAsync() {
+			var client = new MongoClient(ConnectionString);
+			await client.DropDatabaseAsync(DatabaseName);
+
 			await container.StopAsync();
+			while(container.State != TestcontainersStates.Exited) {
+				await Task.Delay(100);
+			}
+
 			await container.DisposeAsync();
 		}
 

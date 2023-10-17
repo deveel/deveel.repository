@@ -41,7 +41,7 @@ namespace Deveel.Data {
 						Id = tenantId, 
 						Identifier = "test-tenant", 
 						Name = "Test Tenant",
-						ConnectionString = mongo.SetDatabase("testdb")
+						ConnectionString = mongo.ConnectionString
 					});
 				})
 				.WithStaticStrategy("test-tenant");
@@ -52,7 +52,7 @@ namespace Deveel.Data {
 						Id = tenantId,
 						Identifier = "test-tenant",
 						Name = "Test Tenant",
-						ConnectionString = mongo.SetDatabase("testdb")
+						ConnectionString = mongo.ConnectionString
 					}
 				};
 			});

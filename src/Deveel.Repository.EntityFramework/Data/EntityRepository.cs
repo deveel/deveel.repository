@@ -20,7 +20,6 @@ using Finbuckle.MultiTenant;
 using Finbuckle.MultiTenant.EntityFrameworkCore;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -347,15 +346,6 @@ namespace Deveel.Data {
         }
 
 
-        async Task<TEntity?> IFilterableRepository<TEntity>.FindAsync(IQueryFilter filter, CancellationToken cancellationToken)
-            => await FindAsync(AssertExpression(filter), cancellationToken);
-
-        async Task<IList<TEntity>> IFilterableRepository<TEntity>.FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken)
-            => await FindAllAsync(AssertExpression(filter), cancellationToken);
-
-		async Task<bool> IFilterableRepository<TEntity>.ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken)
-			=> await ExistsAsync(AssertExpression(filter), cancellationToken);
-
 		/// <summary>
 		/// Checks if the repository contains an entity that matches 
 		/// the given filter.
@@ -371,9 +361,14 @@ namespace Deveel.Data {
 		/// that matches the given filter, otherwise <c>false</c>.
 		/// </returns>
 		/// <exception cref="RepositoryException"></exception>
-		public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default) {
+		public virtual async Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
-				return await Entities.AnyAsync(EnsureFilter(filter), cancellationToken);
+				var query = Entities.AsQueryable();
+				if (filter != null) {
+					query = filter.Apply(query);
+				}
+
+				return await query.AnyAsync(cancellationToken);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unable to determine the existence of an entity", ex);
@@ -391,11 +386,19 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation.
 		/// </param>
 		/// <returns></returns>
-        public virtual async Task<long> CountAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default)
-            => await Entities.LongCountAsync(EnsureFilter(filter), cancellationToken);
+        public virtual async Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+			try {
+				var query = Entities.AsQueryable();
+				if (filter != null) {
+					query = filter.Apply(query);
+				}
 
-		Task<long> IFilterableRepository<TEntity>.CountAsync(IQueryFilter filter, CancellationToken cancellationToken)
-			=> CountAsync(AssertExpression(filter), cancellationToken);
+				return await query.LongCountAsync(cancellationToken);
+			} catch (Exception ex) {
+
+				throw new RepositoryException("Unable to count the entities", ex);
+			}
+		}
 
 		/// <summary>
 		/// Finds the first entity in the repository that matches the given filter.
@@ -410,35 +413,19 @@ namespace Deveel.Data {
 		/// Returns the first entity that matches the given filter, or <c>null</c>
 		/// if no entity is found.
 		/// </returns>
-        public virtual async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken cancellationToken = default) {
+        public virtual async Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
-				return await Entities.FirstOrDefaultAsync(EnsureFilter(filter), cancellationToken);
+				var query = Entities.AsQueryable();
+				if (filter != null) {
+					query = filter.Apply(query);
+				}
+
+				return await query.FirstOrDefaultAsync(cancellationToken);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unknown error while trying to find an entity", ex);
 			}
         }
-
-        private static Expression<Func<TEntity, bool>> EnsureFilter(Expression<Func<TEntity, bool>>? filter) {
-            if (filter == null)
-                filter = e => true;
-
-            return filter;
-        }
-
-        private Expression<Func<TEntity, bool>> AssertExpression(IQueryFilter filter) {
-            if (filter == null || filter.IsEmpty())
-                return x => true;
-
-            if (!(filter is IExpressionQueryFilter exprFilter))
-                throw new RepositoryException($"The filter of type {filter.GetType()} is not supported");
-
-			try {
-				return exprFilter.AsLambda<TEntity>();
-			} catch (Exception ex) {
-				throw new RepositoryException("Unable to trasnform the provided filter to an expression", ex);
-			}
-		}
 
 		/// <summary>
 		/// Finds all the entities in the repository that match the given filter.
@@ -452,9 +439,14 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns a list of entities that match the given filter.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default) {
+		public virtual async Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
-				return await Entities.Where(filter).ToListAsync(cancellationToken);
+				var query = Entities.AsQueryable();
+				if (filter != null) {
+					query = filter.Apply(query);
+				}
+
+				return await query.ToListAsync(cancellationToken);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unable to list the entities", ex);
