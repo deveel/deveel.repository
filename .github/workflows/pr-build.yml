@@ -31,9 +31,6 @@ jobs:
     - name: Build
       run: dotnet build --no-restore --version-suffix $GITHUB_RUN_ID -c Release
       
-    - name: Test .NET 6.0
-      run: dotnet test --no-build --verbosity normal -c Release /p:TargetFrameworks=net6.0
-
-    - name: Test .NET 7.0
-      run: dotnet test --no-build --verbosity normal -c Release /p:TargetFrameworks=net7.0
+    - name: Test
+      run: dotnet test --no-build --verbosity normal -c Release
 
