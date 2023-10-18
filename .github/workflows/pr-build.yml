@@ -20,7 +20,7 @@ jobs:
             7.0.x
 
     - name: Install SQLite Spatial
-      run: sudo apt-get install -y sqlite3 libsqlite3-dev libsqlite3-mod-spatialite
+      run: apt-get install -y libsqlite3-mod-spatialite
         
     - name: Add Deveel GitHub NuGet Source
       run: dotnet nuget add source "https://nuget.pkg.github.com/deveel/index.json" -n "Deveel GitHub" -u ${{ secrets.DEVEEL_NUGET_USER }} -p ${{ secrets.DEVEEL_NUGET_TOKEN }} --store-password-in-clear-text
