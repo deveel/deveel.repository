@@ -7,9 +7,16 @@
     <DocumentationFile>./Deveel.Repository.EntityFramework.xml</DocumentationFile>
 	</PropertyGroup>
 
-	<ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.15" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.12" />
+  </ItemGroup>
+
+
+  <ItemGroup>
 		<PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="6.12.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.15" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />

@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <RootNamespace>Deveel</RootNamespace>
-    <VersionPrefix>1.2.1</VersionPrefix>
+    <VersionPrefix>1.2.5</VersionPrefix>
     <Authors>Antonello Provenzano</Authors>
     <Company>Deveel AS</Company>
     <Copyright>(C) 2022-2023 Deveel AS</Copyright>

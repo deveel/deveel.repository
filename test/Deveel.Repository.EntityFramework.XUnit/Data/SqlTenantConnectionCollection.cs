@@ -1,5 +1,5 @@
 ﻿namespace Deveel.Data {
-	[CollectionDefinition(nameof(SqlTenantConnectionCollection), DisableParallelization = true)]
+	[CollectionDefinition(nameof(SqlTenantConnectionCollection))]
 	public class SqlTenantConnectionCollection : SqlConnectionCollection {
 	}
 }
