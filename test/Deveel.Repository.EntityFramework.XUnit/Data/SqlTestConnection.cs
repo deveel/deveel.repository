@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Deveel.Data {
 	public class SqlTestConnection : IDisposable {
@@ -6,6 +7,9 @@ namespace Deveel.Data {
 			Connection = new SqliteConnection("DataSource=:memory:");
 			if (Connection.State != System.Data.ConnectionState.Open)
 				Connection.Open();
+
+			Connection.EnableExtensions();
+			SpatialiteLoader.Load(Connection);
 		}
 
 		public SqliteConnection Connection { get; }
