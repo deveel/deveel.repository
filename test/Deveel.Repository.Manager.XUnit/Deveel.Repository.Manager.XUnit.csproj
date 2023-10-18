@@ -5,10 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Deveel.Repository.InMemory\Deveel.Repository.InMemory.csproj" />
     <ProjectReference Include="..\..\src\Deveel.Repository.Manager.DynamicLinq\Deveel.Repository.Manager.DynamicLinq.csproj" />
     <ProjectReference Include="..\..\src\Deveel.Repository.Manager\Deveel.Repository.Manager.csproj" />
