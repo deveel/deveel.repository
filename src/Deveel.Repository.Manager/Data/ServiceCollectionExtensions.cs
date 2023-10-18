@@ -119,6 +119,22 @@ namespace Deveel.Data {
 			return services;
         }
 
+		/// <summary>
+		/// Adds a set of configuration options for a
+		/// cache of entities of the given type.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to cache.
+		/// </typeparam>
+		/// <param name="services">
+		/// The collection of services to register the options.
+		/// </param>
+		/// <param name="configure">
+		/// A delegate to a method that configures the options.
+		/// </param>
+		/// <returns>
+		/// Returns the given collection of services for chaining calls.
+		/// </returns>
 		public static IServiceCollection AddEntityCacheOptions<TEntity>(this IServiceCollection services, Action<EntityCacheOptions> configure) where TEntity : class {
 			ArgumentNullException.ThrowIfNull(configure, nameof(configure));
 
@@ -130,6 +146,26 @@ namespace Deveel.Data {
 			return services;
 		}
 
+		/// <summary>
+		/// Adds a set of configuration options for a
+		/// cache of entities of the given type.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to cache.
+		/// </typeparam>
+		/// <param name="services">
+		/// The collection of services to register the options.
+		/// </param>
+		/// <param name="configSectionPath">
+		/// The path to the configuration section that contains
+		/// the options to bind.
+		/// </param>
+		/// <returns>
+		/// Returns the given collection of services for chaining calls.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown when the given <paramref name="configSectionPath"/> is <c>null</c>.
+		/// </exception>
 		public static IServiceCollection AddEntityCacheOptions<TEntity>(this IServiceCollection services, string configSectionPath) where TEntity : class {
 			ArgumentNullException.ThrowIfNull(configSectionPath, nameof(configSectionPath));
 
@@ -139,6 +175,26 @@ namespace Deveel.Data {
 			return services;
 		}
 
+		/// <summary>
+		/// Registers a service to generate cache keys for entities
+		/// of a certain type.
+		/// </summary>
+		/// <param name="services">
+		/// The collection of services to register the generator.
+		/// </param>
+		/// <param name="generatorType">
+		/// The type of the generator to register.
+		/// </param>
+		/// <param name="lifetime">
+		/// The desired lifetime of the generator.
+		/// </param>
+		/// <returns>
+		/// Returns the given collection of services for chaining calls.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the given <paramref name="generatorType"/> is not a valid
+		/// implementation of <see cref="IEntityCacheKeyGenerator{TEntity}"/>.
+		/// </exception>
 		public static IServiceCollection AddEntityCacheKeyGenerator(this IServiceCollection services, Type generatorType, ServiceLifetime lifetime = ServiceLifetime.Singleton) {
 			if (!generatorType.IsClass || generatorType.IsAbstract)
 				throw new ArgumentException($"The type {generatorType} is not a valid generator type");
@@ -158,6 +214,22 @@ namespace Deveel.Data {
 			return services;
 		}
 
+		/// <summary>
+		/// Registers a service to generate cache keys for entities
+		/// of a certain type.
+		/// </summary>
+		/// <typeparam name="TGenerator">
+		/// The type of the generator to register.
+		/// </typeparam>
+		/// <param name="services">
+		/// The collection of services to register the generator.
+		/// </param>
+		/// <param name="lifetime">
+		/// The desired lifetime of the generator.
+		/// </param>
+		/// <returns>
+		/// Returns the given collection of services for chaining calls.
+		/// </returns>
 		public static IServiceCollection AddEntityCacheKeyGenerator<TGenerator>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TGenerator : class {
 			return AddEntityCacheKeyGenerator(services, typeof(TGenerator), lifetime);

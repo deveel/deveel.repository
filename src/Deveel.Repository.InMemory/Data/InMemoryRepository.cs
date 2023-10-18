@@ -12,15 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace Deveel.Data {
-    public class InMemoryRepository<TEntity> : 
+	/// <summary>
+	/// A repository that uses the memory of the process to store
+	/// the entities.
+	/// </summary>
+	/// <typeparam name="TEntity">
+	/// The type of entity managed by the repository.
+	/// </typeparam>
+	public class InMemoryRepository<TEntity> : 
 		IRepository<TEntity>, 
 		IQueryableRepository<TEntity>, 
 		IPageableRepository<TEntity>, 
@@ -28,11 +34,22 @@ namespace Deveel.Data {
 		IMultiTenantRepository<TEntity>,
 		IDisposable
 		where TEntity : class {
-		// TODO: use a dictionary for faster access
-		private SortedList<string, TEntity> entities;
+		private SortedList<object, TEntity> entities;
 		private bool disposedValue;
+		private MemberInfo? idMember;
 		private readonly IEntityFieldMapper<TEntity>? fieldMapper;
 
+		/// <summary>
+		/// Constructs the repository with the given list of
+		/// initial entities.
+		/// </summary>
+		/// <param name="list">
+		/// The list of entities to initialize the repository with.
+		/// </param>
+		/// <param name="fieldMapper">
+		/// A service that maps a field by name to an expression that
+		/// can select the field from an entity.
+		/// </param>
 		public InMemoryRepository(
 			IEnumerable<TEntity>? list = null,
 			IEntityFieldMapper<TEntity>? fieldMapper = null) {
@@ -40,6 +57,20 @@ namespace Deveel.Data {
 			this.fieldMapper = fieldMapper;
 		}
 
+		/// <summary>
+		/// Constructs the repository with the given list of
+		/// initial entities for the given tenant.
+		/// </summary>
+		/// <param name="tenantId">
+		/// The identifier of the tenant that owns the entities.
+		/// </param>
+		/// <param name="list">
+		/// A list of entities to initialize the repository with.
+		/// </param>
+		/// <param name="fieldMapper">
+		/// A service that maps a field by name to an expression that
+		/// can select the field from an entity.
+		/// </param>
 		protected InMemoryRepository(string tenantId, 
 			IEnumerable<TEntity>? list = null,
 			IEntityFieldMapper<TEntity>? fieldMapper = null)
@@ -47,20 +78,39 @@ namespace Deveel.Data {
 			TenantId = tenantId;
 		}
 
+		/// <summary>
+		/// Destroys the instance of the repository.
+		/// </summary>
 		~InMemoryRepository() {
 			Dispose(disposing: false);
 		}
 
-		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => entities.Values.AsQueryable();
+		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => Entities.AsQueryable();
 
-		public IReadOnlyList<TEntity> Entities => entities.Values.ToList().AsReadOnly();
+		/// <summary>
+		/// Gets the read-only list of entities in the repository.
+		/// </summary>
+		public virtual IReadOnlyList<TEntity> Entities => entities.Values.ToList().AsReadOnly();
 
 		string? IMultiTenantRepository<TEntity>.TenantId => TenantId;
 
+		/// <summary>
+		/// Gets the identifier of the tenant that owns the entities,
+		/// if any tenant is set.
+		/// </summary>
 		protected virtual string? TenantId { get; }
 
-		private SortedList<string, TEntity> CopyList(IEnumerable<TEntity> source) {
-			return new SortedList<string, TEntity>(source.ToDictionary(x => (string)GetEntityKey(x)!, y => Clone(y)));
+		private SortedList<object, TEntity> CopyList(IEnumerable<TEntity> source) {
+			var result = new SortedList<object, TEntity>();
+			foreach (var item in source) {
+				var id = GetEntityId(item);
+				if (id == null)
+					throw new RepositoryException("The entity does not have an ID");
+
+				result.Add(id, Clone(item));
+			}
+
+			return result;
 		}
 
 		private static TEntity Clone(TEntity entity) {
@@ -78,21 +128,49 @@ namespace Deveel.Data {
 			return GetEntityId(entity);
 		}
 
-		private string? GetEntityId(TEntity entity) {
-			if (!entity.TryGetMemberValue("Id", out object? idValue))
-				return null;
-
-			string? id;
-
-			if (idValue is string v) {
-				id = v;
-			} else {
-				id = Convert.ToString(idValue, CultureInfo.InvariantCulture);
+		private MemberInfo? DiscoverIdMember() {
+			if (idMember == null) {
+				idMember = typeof(TEntity)
+					.GetMembers()
+					.Where(x => Attribute.IsDefined(x, typeof(KeyAttribute))).FirstOrDefault();
 			}
 
-			// TODO: try some other members?
+			return idMember;
+		}
 
-			return id;
+		private static object? GetIdValue(MemberInfo memberInfo, TEntity entity) {
+			if (memberInfo is PropertyInfo propertyInfo)
+				return propertyInfo.GetValue(entity);
+			if (memberInfo is FieldInfo fieldInfo)
+				return fieldInfo.GetValue(entity);
+
+			throw new NotSupportedException($"The member {memberInfo} is not supported");
+		}
+
+		private static void SetIdValue(MemberInfo memberInfo, TEntity entity, object value) {
+			if (memberInfo is PropertyInfo propertyInfo) {
+				propertyInfo.SetValue(entity, value);
+			} else if (memberInfo is FieldInfo fieldInfo) {
+				fieldInfo.SetValue(entity, value);
+			} else {
+				throw new NotSupportedException($"The member {memberInfo} is not supported");
+			}
+		}
+
+		private void SetEntityId(TEntity entity, object value) {
+			var member = DiscoverIdMember();
+			if (member == null)
+				throw new RepositoryException("The entity does not have an ID");
+
+			SetIdValue(member, entity, value);
+		}
+
+		private object? GetEntityId(TEntity entity) {
+			var member = DiscoverIdMember();
+			if (member == null)
+				return null;
+
+			return GetIdValue(member, entity);
 		}
 
 		/// <inheritdoc/>
@@ -113,8 +191,7 @@ namespace Deveel.Data {
 
 			try {
 				var id = Guid.NewGuid().ToString();
-				if (!entity.TrySetMemberValue("Id", id))
-					throw new RepositoryException("Unable to set the ID of the entity");
+				SetEntityId(entity, id);
 
 				entities.Add(id, Clone(entity));
 
@@ -134,8 +211,7 @@ namespace Deveel.Data {
 			try {
 				foreach (var item in entities) {
 					var id = Guid.NewGuid().ToString();
-					if (!item.TrySetMemberValue("Id", id))
-						throw new RepositoryException("Unable to set the ID of the entity");
+					SetEntityId(item, id);
 
 					this.entities.Add(id, Clone(item));
 				}
@@ -280,6 +356,19 @@ namespace Deveel.Data {
 			throw new NotSupportedException();
 		}
 
+		/// <summary>
+		/// Maps the given field name to an expression that can select
+		/// a field from an entity.
+		/// </summary>
+		/// <param name="fieldName">
+		/// The name of the field to map.
+		/// </param>
+		/// <returns>
+		/// Returns an expression that can select the field from an entity.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown if the mapping is not supported by the repository.
+		/// </exception>
 		protected virtual Expression<Func<TEntity, object>> MapField(string fieldName) {
 			if (fieldMapper == null)
 				throw new NotSupportedException("No field mapper was provided");
@@ -343,6 +432,12 @@ namespace Deveel.Data {
 		internal static InMemoryRepository<TEntity> Create(string tenantId, IList<TEntity>? entities = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
 			=> new InMemoryRepository<TEntity>(tenantId, entities, fieldMapper);
 
+		/// <summary>
+		/// Disposes the repository and releases all the resources
+		/// </summary>
+		/// <param name="disposing">
+		/// The flag indicating if the repository is disposing.
+		/// </param>
 		protected virtual void Dispose(bool disposing) {
 			if (!disposedValue) {
 				if (disposing) {
@@ -354,6 +449,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public void Dispose() {
 			Dispose(disposing: true);
 			GC.SuppressFinalize(this);

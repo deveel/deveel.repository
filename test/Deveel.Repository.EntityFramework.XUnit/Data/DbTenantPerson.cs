@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning disable CS8618
+
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Deveel.Data {
@@ -14,7 +17,7 @@ namespace Deveel.Data {
 
 		public string FirstName { get; set; }
 
-		public string? LastName { get; set; }
+		public string LastName { get; set; }
 
 		public string? Email { get; set; }
 

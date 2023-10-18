@@ -1138,9 +1138,6 @@
             for a specific entity.
             </summary>
         </member>
-        <member name="T:Deveel.Data.LoggerExtensions.__LogGettingEntityPageStruct">
-            <summary> This API supports the logging infrastructure and is not intended to be used directly from your code. It is subject to change in the future. </summary>
-        </member>
         <member name="T:Deveel.Data.OperationErrorFactory">
             <summary>
             A default implementation of <see cref="T:Deveel.Data.IOperationErrorFactory"/>
@@ -1254,6 +1251,86 @@
             Thrown when the given <paramref name="managerType"/> is not a concrete class,
             or if the type is not a valid <see cref="T:Deveel.Data.EntityManager`1"/>.
             </exception>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddEntityCacheOptions``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Deveel.Data.Caching.EntityCacheOptions})">
+            <summary>
+            Adds a set of configuration options for a
+            cache of entities of the given type.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity to cache.
+            </typeparam>
+            <param name="services">
+            The collection of services to register the options.
+            </param>
+            <param name="configure">
+            A delegate to a method that configures the options.
+            </param>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddEntityCacheOptions``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)">
+            <summary>
+            Adds a set of configuration options for a
+            cache of entities of the given type.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity to cache.
+            </typeparam>
+            <param name="services">
+            The collection of services to register the options.
+            </param>
+            <param name="configSectionPath">
+            The path to the configuration section that contains
+            the options to bind.
+            </param>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when the given <paramref name="configSectionPath"/> is <c>null</c>.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddEntityCacheKeyGenerator(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers a service to generate cache keys for entities
+            of a certain type.
+            </summary>
+            <param name="services">
+            The collection of services to register the generator.
+            </param>
+            <param name="generatorType">
+            The type of the generator to register.
+            </param>
+            <param name="lifetime">
+            The desired lifetime of the generator.
+            </param>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+            <exception cref="T:System.ArgumentException">
+            Thrown when the given <paramref name="generatorType"/> is not a valid
+            implementation of <see cref="T:Deveel.Data.Caching.IEntityCacheKeyGenerator`1"/>.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddEntityCacheKeyGenerator``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers a service to generate cache keys for entities
+            of a certain type.
+            </summary>
+            <typeparam name="TGenerator">
+            The type of the generator to register.
+            </typeparam>
+            <param name="services">
+            The collection of services to register the generator.
+            </param>
+            <param name="lifetime">
+            The desired lifetime of the generator.
+            </param>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
         </member>
         <member name="M:Deveel.Data.ServiceCollectionExtensions.AddEntityValidator``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
             <summary>
@@ -1887,6 +1964,24 @@
             </param>
             <param name="factoryType">
             The type of the operation error factory to register.
+            </param>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+        </member>
+        <member name="M:Deveel.ServiceCollectionExtensions.AddOperationErrorFactory``2(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers a <see cref="T:Deveel.Data.IOperationErrorFactory"/> service in the
+            collection of services.
+            </summary>
+            <typeparam name="TEntity">
+            The type of the entity for which the factory is registered.
+            </typeparam>
+            <typeparam name="TFactory">
+            The type of the operation error factory to register.
+            </typeparam>
+            <param name="services">
+            The collection of services to register the factory.
             </param>
             <returns>
             Returns the given collection of services for chaining calls.

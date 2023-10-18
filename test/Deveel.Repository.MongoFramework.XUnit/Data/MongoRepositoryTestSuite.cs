@@ -87,7 +87,7 @@ namespace Deveel.Data {
 			var person = await RandomPersonAsync(x => x.Location != null);
 
 			var point = new GeoPoint(person.Location!.Coordinates.Latitude, person.Location.Coordinates.Longitude);
-			var found = await Repository.FindFirstByGeoDistanceAsync(x => x.Location, point, 100);
+			var found = await Repository.FindFirstByGeoDistanceAsync(x => x.Location!, point, 100);
 
 			Assert.NotNull(found);
 			Assert.Equal(person.Id, found.Id);
@@ -98,7 +98,7 @@ namespace Deveel.Data {
 			var person = await RandomPersonAsync(x => x.Location != null);
 
 			var point = new GeoPoint(person.Location!.Coordinates.Latitude, person.Location.Coordinates.Longitude);
-			var found = await Repository.FindAllByGeoDistanceAsync(x => x.Location, point, 100);
+			var found = await Repository.FindAllByGeoDistanceAsync(x => x.Location!, point, 100);
 
 			Assert.NotNull(found);
 			Assert.NotEmpty(found);

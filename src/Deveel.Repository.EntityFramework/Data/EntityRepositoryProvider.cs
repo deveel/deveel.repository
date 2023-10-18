@@ -107,7 +107,7 @@ namespace Deveel.Data {
 			=> await GetRepositoryAsync(tenantId, cancellationToken);
 
         private TContext ConstructDbContext(TenantInfo tenantInfo) {
-            if (contexts == null || !contexts.TryGetValue(tenantInfo.Id, out var dbContext)) {
+            if (contexts == null || !contexts.TryGetValue(tenantInfo.Id!, out var dbContext)) {
                 var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
                 
 				var ctor = typeof(TContext).GetConstructor(bindingFlags, new[] { typeof(ITenantInfo), typeof(DbContextOptions<TContext>) });
@@ -118,6 +118,8 @@ namespace Deveel.Data {
 
                 if (contexts == null)
                     contexts = new Dictionary<string, TContext>();
+
+				contexts[tenantInfo.Id!]= dbContext;
             }
 
             return dbContext;
@@ -125,7 +127,7 @@ namespace Deveel.Data {
 
         private EntityRepository<TEntity> CreateRepository(TenantInfo tenant) {
             try {
-                if (repositories == null || !repositories.TryGetValue(tenant.Id, out var repository)) {
+                if (repositories == null || !repositories.TryGetValue(tenant.Id!, out var repository)) {
                     var dbContext = ConstructDbContext(tenant);
 
                     repository = CreateRepository(dbContext, tenant);
@@ -133,7 +135,7 @@ namespace Deveel.Data {
                     if (repositories == null)
                         repositories = new Dictionary<string, EntityRepository<TEntity>>();
 
-                    repositories.Add(tenant.Id, repository);
+                    repositories.Add(tenant.Id!, repository);
                 }
 
                 return repository;

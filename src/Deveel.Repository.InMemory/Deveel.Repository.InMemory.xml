@@ -4,6 +4,79 @@
         <name>Deveel.Repository.InMemory</name>
     </assembly>
     <members>
+        <member name="T:Deveel.Data.IEntityFieldMapper`1">
+            <summary>
+            A service that maps a field by name to an expression that
+            selects the field from an entity.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity to map the field for.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.IEntityFieldMapper`1.Map(System.String)">
+            <summary>
+            Maps the given property name to an expression that
+            selects the property from the entity.
+            </summary>
+            <param name="propertyName"></param>
+            <returns>
+            Returns an expression that selects the property from the entity.
+            </returns>
+        </member>
+        <member name="T:Deveel.Data.InMemoryRepository`1">
+            <summary>
+            A repository that uses the memory of the process to store
+            the entities.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity managed by the repository.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.#ctor(System.Collections.Generic.IEnumerable{`0},Deveel.Data.IEntityFieldMapper{`0})">
+            <summary>
+            Constructs the repository with the given list of
+            initial entities.
+            </summary>
+            <param name="list">
+            The list of entities to initialize the repository with.
+            </param>
+            <param name="fieldMapper">
+            A service that maps a field by name to an expression that
+            can select the field from an entity.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.#ctor(System.String,System.Collections.Generic.IEnumerable{`0},Deveel.Data.IEntityFieldMapper{`0})">
+            <summary>
+            Constructs the repository with the given list of
+            initial entities for the given tenant.
+            </summary>
+            <param name="tenantId">
+            The identifier of the tenant that owns the entities.
+            </param>
+            <param name="list">
+            A list of entities to initialize the repository with.
+            </param>
+            <param name="fieldMapper">
+            A service that maps a field by name to an expression that
+            can select the field from an entity.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.Finalize">
+            <summary>
+            Destroys the instance of the repository.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.InMemoryRepository`1.Entities">
+            <summary>
+            Gets the read-only list of entities in the repository.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.InMemoryRepository`1.TenantId">
+            <summary>
+            Gets the identifier of the tenant that owns the entities,
+            if any tenant is set.
+            </summary>
+        </member>
         <member name="M:Deveel.Data.InMemoryRepository`1.GetEntityKey(`0)">
             <inheritdoc/>
         </member>
@@ -34,10 +107,36 @@
         <member name="M:Deveel.Data.InMemoryRepository`1.FindByKeyAsync(System.Object,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.MapField(System.String)">
+            <summary>
+            Maps the given field name to an expression that can select
+            a field from an entity.
+            </summary>
+            <param name="fieldName">
+            The name of the field to map.
+            </param>
+            <returns>
+            Returns an expression that can select the field from an entity.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown if the mapping is not supported by the repository.
+            </exception>
+        </member>
         <member name="M:Deveel.Data.InMemoryRepository`1.GetPageAsync(Deveel.Data.PageQuery{`0},System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
         <member name="M:Deveel.Data.InMemoryRepository`1.UpdateAsync(`0,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.Dispose(System.Boolean)">
+            <summary>
+            Disposes the repository and releases all the resources
+            </summary>
+            <param name="disposing">
+            The flag indicating if the repository is disposing.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepository`1.Dispose">
             <inheritdoc/>
         </member>
     </members>

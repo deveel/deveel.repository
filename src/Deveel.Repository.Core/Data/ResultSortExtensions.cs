@@ -16,6 +16,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// Provides extensions to the <see cref="IResultSort"/> interface.
+	/// </summary>
 	public static class ResultSortExtensions {
 		/// <summary>
 		/// Applies a sorting rule to the given queryable.

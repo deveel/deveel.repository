@@ -98,7 +98,7 @@ namespace Deveel.Data {
             public TestDbContext(ITenantInfo tenantInfo, DbContextOptions<TestDbContext> options) : base(tenantInfo, options) {
             }
 
-			public DbSet<DbTenantPerson> People { get; set; }
+			public virtual DbSet<DbTenantPerson> People { get; set; }
 
             protected override void OnModelCreating(ModelBuilder modelBuilder) {
                 modelBuilder.Entity<DbTenantPerson>()

@@ -224,49 +224,6 @@ namespace Deveel.Data {
 			return new CombinedQueryFilter(filters);
 		}
 
-		public static long LongCount<TEntity>(this IQueryable<TEntity> queriable, IQueryFilter filter) where TEntity : class {
-			ArgumentNullException.ThrowIfNull(queriable, nameof(queriable));
-			ArgumentNullException.ThrowIfNull(filter, nameof(filter));
-
-			if (filter.IsEmpty())
-				return queriable.LongCount();
-
-			return filter.Apply(queriable).LongCount();
-		}
-
-		public static IList<TEntity> ToList<TEntity>(this IQueryable<TEntity> queriable, IQueryFilter filter)
-			where TEntity : class {
-			ArgumentNullException.ThrowIfNull(queriable, nameof(queriable));
-			ArgumentNullException.ThrowIfNull(filter, nameof(filter));
-
-			if (filter.IsEmpty())
-				return queriable.ToList();
-
-			return filter.Apply(queriable).ToList();
-		}
-
-		public static TEntity? FirstOrDefault<TEntity>(this IQueryable<TEntity> queryable, IQueryFilter filter)
-			where TEntity : class {
-			ArgumentNullException.ThrowIfNull(queryable, nameof(queryable));
-			ArgumentNullException.ThrowIfNull(filter, nameof(filter));
-
-			if (filter.IsEmpty())
-				return queryable.FirstOrDefault();
-
-			return filter.Apply(queryable).FirstOrDefault();
-		}
-
-		public static bool Any<TEntity>(this IQueryable<TEntity> queryable, IQueryFilter filter)
-			where TEntity : class {
-			ArgumentNullException.ThrowIfNull(queryable, nameof(queryable));
-			ArgumentNullException.ThrowIfNull(filter, nameof(filter));
-
-			if (filter.IsEmpty())
-				return queryable.Any();
-
-			return filter.Apply(queryable).Any();
-		}
-
 		readonly struct EmptyQueryFilter : IQueryFilter {
 		}
 	}

@@ -49,8 +49,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task GetFilteredPage_FieldNameOrdered() {
-			var totalPages = (int)Math.Ceiling((double)People.Count / 10);
-			var sorted = People.OrderBy(x => x.FirstName).Skip(0).Take(10).ToList();
+			var totalPages = (int)Math.Ceiling((double)PeopleCount / 10);
+			var sorted = People!.OrderBy(x => x.FirstName).Skip(0).Take(10).ToList();
 
 			var request = new PageQuery<MongoPerson>(1, 10)
 				.OrderBy("FirstName");
@@ -59,7 +59,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
-			Assert.Equal(People.Count, result.TotalItems);
+			Assert.Equal(PeopleCount, result.TotalItems);
 			Assert.NotNull(result.Items);
 			Assert.NotEmpty(result.Items);
 			Assert.Equal(10, result.Items.Count);

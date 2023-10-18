@@ -46,7 +46,9 @@ namespace Deveel.Data {
 		/// Returns an instance of <typeparamref name="TEntity"/> that
 		/// matches the given filter, or <c>null</c> if no entity is found.
 		/// </returns>
-		/// <exception cref="ArgumentException"></exception>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the given repository is not a <see cref="MongoRepository{TEntity}"/>.
+		/// </exception>
 		/// <seealso cref="MongoGeoDistanceFilter{TEntity}"/>
 		public static Task<TEntity?> FindFirstByGeoDistanceAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, object>> field, GeoPoint point, double? maxDistance = null)
 			where TEntity : class {
@@ -58,6 +60,31 @@ namespace Deveel.Data {
 			return mongoRepository.FindAsync(new MongoGeoDistanceFilter<TEntity>(field, point, maxDistance));
 		}
 
+		/// <summary>
+		/// Finds all the entities in the repository that match the given
+		/// geo-distance filter.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to be found.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository to search into.
+		/// </param>
+		/// <param name="field">
+		/// The expression that identifies the field to be used for the
+		/// identification of the location of the entity.
+		/// </param>
+		/// <param name="point">
+		/// The point to be used as the center of the search.
+		/// </param>
+		/// <param name="maxDistance">
+		/// The maximum distance from the center point to search for.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="IList{TEntity}"/> that
+		/// is the result of the search.
+		/// </returns>
+		/// <exception cref="ArgumentException"></exception>
 		public static Task<IList<TEntity>> FindAllByGeoDistanceAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, object>> field, GeoPoint point, double? maxDistance = null)
 			where TEntity : class {
 			ArgumentNullException.ThrowIfNull(repository, nameof(repository));

@@ -26,7 +26,7 @@ namespace Deveel.Data {
 		public static void RegisterEntityCacheOptions_FromConfig() {
 			var services = new ServiceCollection();
 			var config = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string> {
+				.AddInMemoryCollection(new Dictionary<string, string?> {
 					{"EntityCacheOptions:Person:Expiration", "00:15:00"}
 				});
 			services.AddSingleton<IConfiguration>(config.Build());

@@ -24,7 +24,9 @@ namespace Deveel.Data {
 
 		protected virtual int EntitySetCount => 100;
 
-		protected IReadOnlyList<TPerson> People { get; private set; }
+		protected IReadOnlyList<TPerson>? People { get; private set; }
+
+		protected int PeopleCount => People?.Count ?? 0;
 
 		protected IServiceProvider Services => scope.ServiceProvider;
 
@@ -85,7 +87,8 @@ namespace Deveel.Data {
 		}
 
 		protected virtual async Task SeedAsync(IRepository<TPerson> repository) {
-			await repository.AddRangeAsync(People);
+			if (People != null)
+				await repository.AddRangeAsync(People);
 		}
 
 		protected virtual IEnumerable<TPerson> NaturalOrder(IEnumerable<TPerson> source) {
@@ -97,12 +100,12 @@ namespace Deveel.Data {
 		protected abstract Task RemoveRelationshipAsync(TPerson person, TRelationship relationship);
 
 		protected virtual Task<TPerson?> FindPersonAsync(object id) {
-			var entity = People.FirstOrDefault(x => Repository.GetEntityKey(x) == id);
+			var entity = People?.FirstOrDefault(x => Repository.GetEntityKey(x) == id);
 			return Task.FromResult(entity);
 		}
 
 		protected virtual Task<TPerson> RandomPersonAsync(Expression<Func<TPerson, bool>>? predicate = null) {
-			var result = People.Random(predicate?.Compile());
+			var result = People?.Random(predicate?.Compile());
 
 			if (result == null)
 				throw new InvalidOperationException("No person found");
@@ -184,7 +187,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task RemoveByKey_Existing() {
-			var key = Repository.GetEntityKey(People.Random()!);
+			var key = Repository.GetEntityKey(People!.Random()!);
 
 			Assert.NotNull(key);
 
@@ -195,7 +198,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public void RemoveByKeySync_Existing() {
-			var key = Repository.GetEntityKey(People.Random()!);
+			var key = Repository.GetEntityKey(People!.Random()!);
 
 			Assert.NotNull(key);
 
@@ -215,8 +218,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task RemoveRangeOfExisting() {
-			var peopleCount = People.Count;
-			var people = People.Take(10).ToList();
+			var peopleCount = PeopleCount;
+			var people = People!.Take(10).ToList();
 
 			await Repository.RemoveRangeAsync(people);
 
@@ -228,8 +231,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task RemoveRangeWithOneNotExisting() {
-			var peopleCount = People.Count;
-			var people = People.Take(9).ToList();
+			var peopleCount = PeopleCount;
+			var people = People!.Take(9).ToList();
 
 			var entity = GeneratePerson();
 			entity.Id = GeneratePersonId();
@@ -249,7 +252,7 @@ namespace Deveel.Data {
 			var result = await Repository.CountAllAsync();
 
 			Assert.NotEqual(0, result);
-			Assert.Equal(People.Count, result);
+			Assert.Equal(PeopleCount, result);
 		}
 
 		[Fact]
@@ -257,14 +260,14 @@ namespace Deveel.Data {
 			var result = Repository.CountAll();
 
 			Assert.NotEqual(0, result);
-			Assert.Equal(People.Count, result);
+			Assert.Equal(PeopleCount, result);
 		}
 
 		[Fact]
 		public async Task CountFiltered() {
 			var person = await RandomPersonAsync();
 			var firstName = person.FirstName;
-			var peopleCount = People.Count(x => x.FirstName == firstName);
+			var peopleCount = People?.Count(x => x.FirstName == firstName) ?? 0;
 
 			var count = await Repository.CountAsync(p => p.FirstName == firstName);
 
@@ -275,7 +278,7 @@ namespace Deveel.Data {
 		public async Task CountFiltered_Sync() {
 			var person = await RandomPersonAsync();
 			var firstName = person.FirstName;
-			var peopleCount = People.Count(x => x.FirstName == firstName);
+			var peopleCount = People?.Count(x => x.FirstName == firstName) ?? 0;
 
 			var count = Repository.Count(p => p.FirstName == firstName);
 
@@ -366,7 +369,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FindByKey_WithRelationsips() {
-			var person = People.Random(x => x.Relationships?.Any() ?? false);
+			var person = await RandomPersonAsync(x => x.Relationships != null && x.Relationships.Any());
 
 			Assert.NotNull(person);
 
@@ -379,7 +382,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FindFirst() {
-			var ordered = NaturalOrder(People).ToList();
+			var ordered = NaturalOrder(People!).ToList();
 
 			var result = await Repository.FindFirstAsync();
 
@@ -390,7 +393,7 @@ namespace Deveel.Data {
 		[Fact]
 		public async Task FindFirstFiltered_Sync() {
 			var person = await RandomPersonAsync(x => x.FirstName != null);
-			var ordered = NaturalOrder(People.Where(x => x.FirstName == person.FirstName)).ToList();
+			var ordered = NaturalOrder(People!.Where(x => x.FirstName == person.FirstName)).ToList();
 
 			// TODO: make an extension method for this
 			var result = Repository.FindFirst(QueryFilter.Where<TPerson>(x => x.FirstName == person.FirstName));
@@ -407,7 +410,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
-			Assert.Equal(People.Count, result.Count);
+			Assert.Equal(PeopleCount, result.Count);
 		}
 
 		[Fact]
@@ -416,14 +419,14 @@ namespace Deveel.Data {
 
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
-			Assert.Equal(People.Count, result.Count);
+			Assert.Equal(PeopleCount, result.Count);
 		}
 
 		[Fact]
 		public async Task FindAllFiltered() {
 			var person = await RandomPersonAsync();
 			var firstName = person.FirstName;
-			var peopleCount = People.Count(x => x.FirstName == firstName);
+			var peopleCount = People?.Count(x => x.FirstName == firstName) ?? 0;
 
 			var result = await Repository.FindAllAsync(x => x.FirstName == firstName);
 
@@ -443,7 +446,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task GetSimplePage() {
-			var totalItems = People.Count;
+			var totalItems = PeopleCount;
 			var totalPages = (int)Math.Ceiling((double)totalItems / 10);
 
 			var result = await Repository.GetPageAsync(1, 10);
@@ -458,7 +461,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task GetSimplePage_WithParameters() {
-			var totalItems = People.Count;
+			var totalItems = PeopleCount;
 			var totalPages = (int)Math.Ceiling((double)totalItems / 10);
 
 			var result = await Repository.GetPageAsync(1, 10);
@@ -475,7 +478,7 @@ namespace Deveel.Data {
 		public async Task GetFilteredPage() {
 			var person = await RandomPersonAsync();
 			var firstName = person.FirstName;
-			var peopleCount = People.Count(x => x.FirstName == firstName);
+			var peopleCount = People?.Count(x => x.FirstName == firstName) ?? 0;
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
@@ -497,7 +500,7 @@ namespace Deveel.Data {
 			var firstName = person.FirstName;
 			var lastName = person.LastName;
 
-			var peopleCount = People.Count(x => x.FirstName == firstName && x.LastName == lastName);
+			var peopleCount = People?.Count(x => x.FirstName == firstName && x.LastName == lastName) ?? 0;
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
 
@@ -519,10 +522,10 @@ namespace Deveel.Data {
 			var firstName = person.FirstName;
 			var birthDate = person.DateOfBirth!.Value;
 
-			var peopleCount = People
+			var peopleCount = People?
 				.Where(x => x.FirstName == firstName)
 				.Where(x => x.DateOfBirth >= birthDate)
-				.Count();
+				.Count() ?? 0;
 
 			var totalPages = (int)Math.Ceiling((double)peopleCount / 10);
 			var perPage = Math.Min(peopleCount, 10);
@@ -543,7 +546,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task GetDescendingSortedPage() {
-			var sorted = People.Where(x => x.LastName != null).OrderByDescending(x => x.LastName).Skip(0).Take(10).ToList();
+			var sorted = People!.Where(x => x.LastName != null)
+				.OrderByDescending(x => x.LastName).Skip(0).Take(10).ToList();
 
 			var request = new PageQuery<TPerson>(1, 10)
 				.OrderByDescending(x => x.LastName);
@@ -563,7 +567,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task GetSortedPage() {
-			var totalPages = (int)Math.Ceiling((double)People.Count / 10);
+			var totalPages = (int)Math.Ceiling((double)PeopleCount / 10);
 
 			var request = new PageQuery<TPerson>(1, 10)
 				.OrderBy(x => x.FirstName);
@@ -572,7 +576,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
-			Assert.Equal(People.Count, result.TotalItems);
+			Assert.Equal(PeopleCount, result.TotalItems);
 			Assert.NotNull(result.Items);
 			Assert.NotEmpty(result.Items);
 			Assert.Equal(10, result.Items.Count);
@@ -580,7 +584,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public void GetPage_Sync() {
-			var totalPages = (int)Math.Ceiling((double)People.Count / 10);
+			var totalPages = (int)Math.Ceiling((double)PeopleCount / 10);
 
 			var request = new PageQuery<TPerson>(1, 10);
 
@@ -588,7 +592,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(result);	
 			Assert.Equal(totalPages, result.TotalPages);
-			Assert.Equal(People.Count, result.TotalItems);
+			Assert.Equal(PeopleCount, result.TotalItems);
 			Assert.NotNull(result.Items);
 			Assert.NotEmpty(result.Items);
 			Assert.Equal(10, result.Items.Count);
@@ -678,7 +682,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task UpdateExisting_AddNewRelationship() {
-			var person = People.Random(x => x.Relationships == null || !x.Relationships.Any());
+			var person = People!.Random(x => x.Relationships == null || !x.Relationships.Any());
 
 			Assert.NotNull(person);
 
@@ -704,7 +708,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task UpdateExisting_RemoveRelationship() {
-			var person = People.Random(x => x.Relationships?.Any() ?? false);
+			var person = People!.Random(x => x.Relationships?.Any() ?? false);
 
 			Assert.NotNull(person);
 

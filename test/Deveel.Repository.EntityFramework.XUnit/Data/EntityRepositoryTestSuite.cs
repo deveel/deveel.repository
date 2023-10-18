@@ -103,7 +103,7 @@ namespace Deveel.Data {
 		public async Task FindByLocationWithinDistance() {
 			var person = await RandomPersonAsync(x => x.Location != null);
 
-			var found = await PersonRepository.FindAllAsync(x => x.Location.Distance(person.Location) <= 1000);
+			var found = await PersonRepository.FindAllAsync(x => x.Location!.Distance(person.Location) <= 1000);
 			Assert.NotNull(found);
 			Assert.NotEmpty(found);
 			Assert.Contains(found, x => x.Id == person.Id);

@@ -7,6 +7,8 @@ namespace Deveel.Data {
 		public async IAsyncEnumerable<ValidationResult> ValidateAsync(EntityManager<Person> manager, Person person, [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 			if (person.Email != null && !MailAddress.TryCreate(person.Email, out var _))
 				yield return new ValidationResult("The email address is not valid", new[] {nameof(Person.Email)});
+
+			await Task.CompletedTask;
 		}
 	}
 }

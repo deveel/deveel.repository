@@ -15,9 +15,28 @@
 using System;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// An implementation of <see cref="IRepositoryProvider{TEntity}"/>
+	/// that allows to create <see cref="InMemoryRepository{TEntity}"/>
+	/// for a given tenant.
+	/// </summary>
+	/// <typeparam name="TEntity"></typeparam>
 	public class InMemoryRepositoryProvider<TEntity> : IRepositoryProvider<TEntity>, IDisposable
 		where TEntity : class {
+		private readonly Dictionary<string, InMemoryRepository<TEntity>> repositories;
+		private bool disposedValue;
 
+		/// <summary>
+		/// Constructs the provider with the given initial list 
+		/// of entities.
+		/// </summary>
+		/// <param name="list">
+		/// The initial list of entities to use to create the repositories.
+		/// </param>
+		/// <param name="fieldMapper">
+		/// A service to map the fields of the entity to expressions
+		/// that select the fields from the entity.
+		/// </param>
 		public InMemoryRepositoryProvider(IDictionary<string, IList<TEntity>>? list = null, IEntityFieldMapper<TEntity>? fieldMapper = null) {
 			var repos = list?.ToDictionary(x => x.Key, y => CreateRepository(y.Key, y.Value));
 			if (repos == null) {
@@ -29,11 +48,21 @@ namespace Deveel.Data {
 			FieldMapper = fieldMapper;
 		}
 
-		private readonly Dictionary<string, InMemoryRepository<TEntity>> repositories;
-		private bool disposedValue;
-
+		/// <summary>
+		/// Gets the field mapper used to map the fields of the entity
+		/// </summary>
 		protected virtual IEntityFieldMapper<TEntity>? FieldMapper { get; }
 
+		/// <summary>
+		/// Gets a repository for the given tenant.
+		/// </summary>
+		/// <param name="tenantId">
+		/// The identifier of the tenant to get the repository for.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="InMemoryRepository{TEntity}"/>
+		/// for the given tenant.
+		/// </returns>
 		public InMemoryRepository<TEntity> GetRepository(string tenantId) {
 			lock (repositories) {
 				if (!repositories.TryGetValue(tenantId, out var repository)) {
@@ -44,6 +73,19 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <summary>
+		/// Creates a new repository for the given tenant.
+		/// </summary>
+		/// <param name="tenantId">
+		/// The identifier of the tenant to create the repository for.
+		/// </param>
+		/// <param name="entities">
+		/// A list of entities to initialize the repository with.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="InMemoryRepository{TEntity}"/>
+		/// for the given tenant.
+		/// </returns>
 		public virtual InMemoryRepository<TEntity> CreateRepository(string tenantId, IList<TEntity>? entities = null) {
 			return InMemoryRepository<TEntity>.Create(tenantId, entities, FieldMapper);
 		}
@@ -53,6 +95,12 @@ namespace Deveel.Data {
 			return Task.FromResult<IRepository<TEntity>>(repo);
 		}
 
+		/// <summary>
+		/// Disposes the provider and all the repositories created.
+		/// </summary>
+		/// <param name="disposing">
+		/// A flag indicating if the provider is disposing.
+		/// </param>
 		protected virtual void Dispose(bool disposing) {
 			if (!disposedValue) {
 				if (disposing) {
@@ -72,7 +120,8 @@ namespace Deveel.Data {
 			repositories.Clear();
 		}
 
-		void IDisposable.Dispose() {
+		/// <inheritdoc/>
+		public void Dispose() {
 			Dispose(disposing: true);
 			GC.SuppressFinalize(this);
 		}

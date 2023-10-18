@@ -265,8 +265,12 @@ namespace Deveel.Data {
 		/// <param name="services">
 		/// The <see cref="IServiceCollection"/> to add the service to.
 		/// </param>
+		/// <param name="time">
+		/// The instance of <typeparamref name="TTime"/> to register.
+		/// </param>
 		/// <returns>
-		/// Returns the <see cref="IServiceCollection"/> so that additional calls can be chained.
+		/// Returns the <see cref="IServiceCollection"/> so that additional calls
+		/// can be chained.
 		/// </returns>
 		public static IServiceCollection AddSystemTime<TTime>(this IServiceCollection services, TTime time)
 			where TTime : class, ISystemTime {

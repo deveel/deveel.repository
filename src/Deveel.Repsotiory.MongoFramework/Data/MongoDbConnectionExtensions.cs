@@ -17,10 +17,29 @@ using System.Reflection;
 using MongoDB.Driver;
 
 using MongoFramework;
-using MongoFramework.Infrastructure.Diagnostics;
 
 namespace Deveel.Data {
-    public static class MongoDbConnectionExtensions {
+	/// <summary>
+	/// Extends the <see cref="IMongoDbConnection"/> interface with
+	/// helper methods to build a connection for a specific context.
+	/// </summary>
+	public static class MongoDbConnectionExtensions {
+		/// <summary>
+		/// Attempts to get the <see cref="MongoUrl"/> instance
+		/// for the given connection.
+		/// </summary>
+		/// <param name="connection">
+		/// The connection to get the URL from.
+		/// </param>
+		/// <remarks>
+		/// This method uses reflection to get the <see cref="MongoUrl"/>
+		/// instance from a default <c>Url</c> property eventually
+		/// defined in the connection type.
+		/// </remarks>
+		/// <returns>
+		/// Returns the <see cref="MongoUrl"/> instance if available,
+		/// otherwise <c>null</c>.
+		/// </returns>
 		public static MongoUrl? GetUrl(this IMongoDbConnection connection) {
 			var connectionType = connection.GetType();
 			var urlProperty = connectionType.GetProperty("Url", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -28,37 +47,32 @@ namespace Deveel.Data {
 			return urlProperty == null ? null : (MongoUrl?)urlProperty.GetValue(connection);
 		}
 
+		/// <summary>
+		/// Constructs a new <see cref="IMongoDbConnection{TContext}"/> instance
+		/// for a given context from the given connection.
+		/// </summary>
+		/// <typeparam name="TContext">
+		/// The type of the context to build the connection for.
+		/// </typeparam>
+		/// <param name="connection">
+		/// The connection to build the context for.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="IMongoDbConnection{TContext}"/>
+		/// that is wrapping the given connection for the specified
+		/// type of context.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown when the given <paramref name="connection"/> is <c>null</c>.
+		/// </exception>
 		public static IMongoDbConnection<TContext> ForContext<TContext>(this IMongoDbConnection connection)
             where TContext : class, IMongoDbContext {
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
+			ArgumentNullException.ThrowIfNull(connection, nameof(connection));
 
             if (connection is IMongoDbConnection<TContext> mongoConnection)
                 return mongoConnection;
 
             return new MongoDbConnection<TContext>(connection);
         }
-
-        //private class MongoDbConnectionWrapper<TContext> : IMongoDbConnection<TContext> where TContext : class, IMongoDbContext {
-        //    private readonly IMongoDbConnection _connection;
-
-        //    public MongoDbConnectionWrapper(IMongoDbConnection connection) {
-        //        _connection = connection;
-        //    }
-
-        //    public IMongoClient Client => _connection.Client;
-
-        //    public IDiagnosticListener DiagnosticListener {
-        //        get => _connection.DiagnosticListener;
-        //        set => _connection.DiagnosticListener = value;
-        //    }
-
-        //    public void Dispose() {
-        //        _connection?.Dispose();
-        //    }
-
-        //    public IMongoDatabase GetDatabase() {
-        //        return _connection.GetDatabase();
-        //    }
-        //}
     }
 }

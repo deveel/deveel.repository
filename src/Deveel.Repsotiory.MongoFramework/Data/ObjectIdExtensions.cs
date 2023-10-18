@@ -17,7 +17,21 @@ using System;
 using MongoDB.Bson;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// Extends the <see cref="ObjectId"/> type to provide
+	/// heler methods to convert to and from string.
+	/// </summary>
 	public static class ObjectIdExtensions {
+		/// <summary>
+		/// Converts the given <see cref="ObjectId"/> to a string.
+		/// </summary>
+		/// <param name="objectId">
+		/// The object id to convert.
+		/// </param>
+		/// <returns>
+		/// Returns the string representation of the object id,
+		/// or an empty string if the given object id is <see cref="ObjectId.Empty"/>.
+		/// </returns>
 		public static string ToEntityId(this ObjectId objectId) 
 			=> objectId == ObjectId.Empty ? string.Empty : objectId.ToString();
 	}

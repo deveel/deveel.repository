@@ -20,7 +20,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.GeoJsonObjectModel;
 
 using MongoFramework;
 using MongoFramework.Infrastructure;
@@ -71,9 +70,6 @@ namespace Deveel.Data {
 		/// <param name="context">
 		/// The context that is used to handle the connection to the MongoDB server.
 		/// </param>
-		/// <param name="systemTime">
-		/// A service that provides the current system time.
-		/// </param>
 		/// <param name="logger">
 		/// A logger instance that is used to log messages from the repository.
 		/// </param>
@@ -91,11 +87,6 @@ namespace Deveel.Data {
 		/// repository operations.
 		/// </summary>
 		protected IMongoDbSet<TEntity> DbSet => GetEntitySet();
-
-		/// <summary>
-		/// Gets a service that provides the current system time.
-		/// </summary>
-		protected ISystemTime SystemTime { get; }
 
 		/// <summary>
 		/// Gets the <see cref="ILogger"/> instance that is used to log messages
@@ -306,6 +297,20 @@ namespace Deveel.Data {
 			await CreateIndicesAsync(cancellationToken);
 		}
 
+		/// <summary>
+		/// Creates the collection that is used to store the entities 
+		/// of this repository in the underlying database.
+		/// </summary>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a task that, when completed, has created the collection.
+		/// </returns>
+		/// <exception cref="RepositoryException">
+		/// Thrown when an error occurs while creating the collection in the
+		/// database or if the collection already exists.
+		/// </exception>
 		public async Task CreateCollectionAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
@@ -319,6 +324,18 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <summary>
+		/// Creates all the indices that are defined for the entity
+		/// that is managed by this repository.
+		/// </summary>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a task that, when completed, has created all the indices
+		/// of the repository.
+		/// </returns>
+		/// <exception cref="RepositoryException"></exception>
 		public async Task CreateIndicesAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
@@ -363,6 +380,20 @@ namespace Deveel.Data {
 			await DropCollectionAsync(cancellationToken);
 		}
 
+		/// <summary>
+		/// Drops all the indices that are defined for the entity
+		/// that is managed by this repository.
+		/// </summary>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a task that, when completed, has dropped all the indices
+		/// from the repository.
+		/// </returns>
+		/// <exception cref="RepositoryException">
+		/// Thrown when an error occurs while dropping the indices.
+		/// </exception>
 		public async Task DropIndicesAsync(CancellationToken cancellationToken = default) {
 			try {
 				await Collection.Indexes.DropAllAsync(cancellationToken);
@@ -372,6 +403,17 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <summary>
+		/// Drops the collection that is used to store the entities
+		/// that are managed by this repository in the underlying database.
+		/// </summary>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a task that, when completed, has dropped the collection.
+		/// </returns>
+		/// <exception cref="RepositoryException"></exception>
 		public async Task DropCollectionAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
@@ -384,8 +426,6 @@ namespace Deveel.Data {
 		}
 
 		#endregion
-
-		#region Add
 
 		/// <summary>
 		/// A callback method that is invoked before the entity is created.
@@ -461,10 +501,17 @@ namespace Deveel.Data {
 			}
 		}
 
-		#endregion
-
 		#region Update
 
+		/// <summary>
+		/// A callback method that is invoked before the entity is updated.
+		/// </summary>
+		/// <param name="entity">
+		/// The entity that is about to be updated.
+		/// </param>
+		/// <returns>
+		/// Returns the entity that is about to be updated.
+		/// </returns>
 		protected virtual TEntity OnEntityUpdate(TEntity entity) {
 			return entity;
 		}
@@ -559,6 +606,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public async Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
@@ -576,7 +624,7 @@ namespace Deveel.Data {
 			}
 		}
 
-
+		/// <inheritdoc/>
 		public async Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
@@ -614,6 +662,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public async Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
 				var query = DbSet.AsQueryable();
@@ -627,6 +676,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public async Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
 				var query = DbSet.AsQueryable();
@@ -641,6 +691,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
 			try {
 				var entitySet = DbSet.AsQueryable();
@@ -681,6 +732,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
 				var query = DbSet.AsQueryable();
@@ -695,6 +747,7 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public async Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
 				var query = DbSet.AsQueryable();
@@ -720,9 +773,21 @@ namespace Deveel.Data {
 			disposed = true;
 		}
 
+		/// <summary>
+		/// Disposes of the unmanaged resources used by the repository.
+		/// </summary>
+		/// <param name="disposing">
+		/// Indicates if the repository is being disposed of.
+		/// </param>
 		protected virtual void Dispose(bool disposing) {
 		}
 
+		/// <summary>
+		/// Performs the async cleanup of the repository.
+		/// </summary>
+		/// <returns>
+		/// Returns a task that, when completed, has performed the cleanup.
+		/// </returns>
 		protected virtual ValueTask DisposeAsyncCore() {
 			return ValueTask.CompletedTask;
 		}

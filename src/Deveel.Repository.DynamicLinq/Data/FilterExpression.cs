@@ -137,63 +137,103 @@ namespace Deveel.Data {
 			return func;
 		}
 
+		/// <summary>
+		/// Compiles the given expression string into a function
+		/// that can be executed to filter a collection of objects.
+		/// </summary>
+		/// <param name="cache">
+		/// A cache object that can be used to avoid recompilation of the same
+		/// expression string.
+		/// </param>
+		/// <param name="paramType">
+		/// The type of the parameter to be used in the expression.
+		/// </param>
+		/// <param name="paramName">
+		/// The name of the parameter to be used in the expression.
+		/// </param>
+		/// <param name="expression">
+		/// The expression string to be compiled.
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="Delegate"/> that can be used to filter a collection
+		/// of objects.
+		/// </returns>
+		/// <seealso cref="Compile(IFilterCache?, Type[], string[], string)"/>
 		public static Delegate Compile(IFilterCache? cache, Type paramType, string paramName, string expression)
 			=> Compile(cache, new Type[] { paramType }, new string[] { paramName }, expression);
 
+		/// <summary>
+		/// Compiles the given expression string into a function
+		/// that can be executed to filter a collection of objects.
+		/// </summary>
+		/// <param name="paramType">
+		/// The type of the parameter to be used in the expression.
+		/// </param>
+		/// <param name="paramName">
+		/// The name of the parameter to be used in the expression.
+		/// </param>
+		/// <param name="expression">
+		/// The expression string to be compiled.
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="Delegate"/> that can be used to filter a collection
+		/// of objects.
+		/// </returns>
+		/// <seealso cref="Compile(IFilterCache?, Type[], string[], string)"/>
+		/// <seealso cref="Compile(IFilterCache?, Type, string, string)"/>
 		public static Delegate Compile(Type paramType, string paramName, string expression)
 			=> Compile(null, paramType, paramName, expression);
 
+		/// <summary>
+		/// Compiles the given expression string into a function
+		/// that can be executed to filter a collection of objects.
+		/// </summary>
+		/// <typeparam name="T">
+		/// The type of the parameter to be used in the expression.
+		/// </typeparam>
+		/// <param name="cache">
+		/// A cache object that can be used to avoid recompilation of the same
+		/// expression string.
+		/// </param>
+		/// <param name="paramName">
+		/// The name of the parameter to be used in the expression.
+		/// </param>
+		/// <param name="expression">
+		/// The expression string to be compiled.
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="Delegate"/> that can be used to filter a collection
+		/// of objects.
+		/// </returns>
+		/// <seealso cref="Compile(IFilterCache?, Type, string, string)"/>
 		public static Func<T, bool> Compile<T>(IFilterCache? cache, string paramName, string expression)
 			=> (Func<T, bool>)Compile(cache, typeof(T), paramName, expression);
 
+		/// <summary>
+		/// Compiles the given expression string into a function
+		/// that can be executed to filter a collection of objects.
+		/// </summary>
+		/// <typeparam name="T">
+		/// The type of the parameter to be used in the expression.
+		/// </typeparam>
+		/// <param name="cache">
+		/// A cache object that can be used to avoid recompilation of the same
+		/// expression string.
+		/// </param>
+		/// <param name="paramName">
+		/// The name of the parameter to be used in the expression.
+		/// </param>
+		/// <param name="expression">
+		/// The expression string to be compiled.
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="Delegate"/> that can be used to filter a collection
+		/// of objects.
+		/// </returns>
+		/// <seealso cref="Compile(IFilterCache?, Type, string, string)"/>
 		public static Func<T, bool> Compile<T>(string paramName, string expression)
 			=> Compile<T>(null, paramName, expression);
 
 		#endregion
-
-		//public static bool IsValid(Type paramType, string paramName, string expression)
-		//	=> IsValid(new Type[] { paramType }, new string[] { paramName }, expression);
-
-		//public static bool IsValid(Type[] paramTypes, string[] paramNames, string expression) {
-		//	if (paramTypes.Length != paramNames.Length)
-		//		throw new ArgumentException("The types and the names arrays are not the same size");
-
-		//	var parameters = new ParameterExpression[paramTypes.Length];
-		//	for (int i = 0; i < paramTypes.Length; i++) {
-		//		var paramType = paramTypes[i];
-		//		var paramName = paramNames[i];
-
-		//		parameters[i] = Expression.Parameter(paramType, paramName);
-		//	}
-
-		//	try {
-		//		var exp = DynamicExpressionParser.ParseLambda(ParsingConfig.Default, parameters, typeof(bool), expression);
-
-		//		if (exp.ReturnType != typeof(bool))
-		//			return false;
-
-		//		var func = exp.Compile();
-
-		//		return func != null;
-		//	} catch (Exception) {
-		//		// TODO: try to interpret the error
-		//		return false;
-		//	}
-		//}
-
-		//public static bool Evaluate(Type paramType, string paramName, string expression, object obj) {
-		//	if (paramType is null)
-		//		throw new ArgumentNullException(nameof(paramType));
-		//	if (obj is null)
-		//		throw new ArgumentNullException(nameof(obj));
-
-		//	if (!paramType.IsInstanceOfType(obj))
-		//		throw new ArgumentException($"The object is not of type {paramType}", nameof(obj));
-
-		//	return (bool)Compile(paramType, paramName, expression).DynamicInvoke(obj);
-		//}
-
-		//public static bool Evaluate<T>(string paramName, string expression, T obj)
-		//	=> Evaluate(typeof(T), paramName, expression, obj);
 	}
 }

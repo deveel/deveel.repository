@@ -117,7 +117,10 @@ namespace Deveel.Data.Caching {
 			return async () => {
 				var entity = await valueFactory();
 				if (entity == null)
+#pragma warning disable CS8603 // Possible null reference return.
+					// EasyCaching does not support nullable explicitly
 					return null;
+#pragma warning restore CS8603 // Possible null reference return.
 
 				return ConvertToCached(entity);
 			};

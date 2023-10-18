@@ -59,6 +59,22 @@ namespace Deveel {
 			return services;
 		}
 
+		/// <summary>
+		/// Registers a <see cref="IOperationErrorFactory"/> service in the
+		/// collection of services.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity for which the factory is registered.
+		/// </typeparam>
+		/// <typeparam name="TFactory">
+		/// The type of the operation error factory to register.
+		/// </typeparam>
+		/// <param name="services">
+		/// The collection of services to register the factory.
+		/// </param>
+		/// <returns>
+		/// Returns the given collection of services for chaining calls.
+		/// </returns>
 		public static IServiceCollection AddOperationErrorFactory<TEntity, TFactory>(this IServiceCollection services)
 			where TEntity : class
 			where TFactory : class, IOperationErrorFactory {

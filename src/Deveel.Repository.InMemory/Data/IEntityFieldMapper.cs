@@ -16,7 +16,22 @@ using System;
 using System.Linq.Expressions;
 
 namespace Deveel.Data {
+	/// <summary>
+	/// A service that maps a field by name to an expression that
+	/// selects the field from an entity.
+	/// </summary>
+	/// <typeparam name="TEntity">
+	/// The type of entity to map the field for.
+	/// </typeparam>
 	public interface IEntityFieldMapper<TEntity> where TEntity : class {
+		/// <summary>
+		/// Maps the given property name to an expression that
+		/// selects the property from the entity.
+		/// </summary>
+		/// <param name="propertyName"></param>
+		/// <returns>
+		/// Returns an expression that selects the property from the entity.
+		/// </returns>
 		Expression<Func<TEntity, object>> Map(string propertyName);
 	}
 }
