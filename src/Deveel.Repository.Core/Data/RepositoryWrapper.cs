@@ -191,14 +191,14 @@ namespace Deveel.Data {
 			return Task.FromResult(true);
 		}
 
-		public Task<TEntity?> FindAsync(Query query, CancellationToken cancellationToken = default) {
+		public Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
 			TEntity? result;
 
 			if (entities is IQueryable<TEntity> queryable) {
 				result = query.Apply(queryable).FirstOrDefault();
 			} else {
-				if (query.HasFilter) {
-					result = entities.Where(query.Filter.AsLambda<TEntity>().Compile()).FirstOrDefault();
+				if (query.HasFilter()) {
+					result = entities.Where(query.Filter!.AsLambda<TEntity>().Compile()).FirstOrDefault();
 				} else {
 					result = entities.FirstOrDefault();
 				}
@@ -207,14 +207,14 @@ namespace Deveel.Data {
 			return Task.FromResult(result);
 		}
 
-		public Task<IList<TEntity>> FindAllAsync(Query query, CancellationToken cancellationToken = default) {
+		public Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			IEnumerable<TEntity> result;
 
 			if (entities is IQueryable<TEntity> queryable) {
 				result = query.Apply(queryable);
 			} else {
-				if (query.HasFilter) {
-					result = entities.Where(query.Filter.AsLambda<TEntity>().Compile());
+				if (query.HasFilter()) {
+					result = entities.Where(query.Filter!.AsLambda<TEntity>().Compile());
 				} else {
 					result = entities;
 				}

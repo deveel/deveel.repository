@@ -22,8 +22,10 @@
 
 		[Fact]
 		public static void QueryByWhereAndWhere() {
-			var query = Query.Where<Person>(p => p.FirstName == "John")
-				.And<Person>(p => p.LastName == "Doe");
+			var query = new QueryBuilder<Person>()
+				.Where(p => p.FirstName == "John")
+				.Where(p => p.LastName == "Doe")
+				.Query;
 
 			Assert.NotNull(query.Filter);
 			Assert.Null(query.Sort);
@@ -39,8 +41,10 @@
 
 		[Fact]
 		public static void QueryByWhereAndSort() {
-			var query = Query.Where<Person>(p => p.FirstName == "John")
-				.OrderBy<Person>(p => p.LastName);
+			var query = new QueryBuilder<Person>()
+				.Where(p => p.FirstName == "John")
+				.OrderBy(p => p.LastName)
+				.Query;
 
 			Assert.NotNull(query.Filter);
 			Assert.NotNull(query.Sort);
@@ -51,8 +55,10 @@
 
 		[Fact]
 		public static void QueryByWhereAndSortByString() {
-			var query = Query.Where<Person>(p => p.FirstName == "John")
-				.OrderBy("LastName");
+			var query = new QueryBuilder<Person>()
+				.Where(p => p.FirstName == "John")
+				.OrderBy("LastName")
+				.Query;
 
 			Assert.NotNull(query.Filter);
 			Assert.NotNull(query.Sort);
@@ -63,8 +69,10 @@
 
 		[Fact]
 		public static void QueryByWhereAndSortByStringDescending() {
-			var query = Query.Where<Person>(p => p.FirstName == "John")
-				.OrderByDescending("LastName");
+			var query = new QueryBuilder<Person>()
+				.Where(p => p.FirstName == "John")
+				.OrderByDescending("LastName")
+				.Query;
 
 			Assert.NotNull(query.Filter);
 			Assert.NotNull(query.Sort);
@@ -75,8 +83,10 @@
 
 		[Fact]
 		public static void QueryByWhereAndSortDescending() {
-			var query = Query.Where<Person>(p => p.FirstName == "John")
-				.OrderByDescending<Person>(p => p.LastName);
+			var query = new QueryBuilder<Person>()
+				.Where(p => p.FirstName == "John")
+				.OrderByDescending(p => p.LastName)
+				.Query;
 
 			Assert.NotNull(query.Filter);
 			Assert.NotNull(query.Sort);
@@ -104,8 +114,9 @@
 
 		[Fact]
 		public static void ApplyQueryByWhereAndSort() {
-			var query = Query.Where<Person>(p => p.FirstName == "John")
-				.OrderBy<Person>(p => p.LastName);
+			var query = new QueryBuilder<Person>()
+				.Where(p => p.FirstName == "John")
+				.OrderBy(p => p.LastName);
 
 			var people = new List<Person> {
 				new Person{ FirstName = "John", LastName = "Doe" },

@@ -9,7 +9,10 @@ namespace Deveel.Data {
 			Assert.Equal(1, query.Page);
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
-			Assert.Null(query.Query);
+			Assert.NotNull(query.Query);
+			Assert.Equal(Query.Empty, query.Query);
+			Assert.NotNull(query.Query.Filter);
+			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
 		}
 
 		[Fact]
@@ -22,10 +25,10 @@ namespace Deveel.Data {
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
 			Assert.NotNull(query.Query);
-			Assert.NotNull(query.Query.Value.Filter);
-			Assert.Equal(QueryFilter.Empty, query.Query.Value.Filter);
-			Assert.True(query.Query.Value.Filter.IsEmpty());
-			Assert.Null(query.Query.Value.Sort);
+			Assert.NotNull(query.Query.Filter);
+			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
+			Assert.True(query.Query.Filter.IsEmpty());
+			Assert.Null(query.Query.Sort);
 		}
 
 		[Fact]
@@ -37,14 +40,14 @@ namespace Deveel.Data {
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
 			Assert.NotNull(query.Query);
-			Assert.True(query.Query.Value.HasFilter);
-			Assert.NotNull(query.Query.Value.Filter);
-			Assert.False(query.Query.Value.Filter.IsEmpty());
+			Assert.True(query.Query.HasFilter());
+			Assert.NotNull(query.Query.Filter);
+			Assert.False(query.Query.Filter.IsEmpty());
 
-			var expr = Assert.IsType<ExpressionQueryFilter<Person>>(query.Query.Value.Filter);
+			var expr = Assert.IsType<ExpressionQueryFilter<Person>>(query.Query.Filter);
 			Assert.Equal("x => (x.FirstName == \"John\")", expr.Expression.ToString());
 
-			Assert.Null(query.Query.Value.Sort);
+			Assert.Null(query.Query.Sort);
 		}
 
 		[Fact]
@@ -57,10 +60,10 @@ namespace Deveel.Data {
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
 			Assert.NotNull(query.Query);
-			Assert.NotNull(query.Query.Value.Filter);
-			Assert.False(query.Query.Value.Filter.IsEmpty());
+			Assert.NotNull(query.Query.Filter);
+			Assert.False(query.Query.Filter.IsEmpty());
 
-			var filter = Assert.IsType<CombinedQueryFilter>(query.Query.Value.Filter);
+			var filter = Assert.IsType<CombinedQueryFilter>(query.Query.Filter);
 			Assert.Equal(2, filter.Count());
 
 			var expr1 = Assert.IsType<ExpressionQueryFilter<Person>>(filter.ElementAt(0));
@@ -79,12 +82,12 @@ namespace Deveel.Data {
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
 			Assert.NotNull(query.Query);
-			Assert.NotNull(query.Query.Value.Filter);
-			Assert.Equal(QueryFilter.Empty, query.Query.Value.Filter);
-			Assert.False(query.Query.Value.HasFilter);
-			Assert.NotNull(query.Query.Value.Sort);
+			Assert.NotNull(query.Query.Filter);
+			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
+			Assert.False(query.Query.HasFilter());
+			Assert.NotNull(query.Query.Sort);
 
-			var expSort = Assert.IsType<ExpressionSort<Person>>(query.Query.Value.Sort);
+			var expSort = Assert.IsType<ExpressionSort<Person>>(query.Query.Sort);
 			Assert.Equal("x => x.FirstName", expSort.Field.ToString());
 		}
 
@@ -98,12 +101,12 @@ namespace Deveel.Data {
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
 			Assert.NotNull(query.Query);
-			Assert.False(query.Query.Value.HasFilter);
-			Assert.NotNull(query.Query.Value.Filter);
-			Assert.Equal(QueryFilter.Empty, query.Query.Value.Filter);
-			Assert.NotNull(query.Query.Value.Sort);
+			Assert.False(query.Query.HasFilter());
+			Assert.NotNull(query.Query.Filter);
+			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
+			Assert.NotNull(query.Query.Sort);
 
-			var combinedSort = Assert.IsType<CombinedSort>(query.Query.Value.Sort);
+			var combinedSort = Assert.IsType<CombinedSort>(query.Query.Sort);
 
 			Assert.Equal(2, combinedSort.Count());
 
@@ -125,12 +128,12 @@ namespace Deveel.Data {
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
 			Assert.NotNull(query.Query);
-			Assert.NotNull(query.Query.Value.Filter);
-			Assert.Equal(QueryFilter.Empty, query.Query.Value.Filter);
-			Assert.False(query.Query.Value.HasFilter);
-			Assert.NotNull(query.Query.Value.Sort);
+			Assert.NotNull(query.Query.Filter);
+			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
+			Assert.False(query.Query.HasFilter());
+			Assert.NotNull(query.Query.Sort);
 
-			var fieldSort = Assert.IsType<FieldSort>(query.Query.Value.Sort);
+			var fieldSort = Assert.IsType<FieldSort>(query.Query.Sort);
 
 			Assert.Equal("FirstName", fieldSort.FieldName);
 			Assert.True(fieldSort.IsAscending());

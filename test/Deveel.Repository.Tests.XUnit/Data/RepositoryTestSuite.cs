@@ -329,8 +329,10 @@ namespace Deveel.Data {
 
 			Assert.NotNull(expected);
 
-			var query = Query.Where<TPerson>(x => x.FirstName == firstName)
-				.OrderBy<Person>(x => x.FirstName);
+			var query = new QueryBuilder<TPerson>()
+				.Where(x => x.FirstName == firstName)
+				.OrderBy(x => x.FirstName)
+				.Query;
 
 			var result = await Repository.FindFirstAsync(query);
 
@@ -478,8 +480,9 @@ namespace Deveel.Data {
 
 			Assert.NotNull(expected);
 
-			var query = Query.Where<TPerson>(x => x.FirstName == firstName)
-				.OrderBy<Person>(x => x.FirstName);
+			var query = new QueryBuilder<TPerson>()
+				.Where(x => x.FirstName == firstName)
+				.OrderBy(x => x.FirstName);
 
 			var result = await Repository.FindAllAsync(query);
 			Assert.NotNull(result);

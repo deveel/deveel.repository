@@ -159,34 +159,11 @@
             </param>
             <returns></returns>
         </member>
-        <member name="M:Deveel.Data.EntityRepository`1.FindAsync(Deveel.Data.Query,System.Threading.CancellationToken)">
-            <summary>
-            Finds the first entity in the repository that matches the given filter.
-            </summary>
-            <param name="query">
-            The expression that defines the filter to apply to the entities.
-            </param>
-            <param name="cancellationToken">
-            A token used to cancel the operation.
-            </param>
-            <returns>
-            Returns the first entity that matches the given filter, or <c>null</c>
-            if no entity is found.
-            </returns>
+        <member name="M:Deveel.Data.EntityRepository`1.FindAsync(Deveel.Data.IQuery,System.Threading.CancellationToken)">
+            <inheritdoc/>
         </member>
-        <member name="M:Deveel.Data.EntityRepository`1.FindAllAsync(Deveel.Data.Query,System.Threading.CancellationToken)">
-            <summary>
-            Finds all the entities in the repository that match the given filter.
-            </summary>
-            <param name="query">
-            The expression that defines the filter to apply to the entities.
-            </param>
-            <param name="cancellationToken">
-            A token used to cancel the operation.
-            </param>
-            <returns>
-            Returns a list of entities that match the given filter.
-            </returns>
+        <member name="M:Deveel.Data.EntityRepository`1.FindAllAsync(Deveel.Data.IQuery,System.Threading.CancellationToken)">
+            <inheritdoc/>
         </member>
         <member name="M:Deveel.Data.EntityRepository`1.AsQueryable">
             <inheritdoc/>

@@ -663,7 +663,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<TEntity?> FindAsync(Query query, CancellationToken cancellationToken = default) {
+		public async Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
 				var entities = query.Apply(DbSet.AsQueryable());
 				return await entities.FirstOrDefaultAsync(cancellationToken);
@@ -673,7 +673,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<IList<TEntity>> FindAllAsync(Query query, CancellationToken cancellationToken = default) {
+		public async Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
 				var entities = query.Apply(DbSet.AsQueryable());
 				return await entities.ToListAsync(cancellationToken);

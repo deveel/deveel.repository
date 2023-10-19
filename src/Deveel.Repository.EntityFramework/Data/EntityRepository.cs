@@ -398,20 +398,8 @@ namespace Deveel.Data {
 			}
 		}
 
-		/// <summary>
-		/// Finds the first entity in the repository that matches the given filter.
-		/// </summary>
-		/// <param name="query">
-		/// The expression that defines the filter to apply to the entities.
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation.
-		/// </param>
-		/// <returns>
-		/// Returns the first entity that matches the given filter, or <c>null</c>
-		/// if no entity is found.
-		/// </returns>
-        public virtual async Task<TEntity?> FindAsync(Query query, CancellationToken cancellationToken = default) {
+		/// <inheritdoc/>
+        public virtual async Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
 				var result = query.Apply(Entities.AsQueryable());
 
@@ -422,19 +410,8 @@ namespace Deveel.Data {
 			}
         }
 
-		/// <summary>
-		/// Finds all the entities in the repository that match the given filter.
-		/// </summary>
-		/// <param name="query">
-		/// The expression that defines the filter to apply to the entities.
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation.
-		/// </param>
-		/// <returns>
-		/// Returns a list of entities that match the given filter.
-		/// </returns>
-		public virtual async Task<IList<TEntity>> FindAllAsync(Query query, CancellationToken cancellationToken = default) {
+		/// <inheritdoc/>
+		public virtual async Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
 				var result = query.Apply(Entities.AsQueryable());
 				return await result.ToListAsync(cancellationToken);

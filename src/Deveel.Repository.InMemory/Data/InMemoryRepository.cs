@@ -297,7 +297,7 @@ namespace Deveel.Data {
 
 
 		/// <inheritdoc/>
-		public Task<IList<TEntity>> FindAllAsync(Query query, CancellationToken cancellationToken = default) {
+		public Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
@@ -311,7 +311,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<TEntity?> FindAsync(Query query, CancellationToken cancellationToken = default) {
+		public Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {

@@ -635,7 +635,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying.
 		/// </exception>
-		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, Query query, CancellationToken cancellationToken = default)
+		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, IQuery query, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
 				return repository.RequireFilterable().FindAsync(query, cancellationToken);
@@ -668,7 +668,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.FindFirstAsync(Query.Where(filter), cancellationToken);
+			=> repository.FindFirstAsync(new Query(filter), cancellationToken);
 
 		/// <summary>
 		/// Finds the first entity in the repository that matches
@@ -696,7 +696,7 @@ namespace Deveel.Data {
 		/// </exception>
         public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
-            => repository.FindFirstAsync(Query.Where(new ExpressionQueryFilter<TEntity>(filter)), cancellationToken);
+            => repository.FindFirstAsync(Query.Where(filter), cancellationToken);
 
 		/// <summary>
 		/// Finds the first entity in the repository, naturally ordered.
@@ -742,7 +742,7 @@ namespace Deveel.Data {
 		/// </exception>
 		public static TEntity? FindFirst<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
             where TEntity : class
-            => repository.RequireFilterable().FindAsync(Query.Where(filter)).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.FindFirstAsync(new Query(filter)).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		/// <summary>
 		/// Finds the first entity in the repository, naturally ordered.
@@ -793,7 +793,7 @@ namespace Deveel.Data {
 		/// Thrown when the repository does not support querying 
 		/// or filtering.
 		/// </exception>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, Query query, CancellationToken cancellationToken = default)
+		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, IQuery query, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
 				return repository.RequireFilterable().FindAllAsync(query, cancellationToken);
@@ -825,7 +825,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.FindAllAsync(Query.Where(filter), cancellationToken);
+			=> repository.FindAllAsync(new Query(filter), cancellationToken);
 
 		/// <summary>
 		/// Finds all the entities in the repository that match
@@ -849,7 +849,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
-            => repository.FindAllAsync(Query.Where(new ExpressionQueryFilter<TEntity>(filter)), cancellationToken);
+            => repository.FindAllAsync(Query.Where(filter), cancellationToken);
 
 		/// <summary>
 		/// Finds all the entities in the repository, naturally ordered.

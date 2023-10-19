@@ -403,7 +403,7 @@
             Throw if the <paramref name="filter"/> is not supported by the repository
             </exception>
         </member>
-        <member name="M:Deveel.Data.IFilterableRepository`1.FindAsync(Deveel.Data.Query,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IFilterableRepository`1.FindAsync(Deveel.Data.IQuery,System.Threading.CancellationToken)">
             <summary>
             Finds the first item in the repository that matches the given query
             </summary>
@@ -426,7 +426,7 @@
             that is not supported by the repository
             </exception>
         </member>
-        <member name="M:Deveel.Data.IFilterableRepository`1.FindAllAsync(Deveel.Data.Query,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.IFilterableRepository`1.FindAllAsync(Deveel.Data.IQuery,System.Threading.CancellationToken)">
             <summary>
             Finds all the items in the repository that match the given filtering condition
             </summary>
@@ -498,6 +498,24 @@
             implementation of the repository
             </exception>
             <seealso cref="T:Deveel.Data.PageResult`1"/>
+        </member>
+        <member name="T:Deveel.Data.IQuery">
+            <summary>
+            Defines the contract for a query that can 
+            be executed against a repository.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.IQuery.Filter">
+            <summary>
+            Gets the filter that is applied to the query
+            to select the entities.
+            </summary>
+        </member>
+        <member name="P:Deveel.Data.IQuery.Sort">
+            <summary>
+            Gets the sort that is applied to the query
+            to order the entities.
+            </summary>
         </member>
         <member name="T:Deveel.Data.IQueryableFilter`1">
             <summary>
@@ -1122,11 +1140,6 @@
             Gets the filter to apply to the query.
             </summary>
         </member>
-        <member name="P:Deveel.Data.Query.HasFilter">
-            <summary>
-            Gets a value indicating if the query has a filter.
-            </summary>
-        </member>
         <member name="P:Deveel.Data.Query.Sort">
             <summary>
             Gets the sort to apply to the results
@@ -1139,131 +1152,6 @@
             no filter and no sort.
             </summary>
         </member>
-        <member name="M:Deveel.Data.Query.Apply``1(System.Linq.IQueryable{``0})">
-            <summary>
-            Applies the query to the given <see cref="T:System.Linq.IQueryable`1"/>
-            to filter and sort the results.
-            </summary>
-            <typeparam name="TEntity">
-            The type of entity to apply the query to.
-            </typeparam>
-            <param name="queryable">
-            The queryable to apply the query to.
-            </param>
-            <returns>
-            Returns the <see cref="T:System.Linq.IQueryable`1"/> that was
-            filtered and sorted.
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.Query.And(Deveel.Data.IQueryFilter)">
-            <summary>
-            Combines the current filter with the given one,
-            using the logical AND operator.
-            </summary>
-            <param name="filter">
-            The filter to combine with the current one.
-            </param>
-            <returns>
-            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
-            the current filter with the given one.
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.Query.And``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
-            <summary>
-            Combines the current filter with the given one,
-            using the logical AND operator.
-            </summary>
-            <param name="filter">
-            The filter to combine with the current one.
-            </param>
-            <returns>
-            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
-            the current filter with the given one.
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.Query.OrderBy(Deveel.Data.ISort)">
-            <summary>
-            Configures the query to sort by the
-            given rule.
-            </summary>
-            <param name="sort">
-            The sort rule to apply to the query.
-            </param>
-            <returns>
-            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
-            the current sort rule with the given one.
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.Query.OrderBy``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}},Deveel.Data.SortDirection)">
-            <summary>
-            Configures the query to sort by the field
-            obtained by the given expression.
-            </summary>
-            <typeparam name="TEntity">
-            The type of entity that is used to select the
-            field to sort by.
-            </typeparam>
-            <param name="field">
-            The expression that selects the field to sort by.
-            </param>
-            <param name="direction">
-            The direction of the sort.
-            </param>
-            <returns>
-            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
-            the current sort rule with the one obtained by the
-            selection of the given field.
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.Query.OrderBy(System.String,Deveel.Data.SortDirection)">
-            <summary>
-            Configures the query to sort by the field
-            identified by the given name.
-            </summary>
-            <param name="field">
-            The name of the field to sort by.
-            </param>
-            <param name="direction">
-            The direction of the sort.
-            </param>
-            <returns>
-            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
-            the current sort rule with the one obtained by the
-            selection of the given field.
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.Query.OrderByDescending``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}})">
-            <summary>
-            Configures the query to sort in a discending order 
-            by the field obtained by the given expression.
-            </summary>
-            <typeparam name="TEntity">
-            The type of entity that is used to select the
-            field to sort by.
-            </typeparam>
-            <param name="field">
-            The expression that selects the field to sort by.
-            </param>
-            <returns>
-            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
-            the current sort rule with the one obtained by the
-            selection of the given field.
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.Query.OrderByDescending(System.String)">
-            <summary>
-            Configures the query to sort in a discending order
-            by the field identified by the given name.
-            </summary>
-            <param name="field">
-            The name of the field to sort by.
-            </param>
-            <returns>
-            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
-            the current sort rule with the one created
-            for the given field.
-            </returns>
-        </member>
         <member name="M:Deveel.Data.Query.Where``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
             <summary>
             Creates a new query with the given filter.
@@ -1271,18 +1159,6 @@
             <typeparam name="TEntity">
             The type of entity to filter.
             </typeparam>
-            <param name="filter">
-            The filter to apply to the query.
-            </param>
-            <returns>
-            Returns a new <see cref="T:Deveel.Data.Query"/> that applies
-            the given filter.
-            </returns>
-        </member>
-        <member name="M:Deveel.Data.Query.Where(Deveel.Data.IQueryFilter)">
-            <summary>
-            Creates a new query with the given filter.
-            </summary>
             <param name="filter">
             The filter to apply to the query.
             </param>
@@ -1403,6 +1279,27 @@
             Returns an instance of <see cref="T:Deveel.Data.PageResult`1"/> that
             is the result of the query.
             </returns>
+        </member>
+        <member name="M:Deveel.Data.QueryExtensions.Apply``1(Deveel.Data.IQuery,System.Linq.IQueryable{``0})">
+            <summary>
+            Applies the query to the given <see cref="T:System.Linq.IQueryable`1"/>
+            to filter and sort the results.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity to apply the query to.
+            </typeparam>
+            <param name="queryable">
+            The queryable to apply the query to.
+            </param>
+            <returns>
+            Returns the <see cref="T:System.Linq.IQueryable`1"/> that was
+            filtered and sorted.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.QueryExtensions.HasFilter(Deveel.Data.IQuery)">
+            <summary>
+            Gets a value indicating if the query has a filter.
+            </summary>
         </member>
         <member name="T:Deveel.Data.QueryFilter">
             <summary>
@@ -2048,7 +1945,7 @@
             </returns>
             <seealso cref="M:Deveel.Data.IRepository`1.FindByKeyAsync(System.Object,System.Threading.CancellationToken)"/>
         </member>
-        <member name="M:Deveel.Data.RepositoryExtensions.FindFirstAsync``1(Deveel.Data.IRepository{``0},Deveel.Data.Query,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.RepositoryExtensions.FindFirstAsync``1(Deveel.Data.IRepository{``0},Deveel.Data.IQuery,System.Threading.CancellationToken)">
             <summary>
             Finds the first entity in the repository that matches
             the given query.
@@ -2182,7 +2079,7 @@
             repository is empty.
             </returns>
         </member>
-        <member name="M:Deveel.Data.RepositoryExtensions.FindAllAsync``1(Deveel.Data.IRepository{``0},Deveel.Data.Query,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.RepositoryExtensions.FindAllAsync``1(Deveel.Data.IRepository{``0},Deveel.Data.IQuery,System.Threading.CancellationToken)">
             <summary>
             Finds all the entities in the repository that match
             the given query.

@@ -1,0 +1,149 @@
+﻿using System.Linq.Expressions;
+
+namespace Deveel.Data {
+	/// <summary>
+	/// A fluent builder that can be used to create a query
+	/// that can be applied to a repository.
+	/// </summary>
+	/// <typeparam name="TEntity"></typeparam>
+	public sealed class QueryBuilder<TEntity> : IQuery where TEntity : class {
+		/// <summary>
+		/// Creates a new query builder that wraps the 
+		/// given query.
+		/// </summary>
+		/// <param name="query">
+		/// The query object that is wrapped by this builder.
+		/// </param>
+		/// <remarks>
+		/// When the provided query is <c>null</c> an empty query
+		/// is created.
+		/// </remarks>
+		public QueryBuilder(IQuery? query = null) {
+			Query = query ?? Data.Query.Empty;
+		}
+
+		/// <summary>
+		/// Gets the query that is built by this builder.
+		/// </summary>
+		public IQuery Query { get; private set; }
+
+		IQueryFilter? IQuery.Filter => Query.Filter;
+
+		ISort? IQuery.Sort => Query.Sort;
+
+		private static ISort CombineSort(ISort? sort, ISort other) {
+			if (sort == null)
+				return other;
+
+			return sort.Combine(other);
+		}
+
+		/// <summary>
+		/// Combines the filter of the query with the given
+		/// filter expression.
+		/// </summary>
+		/// <param name="filter">
+		/// The filter expression to combine with the query.
+		/// </param>
+		/// <returns>
+		/// Returns this query builder with the new filter
+		/// for chaining calls.
+		/// </returns>
+		public QueryBuilder<TEntity> Where(Expression<Func<TEntity, bool>> filter)
+			=> Where(QueryFilter.Where<TEntity>(filter));
+
+		/// <summary>
+		/// Combines the filter of the query with the given
+		/// filter object.
+		/// </summary>
+		/// <param name="filter">
+		/// The filter object to combine with the query.
+		/// </param>
+		/// <returns>
+		/// Returns this query builder with the new filter
+		/// for chaining calls.
+		/// </returns>
+		public QueryBuilder<TEntity> Where(IQueryFilter filter) {
+			if (Query.HasFilter()) {
+				Query = new Query(QueryFilter.Combine(Query.Filter ?? QueryFilter.Empty, filter), Query.Sort);
+			} else {
+				Query = new Query(filter, Query.Sort);
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Orders the results of the query by the given field.
+		/// </summary>
+		/// <param name="field">
+		/// The expression used to select the field to sort by.
+		/// </param>
+		/// <param name="direction">
+		/// The direction of the sort.
+		/// </param>
+		/// <returns>
+		/// Returns this query builder with the new sort
+		/// for chaining calls.
+		/// </returns>
+		public QueryBuilder<TEntity> OrderBy(Expression<Func<TEntity, object?>> field, SortDirection direction = SortDirection.Ascending)
+			=> OrderBy(Sort.OrderBy(field, direction));
+
+		/// <summary>
+		/// Orders in a descending order the results of the 
+		/// query by the given field.
+		/// </summary>
+		/// <param name="field">
+		/// The expression used to select the field to sort by.
+		/// </param>
+		/// <returns></returns>
+		public QueryBuilder<TEntity> OrderByDescending(Expression<Func<TEntity, object?>> field)
+			=> OrderBy(field, SortDirection.Descending);
+
+		/// <summary>
+		/// Orders the results of the query by the given sorting rule.
+		/// </summary>
+		/// <param name="sort">
+		/// The sorting rule to apply to the query.
+		/// </param>
+		/// <returns>
+		/// Returns this query builder with the new sort
+		/// for chaining calls.
+		/// </returns>
+		public QueryBuilder<TEntity> OrderBy(ISort sort) {
+			Query = new Query(Query.Filter ?? QueryFilter.Empty, CombineSort(Query.Sort, sort));
+
+			return this;
+		}
+
+		/// <summary>
+		/// Orders the results of the query by the given field.
+		/// </summary>
+		/// <param name="fieldName">
+		/// The name of the field to sort by.
+		/// </param>
+		/// <param name="direction">
+		/// The direction of the sort.
+		/// </param>
+		/// <returns>
+		/// Returns this query builder with the new sort
+		/// for chaining calls.
+		/// </returns>
+		public QueryBuilder<TEntity> OrderBy(string fieldName, SortDirection direction = SortDirection.Ascending)
+			=> OrderBy(Sort.OrderBy(fieldName, direction));
+
+		/// <summary>
+		/// Orders in a descending order the results of the
+		/// query by the given field.
+		/// </summary>
+		/// <param name="fieldName">
+		/// The name of the field to sort by.
+		/// </param>
+		/// <returns>
+		/// Returns this query builder with the new sort
+		/// for chaining calls.
+		/// </returns>
+		public QueryBuilder<TEntity> OrderByDescending(string fieldName)
+			=> OrderBy(fieldName, SortDirection.Descending);
+	}
+}

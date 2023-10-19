@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 using CommunityToolkit.Diagnostics;
@@ -23,7 +24,9 @@ namespace Deveel.Data {
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
 	/// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>
-	public class PageQuery<TEntity> where TEntity : class {
+	public class PageQuery<TEntity> : IQuery where TEntity : class {
+		private QueryBuilder<TEntity> queryBuilder;
+
 		/// <summary>
 		/// Constructs a new page request with the given page number and size
 		/// </summary>
@@ -42,6 +45,8 @@ namespace Deveel.Data {
 
 			Page = page;
 			Size = size;
+
+			queryBuilder = new QueryBuilder<TEntity>();
 		}
 
 		/// <summary>
@@ -63,19 +68,16 @@ namespace Deveel.Data {
 		/// <summary>
 		/// The query that is applied to the request
 		/// </summary>
-		public Query? Query { get; set; }
+		public IQuery? Query { 
+			get => queryBuilder.Query;
+			set => queryBuilder = new QueryBuilder<TEntity>(value);
+		}
 
-		/// <summary>
-		/// When the request has a query defined, gets the filter
-		/// that is applied to the request.
-		/// </summary>
-		public IQueryFilter? Filter => Query?.Filter;
+		[ExcludeFromCodeCoverage]
+		IQueryFilter? IQuery.Filter => Query?.Filter;
 
-		/// <summary>
-		/// When the request has a query defined, gets the sort
-		/// rule that is applied to the request.
-		/// </summary>
-		public ISort? Sort => Query?.Sort;
+		[ExcludeFromCodeCoverage]
+		ISort? IQuery.Sort => Query?.Sort;
 
 		/// <summary>
 		/// Sets or appends a new filter
@@ -90,13 +92,7 @@ namespace Deveel.Data {
 		public PageQuery<TEntity> Where(Expression<Func<TEntity, bool>> expression) {
 			Guard.IsNotNull(expression, nameof(expression));
 
-			if (Query == null || !Query.Value.HasFilter) {
-				Query = Data.Query.Where(expression);
-			} else if (Query != null) {
-				Query = Query.Value.And(expression);
-			} else if (Query == null) {
-				Query = Data.Query.Where(expression);
-			}
+			queryBuilder.Where(expression);
 
 			return this;
 		}
@@ -143,10 +139,7 @@ namespace Deveel.Data {
 		public PageQuery<TEntity> OrderBy(ISort sort) {
 			Guard.IsNotNull(sort, nameof(sort));
 
-			if (Query == null)
-				Query = Data.Query.Empty;
-
-			Query = Query.Value.OrderBy(sort);
+			queryBuilder.OrderBy(sort);
 
 			return this;
 		}
@@ -198,8 +191,10 @@ namespace Deveel.Data {
 		/// of the application of the query to the given queryable.
 		/// </returns>
 		public IQueryable<TEntity> ApplyQuery(IQueryable<TEntity> queryable) {
-			if (Query != null)
-				queryable = Query.Value.Apply(queryable);
+			var query = Query;
+			
+			if (query != null)
+				queryable = query.Apply(queryable);
 
 			return queryable;
 		}
