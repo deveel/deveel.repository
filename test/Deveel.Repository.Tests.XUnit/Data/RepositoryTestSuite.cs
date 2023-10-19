@@ -186,6 +186,17 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
+		public void RemoveExisting_Sync() {
+			var person = People!.Random();
+
+			Assert.NotNull(person);
+
+			var result = Repository.Remove(person);
+
+			Assert.True(result);
+		}
+
+		[Fact]
 		public async Task RemoveByKey_Existing() {
 			var key = Repository.GetEntityKey(People!.Random()!);
 
@@ -305,6 +316,27 @@ namespace Deveel.Data {
 
 			Assert.NotNull(result);
 			Assert.Equal(firstName, result.FirstName);
+		}
+
+		[Fact]
+		public async Task FindFirstFilteredAndSorted() {
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
+
+			var expected = People?.Where(x => x.FirstName == firstName)
+				.OrderBy(x => x.FirstName)
+				.FirstOrDefault();
+
+			Assert.NotNull(expected);
+
+			var query = Query.Where<TPerson>(x => x.FirstName == firstName)
+				.OrderBy<Person>(x => x.FirstName);
+
+			var result = await Repository.FindFirstAsync(query);
+
+			Assert.NotNull(result);
+			Assert.Equal(expected.FirstName, result.FirstName);
+			Assert.Equal(expected.LastName, result.LastName);
 		}
 
 		[Fact]
@@ -433,6 +465,25 @@ namespace Deveel.Data {
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
 			Assert.Equal(peopleCount, result.Count);
+		}
+
+		[Fact]
+		public async Task FindAllFilteredAndSorted() {
+			var person = await RandomPersonAsync();
+			var firstName = person.FirstName;
+
+			var expected = People?.Where(x => x.FirstName == firstName)
+				.OrderBy(x => x.FirstName)
+				.ToList();
+
+			Assert.NotNull(expected);
+
+			var query = Query.Where<TPerson>(x => x.FirstName == firstName)
+				.OrderBy<Person>(x => x.FirstName);
+
+			var result = await Repository.FindAllAsync(query);
+			Assert.NotNull(result);
+			Assert.NotEmpty(result);
 		}
 
 		[Fact]

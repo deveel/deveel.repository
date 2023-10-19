@@ -41,6 +41,45 @@
 			Assert.False(new ExpressionQueryFilter<Person>(x => x.FirstName == "John").IsEmpty());
 		}
 
+
+		[Fact]
+		public static void Queryable_FirstOrDefault() {
+			var list = new PersonFaker().Generate(10);
+			var person = list[Random.Shared.Next(0, 9)];
+
+			var filter = new ExpressionQueryFilter<Person>(x => x.FirstName == person.FirstName);
+			var result = list.AsQueryable().FirstOrDefault(filter);
+
+			Assert.NotNull(result);
+			Assert.Equal(person.FirstName, result.FirstName);
+		}
+
+		[Fact]
+		public static void Queryable_ToList() {
+			var list = new PersonFaker().Generate(100);
+			var person = list[Random.Shared.Next(0, 99)];
+
+			var expected = list.Where(x => x.FirstName == person.FirstName).ToList();
+
+			var filter = new ExpressionQueryFilter<Person>(x => x.FirstName == person.FirstName);
+			var result = list.AsQueryable().ToList(filter);
+
+			Assert.NotNull(result);
+			Assert.Equal(expected.Count, result.Count);
+			Assert.Equal(expected.First().FirstName, result.First().FirstName);
+		}
+
+		[Fact]
+		public static void Any() {
+			var list = new PersonFaker().Generate(100);
+			var person = list[Random.Shared.Next(0, 99)];
+
+			var filter = new ExpressionQueryFilter<Person>(x => x.FirstName == person.FirstName);
+			var result = list.AsQueryable().Any(filter);
+
+			Assert.True(result);
+		}
+
 		class Company {
 			public string Name { get; set; }
 

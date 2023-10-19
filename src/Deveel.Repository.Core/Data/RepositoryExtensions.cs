@@ -612,6 +612,66 @@ namespace Deveel.Data {
 
 		/// <summary>
 		/// Finds the first entity in the repository that matches
+		/// the given query.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entity.
+		/// </param>
+		/// <param name="query">
+		/// The query object used to find the entity, and
+		/// eventually sort the result.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <typeparamref name="TEntity"/> that
+		/// matched the given query, or <c>null</c> if no entity matches
+		/// the given filter.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support querying.
+		/// </exception>
+		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, Query query, CancellationToken cancellationToken = default)
+			where TEntity : class {
+			if (repository.IsFilterable())
+				return repository.RequireFilterable().FindAsync(query, cancellationToken);
+			if (repository.IsQueryable())
+				return Task.FromResult(query.Apply(repository.RequireQueryable().AsQueryable()).FirstOrDefault());
+
+			throw new NotSupportedException("The repository does not support querying");
+		}
+
+		/// <summary>
+		/// Finds the first entity in the repository that matches
+		/// the given filter.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entity.
+		/// </param>
+		/// <param name="filter">
+		/// A filter used to find the entity.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <typeparamref name="TEntity"/> that
+		/// matched the given filter, or <c>null</c> if no entity matches
+		/// the given filter.
+		/// </returns>
+		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
+			where TEntity : class
+			=> repository.FindFirstAsync(Query.Where(filter), cancellationToken);
+
+		/// <summary>
+		/// Finds the first entity in the repository that matches
 		/// the given filter expression
 		/// </summary>
 		/// <typeparam name="TEntity">
@@ -628,7 +688,7 @@ namespace Deveel.Data {
 		/// </param>
 		/// <returns>
 		/// Returns an instance of <typeparamref name="TEntity"/> that
-		/// can be identified by the given filter, or <c>null</c> if no
+		/// matched the given filter, or <c>null</c> if no
 		/// entity matches the given filter.
 		/// </returns>
 		/// <exception cref="NotSupportedException">
@@ -636,7 +696,7 @@ namespace Deveel.Data {
 		/// </exception>
         public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
-            => repository.RequireFilterable().FindAsync(Query.Where(new ExpressionQueryFilter<TEntity>(filter)), cancellationToken);
+            => repository.FindFirstAsync(Query.Where(new ExpressionQueryFilter<TEntity>(filter)), cancellationToken);
 
 		/// <summary>
 		/// Finds the first entity in the repository, naturally ordered.
@@ -707,23 +767,151 @@ namespace Deveel.Data {
 
         #region FindAll
 
-        public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
-            where TEntity : class
-            => repository.RequireFilterable().FindAllAsync(Query.Where(new ExpressionQueryFilter<TEntity>(filter)), cancellationToken);
+		/// <summary>
+		/// Finds all the entities in the repository that match
+		/// the given query.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entities.
+		/// </param>
+		/// <param name="query">
+		/// The query object used to find the entities, and
+		/// eventually sort the result.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a list of <typeparamref name="TEntity"/> from
+		/// the repository that match the given query, eventually
+		/// sorted by the given query.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support querying 
+		/// or filtering.
+		/// </exception>
+		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, Query query, CancellationToken cancellationToken = default)
+			where TEntity : class {
+			if (repository.IsFilterable())
+				return repository.RequireFilterable().FindAllAsync(query, cancellationToken);
+			if (repository.IsQueryable())
+				return Task.FromResult<IList<TEntity>>(query.Apply(repository.RequireQueryable().AsQueryable()).ToList());
 
+			throw new NotSupportedException("The repository does not support querying");
+		}
+
+		/// <summary>
+		/// Finds all the entities in the repository that match
+		/// the given filter.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entities.
+		/// </param>
+		/// <param name="filter">
+		/// The filter used to find the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a list of <typeparamref name="TEntity"/> from
+		/// the repository that match the given filter.
+		/// </returns>
+		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
+			where TEntity : class
+			=> repository.FindAllAsync(Query.Where(filter), cancellationToken);
+
+		/// <summary>
+		/// Finds all the entities in the repository that match
+		/// the given filter.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entities.
+		/// </param>
+		/// <param name="filter">
+		/// The filter used to find the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a list of <typeparamref name="TEntity"/> from
+		/// the repository that match the given filter.
+		/// </returns>
+		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+            where TEntity : class
+            => repository.FindAllAsync(Query.Where(new ExpressionQueryFilter<TEntity>(filter)), cancellationToken);
+
+		/// <summary>
+		/// Finds all the entities in the repository, naturally ordered.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a list of <typeparamref name="TEntity"/> from
+		/// the repository, naturally ordered.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support querying or filtering.
+		/// </exception>
         public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
             where TEntity : class
-            => repository.RequireFilterable().FindAllAsync(Query.Empty, cancellationToken);
+            => repository.FindAllAsync(Query.Empty, cancellationToken);
 
-		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
-			where TEntity : class
-			=> repository.RequireFilterable().FindAllAsync(Query.Where(filter));
-
-        public static IList<TEntity> FindAll<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
+		/// <summary>
+		/// Finds all the entities in the repository that match
+		/// the given filter.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entities.
+		/// </param>
+		/// <param name="filter">
+		/// The filter used to find the entities.
+		/// </param>
+		/// <returns>
+		/// Returns a list of <typeparamref name="TEntity"/> from
+		/// the repository that match the given filter.
+		/// </returns>
+		public static IList<TEntity> FindAll<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
             where TEntity : class
-            => repository.RequireFilterable().FindAllAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.FindAllAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public static IList<TEntity> FindAll<TEntity>(this IRepository<TEntity> repository)
+		/// <summary>
+		/// Finds all the entities in the repository, naturally ordered.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entities.
+		/// </param>
+		/// <returns>
+		/// Returns a list of <typeparamref name="TEntity"/> from
+		/// the repository, naturally ordered.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support querying or filtering.
+		/// </exception>
+		public static IList<TEntity> FindAll<TEntity>(this IRepository<TEntity> repository)
             where TEntity : class
             => repository.FindAll(QueryFilter.Empty);
 

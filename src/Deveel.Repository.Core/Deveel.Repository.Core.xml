@@ -1155,6 +1155,142 @@
             filtered and sorted.
             </returns>
         </member>
+        <member name="M:Deveel.Data.Query.And(Deveel.Data.IQueryFilter)">
+            <summary>
+            Combines the current filter with the given one,
+            using the logical AND operator.
+            </summary>
+            <param name="filter">
+            The filter to combine with the current one.
+            </param>
+            <returns>
+            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
+            the current filter with the given one.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Query.And``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Combines the current filter with the given one,
+            using the logical AND operator.
+            </summary>
+            <param name="filter">
+            The filter to combine with the current one.
+            </param>
+            <returns>
+            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
+            the current filter with the given one.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Query.OrderBy(Deveel.Data.ISort)">
+            <summary>
+            Configures the query to sort by the
+            given rule.
+            </summary>
+            <param name="sort">
+            The sort rule to apply to the query.
+            </param>
+            <returns>
+            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
+            the current sort rule with the given one.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Query.OrderBy``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}},Deveel.Data.SortDirection)">
+            <summary>
+            Configures the query to sort by the field
+            obtained by the given expression.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity that is used to select the
+            field to sort by.
+            </typeparam>
+            <param name="field">
+            The expression that selects the field to sort by.
+            </param>
+            <param name="direction">
+            The direction of the sort.
+            </param>
+            <returns>
+            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
+            the current sort rule with the one obtained by the
+            selection of the given field.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Query.OrderBy(System.String,Deveel.Data.SortDirection)">
+            <summary>
+            Configures the query to sort by the field
+            identified by the given name.
+            </summary>
+            <param name="field">
+            The name of the field to sort by.
+            </param>
+            <param name="direction">
+            The direction of the sort.
+            </param>
+            <returns>
+            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
+            the current sort rule with the one obtained by the
+            selection of the given field.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Query.OrderByDescending``1(System.Linq.Expressions.Expression{System.Func{``0,System.Object}})">
+            <summary>
+            Configures the query to sort in a discending order 
+            by the field obtained by the given expression.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity that is used to select the
+            field to sort by.
+            </typeparam>
+            <param name="field">
+            The expression that selects the field to sort by.
+            </param>
+            <returns>
+            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
+            the current sort rule with the one obtained by the
+            selection of the given field.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Query.OrderByDescending(System.String)">
+            <summary>
+            Configures the query to sort in a discending order
+            by the field identified by the given name.
+            </summary>
+            <param name="field">
+            The name of the field to sort by.
+            </param>
+            <returns>
+            Returns a new <see cref="T:Deveel.Data.Query"/> that combines
+            the current sort rule with the one created
+            for the given field.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Query.Where``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Creates a new query with the given filter.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity to filter.
+            </typeparam>
+            <param name="filter">
+            The filter to apply to the query.
+            </param>
+            <returns>
+            Returns a new <see cref="T:Deveel.Data.Query"/> that applies
+            the given filter.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.Query.Where(Deveel.Data.IQueryFilter)">
+            <summary>
+            Creates a new query with the given filter.
+            </summary>
+            <param name="filter">
+            The filter to apply to the query.
+            </param>
+            <returns>
+            Returns a new <see cref="T:Deveel.Data.Query"/> that applies
+            the given filter.
+            </returns>
+        </member>
         <member name="T:Deveel.Data.QueryableExtensions">
             <summary>
             Extends instances of <see cref="T:System.Linq.IQueryable`1"/> to 
@@ -1912,6 +2048,56 @@
             </returns>
             <seealso cref="M:Deveel.Data.IRepository`1.FindByKeyAsync(System.Object,System.Threading.CancellationToken)"/>
         </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindFirstAsync``1(Deveel.Data.IRepository{``0},Deveel.Data.Query,System.Threading.CancellationToken)">
+            <summary>
+            Finds the first entity in the repository that matches
+            the given query.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The repository instance to use to find the entity.
+            </param>
+            <param name="query">
+            The query object used to find the entity, and
+            eventually sort the result.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns an instance of <typeparamref name="TEntity"/> that
+            matched the given query, or <c>null</c> if no entity matches
+            the given filter.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support querying.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindFirstAsync``1(Deveel.Data.IRepository{``0},Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
+            <summary>
+            Finds the first entity in the repository that matches
+            the given filter.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The repository instance to use to find the entity.
+            </param>
+            <param name="filter">
+            A filter used to find the entity.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns an instance of <typeparamref name="TEntity"/> that
+            matched the given filter, or <c>null</c> if no entity matches
+            the given filter.
+            </returns>
+        </member>
         <member name="M:Deveel.Data.RepositoryExtensions.FindFirstAsync``1(Deveel.Data.IRepository{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
             <summary>
             Finds the first entity in the repository that matches
@@ -1931,7 +2117,7 @@
             </param>
             <returns>
             Returns an instance of <typeparamref name="TEntity"/> that
-            can be identified by the given filter, or <c>null</c> if no
+            matched the given filter, or <c>null</c> if no
             entity matches the given filter.
             </returns>
             <exception cref="T:System.NotSupportedException">
@@ -1995,6 +2181,136 @@
             is the first entity in the repository, or <c>null</c> if the
             repository is empty.
             </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindAllAsync``1(Deveel.Data.IRepository{``0},Deveel.Data.Query,System.Threading.CancellationToken)">
+            <summary>
+            Finds all the entities in the repository that match
+            the given query.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The repository instance to use to find the entities.
+            </param>
+            <param name="query">
+            The query object used to find the entities, and
+            eventually sort the result.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns a list of <typeparamref name="TEntity"/> from
+            the repository that match the given query, eventually
+            sorted by the given query.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support querying 
+            or filtering.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindAllAsync``1(Deveel.Data.IRepository{``0},Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
+            <summary>
+            Finds all the entities in the repository that match
+            the given filter.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The repository instance to use to find the entities.
+            </param>
+            <param name="filter">
+            The filter used to find the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns a list of <typeparamref name="TEntity"/> from
+            the repository that match the given filter.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindAllAsync``1(Deveel.Data.IRepository{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Finds all the entities in the repository that match
+            the given filter.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The repository instance to use to find the entities.
+            </param>
+            <param name="filter">
+            The filter used to find the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns a list of <typeparamref name="TEntity"/> from
+            the repository that match the given filter.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindAllAsync``1(Deveel.Data.IRepository{``0},System.Threading.CancellationToken)">
+            <summary>
+            Finds all the entities in the repository, naturally ordered.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The repository instance to use to find the entities.
+            </param>
+            <param name="cancellationToken">
+            A token used to cancel the operation.
+            </param>
+            <returns>
+            Returns a list of <typeparamref name="TEntity"/> from
+            the repository, naturally ordered.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support querying or filtering.
+            </exception>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindAll``1(Deveel.Data.IRepository{``0},Deveel.Data.IQueryFilter)">
+            <summary>
+            Finds all the entities in the repository that match
+            the given filter.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The repository instance to use to find the entities.
+            </param>
+            <param name="filter">
+            The filter used to find the entities.
+            </param>
+            <returns>
+            Returns a list of <typeparamref name="TEntity"/> from
+            the repository that match the given filter.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.RepositoryExtensions.FindAll``1(Deveel.Data.IRepository{``0})">
+            <summary>
+            Finds all the entities in the repository, naturally ordered.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity handled by the repository.
+            </typeparam>
+            <param name="repository">
+            The repository instance to use to find the entities.
+            </param>
+            <returns>
+            Returns a list of <typeparamref name="TEntity"/> from
+            the repository, naturally ordered.
+            </returns>
+            <exception cref="T:System.NotSupportedException">
+            Thrown when the repository does not support querying or filtering.
+            </exception>
         </member>
         <member name="T:Deveel.Data.RepositoryProviderExtensions">
             <summary>

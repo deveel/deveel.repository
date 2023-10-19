@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Deveel.Data {
 	/// <summary>
@@ -47,6 +48,7 @@ namespace Deveel.Data {
 
 		IEnumerator<ISort> IEnumerable<ISort>.GetEnumerator() => sorts.GetEnumerator();
 
+		[ExcludeFromCodeCoverage]
 		IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<ISort>).GetEnumerator();
 
 		/// <summary>

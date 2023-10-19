@@ -146,15 +146,36 @@ namespace Deveel.Data {
             }
         }
 
+		/// <summary>
+		/// Creates a logger for a repository.
+		/// </summary>
+		/// <returns>
+		/// Returns an instance of <see cref="ILogger"/> that can be used
+		/// to log messages from the repository.
+		/// </returns>
         protected virtual ILogger CreateLogger() {
             return loggerFactory.CreateLogger<EntityRepository<TEntity>>();
         }
 
+		/// <summary>
+		/// Creates a repository for the given context and tenant.
+		/// </summary>
+		/// <param name="dbContext">
+		/// The context to use to manage the entities.
+		/// </param>
+		/// <param name="tenantInfo"></param>
+		/// <returns></returns>
         protected virtual EntityRepository<TEntity> CreateRepository(TContext dbContext, ITenantInfo tenantInfo) {
             var logger = CreateLogger();
             return new EntityRepository<TEntity>(dbContext, tenantInfo, logger);
         }
 
+		/// <summary>
+		/// Dispose the provider and all the repositories and contexts
+		/// </summary>
+		/// <param name="disposing">
+		/// Indicates if the provider is disposing.
+		/// </param>
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
@@ -187,6 +208,7 @@ namespace Deveel.Data {
             }
         }
 
+		/// <inheritdoc/>
         public void Dispose() {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);

@@ -85,26 +85,121 @@ namespace Deveel.Data {
 			return queryable;
 		}
 
+		/// <summary>
+		/// Combines the current filter with the given one,
+		/// using the logical AND operator.
+		/// </summary>
+		/// <param name="filter">
+		/// The filter to combine with the current one.
+		/// </param>
+		/// <returns>
+		/// Returns a new <see cref="Query"/> that combines
+		/// the current filter with the given one.
+		/// </returns>
 		public Query And(IQueryFilter filter)
 			=> new Query(QueryFilter.Combine(Filter, filter), Sort);
 
+		/// <summary>
+		/// Combines the current filter with the given one,
+		/// using the logical AND operator.
+		/// </summary>
+		/// <param name="filter">
+		/// The filter to combine with the current one.
+		/// </param>
+		/// <returns>
+		/// Returns a new <see cref="Query"/> that combines
+		/// the current filter with the given one.
+		/// </returns>
 		public Query And<TEntity>(Expression<Func<TEntity, bool>> filter) where TEntity : class
 			=> new Query(QueryFilter.Combine(Filter, QueryFilter.Where<TEntity>(filter)), Sort);
 
+		/// <summary>
+		/// Configures the query to sort by the
+		/// given rule.
+		/// </summary>
+		/// <param name="sort">
+		/// The sort rule to apply to the query.
+		/// </param>
+		/// <returns>
+		/// Returns a new <see cref="Query"/> that combines
+		/// the current sort rule with the given one.
+		/// </returns>
 		public Query OrderBy(ISort sort)
 			=> new Query(Filter, CombineSort(Sort, sort));
 
+		/// <summary>
+		/// Configures the query to sort by the field
+		/// obtained by the given expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity that is used to select the
+		/// field to sort by.
+		/// </typeparam>
+		/// <param name="field">
+		/// The expression that selects the field to sort by.
+		/// </param>
+		/// <param name="direction">
+		/// The direction of the sort.
+		/// </param>
+		/// <returns>
+		/// Returns a new <see cref="Query"/> that combines
+		/// the current sort rule with the one obtained by the
+		/// selection of the given field.
+		/// </returns>
 		public Query OrderBy<TEntity>(Expression<Func<TEntity, object?>> field, SortDirection direction = SortDirection.Ascending) 
 			where TEntity : class
-			=> new Query(Filter, CombineSort(Sort, Data.Sort.OrderBy(field, direction)));
+			=> OrderBy(Data.Sort.OrderBy(field, direction));
 
+		/// <summary>
+		/// Configures the query to sort by the field
+		/// identified by the given name.
+		/// </summary>
+		/// <param name="field">
+		/// The name of the field to sort by.
+		/// </param>
+		/// <param name="direction">
+		/// The direction of the sort.
+		/// </param>
+		/// <returns>
+		/// Returns a new <see cref="Query"/> that combines
+		/// the current sort rule with the one obtained by the
+		/// selection of the given field.
+		/// </returns>
 		public Query OrderBy(string field, SortDirection direction = SortDirection.Ascending) 
-			=> new Query(Filter, CombineSort(Sort, Data.Sort.OrderBy(field, direction)));
+			=> OrderBy(Data.Sort.OrderBy(field, direction));
 
+		/// <summary>
+		/// Configures the query to sort in a discending order 
+		/// by the field obtained by the given expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity that is used to select the
+		/// field to sort by.
+		/// </typeparam>
+		/// <param name="field">
+		/// The expression that selects the field to sort by.
+		/// </param>
+		/// <returns>
+		/// Returns a new <see cref="Query"/> that combines
+		/// the current sort rule with the one obtained by the
+		/// selection of the given field.
+		/// </returns>
 		public Query OrderByDescending<TEntity>(Expression<Func<TEntity, object?>> field) 
 			where TEntity : class
 			=> OrderBy(field, SortDirection.Descending);
 
+		/// <summary>
+		/// Configures the query to sort in a discending order
+		/// by the field identified by the given name.
+		/// </summary>
+		/// <param name="field">
+		/// The name of the field to sort by.
+		/// </param>
+		/// <returns>
+		/// Returns a new <see cref="Query"/> that combines
+		/// the current sort rule with the one created
+		/// for the given field.
+		/// </returns>
 		public Query OrderByDescending(string field) 
 			=> OrderBy(field, SortDirection.Descending);
 
@@ -115,10 +210,33 @@ namespace Deveel.Data {
 			return sort.Combine(other);
 		}
 
+		/// <summary>
+		/// Creates a new query with the given filter.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to filter.
+		/// </typeparam>
+		/// <param name="filter">
+		/// The filter to apply to the query.
+		/// </param>
+		/// <returns>
+		/// Returns a new <see cref="Query"/> that applies
+		/// the given filter.
+		/// </returns>
 		public static Query Where<TEntity>(Expression<Func<TEntity, bool>>? filter)
 			where TEntity : class
 			=> new Query(filter == null ? QueryFilter.Empty : QueryFilter.Where<TEntity>(filter));
 
+		/// <summary>
+		/// Creates a new query with the given filter.
+		/// </summary>
+		/// <param name="filter">
+		/// The filter to apply to the query.
+		/// </param>
+		/// <returns>
+		/// Returns a new <see cref="Query"/> that applies
+		/// the given filter.
+		/// </returns>
 		public static Query Where(IQueryFilter filter)
 			=> new Query(filter);
 	}

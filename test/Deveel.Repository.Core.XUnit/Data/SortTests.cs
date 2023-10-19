@@ -29,6 +29,11 @@
 		}
 
 		[Fact]
+		public static void CreateEmptyCombinedSort() {
+			Assert.Throws<ArgumentException>(() => new CombinedSort(Array.Empty<ISort>()));
+		}
+
+		[Fact]
 		public static void ApplyCombinedSort() {
 			var people = new[] {
 				new Person { FirstName = "John", LastName = "Doe" },

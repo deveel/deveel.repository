@@ -257,5 +257,81 @@
             constructed with the given tenant.
             </exception>
         </member>
+        <member name="M:Deveel.Data.EntityRepositoryProvider`2.CreateLogger">
+            <summary>
+            Creates a logger for a repository.
+            </summary>
+            <returns>
+            Returns an instance of <see cref="T:Microsoft.Extensions.Logging.ILogger"/> that can be used
+            to log messages from the repository.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.EntityRepositoryProvider`2.CreateRepository(`1,Finbuckle.MultiTenant.ITenantInfo)">
+            <summary>
+            Creates a repository for the given context and tenant.
+            </summary>
+            <param name="dbContext">
+            The context to use to manage the entities.
+            </param>
+            <param name="tenantInfo"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Deveel.Data.EntityRepositoryProvider`2.Dispose(System.Boolean)">
+            <summary>
+            Dispose the provider and all the repositories and contexts
+            </summary>
+            <param name="disposing">
+            Indicates if the provider is disposing.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.EntityRepositoryProvider`2.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:Deveel.Data.ServiceCollectionExtensions">
+            <summary>
+            Extends a <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to provide
+            the registration of a <see cref="T:Deveel.Data.EntityRepository`1"/>
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddEntityRepository(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Type,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers an Entity Framework repository for the given 
+            type of entity in the service collection.
+            </summary>
+            <param name="services">
+            The service collection to register the repository into.
+            </param>
+            <param name="entityType">
+            The type of entity to register the repository for.
+            </param>
+            <param name="lifetime">
+            The lifetime of the repository in the service collection.
+            </param>
+            <remarks>
+            This method will register a <see cref="T:Deveel.Data.EntityRepository`1"/>
+            built with the given <paramref name="entityType"/> as generic argument.
+            </remarks>
+            <returns>
+            Returns the service collection with the repository registered.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.ServiceCollectionExtensions.AddEntityRepository``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)">
+            <summary>
+            Registers an Entity Framework repository for the given
+            type of entity in the service collection.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity to register the repository for.
+            </typeparam>
+            <param name="services">
+            The service collection to register the repository into.
+            </param>
+            <param name="lifetime">
+            The lifetime of the repository in the service collection.
+            </param>
+            <returns>
+            Returns the service collection with the repository registered.
+            </returns>
+        </member>
     </members>
 </doc>
