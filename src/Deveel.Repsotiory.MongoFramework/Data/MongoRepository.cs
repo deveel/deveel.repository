@@ -692,40 +692,24 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
+		public async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> query, CancellationToken cancellationToken = default) {
 			try {
 				var entitySet = DbSet.AsQueryable();
 
-				if (request.Filter != null) {
-					entitySet = request.Filter.Apply(entitySet);
+				if (query.Filter != null) {
+					entitySet = query.Filter.Apply(entitySet);
 				}
 
 				var totalCount = await entitySet.CountAsync(cancellationToken);
 
-				if (request.ResultSorts != null) {
-					foreach (var sort in request.ResultSorts) {
-						Expression<Func<TEntity, object>> keySelector;
-
-						if (sort.Field is StringFieldRef stringRef) {
-							keySelector = Field(stringRef.FieldName);
-						} else if (sort.Field is ExpressionFieldRef<TEntity> exprRef) {
-							keySelector = exprRef.Expression;
-						} else {
-							throw new NotSupportedException($"The sort of type {sort.GetType()} is not supported");
-						}
-
-						if (sort.Ascending) {
-							entitySet = entitySet.OrderBy(keySelector);
-						} else {
-							entitySet = entitySet.OrderByDescending(keySelector);
-						}
-					}
+				if (query.Sort != null) {
+					entitySet = query.Sort.Apply(entitySet);
 				}
 
-				entitySet = entitySet.Skip(request.Offset).Take(request.Size);
+				entitySet = entitySet.Skip(query.Offset).Take(query.Size);
 
 				var items = await entitySet.ToListAsync(cancellationToken);
-				return new PageResult<TEntity>(request, totalCount, items);
+				return new PageResult<TEntity>(query, totalCount, items);
 			} catch (Exception ex) {
 
 				throw new RepositoryException("Unable to execute the query", ex);

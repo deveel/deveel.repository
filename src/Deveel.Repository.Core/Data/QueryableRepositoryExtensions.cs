@@ -43,10 +43,8 @@ namespace Deveel.Data {
 				query = request.Filter.Apply(query);
 			}
 
-			if ((request.ResultSorts?.Any() ?? false)) {
-				foreach (var sort in request.ResultSorts) {
-					query = sort.Apply(query);
-				}
+			if (request.Sort != null) {
+				query = request.Sort.Apply(query);
 			}
 
 			var total = query.Count();

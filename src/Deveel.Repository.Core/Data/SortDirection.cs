@@ -12,31 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-
-using CommunityToolkit.Diagnostics;
-
 namespace Deveel.Data {
 	/// <summary>
-	/// References a field of an entity by its name
+	/// The direction to sort the results of 
+	/// a query.
 	/// </summary>
-	public sealed class StringFieldRef : IFieldRef {
+	public enum SortDirection {
 		/// <summary>
-		/// Constructs the reference with the name of the field
+		/// Sorts the results in ascending order.
 		/// </summary>
-		/// <param name="fieldName">The name of the field</param>
-		/// <exception cref="ArgumentException">
-		/// Thrown if the field is null or empty.
-		/// </exception>
-		public StringFieldRef(string fieldName) {
-			Guard.IsNotNullOrWhiteSpace(fieldName, nameof(fieldName));
-
-			FieldName = fieldName;
-		}
+		Ascending ,
 
 		/// <summary>
-		/// Gets the name of the field referenced
+		/// Sorts the results in descending order.
 		/// </summary>
-		public string FieldName { get; }
+		Descending
 	}
 }

@@ -12,30 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-
 namespace Deveel.Data {
 	/// <summary>
-	/// Describes a sorting rule for the results of a query
+	/// A sorting rule that can be applied to a queryable
+	/// object to sort the results.
 	/// </summary>
-	/// <remarks>
-	/// Implementations of repositories can use this interface
-	/// to form queries to the underlying data store, or
-	/// rather to sort the results of a query after the execution,
-	/// depending on the nature of the data and the implementation.
-	/// </remarks>
-	public interface IResultSort {
+	/// <typeparam name="TEntity">
+	/// The type of entity to sort.
+	/// </typeparam>
+	public interface IQueryableSort<TEntity> : ISort {
 		/// <summary>
-		/// Gets a reference to the field used to sort
-		/// the results
+		/// Applies the sorting rule to the given <see cref="IQueryable{TEntity}"/>
 		/// </summary>
-		IFieldRef Field { get; }
-
-		/// <summary>
-		/// Gets a flag indicating whether the result
-		/// of the query should be sorted ascending, given
-		/// the value of the field
-		/// </summary>
-		bool Ascending { get; }
+		/// <param name="queryable">
+		/// The queryable object to sort.
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="IQueryable{TEntity}"/> that
+		/// is sorted by the rule.
+		/// </returns>
+		IQueryable<TEntity> Apply(IQueryable<TEntity> queryable);
 	}
 }

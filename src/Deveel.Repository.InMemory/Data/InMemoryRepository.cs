@@ -37,7 +37,7 @@ namespace Deveel.Data {
 		private SortedList<object, TEntity> entities;
 		private bool disposedValue;
 		private MemberInfo? idMember;
-		private readonly IEntityFieldMapper<TEntity>? fieldMapper;
+		private readonly IFieldMapper<TEntity>? fieldMapper;
 
 		/// <summary>
 		/// Constructs the repository with the given list of
@@ -52,7 +52,7 @@ namespace Deveel.Data {
 		/// </param>
 		public InMemoryRepository(
 			IEnumerable<TEntity>? list = null,
-			IEntityFieldMapper<TEntity>? fieldMapper = null) {
+			IFieldMapper<TEntity>? fieldMapper = null) {
 			entities = CopyList(list ?? Enumerable.Empty<TEntity>());
 			this.fieldMapper = fieldMapper;
 		}
@@ -73,7 +73,7 @@ namespace Deveel.Data {
 		/// </param>
 		protected InMemoryRepository(string tenantId, 
 			IEnumerable<TEntity>? list = null,
-			IEntityFieldMapper<TEntity>? fieldMapper = null)
+			IFieldMapper<TEntity>? fieldMapper = null)
 			: this(list, fieldMapper) {
 			TenantId = tenantId;
 		}
@@ -346,16 +346,6 @@ namespace Deveel.Data {
 			}
 		}
 
-		private Expression<Func<TEntity, object>> MapField(IFieldRef fieldRef) {
-			if (fieldRef is ExpressionFieldRef<TEntity> expRef)
-				return expRef.Expression;
-
-			if (fieldRef is StringFieldRef fieldName)
-				return MapField(fieldName.FieldName);
-
-			throw new NotSupportedException();
-		}
-
 		/// <summary>
 		/// Maps the given field name to an expression that can select
 		/// a field from an entity.
@@ -369,11 +359,11 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown if the mapping is not supported by the repository.
 		/// </exception>
-		protected virtual Expression<Func<TEntity, object>> MapField(string fieldName) {
+		protected virtual Expression<Func<TEntity, object?>> MapField(string fieldName) {
 			if (fieldMapper == null)
 				throw new NotSupportedException("No field mapper was provided");
 
-			return fieldMapper.Map(fieldName);
+			return fieldMapper.MapField(fieldName);
 		}
 
 		/// <inheritdoc/>
@@ -385,15 +375,8 @@ namespace Deveel.Data {
 				if (request.Filter != null)
 					entitySet = request.Filter.Apply(entitySet);
 
-				if (request.ResultSorts != null) {
-					foreach (var sort in request.ResultSorts) {
-						if (sort.Ascending) {
-							entitySet = entitySet.OrderBy(MapField(sort.Field));
-						} else {
-							entitySet = entitySet.OrderByDescending(MapField(sort.Field));
-						}
-					}
-				}
+				if (request.Sort != null)
+					entitySet = request.Sort.Apply(entitySet, MapField);
 
 				var itemCount = entitySet.Count();
 				var items = entitySet
@@ -429,7 +412,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		internal static InMemoryRepository<TEntity> Create(string tenantId, IList<TEntity>? entities = null, IEntityFieldMapper<TEntity>? fieldMapper = null)
+		internal static InMemoryRepository<TEntity> Create(string tenantId, IList<TEntity>? entities = null, IFieldMapper<TEntity>? fieldMapper = null)
 			=> new InMemoryRepository<TEntity>(tenantId, entities, fieldMapper);
 
 		/// <summary>

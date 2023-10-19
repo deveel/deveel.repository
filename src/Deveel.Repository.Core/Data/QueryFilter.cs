@@ -129,7 +129,7 @@ namespace Deveel.Data {
 				return queryable;
 
 			if (filter is CombinedQueryFilter combined) {
-				foreach (var f in combined.Filters) {
+				foreach (var f in combined) {
 					queryable = f.Apply(queryable);
 				}
 
@@ -210,13 +210,13 @@ namespace Deveel.Data {
 			var filters = new List<IQueryFilter>();
 
 			if (filter1 is CombinedQueryFilter combined1) {
-				filters.AddRange(combined1.Filters);
+				filters.AddRange(combined1);
 			} else {
 				filters.Add(filter1);
 			}
 
 			if (filter2 is CombinedQueryFilter combined2) {
-				filters.AddRange(combined2.Filters);
+				filters.AddRange(combined2);
 			} else {
 				filters.Add(filter2);
 			}

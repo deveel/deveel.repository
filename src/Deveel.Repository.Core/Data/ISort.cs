@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-
 namespace Deveel.Data {
 	/// <summary>
-	/// A marker interface that is implemented by objects referencing 
-	/// a field of an entity
+	/// Defines a sorting rule to apply to the results
+	/// of a query.
 	/// </summary>
-	public interface IFieldRef {
+	public interface ISort {
 	}
 }

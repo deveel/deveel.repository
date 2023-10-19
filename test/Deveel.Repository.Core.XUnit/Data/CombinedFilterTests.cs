@@ -11,10 +11,10 @@
 			Assert.NotNull(combined2);
 			var filter = Assert.IsType<CombinedQueryFilter>(combined2);
 			Assert.NotNull(filter);
-			Assert.Equal(3, filter.Filters.Count);
-			Assert.Equal(filter1, filter.Filters[0]);
-			Assert.Equal(filter2, filter.Filters[1]);
-			Assert.Equal(QueryFilter.Empty, filter.Filters[2]);
+			Assert.Equal(3, filter.Count());
+			Assert.Equal(filter1, filter.ElementAt(0));
+			Assert.Equal(filter2, filter.ElementAt(1));
+			Assert.Equal(QueryFilter.Empty, filter.ElementAt(2));
 		}
 
 		[Fact]
@@ -27,9 +27,9 @@
 			Assert.NotNull(combined);
 			var filter = Assert.IsType<CombinedQueryFilter>(combined);
 
-			Assert.Equal(2, filter.Filters.Count);
-			Assert.Equal(filter1, filter.Filters[0]);
-			Assert.Equal(filter2, filter.Filters[1]);
+			Assert.Equal(2, filter.Count());
+			Assert.Equal(filter1, filter.ElementAt(0));
+			Assert.Equal(filter2, filter.ElementAt(1));
 		}
 
 		[Fact]
@@ -41,9 +41,9 @@
 			Assert.NotNull(combined);
 			var filter = Assert.IsType<CombinedQueryFilter>(combined);
 
-			Assert.Equal(2, filter.Filters.Count);
-			Assert.Equal(filter1, filter.Filters[0]);
-			Assert.Equal(QueryFilter.Empty, filter.Filters[1]);
+			Assert.Equal(2, filter.Count());
+			Assert.Equal(filter1, filter.ElementAt(0));
+			Assert.Equal(QueryFilter.Empty, filter.ElementAt(1));
 		}
 
 		[Fact]
@@ -76,8 +76,8 @@
 			var combined = QueryFilter.Combine(QueryFilter.Empty, QueryFilter.Empty);
 
 			Assert.NotNull(combined);
-			Assert.NotEmpty(combined.Filters);
-			Assert.Equal(2, combined.Filters.Count);
+			Assert.NotEmpty(combined);
+			Assert.Equal(2, combined.Count());
 		}
 
 		[Fact]

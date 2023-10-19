@@ -69,7 +69,7 @@ namespace Deveel.Data {
 		/// Gets or sets an optional set of orders to sort the
 		/// result of the request
 		/// </summary>
-		public IList<IResultSort>? ResultSorts { get; set; }
+		public ISort? Sort { get; set; }
 
 		/// <summary>
 		/// Sets or appends a new filter
@@ -106,10 +106,10 @@ namespace Deveel.Data {
 		/// Returns this instance of the page request with the
 		/// appended sort rule.
 		/// </returns>
-		public PageQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> selector) {
+		public PageQuery<TEntity> OrderBy(Expression<Func<TEntity, object?>> selector) {
 			Guard.IsNotNull(selector, nameof(selector));
 
-			return OrderBy(new ExpressionResultSort<TEntity>(selector));
+			return OrderBy(new ExpressionSort<TEntity>(selector));
 		}
 
 		/// <summary>
@@ -122,26 +122,27 @@ namespace Deveel.Data {
 		/// Returns this instance of the page request with the
 		/// appended sort rule.
 		/// </returns>
-		public PageQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> selector) {
+		public PageQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object?>> selector) {
 			Guard.IsNotNull(selector, nameof(selector));
 
-			return OrderBy(ResultSort.Create(selector, false));
+			return OrderBy(new ExpressionSort<TEntity>(selector, SortDirection.Descending));
 		}
 
 		/// <summary>
 		/// Appends the given sort order to the request
 		/// </summary>
-		/// <param name="resultSort">
+		/// <param name="sort">
 		/// The 
 		/// </param>
 		/// <returns></returns>
-		public PageQuery<TEntity> OrderBy(IResultSort resultSort) {
-			Guard.IsNotNull(resultSort, nameof(resultSort));
+		public PageQuery<TEntity> OrderBy(ISort sort) {
+			Guard.IsNotNull(sort, nameof(sort));
 
-			if (ResultSorts == null)
-				ResultSorts = new List<IResultSort>();
-
-			ResultSorts = ResultSorts.Append(resultSort).ToList();
+			if (Sort == null) {
+				Sort = sort;
+			} else {
+				Sort = Sort.Combine(sort);
+			}
 
 			return this;
 		}
@@ -152,17 +153,33 @@ namespace Deveel.Data {
 		/// <param name="fieldName">
 		/// The name of the field to sort by
 		/// </param>
-		/// <param name="ascending">
-		/// The flag indicating if the sort is ascending or descending
+		/// <param name="direction">
+		/// The sort direction to order by.
 		/// </param>
 		/// <returns>
 		/// Returns this instance of the page request with the
 		/// appended sort rule.
 		/// </returns>
-		public PageQuery<TEntity> OrderBy(string fieldName, bool ascending = true) {
+		public PageQuery<TEntity> OrderBy(string fieldName, SortDirection direction = SortDirection.Ascending) {
 			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
 
-			return OrderBy(ResultSort.Create(fieldName, ascending));
+			return OrderBy(new FieldSort(fieldName, direction));
+		}
+
+		/// <summary>
+		/// Appends a descending sort rule to the page request.
+		/// </summary>
+		/// <param name="fieldName">
+		/// The name of the field to sort by.
+		/// </param>
+		/// <returns>
+		/// Returns this instance of the page request with the
+		/// appended sort rule.
+		/// </returns>
+		public PageQuery<TEntity> OrderByDescending(string fieldName) {
+			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
+
+			return OrderBy(fieldName, SortDirection.Descending);
 		}
 	}
 }

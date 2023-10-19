@@ -12,26 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Linq.Expressions;
 
 namespace Deveel.Data {
 	/// <summary>
-	/// A service that maps a field by name to an expression that
-	/// selects the field from an entity.
+	/// An object that maps a field name to a <see cref="Expression"/>
+	/// used to select the field from an entity.
 	/// </summary>
-	/// <typeparam name="TEntity">
-	/// The type of entity to map the field for.
-	/// </typeparam>
-	public interface IEntityFieldMapper<TEntity> where TEntity : class {
+	/// <typeparam name="TEntity"></typeparam>
+	public interface IFieldMapper<TEntity> {
 		/// <summary>
-		/// Maps the given property name to an expression that
-		/// selects the property from the entity.
+		/// Maps the given field name to an expression that selects
+		/// a member of the entity.
 		/// </summary>
-		/// <param name="propertyName"></param>
+		/// <param name="fieldName">
+		/// The name of the field to map.
+		/// </param>
 		/// <returns>
-		/// Returns an expression that selects the property from the entity.
+		/// Returns an expression that selects the field from the entity.
 		/// </returns>
-		Expression<Func<TEntity, object>> Map(string propertyName);
+		Expression<Func<TEntity, object?>> MapField(string fieldName);
 	}
 }

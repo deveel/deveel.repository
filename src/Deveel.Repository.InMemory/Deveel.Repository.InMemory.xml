@@ -139,5 +139,69 @@
         <member name="M:Deveel.Data.InMemoryRepository`1.Dispose">
             <inheritdoc/>
         </member>
+        <member name="T:Deveel.Data.InMemoryRepositoryProvider`1">
+            <summary>
+            An implementation of <see cref="T:Deveel.Data.IRepositoryProvider`1"/>
+            that allows to create <see cref="T:Deveel.Data.InMemoryRepository`1"/>
+            for a given tenant.
+            </summary>
+            <typeparam name="TEntity"></typeparam>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepositoryProvider`1.#ctor(System.Collections.Generic.IDictionary{System.String,System.Collections.Generic.IList{`0}},Deveel.Data.IEntityFieldMapper{`0})">
+            <summary>
+            Constructs the provider with the given initial list 
+            of entities.
+            </summary>
+            <param name="list">
+            The initial list of entities to use to create the repositories.
+            </param>
+            <param name="fieldMapper">
+            A service to map the fields of the entity to expressions
+            that select the fields from the entity.
+            </param>
+        </member>
+        <member name="P:Deveel.Data.InMemoryRepositoryProvider`1.FieldMapper">
+            <summary>
+            Gets the field mapper used to map the fields of the entity
+            </summary>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepositoryProvider`1.GetRepository(System.String)">
+            <summary>
+            Gets a repository for the given tenant.
+            </summary>
+            <param name="tenantId">
+            The identifier of the tenant to get the repository for.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.InMemoryRepository`1"/>
+            for the given tenant.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepositoryProvider`1.CreateRepository(System.String,System.Collections.Generic.IList{`0})">
+            <summary>
+            Creates a new repository for the given tenant.
+            </summary>
+            <param name="tenantId">
+            The identifier of the tenant to create the repository for.
+            </param>
+            <param name="entities">
+            A list of entities to initialize the repository with.
+            </param>
+            <returns>
+            Returns an instance of <see cref="T:Deveel.Data.InMemoryRepository`1"/>
+            for the given tenant.
+            </returns>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepositoryProvider`1.Dispose(System.Boolean)">
+            <summary>
+            Disposes the provider and all the repositories created.
+            </summary>
+            <param name="disposing">
+            A flag indicating if the provider is disposing.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.InMemoryRepositoryProvider`1.Dispose">
+            <inheritdoc/>
+        </member>
     </members>
 </doc>

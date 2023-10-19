@@ -483,10 +483,8 @@ namespace Deveel.Data {
 					querySet = request.Filter.Apply(querySet);
 				}
 
-				if (request.ResultSorts != null) {
-					foreach (var sort in request.ResultSorts) {
-						querySet = sort.Apply(querySet);
-					}
+				if (request.Sort != null) {
+					querySet = request.Sort.Apply(querySet);
 				}
 
 				var total = await querySet.CountAsync(cancellationToken);
