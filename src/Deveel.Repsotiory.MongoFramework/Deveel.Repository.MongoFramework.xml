@@ -513,10 +513,10 @@
         <member name="M:Deveel.Data.MongoRepository`1.FindByKeyAsync(System.Object,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`1.FindAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.MongoRepository`1.FindAsync(Deveel.Data.Query,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
-        <member name="M:Deveel.Data.MongoRepository`1.FindAllAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.MongoRepository`1.FindAllAsync(Deveel.Data.Query,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
         <member name="M:Deveel.Data.MongoRepository`1.GetPageAsync(Deveel.Data.PageQuery{`0},System.Threading.CancellationToken)">

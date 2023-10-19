@@ -297,13 +297,11 @@ namespace Deveel.Data {
 
 
 		/// <inheritdoc/>
-		public Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public Task<IList<TEntity>> FindAllAsync(Query query, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var result = entities.Values
-					.AsQueryable()
-					.ToList(filter);
+				var result = query.Apply(entities.Values.AsQueryable()).ToList();
 
 				return Task.FromResult<IList<TEntity>>(result);
 			} catch (Exception ex) {
@@ -313,14 +311,11 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public Task<TEntity?> FindAsync(Query query, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var result = entities.Values
-					.AsQueryable()
-					.FirstOrDefault(filter);
-
+				var result = query.Apply(entities.Values.AsQueryable()).FirstOrDefault();
 				return Task.FromResult(result);
 			} catch (Exception ex) {
 				throw new RepositoryException("Error while searching for any entities in the repository matching the filter", ex);
@@ -371,12 +366,7 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var entitySet = entities.Values.AsQueryable();
-				if (request.Filter != null)
-					entitySet = request.Filter.Apply(entitySet);
-
-				if (request.Sort != null)
-					entitySet = request.Sort.Apply(entitySet, MapField);
+				var entitySet = request.ApplyQuery(entities.Values.AsQueryable());
 
 				var itemCount = entitySet.Count();
 				var items = entitySet

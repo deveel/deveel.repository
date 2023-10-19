@@ -61,15 +61,21 @@ namespace Deveel.Data {
 		public int Offset => (Page - 1) * Size;
 
 		/// <summary>
-		/// Gets or sets a filter to restrict the context of the query
+		/// The query that is applied to the request
 		/// </summary>
-		public IQueryFilter? Filter { get; set; }
+		public Query? Query { get; set; }
 
 		/// <summary>
-		/// Gets or sets an optional set of orders to sort the
-		/// result of the request
+		/// When the request has a query defined, gets the filter
+		/// that is applied to the request.
 		/// </summary>
-		public ISort? Sort { get; set; }
+		public IQueryFilter? Filter => Query?.Filter;
+
+		/// <summary>
+		/// When the request has a query defined, gets the sort
+		/// rule that is applied to the request.
+		/// </summary>
+		public ISort? Sort => Query?.Sort;
 
 		/// <summary>
 		/// Sets or appends a new filter
@@ -84,14 +90,13 @@ namespace Deveel.Data {
 		public PageQuery<TEntity> Where(Expression<Func<TEntity, bool>> expression) {
 			Guard.IsNotNull(expression, nameof(expression));
 
-			var filter = Filter;
-			if (filter == null) {
-				filter = QueryFilter.Where(expression);
-			} else {
-				filter = QueryFilter.Combine(filter, QueryFilter.Where(expression));
+			if (Query == null || !Query.Value.HasFilter) {
+				Query = Data.Query.Where(expression);
+			} else if (Query != null) {
+				Query = Query.Value.And(expression);
+			} else if (Query == null) {
+				Query = Data.Query.Where(expression);
 			}
-
-			Filter = filter;
 
 			return this;
 		}
@@ -138,11 +143,10 @@ namespace Deveel.Data {
 		public PageQuery<TEntity> OrderBy(ISort sort) {
 			Guard.IsNotNull(sort, nameof(sort));
 
-			if (Sort == null) {
-				Sort = sort;
-			} else {
-				Sort = Sort.Combine(sort);
-			}
+			if (Query == null)
+				Query = Data.Query.Empty;
+
+			Query = Query.Value.OrderBy(sort);
 
 			return this;
 		}
@@ -180,6 +184,24 @@ namespace Deveel.Data {
 			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
 
 			return OrderBy(fieldName, SortDirection.Descending);
+		}
+
+		/// <summary>
+		/// Applies the query to the given <see cref="IQueryable{TEntity}"/>,
+		/// if this page request has a query defined.
+		/// </summary>
+		/// <param name="queryable">
+		/// The queryable to apply the query to.
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="IQueryable{TEntity}"/> that is the result
+		/// of the application of the query to the given queryable.
+		/// </returns>
+		public IQueryable<TEntity> ApplyQuery(IQueryable<TEntity> queryable) {
+			if (Query != null)
+				queryable = Query.Value.Apply(queryable);
+
+			return queryable;
 		}
 	}
 }

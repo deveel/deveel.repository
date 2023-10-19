@@ -663,28 +663,20 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public async Task<TEntity?> FindAsync(Query query, CancellationToken cancellationToken = default) {
 			try {
-				var query = DbSet.AsQueryable();
-				if (filter != null) {
-					query = filter.Apply(query);
-				}
-
-				return await query.FirstOrDefaultAsync(cancellationToken);
+				var entities = query.Apply(DbSet.AsQueryable());
+				return await entities.FirstOrDefaultAsync(cancellationToken);
 			} catch (Exception ex) {
 				throw new RepositoryException("Unable to find the entity", ex);
 			}
 		}
 
 		/// <inheritdoc/>
-		public async Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public async Task<IList<TEntity>> FindAllAsync(Query query, CancellationToken cancellationToken = default) {
 			try {
-				var query = DbSet.AsQueryable();
-				if (filter != null) {
-					query = filter.Apply(query);
-				}
-
-				return await query.ToListAsync(cancellationToken);
+				var entities = query.Apply(DbSet.AsQueryable());
+				return await entities.ToListAsync(cancellationToken);
 			} catch (Exception ex) {
 
 				throw new RepositoryException("Unable to find the entities", ex);
@@ -694,17 +686,9 @@ namespace Deveel.Data {
 		/// <inheritdoc/>
 		public async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> query, CancellationToken cancellationToken = default) {
 			try {
-				var entitySet = DbSet.AsQueryable();
-
-				if (query.Filter != null) {
-					entitySet = query.Filter.Apply(entitySet);
-				}
+				var entitySet = query.ApplyQuery(DbSet.AsQueryable());
 
 				var totalCount = await entitySet.CountAsync(cancellationToken);
-
-				if (query.Sort != null) {
-					entitySet = query.Sort.Apply(entitySet);
-				}
 
 				entitySet = entitySet.Skip(query.Offset).Take(query.Size);
 

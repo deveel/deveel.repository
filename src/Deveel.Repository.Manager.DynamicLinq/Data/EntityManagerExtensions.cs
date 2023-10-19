@@ -41,7 +41,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static Task<TEntity?> FindFirstAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
 			where TEntity : class
-			=> manager.FindFirstAsync(new DynamicLinqFilter(expression), cancellationToken);
+			=> manager.FindFirstAsync(Query.Where(new DynamicLinqFilter(expression)), cancellationToken);
 
 		/// <summary>
 		/// Finds a range of entities in the repository that matches the given
@@ -64,7 +64,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
 			where TEntity : class
-			=> manager.FindAllAsync(new DynamicLinqFilter(expression), cancellationToken);
+			=> manager.FindAllAsync(Query.Where(new DynamicLinqFilter(expression)), cancellationToken);
 
 		/// <summary>
 		/// Counts the number of entities in the repository that matches the

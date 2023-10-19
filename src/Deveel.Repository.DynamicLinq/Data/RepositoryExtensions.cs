@@ -47,7 +47,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static Task<TEntity?> FindAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.AsFilterable().FindAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
+			=> repository.AsFilterable().FindAsync(Query.Where(new DynamicLinqFilter(paramName, expression)), cancellationToken);
 
 		/// <summary>
 		/// Finds a single entity in the repository that matches the given dynamic LINQ expression.
@@ -70,7 +70,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static Task<TEntity?> FindAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.AsFilterable().FindAsync(new DynamicLinqFilter(expression), cancellationToken);
+			=> repository.AsFilterable().FindAsync(Query.Where(new DynamicLinqFilter(expression)), cancellationToken);
 
 		#endregion
 
@@ -78,11 +78,11 @@ namespace Deveel.Data {
 
 		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.AsFilterable().FindAllAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
+			=> repository.AsFilterable().FindAllAsync(Query.Where(new DynamicLinqFilter(paramName, expression)), cancellationToken);
 
 		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.AsFilterable().FindAllAsync(new DynamicLinqFilter(expression), cancellationToken);
+			=> repository.AsFilterable().FindAllAsync(Query.Where(new DynamicLinqFilter(expression)), cancellationToken);
 
 		#endregion
 

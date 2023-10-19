@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Linq.Expressions;
+
 namespace Deveel.Data {
 	/// <summary>
 	/// A query that can be applied to a repository
@@ -38,6 +40,11 @@ namespace Deveel.Data {
 		/// Gets the filter to apply to the query.
 		/// </summary>
 		public IQueryFilter Filter { get; }
+
+		/// <summary>
+		/// Gets a value indicating if the query has a filter.
+		/// </summary>
+		public bool HasFilter => !(Filter?.IsEmpty() ?? true);
 
 		/// <summary>
 		/// Gets the sort to apply to the results
@@ -77,5 +84,42 @@ namespace Deveel.Data {
 
 			return queryable;
 		}
+
+		public Query And(IQueryFilter filter)
+			=> new Query(QueryFilter.Combine(Filter, filter), Sort);
+
+		public Query And<TEntity>(Expression<Func<TEntity, bool>> filter) where TEntity : class
+			=> new Query(QueryFilter.Combine(Filter, QueryFilter.Where<TEntity>(filter)), Sort);
+
+		public Query OrderBy(ISort sort)
+			=> new Query(Filter, CombineSort(Sort, sort));
+
+		public Query OrderBy<TEntity>(Expression<Func<TEntity, object?>> field, SortDirection direction = SortDirection.Ascending) 
+			where TEntity : class
+			=> new Query(Filter, CombineSort(Sort, Data.Sort.OrderBy(field, direction)));
+
+		public Query OrderBy(string field, SortDirection direction = SortDirection.Ascending) 
+			=> new Query(Filter, CombineSort(Sort, Data.Sort.OrderBy(field, direction)));
+
+		public Query OrderByDescending<TEntity>(Expression<Func<TEntity, object?>> field) 
+			where TEntity : class
+			=> OrderBy(field, SortDirection.Descending);
+
+		public Query OrderByDescending(string field) 
+			=> OrderBy(field, SortDirection.Descending);
+
+		private static ISort CombineSort(ISort? sort, ISort other) {
+			if (sort == null)
+				return other;
+
+			return sort.Combine(other);
+		}
+
+		public static Query Where<TEntity>(Expression<Func<TEntity, bool>>? filter)
+			where TEntity : class
+			=> new Query(filter == null ? QueryFilter.Empty : QueryFilter.Where<TEntity>(filter));
+
+		public static Query Where(IQueryFilter filter)
+			=> new Query(filter);
 	}
 }

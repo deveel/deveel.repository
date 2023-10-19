@@ -4,25 +4,6 @@
         <name>Deveel.Repository.InMemory</name>
     </assembly>
     <members>
-        <member name="T:Deveel.Data.IEntityFieldMapper`1">
-            <summary>
-            A service that maps a field by name to an expression that
-            selects the field from an entity.
-            </summary>
-            <typeparam name="TEntity">
-            The type of entity to map the field for.
-            </typeparam>
-        </member>
-        <member name="M:Deveel.Data.IEntityFieldMapper`1.Map(System.String)">
-            <summary>
-            Maps the given property name to an expression that
-            selects the property from the entity.
-            </summary>
-            <param name="propertyName"></param>
-            <returns>
-            Returns an expression that selects the property from the entity.
-            </returns>
-        </member>
         <member name="T:Deveel.Data.InMemoryRepository`1">
             <summary>
             A repository that uses the memory of the process to store
@@ -32,7 +13,7 @@
             The type of entity managed by the repository.
             </typeparam>
         </member>
-        <member name="M:Deveel.Data.InMemoryRepository`1.#ctor(System.Collections.Generic.IEnumerable{`0},Deveel.Data.IEntityFieldMapper{`0})">
+        <member name="M:Deveel.Data.InMemoryRepository`1.#ctor(System.Collections.Generic.IEnumerable{`0},Deveel.Data.IFieldMapper{`0})">
             <summary>
             Constructs the repository with the given list of
             initial entities.
@@ -45,7 +26,7 @@
             can select the field from an entity.
             </param>
         </member>
-        <member name="M:Deveel.Data.InMemoryRepository`1.#ctor(System.String,System.Collections.Generic.IEnumerable{`0},Deveel.Data.IEntityFieldMapper{`0})">
+        <member name="M:Deveel.Data.InMemoryRepository`1.#ctor(System.String,System.Collections.Generic.IEnumerable{`0},Deveel.Data.IFieldMapper{`0})">
             <summary>
             Constructs the repository with the given list of
             initial entities for the given tenant.
@@ -98,10 +79,10 @@
         <member name="M:Deveel.Data.InMemoryRepository`1.ExistsAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
-        <member name="M:Deveel.Data.InMemoryRepository`1.FindAllAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.InMemoryRepository`1.FindAllAsync(Deveel.Data.Query,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
-        <member name="M:Deveel.Data.InMemoryRepository`1.FindAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.InMemoryRepository`1.FindAsync(Deveel.Data.Query,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
         <member name="M:Deveel.Data.InMemoryRepository`1.FindByKeyAsync(System.Object,System.Threading.CancellationToken)">
@@ -147,7 +128,7 @@
             </summary>
             <typeparam name="TEntity"></typeparam>
         </member>
-        <member name="M:Deveel.Data.InMemoryRepositoryProvider`1.#ctor(System.Collections.Generic.IDictionary{System.String,System.Collections.Generic.IList{`0}},Deveel.Data.IEntityFieldMapper{`0})">
+        <member name="M:Deveel.Data.InMemoryRepositoryProvider`1.#ctor(System.Collections.Generic.IDictionary{System.String,System.Collections.Generic.IList{`0}},Deveel.Data.IFieldMapper{`0})">
             <summary>
             Constructs the provider with the given initial list 
             of entities.
