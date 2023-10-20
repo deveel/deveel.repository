@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections;
 using System.Linq.Expressions;
 
 using CommunityToolkit.Diagnostics;
@@ -21,7 +22,9 @@ namespace Deveel.Data {
 	/// An object that combines multiple <see cref="IQueryFilter"/> objects
 	/// into a single one.
 	/// </summary>
-	public sealed class CombinedQueryFilter : IExpressionQueryFilter {
+	public sealed class CombinedQueryFilter : IExpressionQueryFilter, IEnumerable<IQueryFilter> {
+		private readonly IReadOnlyList<IQueryFilter> filters;
+
 		/// <summary>
 		/// Constructs the filter by combining the given list of filters.
 		/// </summary>
@@ -38,13 +41,12 @@ namespace Deveel.Data {
 			Guard.IsNotNull(filters, nameof(filters));
 			Guard.IsNotEmpty(filters, nameof(filters));
 
-			Filters = filters.ToList().AsReadOnly();
+			this.filters = filters.ToList().AsReadOnly();
 		}
 
-		/// <summary>
-		/// Gets the list of filters that are combined into this object.
-		/// </summary>
-		public IReadOnlyList<IQueryFilter> Filters { get; }
+		IEnumerator<IQueryFilter> IEnumerable<IQueryFilter>.GetEnumerator() => filters.GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<IQueryFilter>).GetEnumerator();
 
 		/// <summary>
 		/// Creates a new combination between the filters
@@ -63,7 +65,13 @@ namespace Deveel.Data {
 		public CombinedQueryFilter Combine(IQueryFilter filter) {
 			Guard.IsNotNull(filter, nameof(filter));
 
-			var filters = new List<IQueryFilter>(Filters) { filter};
+			var filters = new List<IQueryFilter>(this.filters);
+			if (filter is CombinedQueryFilter combined) {
+				filters.AddRange(combined.filters);
+			} else {
+				filters.Add(filter);
+			}
+			
 			return new CombinedQueryFilter(filters);
 		}
 
@@ -71,15 +79,15 @@ namespace Deveel.Data {
 		public Expression<Func<TEntity, bool>> AsLambda<TEntity>()
 			where TEntity : class {
 
-			if (Filters.Count == 0)
+			if (filters.Count == 0)
 				throw new InvalidOperationException("No filters were combined");
 
-			if (Filters.Count == 1)
-				return Filters[0].AsLambda<TEntity>();
+			if (filters.Count == 1)
+				return filters[0].AsLambda<TEntity>();
 
 			Expression<Func<TEntity, bool>>? result = null;
 
-			foreach (var filter in Filters) {
+			foreach (var filter in filters) {
 				if (filter == null || filter.IsEmpty())
 					continue;
 

@@ -129,7 +129,7 @@ namespace Deveel.Data {
 				return queryable;
 
 			if (filter is CombinedQueryFilter combined) {
-				foreach (var f in combined.Filters) {
+				foreach (var f in combined) {
 					queryable = f.Apply(queryable);
 				}
 
@@ -207,17 +207,20 @@ namespace Deveel.Data {
 			Guard.IsNotNull(filter1, nameof(filter1));
 			Guard.IsNotNull(filter2, nameof(filter2));
 
+			if (filter1.IsEmpty() && filter2.IsEmpty())
+				throw new ArgumentException("Cannot combine two empty filters");
+
 			var filters = new List<IQueryFilter>();
 
 			if (filter1 is CombinedQueryFilter combined1) {
-				filters.AddRange(combined1.Filters);
-			} else {
+				filters.AddRange(combined1);
+			} else if (!filter1.IsEmpty()) {
 				filters.Add(filter1);
 			}
 
 			if (filter2 is CombinedQueryFilter combined2) {
-				filters.AddRange(combined2.Filters);
-			} else {
+				filters.AddRange(combined2);
+			} else if (!filter2.IsEmpty()) {
 				filters.Add(filter2);
 			}
 

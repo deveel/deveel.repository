@@ -1038,9 +1038,9 @@ namespace Deveel.Data {
         /// <summary>
         /// Finds an entity in the repository that matches the given filter.
         /// </summary>
-        /// <param name="filter">
-        /// The filter to be used to look for the entity.
-        /// </param>
+		/// <param name="query">
+		/// The query to be used to look for the entity.
+		/// </param>
 		/// <param name="cancellationToken">
 		/// A token used to cancel the operation.
 		/// </param>
@@ -1057,21 +1057,19 @@ namespace Deveel.Data {
         /// <exception cref="ArgumentNullException">
         /// Thrown when the given filter is <c>null</c>.
         /// </exception>
-        /// <seealso cref="IFilterableRepository{TEntity}.FindAsync(IQueryFilter, CancellationToken)"/>
+        /// <seealso cref="IFilterableRepository{TEntity}.FindAsync(IQuery, CancellationToken)"/>
         // TODO: Is there any use case for using OperationResult<TEntity> here
         //       instead of returning the entity?
-        public virtual async Task<TEntity?> FindFirstAsync(IQueryFilter filter, CancellationToken? cancellationToken = null) {
+        public virtual async Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			if (!SupportsFilters)
 				throw new NotSupportedException("The repository does not support filters");
 
-            ArgumentNullException.ThrowIfNull(filter, nameof(filter));
-
 			try {
 				Logger.LogFindingFirstEntityByQuery(typeof(TEntity));
 
-				return await FilterableRepository.FindAsync(filter, GetCancellationToken(cancellationToken));
+				return await FilterableRepository.FindAsync(query, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogUnknownError(ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
@@ -1092,15 +1090,15 @@ namespace Deveel.Data {
         /// Returns the first instance of <typeparamref name="TEntity"/> that
         /// mathces the given filter, or <c>null</c> if no entity was found.
         /// </returns>
-        /// <seealso cref="FindFirstAsync(IQueryFilter, CancellationToken?)"/>
+        /// <seealso cref="FindFirstAsync(IQuery, CancellationToken?)"/>
 		public Task<TEntity?> FindFirstAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
-            => FindFirstAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter), cancellationToken);
+            => FindFirstAsync(filter == null ? Query.Empty : new QueryBuilder<TEntity>().Where(filter), cancellationToken);
 
         /// <summary>
         /// Finds all the entities in the repository that match the given filter.
         /// </summary>
-        /// <param name="filter">
-        /// The filter to be used to look for the entities.
+        /// <param name="query">
+		/// The query to be used to look for the entities.
         /// </param>
 		/// <param name="cancellationToken">
 		/// A token used to cancel the operation.
@@ -1117,7 +1115,7 @@ namespace Deveel.Data {
         /// </exception>
         // TODO: Is there any use case for using OperationResult<IList<TEntity>> here
         //       instead of returning a list of entities?
-		public virtual async Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken? cancellationToken = null) {
+		public virtual async Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			if (!SupportsFilters)
@@ -1126,7 +1124,7 @@ namespace Deveel.Data {
 			try {
 				Logger.LogFindingAllEntitiesByQuery(typeof(TEntity));
 
-				return await FilterableRepository.FindAllAsync(filter, GetCancellationToken(cancellationToken));
+				return await FilterableRepository.FindAllAsync(query, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogUnknownError(ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
@@ -1144,7 +1142,7 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation.
 		/// </param>
         /// <remarks>
-        /// This method is a shortcut to the <see cref="FindAllAsync(IQueryFilter,CancellationToken?)"/>
+        /// This method is a shortcut to the <see cref="FindAllAsync(IQuery,CancellationToken?)"/>
         /// using an instance of <see cref="ExpressionQueryFilter{TEntity}"/> as
         /// argument.
         /// </remarks>
@@ -1152,13 +1150,13 @@ namespace Deveel.Data {
         /// Returns a list of <typeparamref name="TEntity"/> that match the
         /// given filter.
         /// </returns>
-        /// <seealso cref="FindAllAsync(IQueryFilter,CancellationToken?)"/>
+        /// <seealso cref="FindAllAsync(IQuery,CancellationToken?)"/>
         /// <seealso cref="ExpressionQueryFilter{TEntity}"/>
         /// <exception cref="NotSupportedException">
         /// Thrown when the repository does not support filters.
         /// </exception>
         public Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
-            => FindAllAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter), cancellationToken);
+            => FindAllAsync(Query.Where(filter), cancellationToken);
 
         /// <summary>
         /// Counts the number of entities in the repository that match

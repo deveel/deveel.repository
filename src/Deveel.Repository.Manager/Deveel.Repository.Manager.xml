@@ -774,12 +774,12 @@
             Thrown when an unknown error occurs while looking for the entity.
             </exception>
         </member>
-        <member name="M:Deveel.Data.EntityManager`1.FindFirstAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})">
+        <member name="M:Deveel.Data.EntityManager`1.FindFirstAsync(Deveel.Data.IQuery,System.Nullable{System.Threading.CancellationToken})">
             <summary>
             Finds an entity in the repository that matches the given filter.
             </summary>
-            <param name="filter">
-            The filter to be used to look for the entity.
+            <param name="query">
+            The query to be used to look for the entity.
             </param>
             <param name="cancellationToken">
             A token used to cancel the operation.
@@ -797,7 +797,7 @@
             <exception cref="T:System.ArgumentNullException">
             Thrown when the given filter is <c>null</c>.
             </exception>
-            <seealso cref="M:Deveel.Data.IFilterableRepository`1.FindAsync(Deveel.Data.IQueryFilter,System.Threading.CancellationToken)"/>
+            <seealso cref="M:Deveel.Data.IFilterableRepository`1.FindAsync(Deveel.Data.IQuery,System.Threading.CancellationToken)"/>
         </member>
         <member name="M:Deveel.Data.EntityManager`1.FindFirstAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Nullable{System.Threading.CancellationToken})">
             <summary>
@@ -814,14 +814,14 @@
             Returns the first instance of <typeparamref name="TEntity"/> that
             mathces the given filter, or <c>null</c> if no entity was found.
             </returns>
-            <seealso cref="M:Deveel.Data.EntityManager`1.FindFirstAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})"/>
+            <seealso cref="M:Deveel.Data.EntityManager`1.FindFirstAsync(Deveel.Data.IQuery,System.Nullable{System.Threading.CancellationToken})"/>
         </member>
-        <member name="M:Deveel.Data.EntityManager`1.FindAllAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})">
+        <member name="M:Deveel.Data.EntityManager`1.FindAllAsync(Deveel.Data.IQuery,System.Nullable{System.Threading.CancellationToken})">
             <summary>
             Finds all the entities in the repository that match the given filter.
             </summary>
-            <param name="filter">
-            The filter to be used to look for the entities.
+            <param name="query">
+            The query to be used to look for the entities.
             </param>
             <param name="cancellationToken">
             A token used to cancel the operation.
@@ -849,7 +849,7 @@
             A token used to cancel the operation.
             </param>
             <remarks>
-            This method is a shortcut to the <see cref="M:Deveel.Data.EntityManager`1.FindAllAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})"/>
+            This method is a shortcut to the <see cref="M:Deveel.Data.EntityManager`1.FindAllAsync(Deveel.Data.IQuery,System.Nullable{System.Threading.CancellationToken})"/>
             using an instance of <see cref="T:Deveel.Data.ExpressionQueryFilter`1"/> as
             argument.
             </remarks>
@@ -857,7 +857,7 @@
             Returns a list of <typeparamref name="TEntity"/> that match the
             given filter.
             </returns>
-            <seealso cref="M:Deveel.Data.EntityManager`1.FindAllAsync(Deveel.Data.IQueryFilter,System.Nullable{System.Threading.CancellationToken})"/>
+            <seealso cref="M:Deveel.Data.EntityManager`1.FindAllAsync(Deveel.Data.IQuery,System.Nullable{System.Threading.CancellationToken})"/>
             <seealso cref="T:Deveel.Data.ExpressionQueryFilter`1"/>
             <exception cref="T:System.NotSupportedException">
             Thrown when the repository does not support filters.

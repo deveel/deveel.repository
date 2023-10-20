@@ -57,7 +57,7 @@ namespace Deveel.Data {
 			if (!(repository is MongoRepository<TEntity> mongoRepository))
 				throw new ArgumentException($"The repository is not a {nameof(MongoRepository<TEntity>)}");
 
-			return mongoRepository.FindAsync(new MongoGeoDistanceFilter<TEntity>(field, point, maxDistance));
+			return mongoRepository.FindAsync(new Query(new MongoGeoDistanceFilter<TEntity>(field, point, maxDistance)));
 		}
 
 		/// <summary>

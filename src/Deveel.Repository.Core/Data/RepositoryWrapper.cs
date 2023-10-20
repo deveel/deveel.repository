@@ -191,25 +191,37 @@ namespace Deveel.Data {
 			return Task.FromResult(true);
 		}
 
-		public Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
 			TEntity? result;
 
 			if (entities is IQueryable<TEntity> queryable) {
-				result = queryable.FirstOrDefault(filter.AsLambda<TEntity>());
+				result = query.Apply(queryable).FirstOrDefault();
 			} else {
-				result = entities.FirstOrDefault(filter.AsLambda<TEntity>().Compile());
+				if (query.HasFilter()) {
+					result = entities.Where(query.Filter!.AsLambda<TEntity>().Compile()).FirstOrDefault();
+				} else {
+					result = entities.FirstOrDefault();
+				}
 			}
 
 			return Task.FromResult(result);
 		}
 
-		public Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			IEnumerable<TEntity> result;
 
 			if (entities is IQueryable<TEntity> queryable) {
-				result = queryable.Where(filter.AsLambda<TEntity>());
+				result = query.Apply(queryable);
 			} else {
-				result = entities.Where(filter.AsLambda<TEntity>().Compile());
+				if (query.HasFilter()) {
+					result = entities.Where(query.Filter!.AsLambda<TEntity>().Compile());
+				} else {
+					result = entities;
+				}
+
+				if (query.Sort != null) {
+					// TODO:
+				}
 			}
 
 			return Task.FromResult<IList<TEntity>>(result.ToList());

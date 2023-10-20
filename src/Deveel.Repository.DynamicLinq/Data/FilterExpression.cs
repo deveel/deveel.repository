@@ -216,10 +216,6 @@ namespace Deveel.Data {
 		/// <typeparam name="T">
 		/// The type of the parameter to be used in the expression.
 		/// </typeparam>
-		/// <param name="cache">
-		/// A cache object that can be used to avoid recompilation of the same
-		/// expression string.
-		/// </param>
 		/// <param name="paramName">
 		/// The name of the parameter to be used in the expression.
 		/// </param>

@@ -398,53 +398,23 @@ namespace Deveel.Data {
 			}
 		}
 
-		/// <summary>
-		/// Finds the first entity in the repository that matches the given filter.
-		/// </summary>
-		/// <param name="filter">
-		/// The expression that defines the filter to apply to the entities.
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation.
-		/// </param>
-		/// <returns>
-		/// Returns the first entity that matches the given filter, or <c>null</c>
-		/// if no entity is found.
-		/// </returns>
-        public virtual async Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		/// <inheritdoc/>
+        public virtual async Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
-				var query = Entities.AsQueryable();
-				if (filter != null) {
-					query = filter.Apply(query);
-				}
+				var result = query.Apply(Entities.AsQueryable());
 
-				return await query.FirstOrDefaultAsync(cancellationToken);
+				return await result.FirstOrDefaultAsync(cancellationToken);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unknown error while trying to find an entity", ex);
 			}
         }
 
-		/// <summary>
-		/// Finds all the entities in the repository that match the given filter.
-		/// </summary>
-		/// <param name="filter">
-		/// The expression that defines the filter to apply to the entities.
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation.
-		/// </param>
-		/// <returns>
-		/// Returns a list of entities that match the given filter.
-		/// </returns>
-		public virtual async Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		/// <inheritdoc/>
+		public virtual async Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
-				var query = Entities.AsQueryable();
-				if (filter != null) {
-					query = filter.Apply(query);
-				}
-
-				return await query.ToListAsync(cancellationToken);
+				var result = query.Apply(Entities.AsQueryable());
+				return await result.ToListAsync(cancellationToken);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unable to list the entities", ex);
@@ -478,17 +448,7 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 
 			try {
-				var querySet = AsQueryable();
-				if (request.Filter != null) {
-					querySet = request.Filter.Apply(querySet);
-				}
-
-				if (request.ResultSorts != null) {
-					foreach (var sort in request.ResultSorts) {
-						querySet = sort.Apply(querySet);
-					}
-				}
-
+				var querySet = request.ApplyQuery(AsQueryable());
 				var total = await querySet.CountAsync(cancellationToken);
 
 				var items = await querySet

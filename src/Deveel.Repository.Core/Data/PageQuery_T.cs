@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 using CommunityToolkit.Diagnostics;
@@ -23,7 +24,9 @@ namespace Deveel.Data {
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
 	/// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>
-	public class PageQuery<TEntity> where TEntity : class {
+	public class PageQuery<TEntity> : IQuery where TEntity : class {
+		private QueryBuilder<TEntity> queryBuilder;
+
 		/// <summary>
 		/// Constructs a new page request with the given page number and size
 		/// </summary>
@@ -42,6 +45,8 @@ namespace Deveel.Data {
 
 			Page = page;
 			Size = size;
+
+			queryBuilder = new QueryBuilder<TEntity>();
 		}
 
 		/// <summary>
@@ -61,15 +66,18 @@ namespace Deveel.Data {
 		public int Offset => (Page - 1) * Size;
 
 		/// <summary>
-		/// Gets or sets a filter to restrict the context of the query
+		/// The query that is applied to the request
 		/// </summary>
-		public IQueryFilter? Filter { get; set; }
+		public IQuery? Query { 
+			get => queryBuilder.Query;
+			set => queryBuilder = new QueryBuilder<TEntity>(value);
+		}
 
-		/// <summary>
-		/// Gets or sets an optional set of orders to sort the
-		/// result of the request
-		/// </summary>
-		public IList<IResultSort>? ResultSorts { get; set; }
+		[ExcludeFromCodeCoverage]
+		IQueryFilter? IQuery.Filter => Query?.Filter;
+
+		[ExcludeFromCodeCoverage]
+		ISort? IQuery.Sort => Query?.Sort;
 
 		/// <summary>
 		/// Sets or appends a new filter
@@ -84,14 +92,7 @@ namespace Deveel.Data {
 		public PageQuery<TEntity> Where(Expression<Func<TEntity, bool>> expression) {
 			Guard.IsNotNull(expression, nameof(expression));
 
-			var filter = Filter;
-			if (filter == null) {
-				filter = QueryFilter.Where(expression);
-			} else {
-				filter = QueryFilter.Combine(filter, QueryFilter.Where(expression));
-			}
-
-			Filter = filter;
+			queryBuilder.Where(expression);
 
 			return this;
 		}
@@ -106,10 +107,10 @@ namespace Deveel.Data {
 		/// Returns this instance of the page request with the
 		/// appended sort rule.
 		/// </returns>
-		public PageQuery<TEntity> OrderBy(Expression<Func<TEntity, object>> selector) {
+		public PageQuery<TEntity> OrderBy(Expression<Func<TEntity, object?>> selector) {
 			Guard.IsNotNull(selector, nameof(selector));
 
-			return OrderBy(new ExpressionResultSort<TEntity>(selector));
+			return OrderBy(new ExpressionSort<TEntity>(selector));
 		}
 
 		/// <summary>
@@ -122,26 +123,23 @@ namespace Deveel.Data {
 		/// Returns this instance of the page request with the
 		/// appended sort rule.
 		/// </returns>
-		public PageQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object>> selector) {
+		public PageQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object?>> selector) {
 			Guard.IsNotNull(selector, nameof(selector));
 
-			return OrderBy(ResultSort.Create(selector, false));
+			return OrderBy(new ExpressionSort<TEntity>(selector, SortDirection.Descending));
 		}
 
 		/// <summary>
 		/// Appends the given sort order to the request
 		/// </summary>
-		/// <param name="resultSort">
+		/// <param name="sort">
 		/// The 
 		/// </param>
 		/// <returns></returns>
-		public PageQuery<TEntity> OrderBy(IResultSort resultSort) {
-			Guard.IsNotNull(resultSort, nameof(resultSort));
+		public PageQuery<TEntity> OrderBy(ISort sort) {
+			Guard.IsNotNull(sort, nameof(sort));
 
-			if (ResultSorts == null)
-				ResultSorts = new List<IResultSort>();
-
-			ResultSorts = ResultSorts.Append(resultSort).ToList();
+			queryBuilder.OrderBy(sort);
 
 			return this;
 		}
@@ -152,17 +150,53 @@ namespace Deveel.Data {
 		/// <param name="fieldName">
 		/// The name of the field to sort by
 		/// </param>
-		/// <param name="ascending">
-		/// The flag indicating if the sort is ascending or descending
+		/// <param name="direction">
+		/// The sort direction to order by.
 		/// </param>
 		/// <returns>
 		/// Returns this instance of the page request with the
 		/// appended sort rule.
 		/// </returns>
-		public PageQuery<TEntity> OrderBy(string fieldName, bool ascending = true) {
+		public PageQuery<TEntity> OrderBy(string fieldName, SortDirection direction = SortDirection.Ascending) {
 			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
 
-			return OrderBy(ResultSort.Create(fieldName, ascending));
+			return OrderBy(new FieldSort(fieldName, direction));
+		}
+
+		/// <summary>
+		/// Appends a descending sort rule to the page request.
+		/// </summary>
+		/// <param name="fieldName">
+		/// The name of the field to sort by.
+		/// </param>
+		/// <returns>
+		/// Returns this instance of the page request with the
+		/// appended sort rule.
+		/// </returns>
+		public PageQuery<TEntity> OrderByDescending(string fieldName) {
+			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
+
+			return OrderBy(fieldName, SortDirection.Descending);
+		}
+
+		/// <summary>
+		/// Applies the query to the given <see cref="IQueryable{TEntity}"/>,
+		/// if this page request has a query defined.
+		/// </summary>
+		/// <param name="queryable">
+		/// The queryable to apply the query to.
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="IQueryable{TEntity}"/> that is the result
+		/// of the application of the query to the given queryable.
+		/// </returns>
+		public IQueryable<TEntity> ApplyQuery(IQueryable<TEntity> queryable) {
+			var query = Query;
+			
+			if (query != null)
+				queryable = query.Apply(queryable);
+
+			return queryable;
 		}
 	}
 }

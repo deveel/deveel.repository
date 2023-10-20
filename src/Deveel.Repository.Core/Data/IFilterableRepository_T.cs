@@ -64,9 +64,12 @@ namespace Deveel.Data {
 		Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Finds the first item in the repository that matches the given filtering condition
+		/// Finds the first item in the repository that matches the given query
 		/// </summary>
-		/// <param name="filter">The filter used to identify the item</param>
+		/// <param name="query">
+		/// The query definition used to identify the item to return
+		/// and eventually sort the results.
+		/// </param>
 		/// <param name="cancellationToken">
 		/// A token used to cancel the operation
 		/// </param>
@@ -78,23 +81,25 @@ namespace Deveel.Data {
 		/// Thrown if the repository does not support filtering
 		/// </exception>
 		/// <exception cref="ArgumentException">
-		/// Throw if the <paramref name="filter"/> is not supported by the repository
+		/// Throw if the <paramref name="query"/> defines a filter or a sort rule
+		/// that is not supported by the repository
 		/// </exception>
-		Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
+		Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Finds all the items in the repository that match the given filtering condition
 		/// </summary>
-		/// <param name="filter">
-		/// The filter used to identify the items to be returned
+		/// <param name="query">
+		/// The query definition used to identify the item to return
+		/// and eventually sort the results.
 		/// </param>
 		/// <param name="cancellationToken">
 		/// A token used to cancel the operation
 		/// </param>
 		/// <returns>
-		/// Returns a list of items in the repository that match the given filtering condition,
+		/// Returns a list of items in the repository that match the given query,
 		/// or an empty list if none of the items matches the condition.
 		/// </returns>
-        Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
+		Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default);
     }
 }

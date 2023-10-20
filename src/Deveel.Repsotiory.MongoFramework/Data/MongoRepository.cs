@@ -663,28 +663,20 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<TEntity?> FindAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public async Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
-				var query = DbSet.AsQueryable();
-				if (filter != null) {
-					query = filter.Apply(query);
-				}
-
-				return await query.FirstOrDefaultAsync(cancellationToken);
+				var entities = query.Apply(DbSet.AsQueryable());
+				return await entities.FirstOrDefaultAsync(cancellationToken);
 			} catch (Exception ex) {
 				throw new RepositoryException("Unable to find the entity", ex);
 			}
 		}
 
 		/// <inheritdoc/>
-		public async Task<IList<TEntity>> FindAllAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public async Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
-				var query = DbSet.AsQueryable();
-				if (filter != null) {
-					query = filter.Apply(query);
-				}
-
-				return await query.ToListAsync(cancellationToken);
+				var entities = query.Apply(DbSet.AsQueryable());
+				return await entities.ToListAsync(cancellationToken);
 			} catch (Exception ex) {
 
 				throw new RepositoryException("Unable to find the entities", ex);
@@ -692,40 +684,16 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
+		public async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> query, CancellationToken cancellationToken = default) {
 			try {
-				var entitySet = DbSet.AsQueryable();
-
-				if (request.Filter != null) {
-					entitySet = request.Filter.Apply(entitySet);
-				}
+				var entitySet = query.ApplyQuery(DbSet.AsQueryable());
 
 				var totalCount = await entitySet.CountAsync(cancellationToken);
 
-				if (request.ResultSorts != null) {
-					foreach (var sort in request.ResultSorts) {
-						Expression<Func<TEntity, object>> keySelector;
-
-						if (sort.Field is StringFieldRef stringRef) {
-							keySelector = Field(stringRef.FieldName);
-						} else if (sort.Field is ExpressionFieldRef<TEntity> exprRef) {
-							keySelector = exprRef.Expression;
-						} else {
-							throw new NotSupportedException($"The sort of type {sort.GetType()} is not supported");
-						}
-
-						if (sort.Ascending) {
-							entitySet = entitySet.OrderBy(keySelector);
-						} else {
-							entitySet = entitySet.OrderByDescending(keySelector);
-						}
-					}
-				}
-
-				entitySet = entitySet.Skip(request.Offset).Take(request.Size);
+				entitySet = entitySet.Skip(query.Offset).Take(query.Size);
 
 				var items = await entitySet.ToListAsync(cancellationToken);
-				return new PageResult<TEntity>(request, totalCount, items);
+				return new PageResult<TEntity>(query, totalCount, items);
 			} catch (Exception ex) {
 
 				throw new RepositoryException("Unable to execute the query", ex);

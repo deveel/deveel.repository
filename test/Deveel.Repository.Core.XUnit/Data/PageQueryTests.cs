@@ -1,4 +1,6 @@
-﻿namespace Deveel.Data {
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Deveel.Data {
 	public static class PageQueryTests {
 		[Fact]
 		public static void NewPageQuery() {
@@ -7,23 +9,26 @@
 			Assert.Equal(1, query.Page);
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
-			Assert.Null(query.Filter);
-			Assert.Null(query.ResultSorts);
+			Assert.NotNull(query.Query);
+			Assert.Equal(Query.Empty, query.Query);
+			Assert.NotNull(query.Query.Filter);
+			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
 		}
 
 		[Fact]
 		public static void NewPageQuery_WithEmptyFilter() {
 			var query = new PageQuery<Person>(1, 10) {
-				Filter = QueryFilter.Empty
+				Query = Query.Empty
 			};
 
 			Assert.Equal(1, query.Page);
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
-			Assert.NotNull(query.Filter);
-			Assert.Equal(QueryFilter.Empty, query.Filter);
-			Assert.True(query.Filter.IsEmpty());
-			Assert.Null(query.ResultSorts);
+			Assert.NotNull(query.Query);
+			Assert.NotNull(query.Query.Filter);
+			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
+			Assert.True(query.Query.Filter.IsEmpty());
+			Assert.Null(query.Query.Sort);
 		}
 
 		[Fact]
@@ -34,13 +39,15 @@
 			Assert.Equal(1, query.Page);
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
-			Assert.NotNull(query.Filter);
-			Assert.False(query.Filter.IsEmpty());
+			Assert.NotNull(query.Query);
+			Assert.True(query.Query.HasFilter());
+			Assert.NotNull(query.Query.Filter);
+			Assert.False(query.Query.Filter.IsEmpty());
 
-			var expr = Assert.IsType<ExpressionQueryFilter<Person>>(query.Filter);
+			var expr = Assert.IsType<ExpressionQueryFilter<Person>>(query.Query.Filter);
 			Assert.Equal("x => (x.FirstName == \"John\")", expr.Expression.ToString());
 
-			Assert.Null(query.ResultSorts);
+			Assert.Null(query.Query.Sort);
 		}
 
 		[Fact]
@@ -52,16 +59,17 @@
 			Assert.Equal(1, query.Page);
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
-			Assert.NotNull(query.Filter);
-			Assert.False(query.Filter.IsEmpty());
+			Assert.NotNull(query.Query);
+			Assert.NotNull(query.Query.Filter);
+			Assert.False(query.Query.Filter.IsEmpty());
 
-			var filter = Assert.IsType<CombinedQueryFilter>(query.Filter);
-			Assert.Equal(2, filter.Filters.Count);
+			var filter = Assert.IsType<CombinedQueryFilter>(query.Query.Filter);
+			Assert.Equal(2, filter.Count());
 
-			var expr1 = Assert.IsType<ExpressionQueryFilter<Person>>(filter.Filters[0]);
+			var expr1 = Assert.IsType<ExpressionQueryFilter<Person>>(filter.ElementAt(0));
 			Assert.Equal("x => (x.FirstName == \"John\")", expr1.Expression.ToString());
 
-			var expr2 = Assert.IsType<ExpressionQueryFilter<Person>>(filter.Filters[1]);
+			var expr2 = Assert.IsType<ExpressionQueryFilter<Person>>(filter.ElementAt(1));
 			Assert.Equal("x => (x.LastName == \"Doe\")", expr2.Expression.ToString());
 		}
 
@@ -73,15 +81,14 @@
 			Assert.Equal(1, query.Page);
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
-			Assert.Null(query.Filter);
-			Assert.NotNull(query.ResultSorts);
-			Assert.Single(query.ResultSorts);
+			Assert.NotNull(query.Query);
+			Assert.NotNull(query.Query.Filter);
+			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
+			Assert.False(query.Query.HasFilter());
+			Assert.NotNull(query.Query.Sort);
 
-			var sort = query.ResultSorts[0];
-			Assert.IsType<ExpressionFieldRef<Person>>(sort.Field);
-
-			var expSort = Assert.IsType<ExpressionResultSort<Person>>(query.ResultSorts[0]);
-			Assert.Equal("x => x.FirstName", expSort.FieldSelector.ToString());
+			var expSort = Assert.IsType<ExpressionSort<Person>>(query.Query.Sort);
+			Assert.Equal("x => x.FirstName", expSort.Field.ToString());
 		}
 
 		[Fact]
@@ -93,23 +100,23 @@
 			Assert.Equal(1, query.Page);
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
-			Assert.Null(query.Filter);
-			Assert.NotNull(query.ResultSorts);
-			Assert.Equal(2, query.ResultSorts.Count);
+			Assert.NotNull(query.Query);
+			Assert.False(query.Query.HasFilter());
+			Assert.NotNull(query.Query.Filter);
+			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
+			Assert.NotNull(query.Query.Sort);
 
-			var sort1 = query.ResultSorts[0];
-			Assert.IsType<ExpressionFieldRef<Person>>(sort1.Field);
-			Assert.True(sort1.Ascending);
+			var combinedSort = Assert.IsType<CombinedSort>(query.Query.Sort);
 
-			var expSort1 = Assert.IsType<ExpressionResultSort<Person>>(query.ResultSorts[0]);
-			Assert.Equal("x => x.FirstName", expSort1.FieldSelector.ToString());
+			Assert.Equal(2, combinedSort.Count());
 
-			var sort2 = query.ResultSorts[1];
-			Assert.IsType<ExpressionFieldRef<Person>>(sort2.Field);
-			Assert.False(sort2.Ascending);
+			var sort1 = Assert.IsType<ExpressionSort<Person>>(combinedSort.ElementAt(0));
+			Assert.True(sort1.IsAscending());
+			Assert.Equal("x => x.FirstName", sort1.Field.ToString());
 
-			var expSort2 = Assert.IsType<ExpressionResultSort<Person>>(query.ResultSorts[1]);
-			Assert.Equal("x => x.LastName", expSort2.FieldSelector.ToString());
+			var sort2 = Assert.IsType<ExpressionSort<Person>>(combinedSort.ElementAt(1));
+			Assert.False(sort2.IsAscending());
+			Assert.Equal("x => x.LastName", sort2.Field.ToString());
 		}
 
 		[Fact]
@@ -120,18 +127,23 @@
 			Assert.Equal(1, query.Page);
 			Assert.Equal(10, query.Size);
 			Assert.Equal(0, query.Offset);
-			Assert.Null(query.Filter);
-			Assert.NotNull(query.ResultSorts);
-			Assert.Single(query.ResultSorts);
+			Assert.NotNull(query.Query);
+			Assert.NotNull(query.Query.Filter);
+			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
+			Assert.False(query.Query.HasFilter());
+			Assert.NotNull(query.Query.Sort);
 
-			var sort = query.ResultSorts[0];
+			var fieldSort = Assert.IsType<FieldSort>(query.Query.Sort);
 
-			var fieldSort = Assert.IsType<FieldResultSort>(sort);
 			Assert.Equal("FirstName", fieldSort.FieldName);
-			Assert.True(fieldSort.Ascending);
+			Assert.True(fieldSort.IsAscending());
+		}
 
-			var fieldRef = Assert.IsType<StringFieldRef>(sort.Field);
-			Assert.Equal("FirstName", fieldRef.FieldName);
+		[Fact]
+		public static void NewPageQuery_WithMulltiSort() {
+			var query = new PageQuery<Person>(1, 10)
+				.OrderBy(x => x.FirstName)
+				.OrderByDescending("LastName");
 		}
 	}
 }

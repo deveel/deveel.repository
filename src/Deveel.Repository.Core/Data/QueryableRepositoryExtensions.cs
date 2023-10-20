@@ -37,17 +37,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static PageResult<TEntity> GetPage<TEntity>(this IQueryableRepository<TEntity> repository, PageQuery<TEntity> request)
 			where TEntity : class {
-			var query = repository.AsQueryable();
-
-			if (request.Filter != null && !request.Filter.IsEmpty()) {
-				query = request.Filter.Apply(query);
-			}
-
-			if ((request.ResultSorts?.Any() ?? false)) {
-				foreach (var sort in request.ResultSorts) {
-					query = sort.Apply(query);
-				}
-			}
+			var query = request.ApplyQuery(repository.AsQueryable());
 
 			var total = query.Count();
 			var items = query.Skip(request.Offset)

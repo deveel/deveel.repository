@@ -37,7 +37,7 @@ namespace Deveel.Data {
 		/// A service to map the fields of the entity to expressions
 		/// that select the fields from the entity.
 		/// </param>
-		public InMemoryRepositoryProvider(IDictionary<string, IList<TEntity>>? list = null, IEntityFieldMapper<TEntity>? fieldMapper = null) {
+		public InMemoryRepositoryProvider(IDictionary<string, IList<TEntity>>? list = null, IFieldMapper<TEntity>? fieldMapper = null) {
 			var repos = list?.ToDictionary(x => x.Key, y => CreateRepository(y.Key, y.Value));
 			if (repos == null) {
 				repositories = new Dictionary<string, InMemoryRepository<TEntity>>();
@@ -51,7 +51,7 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Gets the field mapper used to map the fields of the entity
 		/// </summary>
-		protected virtual IEntityFieldMapper<TEntity>? FieldMapper { get; }
+		protected virtual IFieldMapper<TEntity>? FieldMapper { get; }
 
 		/// <summary>
 		/// Gets a repository for the given tenant.
