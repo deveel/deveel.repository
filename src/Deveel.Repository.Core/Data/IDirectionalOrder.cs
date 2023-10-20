@@ -13,7 +13,7 @@
 // limitations under the License.
 
 namespace Deveel.Data {
-	interface IDirectionalSort : ISort {
+	interface IDirectionalOrder : IQueryOrder {
 		SortDirection Direction { get; }
 	}
 }

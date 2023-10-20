@@ -28,7 +28,7 @@ namespace Deveel.Data {
 			Assert.NotNull(query.Query.Filter);
 			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
 			Assert.True(query.Query.Filter.IsEmpty());
-			Assert.Null(query.Query.Sort);
+			Assert.Null(query.Query.Order);
 		}
 
 		[Fact]
@@ -47,7 +47,7 @@ namespace Deveel.Data {
 			var expr = Assert.IsType<ExpressionQueryFilter<Person>>(query.Query.Filter);
 			Assert.Equal("x => (x.FirstName == \"John\")", expr.Expression.ToString());
 
-			Assert.Null(query.Query.Sort);
+			Assert.Null(query.Query.Order);
 		}
 
 		[Fact]
@@ -85,9 +85,9 @@ namespace Deveel.Data {
 			Assert.NotNull(query.Query.Filter);
 			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
 			Assert.False(query.Query.HasFilter());
-			Assert.NotNull(query.Query.Sort);
+			Assert.NotNull(query.Query.Order);
 
-			var expSort = Assert.IsType<ExpressionSort<Person>>(query.Query.Sort);
+			var expSort = Assert.IsType<ExpressionSort<Person>>(query.Query.Order);
 			Assert.Equal("x => x.FirstName", expSort.Field.ToString());
 		}
 
@@ -104,9 +104,9 @@ namespace Deveel.Data {
 			Assert.False(query.Query.HasFilter());
 			Assert.NotNull(query.Query.Filter);
 			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
-			Assert.NotNull(query.Query.Sort);
+			Assert.NotNull(query.Query.Order);
 
-			var combinedSort = Assert.IsType<CombinedSort>(query.Query.Sort);
+			var combinedSort = Assert.IsType<CombinedOrder>(query.Query.Order);
 
 			Assert.Equal(2, combinedSort.Count());
 
@@ -131,9 +131,9 @@ namespace Deveel.Data {
 			Assert.NotNull(query.Query.Filter);
 			Assert.Equal(QueryFilter.Empty, query.Query.Filter);
 			Assert.False(query.Query.HasFilter());
-			Assert.NotNull(query.Query.Sort);
+			Assert.NotNull(query.Query.Order);
 
-			var fieldSort = Assert.IsType<FieldSort>(query.Query.Sort);
+			var fieldSort = Assert.IsType<FieldOrder>(query.Query.Order);
 
 			Assert.Equal("FirstName", fieldSort.FieldName);
 			Assert.True(fieldSort.IsAscending());

@@ -29,8 +29,8 @@
 			if (query.Filter != null)
 				queryable = query.Filter.Apply<TEntity>(queryable);
 
-			if (query.Sort != null)
-				queryable = query.Sort.Apply<TEntity>(queryable);
+			if (query.Order != null)
+				queryable = query.Order.Apply<TEntity>(queryable);
 
 			return queryable;
 		}

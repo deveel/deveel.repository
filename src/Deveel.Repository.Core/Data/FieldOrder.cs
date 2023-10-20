@@ -17,7 +17,7 @@ namespace Deveel.Data {
 	/// A sorting rule that references a field
 	/// by its name.
 	/// </summary>
-	public sealed class FieldSort : ISort, IDirectionalSort {
+	public sealed class FieldOrder : IQueryOrder, IDirectionalOrder {
 		/// <summary>
 		/// Constructs the sorting rule for the given
 		/// field name and direction.
@@ -31,7 +31,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the given <paramref name="fieldName"/> is <c>null</c>.
 		/// </exception>
-		public FieldSort(string fieldName, SortDirection direction = SortDirection.Ascending) {
+		public FieldOrder(string fieldName, SortDirection direction = SortDirection.Ascending) {
 			ArgumentNullException.ThrowIfNull(fieldName, nameof(fieldName));
 
 			FieldName = fieldName;

@@ -29,13 +29,13 @@ namespace Deveel.Data {
 
 		IQueryFilter? IQuery.Filter => Query.Filter;
 
-		ISort? IQuery.Sort => Query.Sort;
+		IQueryOrder? IQuery.Order => Query.Order;
 
-		private static ISort CombineSort(ISort? sort, ISort other) {
-			if (sort == null)
+		private static IQueryOrder CombineOrder(IQueryOrder? order, IQueryOrder other) {
+			if (order == null)
 				return other;
 
-			return sort.Combine(other);
+			return order.Combine(other);
 		}
 
 		/// <summary>
@@ -65,9 +65,9 @@ namespace Deveel.Data {
 		/// </returns>
 		public QueryBuilder<TEntity> Where(IQueryFilter filter) {
 			if (Query.HasFilter()) {
-				Query = new Query(QueryFilter.Combine(Query.Filter ?? QueryFilter.Empty, filter), Query.Sort);
+				Query = new Query(QueryFilter.Combine(Query.Filter ?? QueryFilter.Empty, filter), Query.Order);
 			} else {
-				Query = new Query(filter, Query.Sort);
+				Query = new Query(filter, Query.Order);
 			}
 
 			return this;
@@ -87,7 +87,7 @@ namespace Deveel.Data {
 		/// for chaining calls.
 		/// </returns>
 		public QueryBuilder<TEntity> OrderBy(Expression<Func<TEntity, object?>> field, SortDirection direction = SortDirection.Ascending)
-			=> OrderBy(Sort.OrderBy(field, direction));
+			=> OrderBy(QueryOrder.OrderBy(field, direction));
 
 		/// <summary>
 		/// Orders in a descending order the results of the 
@@ -110,8 +110,8 @@ namespace Deveel.Data {
 		/// Returns this query builder with the new sort
 		/// for chaining calls.
 		/// </returns>
-		public QueryBuilder<TEntity> OrderBy(ISort sort) {
-			Query = new Query(Query.Filter ?? QueryFilter.Empty, CombineSort(Query.Sort, sort));
+		public QueryBuilder<TEntity> OrderBy(IQueryOrder sort) {
+			Query = new Query(Query.Filter ?? QueryFilter.Empty, CombineOrder(Query.Order, sort));
 
 			return this;
 		}
@@ -130,7 +130,7 @@ namespace Deveel.Data {
 		/// for chaining calls.
 		/// </returns>
 		public QueryBuilder<TEntity> OrderBy(string fieldName, SortDirection direction = SortDirection.Ascending)
-			=> OrderBy(Sort.OrderBy(fieldName, direction));
+			=> OrderBy(QueryOrder.OrderBy(fieldName, direction));
 
 		/// <summary>
 		/// Orders in a descending order the results of the

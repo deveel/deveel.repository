@@ -14,6 +14,6 @@
 		/// Gets the sort that is applied to the query
 		/// to order the entities.
 		/// </summary>
-		ISort? Sort { get; }
+		IQueryOrder? Order { get; }
 	}
 }

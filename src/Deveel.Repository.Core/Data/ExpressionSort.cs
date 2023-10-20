@@ -23,7 +23,7 @@ namespace Deveel.Data {
 	/// The type of entity of a collection that is the target
 	/// of the sorting and that defines the field to select.
 	/// </typeparam>
-	public sealed class ExpressionSort<TEntity> : IDirectionalSort, IQueryableSort<TEntity> where TEntity : class {
+	public sealed class ExpressionSort<TEntity> : IDirectionalOrder, IQueryableOrderBy<TEntity> where TEntity : class {
 		/// <summary>
 		/// Constructs the sorting rule using the given expression
 		/// that selects the field to sort.
@@ -55,7 +55,7 @@ namespace Deveel.Data {
 		public SortDirection Direction { get; }
 
 		/// <inheritdoc/>
-		IQueryable<TEntity> IQueryableSort<TEntity>.Apply(IQueryable<TEntity> queryable) {
+		IQueryable<TEntity> IQueryableOrderBy<TEntity>.Apply(IQueryable<TEntity> queryable) {
 			if (queryable.Expression.Type == typeof(IOrderedQueryable<TEntity>)) {
 				var orderedEnumerable = (IOrderedQueryable<TEntity>) queryable;
 				if (Direction == SortDirection.Ascending) {

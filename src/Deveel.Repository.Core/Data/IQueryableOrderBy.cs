@@ -20,7 +20,7 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of entity to sort.
 	/// </typeparam>
-	public interface IQueryableSort<TEntity> : ISort {
+	public interface IQueryableOrderBy<TEntity> : IQueryOrder {
 		/// <summary>
 		/// Applies the sorting rule to the given <see cref="IQueryable{TEntity}"/>
 		/// </summary>

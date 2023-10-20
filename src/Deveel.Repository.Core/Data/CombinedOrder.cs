@@ -17,11 +17,11 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Deveel.Data {
 	/// <summary>
-	/// An object that combines multiple <see cref="ISort"/> rules
+	/// An object that combines multiple <see cref="IQueryOrder"/> rules
 	/// to be applied to a query.
 	/// </summary>
-	public sealed class CombinedSort : ISort, IEnumerable<ISort> {
-		private readonly IList<ISort> sorts;
+	public sealed class CombinedOrder : IQueryOrder, IEnumerable<IQueryOrder> {
+		private readonly IList<IQueryOrder> sorts;
 
 		/// <summary>
 		/// Constructs the combined sort with the given list of rules.
@@ -35,7 +35,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentException">
 		/// Thrown if the given list of sorts is empty.
 		/// </exception>
-		public CombinedSort(IEnumerable<ISort> sorts) {
+		public CombinedOrder(IEnumerable<IQueryOrder> sorts) {
 			ArgumentNullException.ThrowIfNull(sorts, nameof(sorts));
 
 			var list = sorts.ToList();
@@ -46,10 +46,10 @@ namespace Deveel.Data {
 			this.sorts = list;
 		}
 
-		IEnumerator<ISort> IEnumerable<ISort>.GetEnumerator() => sorts.GetEnumerator();
+		IEnumerator<IQueryOrder> IEnumerable<IQueryOrder>.GetEnumerator() => sorts.GetEnumerator();
 
 		[ExcludeFromCodeCoverage]
-		IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<ISort>).GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => (this as IEnumerable<IQueryOrder>).GetEnumerator();
 
 		/// <summary>
 		/// Combines this list of sorts with the given one.
@@ -58,20 +58,20 @@ namespace Deveel.Data {
 		/// The sort rule to add to the combination.
 		/// </param>
 		/// <returns>
-		/// Returns a new <see cref="CombinedSort"/> that combines
+		/// Returns a new <see cref="CombinedOrder"/> that combines
 		/// the rules of this instance with the given one.
 		/// </returns>
-		public CombinedSort Combine(ISort sort) {
+		public CombinedOrder Combine(IQueryOrder sort) {
 			ArgumentNullException.ThrowIfNull(sort, nameof(sort));
 
-			var list = new List<ISort>(sorts);
-			if (sort is CombinedSort combinedSort) {
+			var list = new List<IQueryOrder>(sorts);
+			if (sort is CombinedOrder combinedSort) {
 				list.AddRange(combinedSort.sorts);
 			} else {
 				list.Add(sort);
 			}
 
-			return new CombinedSort(list);
+			return new CombinedOrder(list);
 		}
 	}
 }

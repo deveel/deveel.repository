@@ -5,7 +5,7 @@
 			var query = new Query(QueryFilter.Where<Person>(p => p.FirstName == "John"));
 
 			Assert.NotNull(query.Filter);
-			Assert.Null(query.Sort);
+			Assert.Null(query.Order);
 
 			Assert.IsType<ExpressionQueryFilter<Person>>(query.Filter);
 		}
@@ -15,7 +15,7 @@
 			var query = Query.Where<Person>(p => p.FirstName == "John");
 
 			Assert.NotNull(query.Filter);
-			Assert.Null(query.Sort);
+			Assert.Null(query.Order);
 
 			Assert.IsType<ExpressionQueryFilter<Person>>(query.Filter);
 		}
@@ -28,7 +28,7 @@
 				.Query;
 
 			Assert.NotNull(query.Filter);
-			Assert.Null(query.Sort);
+			Assert.Null(query.Order);
 
 			var combined = Assert.IsType<CombinedQueryFilter>(query.Filter);
 
@@ -47,10 +47,10 @@
 				.Query;
 
 			Assert.NotNull(query.Filter);
-			Assert.NotNull(query.Sort);
+			Assert.NotNull(query.Order);
 
 			Assert.IsType<ExpressionQueryFilter<Person>>(query.Filter);
-			Assert.IsType<ExpressionSort<Person>>(query.Sort);
+			Assert.IsType<ExpressionSort<Person>>(query.Order);
 		}
 
 		[Fact]
@@ -61,10 +61,10 @@
 				.Query;
 
 			Assert.NotNull(query.Filter);
-			Assert.NotNull(query.Sort);
+			Assert.NotNull(query.Order);
 
 			Assert.IsType<ExpressionQueryFilter<Person>>(query.Filter);
-			Assert.IsType<FieldSort>(query.Sort);
+			Assert.IsType<FieldOrder>(query.Order);
 		}
 
 		[Fact]
@@ -75,10 +75,10 @@
 				.Query;
 
 			Assert.NotNull(query.Filter);
-			Assert.NotNull(query.Sort);
+			Assert.NotNull(query.Order);
 
 			Assert.IsType<ExpressionQueryFilter<Person>>(query.Filter);
-			Assert.IsType<FieldSort>(query.Sort);
+			Assert.IsType<FieldOrder>(query.Order);
 		}
 
 		[Fact]
@@ -89,10 +89,10 @@
 				.Query;
 
 			Assert.NotNull(query.Filter);
-			Assert.NotNull(query.Sort);
+			Assert.NotNull(query.Order);
 
 			Assert.IsType<ExpressionQueryFilter<Person>>(query.Filter);
-			Assert.IsType<ExpressionSort<Person>>(query.Sort);
+			Assert.IsType<ExpressionSort<Person>>(query.Order);
 		}
 
 		[Fact]

@@ -1,14 +1,14 @@
 ﻿namespace Deveel.Data {
-	public static class SortTests {
+	public static class QueryOrderTests {
 		[Fact]
 		public static void CombineSorts() {
-			var sort1 = Sort.OrderBy<Person>(x => x.FirstName);
-			var sort2 = Sort.OrderByDescending<Person>(x => x.LastName);
+			var sort1 = QueryOrder.OrderBy<Person>(x => x.FirstName);
+			var sort2 = QueryOrder.OrderByDescending<Person>(x => x.LastName);
 
-			var combined = Sort.Combine(sort1, sort2);
+			var combined = QueryOrder.Combine(sort1, sort2);
 
 			Assert.NotNull(combined);
-			var sort = Assert.IsType<CombinedSort>(combined);
+			var sort = Assert.IsType<CombinedOrder>(combined);
 			Assert.NotNull(sort);
 			Assert.Equal(2, sort.Count());
 			Assert.Equal(sort1, sort.ElementAt(0));
@@ -20,17 +20,17 @@
 
 		[Fact]
 		public static void CombineWithCombinedSort() {
-			var sort1 = Sort.OrderBy<Person>(x => x.FirstName);
-			var sort2 = Sort.OrderByDescending<Person>(x => x.LastName);
-			var sort3 = Sort.OrderBy<Person>(x => x.DateOfBirth);
+			var sort1 = QueryOrder.OrderBy<Person>(x => x.FirstName);
+			var sort2 = QueryOrder.OrderByDescending<Person>(x => x.LastName);
+			var sort3 = QueryOrder.OrderBy<Person>(x => x.DateOfBirth);
 
-			var combined1 = Sort.Combine(sort1, sort2);
+			var combined1 = QueryOrder.Combine(sort1, sort2);
 			var combined2 = combined1.Combine(sort3);
 		}
 
 		[Fact]
 		public static void CreateEmptyCombinedSort() {
-			Assert.Throws<ArgumentException>(() => new CombinedSort(Array.Empty<ISort>()));
+			Assert.Throws<ArgumentException>(() => new CombinedOrder(Array.Empty<IQueryOrder>()));
 		}
 
 		[Fact]
@@ -44,10 +44,10 @@
 
 			var queryable = people.AsQueryable();
 
-			var sort1 = Sort.OrderBy<Person>(x => x.FirstName);
-			var sort2 = Sort.OrderByDescending<Person>(x => x.LastName);
+			var sort1 = QueryOrder.OrderBy<Person>(x => x.FirstName);
+			var sort2 = QueryOrder.OrderByDescending<Person>(x => x.LastName);
 
-			var combined = Sort.Combine(sort1, sort2);
+			var combined = QueryOrder.Combine(sort1, sort2);
 
 			var result = combined.Apply(queryable);
 
@@ -67,7 +67,7 @@
 
 			var queryable = people.AsQueryable();
 
-			var sort = Sort.OrderBy("FirstName");
+			var sort = QueryOrder.OrderBy("FirstName");
 
 			var result = sort.Apply(queryable);
 
@@ -87,7 +87,7 @@
 
 			var queryable = people.AsQueryable();
 
-			var sort = Sort.OrderBy("first_name");
+			var sort = QueryOrder.OrderBy("first_name");
 
 			var result = sort.Apply(queryable, field => {
 				return field switch {

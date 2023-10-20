@@ -29,11 +29,11 @@ namespace Deveel.Data {
 		/// <param name="sort">
 		/// An optional sort to apply to the query.
 		/// </param>
-		public Query(IQueryFilter filter, ISort? sort = null) {
+		public Query(IQueryFilter filter, IQueryOrder? sort = null) {
 			ArgumentNullException.ThrowIfNull(filter, nameof(filter));
 
 			Filter = filter;
-			Sort = sort;
+			Order = sort;
 		}
 
 		/// <summary>
@@ -45,7 +45,7 @@ namespace Deveel.Data {
 		/// Gets the sort to apply to the results
 		/// of the query.
 		/// </summary>
-		public ISort? Sort { get; }
+		public IQueryOrder? Order { get; }
 
 		/// <summary>
 		/// Represents an empty query, that will apply
@@ -74,7 +74,7 @@ namespace Deveel.Data {
 		readonly struct EmptyQuery : IQuery {
 			public IQueryFilter? Filter => QueryFilter.Empty;
 
-			public ISort? Sort => null;
+			public IQueryOrder? Order => null;
 		}
 	}
 }

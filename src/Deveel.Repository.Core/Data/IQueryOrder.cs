@@ -17,6 +17,6 @@ namespace Deveel.Data {
 	/// Defines a sorting rule to apply to the results
 	/// of a query.
 	/// </summary>
-	public interface ISort {
+	public interface IQueryOrder {
 	}
 }

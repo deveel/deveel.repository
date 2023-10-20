@@ -219,7 +219,7 @@ namespace Deveel.Data {
 					result = entities;
 				}
 
-				if (query.Sort != null) {
+				if (query.Order != null) {
 					// TODO:
 				}
 			}

@@ -19,7 +19,7 @@ namespace Deveel.Data {
 	/// A utility class that provides methods to create
 	/// sort rules to apply to a query.
 	/// </summary>
-	public static class Sort {
+	public static class QueryOrder {
 		/// <summary>
 		/// Creates a sort rule that will order the results
 		/// of a query by the given field.
@@ -73,12 +73,12 @@ namespace Deveel.Data {
 		/// The direction of the sorting (by default is ascending).
 		/// </param>
 		/// <returns>
-		/// Returns an instance of <see cref="FieldSort"/> that
+		/// Returns an instance of <see cref="FieldOrder"/> that
 		/// represents the sorting rule.
 		/// </returns>
-		/// <seealso cref="FieldSort(string,SortDirection)"/>
-		public static FieldSort OrderBy(string fieldName, SortDirection direction = SortDirection.Ascending)
-			=> new FieldSort(fieldName, direction);
+		/// <seealso cref="FieldOrder(string,SortDirection)"/>
+		public static FieldOrder OrderBy(string fieldName, SortDirection direction = SortDirection.Ascending)
+			=> new FieldOrder(fieldName, direction);
 
 		/// <summary>
 		/// Creates a sort rule that will order the results
@@ -88,11 +88,11 @@ namespace Deveel.Data {
 		/// The name of the field to sort by.
 		/// </param>
 		/// <returns>
-		/// Returns an instance of <see cref="FieldSort"/> that
+		/// Returns an instance of <see cref="FieldOrder"/> that
 		/// represents the sorting rule.
 		/// </returns>
-		/// <seealso cref="FieldSort(string,SortDirection)"/>
-		public static FieldSort OrderByDescending(string fieldName)
+		/// <seealso cref="FieldOrder(string,SortDirection)"/>
+		public static FieldOrder OrderByDescending(string fieldName)
 			=> OrderBy(fieldName, SortDirection.Descending);
 
 		/// <summary>
@@ -106,20 +106,20 @@ namespace Deveel.Data {
 		/// The second sort rule to combine.
 		/// </param>
 		/// <returns>
-		/// Returns an instance of <see cref="CombinedSort"/> that
+		/// Returns an instance of <see cref="CombinedOrder"/> that
 		/// represents the combination of the given rules.
 		/// </returns>
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if either of the given sort rules is <c>null</c>.
 		/// </exception>
-		public static CombinedSort Combine(this ISort sort, ISort other) {
+		public static CombinedOrder Combine(this IQueryOrder sort, IQueryOrder other) {
 			ArgumentNullException.ThrowIfNull(sort, nameof(sort));
 			ArgumentNullException.ThrowIfNull(other, nameof(other));
 
-			if (sort is CombinedSort combinedSort)
+			if (sort is CombinedOrder combinedSort)
 				return combinedSort.Combine(other);
 
-			return new CombinedSort(new[] {sort, other});
+			return new CombinedOrder(new[] {sort, other});
 		}
 
 		/// <summary>
@@ -132,7 +132,7 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the given sort rule is ascending,
 		/// or <c>false</c> if it is descending or not directional.
 		/// </returns>
-		public static bool IsAscending(this ISort sort) => (sort as IDirectionalSort)?.Direction == SortDirection.Ascending;
+		public static bool IsAscending(this IQueryOrder sort) => (sort as IDirectionalOrder)?.Direction == SortDirection.Ascending;
 
 		/// <summary>
 		/// Determines if the given sort rule is descending.
@@ -144,7 +144,7 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the given sort rule is descending,
 		/// or <c>false</c> if it is ascending or not directional.
 		/// </returns>
-		public static bool IsDescending(this ISort sort) => (sort as IDirectionalSort)?.Direction == SortDirection.Descending;
+		public static bool IsDescending(this IQueryOrder sort) => (sort as IDirectionalOrder)?.Direction == SortDirection.Descending;
 
 		/// <summary>
 		/// Applies the given sort rule to the given queryable
@@ -162,14 +162,14 @@ namespace Deveel.Data {
 		/// </param>
 		/// <param name="fieldMapper">
 		/// An optional field mapper to use to map the field names
-		/// defined by <see cref="FieldSort"/> instances to expressions
+		/// defined by <see cref="FieldOrder"/> instances to expressions
 		/// that select the field to sort.
 		/// </param>
 		/// <returns>
 		/// Returns the <see cref="IQueryable{TEntity}"/> that was
 		/// sorted by the given rule.
 		/// </returns>
-		public static IQueryable<TEntity> Apply<TEntity>(this ISort sort, IQueryable<TEntity> queryable, Func<string, Expression<Func<TEntity, object?>>> fieldMapper)
+		public static IQueryable<TEntity> Apply<TEntity>(this IQueryOrder sort, IQueryable<TEntity> queryable, Func<string, Expression<Func<TEntity, object?>>> fieldMapper)
 			where TEntity : class
 			=> Apply(sort, queryable, new DelegatedFieldMapper<TEntity>(fieldMapper));
 
@@ -189,7 +189,7 @@ namespace Deveel.Data {
 		/// </param>
 		/// <param name="fieldMapper">
 		/// An optional field mapper to use to map the field names
-		/// defined by <see cref="FieldSort"/> instances to expressions
+		/// defined by <see cref="FieldOrder"/> instances to expressions
 		/// that select the field to sort. When not specified, reflection 
 		/// is used to map the field names from the members of the type.
 		/// </param>
@@ -197,21 +197,21 @@ namespace Deveel.Data {
 		/// Returns the <see cref="IQueryable{TEntity}"/> that was
 		/// the result of the application of the given sort rule.
 		/// </returns>
-		public static IQueryable<TEntity> Apply<TEntity>(this ISort sort, IQueryable<TEntity> queryable, IFieldMapper<TEntity>? fieldMapper = null) 
+		public static IQueryable<TEntity> Apply<TEntity>(this IQueryOrder sort, IQueryable<TEntity> queryable, IFieldMapper<TEntity>? fieldMapper = null) 
 			where TEntity : class {
 			ArgumentNullException.ThrowIfNull(queryable, nameof(queryable));
 			ArgumentNullException.ThrowIfNull(sort, nameof(sort));
 
-			if (sort is CombinedSort combinedSort) {
+			if (sort is CombinedOrder combinedSort) {
 				foreach (var item in combinedSort) {
 					queryable = item.Apply(queryable);
 				}
 			}
 
-			if (sort is FieldSort fieldSort)
+			if (sort is FieldOrder fieldSort)
 				sort = fieldSort.Map(fieldMapper ?? new ReflectionFieldMapper<TEntity>());
 
-			if (sort is IQueryableSort<TEntity> queryableSort)
+			if (sort is IQueryableOrderBy<TEntity> queryableSort)
 				return queryableSort.Apply(queryable);
 
 			return queryable;
