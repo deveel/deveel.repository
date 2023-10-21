@@ -1,7 +1,8 @@
 ![GitHub release](https://img.shields.io/github/v/release/deveel/deveel.repository)
 ![GitHub license](https://img.shields.io/github/license/deveel/deveel.repository?color=blue)
  ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/deveel/deveel.repository/ci.yml?logo=github)
- [![codecov](https://codecov.io/gh/deveel/deveel.repository/graph/badge.svg?token=5US7L3C7ES)](https://codecov.io/gh/deveel/deveel.repository) ![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/deveel/deveel.repository)
+ [![codecov](https://codecov.io/gh/deveel/deveel.repository/graph/badge.svg?token=5US7L3C7ES)](https://codecov.io/gh/deveel/deveel.repository) ![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/deveel/deveel.repository) [![Documentation](https://img.shields.io/badge/gitbook-docs?logo=gitbook&label=docs&color=blue)](https://deveel.gitbook.io/repository/)
+
 
 
 # Deveel Repository
@@ -34,7 +35,7 @@ You can read the [motivations and drivers](docs/motivations.md) that have led to
 
 A brief gruide on how to use the framework is available in the [documentation](docs/index.md) section of the repository, that will be updated regularly with any major release of the framework.
 
-[Read Here](docs/index.md)
+[Read Here](docs/index.md) or at [GitBook](https://deveel.gitbook.io/repository/).
 
 ## License
 
