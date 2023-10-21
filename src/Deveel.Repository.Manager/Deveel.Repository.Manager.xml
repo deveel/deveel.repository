@@ -2023,3 +2023,12 @@
         </member>
     </members>
 </doc>
+textAccessor"/>
+            into the collection of services, if not already registered.
+            </remarks>
+            <returns>
+            Returns the given collection of services for chaining calls.
+            </returns>
+        </member>
+    </members>
+</doc>

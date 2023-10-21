@@ -20,6 +20,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using MongoFramework;
 
 namespace Deveel.Data {
+
+
 	/// <summary>
 	/// An implementation of <see cref="IRepositoryProvider{TEntity}"/> that
 	/// is able to create a <see cref="MongoRepository{TEntity}"/> for a given
@@ -143,13 +145,19 @@ namespace Deveel.Data {
 			if (typeof(TContext) == typeof(MongoDbContext))
 				return new MongoDbContext(connection) as TContext;
 
-			var ctor1 = typeof(TContext).GetConstructor(new Type[] { typeof(IMongoDbConnection<TContext>), typeof(IMultiTenantContext<TTenantInfo>) });
-			if (ctor1 != null)
-				return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>(), CreateTenantContext(tenantInfo) }) as TContext;
+			foreach (var ctor in typeof(TContext).GetConstructors()) {
+				var parameters = ctor.GetParameters();
 
-			var ctor2 = typeof(TContext).GetConstructor(new Type[] { typeof(IMongoDbConnection<TContext>), typeof(string) });
-			if (ctor2 != null)
-				return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>(), tenantInfo.Id! }) as TContext;
+				if (parameters.Length == 2 &&
+					parameters[0].ParameterType == typeof(IMongoDbConnection<TContext>) &&
+					parameters[1].ParameterType == typeof(IMultiTenantContext<TTenantInfo>)) {
+					return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>(), CreateTenantContext(tenantInfo) }) as TContext;
+				} else if (parameters.Length == 2 &&
+					parameters[0].ParameterType == typeof(IMongoDbConnection<TContext>) &&
+					parameters[1].ParameterType == typeof(string)) {
+					return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>(), tenantInfo.Id! }) as TContext;
+				}
+			}
 
 			throw new NotSupportedException($"Cannot create '{typeof(TContext)}' MongoDB Context");
         }

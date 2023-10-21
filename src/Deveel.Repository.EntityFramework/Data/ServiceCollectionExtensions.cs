@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Finbuckle.MultiTenant;
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Deveel.Data {
@@ -63,5 +66,30 @@ namespace Deveel.Data {
 		/// </returns>
 		public static IServiceCollection AddEntityRepository<TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped) where TEntity : class
 			=> services.AddEntityRepository(typeof(TEntity), lifetime);
+
+		public static IServiceCollection AddEntityRepositoryProvider<TContext, TEntity>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped) 
+			where TEntity : class
+			where TContext : DbContext {
+			services.AddRepositoryProvider<EntityRepositoryProvider<TContext, TEntity>>(lifetime);
+			return services;
+		}
+
+		public static IServiceCollection AddEntityRepositoryProvider<TEntity, TContext>(this IServiceCollection services, Func<ITenantInfo, DbContextOptions<TContext>> optionsFactory, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+			where TEntity : class
+			where TContext : DbContext {
+			services.AddRepositoryProvider<EntityRepositoryProvider<TContext, TEntity>>(lifetime);
+			services.AddSingleton<IDbContextOptionsFactory<TContext>>(new DelegatedDbContextOptionsFactory<TContext>(optionsFactory));
+			return services;
+		}
+
+		class DelegatedDbContextOptionsFactory<TContext> : IDbContextOptionsFactory<TContext> where TContext : DbContext {
+			private readonly Func<ITenantInfo, DbContextOptions<TContext>> factory;
+
+			public DelegatedDbContextOptionsFactory(Func<ITenantInfo, DbContextOptions<TContext>> factory) {
+				this.factory = factory;
+			}
+
+			public DbContextOptions<TContext> Create(ITenantInfo tenantInfo) => factory(tenantInfo);
+		}
     }
 }
