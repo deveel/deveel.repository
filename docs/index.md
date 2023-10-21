@@ -100,30 +100,3 @@ In fact, after that exmaple call above, you will have the following services ava
 | `IPageableRepository<MyEntity>` | The repository to access the data using pagination (if the repository implements it). |
 | `IFilterableRepository<MyEntity>` | The repository to access the data using filters (if the repository implements it). |
 
-## Multi-Tenancy
-
-Some scenarios require information and data to be isolated between different _tenants_ of the application.
-
-By default, the _kernel_ library doesn't provides any set of abstractions and implementations to support multi-tenancy in your application, but the single drivers can provide it, accordingly to their specific capabilities.
-
-| Driver | Multi-Tenancy |
-| ------ | ------------- |
-| _In-Memory_ | :x: |
-| _MongoDB_ | :white_check_mark: |
-| _Entity Framework Core_ | :white_check_mark: |
-
-### The Tenant Context
-
-On a general basis, the tenant context is resolved through the identity of a user of the application, using mechanisms like _claims_ or _roles_ (see at [Finbuckle Multi-Tenant](https://github.com/Finbuckle/Finbuckle.MultiTenant) how this is implemented in ASP.NET Core).
-
-Some scenarios anyway require the access to those segregated information from a _service_ or a _background task_, where the user identity is not available: for this reason the framework provides an abstraction named `IRepositoryProvider<TEntity>` that will be used to resolve the repository to access the data, for the tenant identifier.
-
-To learn more about the usage of the `IRepositoryProvider<TEntity>` interface, you can read the documentation [here](multi-tenancy.md).
-
-#### The `IRepositoryProvider<TEntity>` interface
-
-The `IRepositoryProvider<TEntity>` exposes a single method that allows to obtain an instance of `IRepository<TEntity>` for a specific tenant.
-
-```csharp
-Task<IRepository<TEntity>> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken = default);
-```

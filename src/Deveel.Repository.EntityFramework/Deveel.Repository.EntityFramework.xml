@@ -195,12 +195,13 @@
             The type of <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/> used to manage the entities
             </typeparam>
         </member>
-        <member name="M:Deveel.Data.EntityRepositoryProvider`2.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{`1},System.Collections.Generic.IEnumerable{Finbuckle.MultiTenant.IMultiTenantStore{Finbuckle.MultiTenant.TenantInfo}},Microsoft.Extensions.Logging.ILoggerFactory)">
+        <member name="M:Deveel.Data.EntityRepositoryProvider`2.#ctor(Deveel.Data.IDbContextOptionsFactory{`0},System.Collections.Generic.IEnumerable{Finbuckle.MultiTenant.IMultiTenantStore{Finbuckle.MultiTenant.TenantInfo}},Microsoft.Extensions.Logging.ILoggerFactory)">
             <summary>
             Constructs the provider with the given options and tenant stores.
             </summary>
-            <param name="options">
-            The options to use to construct the <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/> instances
+            <param name="optionsFactory">
+            A service that is used to create the options for the context
+            and a specific tenant.
             for the tenants.
             </param>
             <param name="tenantStores">
@@ -210,12 +211,77 @@
             A factory to create loggers for the repositories.
             </param>
         </member>
-        <member name="M:Deveel.Data.EntityRepositoryProvider`2.Finalize">
+        <member name="M:Deveel.Data.EntityRepositoryProvider`2.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{`0},System.Collections.Generic.IEnumerable{Finbuckle.MultiTenant.IMultiTenantStore{Finbuckle.MultiTenant.TenantInfo}},Microsoft.Extensions.Logging.ILoggerFactory)">
+            <summary>
+            Constructs the provider with the given options and 
+            tenant stores.
+            </summary>
+            <param name="options">
+            The instance of options that are used to create the context
+            for the tenants.
+            </param>
+            <param name="tenantStores">
+            The list of stores to retrieve the tenants from.
+            </param>
+            <param name="loggerFactory">
+            A factory to create loggers for the repositories.
+            </param>
+        </member>
+        <member name="T:Deveel.Data.EntityRepositoryProvider`3">
+            <summary>
+            An implementation of <see cref="T:Deveel.Data.IRepositoryProvider`1"/> that
+            allows to create <see cref="T:Deveel.Data.EntityRepository`1"/> instances
+            in a multi-tenant context.
+            </summary>
+            <typeparam name="TEntity">
+            The type of entity managed by the repository
+            </typeparam>
+            <typeparam name="TContext">
+            The type of <see cref="T:Microsoft.EntityFrameworkCore.DbContext"/> used to manage the entities
+            </typeparam>
+            <typeparam name="TTenantInfo">
+            The type of the tenant that is is ued to resolve the context
+            of the tenant.
+            </typeparam>
+        </member>
+        <member name="M:Deveel.Data.EntityRepositoryProvider`3.#ctor(Deveel.Data.IDbContextOptionsFactory{`0},System.Collections.Generic.IEnumerable{Finbuckle.MultiTenant.IMultiTenantStore{`2}},Microsoft.Extensions.Logging.ILoggerFactory)">
+            <summary>
+            Constructs the provider with the given options factory
+            and tenant stores.
+            </summary>
+            <param name="optionsFactory">
+            A service that is used to create the options for the context
+            and a specific tenant.
+            </param>
+            <param name="tenantStores">
+            A list of the available stores to retrieve the tenants from.
+            </param>
+            <param name="loggerFactory">
+            A factory to create loggers for the repositories.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.EntityRepositoryProvider`3.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{`0},System.Collections.Generic.IEnumerable{Finbuckle.MultiTenant.IMultiTenantStore{`2}},Microsoft.Extensions.Logging.ILoggerFactory)">
+            <summary>
+            Constructs the provider with the given options and 
+            tenant stores.
+            </summary>
+            <param name="options">
+            The instance of options that are used to create the context
+            for the tenants.
+            </param>
+            <param name="tenantStores">
+            The list of stores to retrieve the tenants from.
+            </param>
+            <param name="loggerFactory">
+            A factory to create loggers for the repositories.
+            </param>
+        </member>
+        <member name="M:Deveel.Data.EntityRepositoryProvider`3.Finalize">
             <summary>
             Destroys the instance of the provider.
             </summary>
         </member>
-        <member name="M:Deveel.Data.EntityRepositoryProvider`2.GetRepositoryAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:Deveel.Data.EntityRepositoryProvider`3.GetRepositoryAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Gets a repository for the given tenant.
             </summary>
@@ -234,7 +300,7 @@
             constructed with the given tenant.
             </exception>
         </member>
-        <member name="M:Deveel.Data.EntityRepositoryProvider`2.CreateLogger">
+        <member name="M:Deveel.Data.EntityRepositoryProvider`3.CreateLogger">
             <summary>
             Creates a logger for a repository.
             </summary>
@@ -243,7 +309,7 @@
             to log messages from the repository.
             </returns>
         </member>
-        <member name="M:Deveel.Data.EntityRepositoryProvider`2.CreateRepository(`1,Finbuckle.MultiTenant.ITenantInfo)">
+        <member name="M:Deveel.Data.EntityRepositoryProvider`3.CreateRepository(`0,Finbuckle.MultiTenant.ITenantInfo)">
             <summary>
             Creates a repository for the given context and tenant.
             </summary>
@@ -253,7 +319,7 @@
             <param name="tenantInfo"></param>
             <returns></returns>
         </member>
-        <member name="M:Deveel.Data.EntityRepositoryProvider`2.Dispose(System.Boolean)">
+        <member name="M:Deveel.Data.EntityRepositoryProvider`3.Dispose(System.Boolean)">
             <summary>
             Dispose the provider and all the repositories and contexts
             </summary>
@@ -261,7 +327,7 @@
             Indicates if the provider is disposing.
             </param>
         </member>
-        <member name="M:Deveel.Data.EntityRepositoryProvider`2.Dispose">
+        <member name="M:Deveel.Data.EntityRepositoryProvider`3.Dispose">
             <inheritdoc/>
         </member>
         <member name="T:Deveel.Data.ServiceCollectionExtensions">

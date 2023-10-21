@@ -50,10 +50,14 @@ services.AddDbContextForTenant<MyDbContext, TenantInfo>((tenant, options) => opt
 
 The `EntityRepository<TEntity>` implements both the `IQueryableRepository<TEntity>` and the `IFilterableRepository<TEntity>` interfaces, and allows to query the data only through the `ExpressionFilter<TEntity>` class or through lambda expressions of type `Expression<Func<TEntity, bool>>`.
 
-## Repository Providers
+For example, to retrieve all the entities of type `MyEntity` that have a property `Name` equal to `"John"`:
 
-Some scenarios of multi-tenant applications require to have a different repository for each tenant, and to be able to switch between the repositories according to the tenant that is currently active.
+```csharp
+var entities = await repository.FindAllAsync(new ExpressionFilter<MyEntity>(x => x.Name == "John"));
+```
 
-The preferred approach of the library is to use the [Finbuckle.MultiTenant](https://www.finbuckle.com/MultiTenant) framework to implement multi-tenant applications, and to use the `ITenantInfo` interface to retrieve the current tenant information: this is obtained by scanning the current HTTP request, and retrieving the tenant information from the request.
+or event simpler, using the lambda expression:
 
-In some cases, like in background services, where the identity of the tenant is not available through the user (eg. _machine-to-machine_ communication), it is possible to obtain the repository for a specific tenant by using the `IRepositoryProvider<TEntity>` interface: these are still drivers-specific, and produce instances of the repository for a specific tenant and specific driver.
+```csharp
+var entities = await repository.FindAllAsync(x => x.Name == "John");
+```

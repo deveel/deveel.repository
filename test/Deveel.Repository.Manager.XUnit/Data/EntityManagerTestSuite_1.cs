@@ -56,6 +56,7 @@ namespace Deveel.Data {
 			await Repository.RemoveRangeAsync(People);
 
 			await scope.DisposeAsync();
+			(Services as IDisposable)?.Dispose();
 		}
 
 		[Fact]

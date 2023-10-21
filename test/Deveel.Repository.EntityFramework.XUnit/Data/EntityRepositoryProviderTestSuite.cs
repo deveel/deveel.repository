@@ -69,7 +69,7 @@ namespace Deveel.Data {
 				builder.UseSqlite(sqliteConnection, x => x.UseNetTopologySuite());
 				builder.LogTo(TestOutput!.WriteLine);
 			})
-				.AddRepositoryProvider<EntityRepositoryProvider<DbTenantPerson, TestDbContext>>();
+				.AddRepositoryProvider<EntityRepositoryProvider<TestDbContext, DbTenantPerson>>();
 
 			base.ConfigureServices(services);
 		}

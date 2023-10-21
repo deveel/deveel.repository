@@ -811,6 +811,9 @@ namespace Deveel.Data {
             if (existing == null)
                 return false;
 
+			if (Repository is IEqualityComparer<TEntity> comparer)
+				return comparer.Equals(existing, other);
+
 			if (typeof(IEquatable<TEntity>).IsAssignableFrom(typeof(TEntity)))
 				return ((IEquatable<TEntity>)existing).Equals(other);
 

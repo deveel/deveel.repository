@@ -33,22 +33,15 @@ namespace Deveel.Data {
 	/// <typeparam name="TContext">
 	/// The type of <see cref="DbContext"/> used to manage the entities
 	/// </typeparam>
-    public class EntityRepositoryProvider<TEntity, TContext> : IRepositoryProvider<TEntity>, IDisposable 
-        where TContext : DbContext
-        where TEntity : class {
-        private readonly DbContextOptions<TContext> options;
-        private readonly IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores;
-        private readonly ILoggerFactory loggerFactory;
-
-        private IDictionary<string, TContext>? contexts;
-        private IDictionary<string, EntityRepository<TEntity>>? repositories;
-        private bool disposedValue;
-
+	public class EntityRepositoryProvider<TContext, TEntity> : EntityRepositoryProvider<TContext, TEntity, TenantInfo>
+		where TContext : DbContext
+		where TEntity : class {
 		/// <summary>
 		/// Constructs the provider with the given options and tenant stores.
 		/// </summary>
-		/// <param name="options">
-		/// The options to use to construct the <see cref="DbContext"/> instances
+		/// <param name="optionsFactory">
+		/// A service that is used to create the options for the context
+		/// and a specific tenant.
 		/// for the tenants.
 		/// </param>
 		/// <param name="tenantStores">
@@ -57,11 +50,100 @@ namespace Deveel.Data {
 		/// <param name="loggerFactory">
 		/// A factory to create loggers for the repositories.
 		/// </param>
-        public EntityRepositoryProvider(DbContextOptions<TContext> options, IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null) {
-            this.options = options;
+		public EntityRepositoryProvider(IDbContextOptionsFactory<TContext> optionsFactory, IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null) 
+			: base(optionsFactory, tenantStores, loggerFactory) {
+		}
+
+		/// <summary>
+		/// Constructs the provider with the given options and 
+		/// tenant stores.
+		/// </summary>
+		/// <param name="options">
+		/// The instance of options that are used to create the context
+		/// for the tenants.
+		/// </param>
+		/// <param name="tenantStores">
+		/// The list of stores to retrieve the tenants from.
+		/// </param>
+		/// <param name="loggerFactory">
+		/// A factory to create loggers for the repositories.
+		/// </param>
+		public EntityRepositoryProvider(DbContextOptions<TContext> options, IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null) 
+			: base(options, tenantStores, loggerFactory) {
+		}
+	}
+
+	/// <summary>
+	/// An implementation of <see cref="IRepositoryProvider{TEntity}"/> that
+	/// allows to create <see cref="EntityRepository{TEntity}"/> instances
+	/// in a multi-tenant context.
+	/// </summary>
+	/// <typeparam name="TEntity">
+	/// The type of entity managed by the repository
+	/// </typeparam>
+	/// <typeparam name="TContext">
+	/// The type of <see cref="DbContext"/> used to manage the entities
+	/// </typeparam>
+	/// <typeparam name="TTenantInfo">
+	/// The type of the tenant that is is ued to resolve the context
+	/// of the tenant.
+	/// </typeparam>
+	public class EntityRepositoryProvider<TContext, TEntity, TTenantInfo> : IRepositoryProvider<TEntity>, IDisposable 
+        where TContext : DbContext
+        where TEntity : class 
+		where TTenantInfo : class, ITenantInfo, new() {
+        private readonly IEnumerable<IMultiTenantStore<TTenantInfo>> tenantStores;
+		private readonly IDbContextOptionsFactory<TContext> optionsFactory;
+        private readonly ILoggerFactory loggerFactory;
+
+        private IDictionary<string, TContext>? contexts;
+        private IDictionary<string, EntityRepository<TEntity>>? repositories;
+        private bool disposedValue;
+
+		/// <summary>
+		/// Constructs the provider with the given options factory
+		/// and tenant stores.
+		/// </summary>
+		/// <param name="optionsFactory">
+		/// A service that is used to create the options for the context
+		/// and a specific tenant.
+		/// </param>
+		/// <param name="tenantStores">
+		/// A list of the available stores to retrieve the tenants from.
+		/// </param>
+		/// <param name="loggerFactory">
+		/// A factory to create loggers for the repositories.
+		/// </param>
+        public EntityRepositoryProvider(
+			IDbContextOptionsFactory<TContext> optionsFactory,
+			IEnumerable<IMultiTenantStore<TTenantInfo>> tenantStores,
+			ILoggerFactory? loggerFactory = null) {
+            this.optionsFactory = optionsFactory ?? throw new ArgumentNullException(nameof(optionsFactory));
             this.tenantStores = tenantStores;
             this.loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         }
+
+		/// <summary>
+		/// Constructs the provider with the given options and 
+		/// tenant stores.
+		/// </summary>
+		/// <param name="options">
+		/// The instance of options that are used to create the context
+		/// for the tenants.
+		/// </param>
+		/// <param name="tenantStores">
+		/// The list of stores to retrieve the tenants from.
+		/// </param>
+		/// <param name="loggerFactory">
+		/// A factory to create loggers for the repositories.
+		/// </param>
+		public EntityRepositoryProvider(
+			DbContextOptions<TContext> options,
+			IEnumerable<IMultiTenantStore<TTenantInfo>> tenantStores,
+			ILoggerFactory? loggerFactory = null) 
+			: this(new SingletonDbContextOptionsFactory(options), tenantStores, loggerFactory) {
+
+		}
 
 		/// <summary>
 		/// Destroys the instance of the provider.
@@ -106,26 +188,37 @@ namespace Deveel.Data {
 		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken)
 			=> await GetRepositoryAsync(tenantId, cancellationToken);
 
-        private TContext ConstructDbContext(TenantInfo tenantInfo) {
+        private TContext ConstructDbContext(TTenantInfo tenantInfo) {
             if (contexts == null || !contexts.TryGetValue(tenantInfo.Id!, out var dbContext)) {
+				var options = optionsFactory.Create(tenantInfo);
                 var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-                
-				var ctor = typeof(TContext).GetConstructor(bindingFlags, new[] { typeof(ITenantInfo), typeof(DbContextOptions<TContext>) });
-                if (ctor == null)
-                    throw new RepositoryException($"The DbContext of type '{typeof(TContext)}' has invalid constructor for a repository provider");
 
-                dbContext = (TContext)ctor.Invoke(new object[] { tenantInfo, options });
+				TContext? context = null;
+
+				foreach (var ctor in typeof(TContext).GetConstructors(bindingFlags)){
+					var parameters = ctor.GetParameters();
+					if (parameters.Length == 1 && parameters[0].ParameterType == typeof(DbContextOptions<TContext>)) {
+						context = (TContext)ctor.Invoke(new object[] { options });
+					} else if (parameters.Length == 2 &&
+						typeof(ITenantInfo).IsAssignableFrom(parameters[0].ParameterType) &&
+						parameters[1].ParameterType == typeof(DbContextOptions<TContext>)) {
+						context = (TContext)ctor.Invoke(new object[] { tenantInfo, options });
+					}
+				}
+
+				if (context == null)
+					throw new RepositoryException($"Could not construct the context for tenant '{tenantInfo.Id}'");
 
                 if (contexts == null)
                     contexts = new Dictionary<string, TContext>();
 
-				contexts[tenantInfo.Id!]= dbContext;
+				contexts[tenantInfo.Id!]= dbContext = context;
             }
 
             return dbContext;
         }
 
-        private EntityRepository<TEntity> CreateRepository(TenantInfo tenant) {
+        private EntityRepository<TEntity> CreateRepository(TTenantInfo tenant) {
             try {
                 if (repositories == null || !repositories.TryGetValue(tenant.Id!, out var repository)) {
                     var dbContext = ConstructDbContext(tenant);
@@ -214,5 +307,15 @@ namespace Deveel.Data {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
+		private class SingletonDbContextOptionsFactory : IDbContextOptionsFactory<TContext> {
+			private readonly DbContextOptions<TContext> options;
+
+			public SingletonDbContextOptionsFactory(DbContextOptions<TContext> options) {
+				this.options = options;
+			}
+
+			public DbContextOptions<TContext> Create(ITenantInfo tenantInfo) => options;
+		}
 	}
 }
