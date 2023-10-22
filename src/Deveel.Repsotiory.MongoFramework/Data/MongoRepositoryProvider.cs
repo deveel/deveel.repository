@@ -154,8 +154,16 @@ namespace Deveel.Data {
 					return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>(), CreateTenantContext(tenantInfo) }) as TContext;
 				} else if (parameters.Length == 2 &&
 					parameters[0].ParameterType == typeof(IMongoDbConnection<TContext>) &&
+					typeof(ITenantInfo).IsAssignableFrom(parameters[1].ParameterType)) {
+					return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>(), tenantInfo }) as TContext;
+				} 
+				else if (parameters.Length == 2 &&
+					parameters[0].ParameterType == typeof(IMongoDbConnection<TContext>) &&
 					parameters[1].ParameterType == typeof(string)) {
 					return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>(), tenantInfo.Id! }) as TContext;
+				} else if (parameters.Length == 1 &&
+					parameters[0].ParameterType == typeof(IMongoDbConnection<TContext>)) {
+					return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>() }) as TContext;
 				}
 			}
 

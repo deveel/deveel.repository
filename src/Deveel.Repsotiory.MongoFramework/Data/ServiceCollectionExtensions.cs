@@ -88,7 +88,7 @@ namespace Deveel.Data {
 
 			services.TryAdd(new ServiceDescriptor(typeof(MongoConnectionBuilder<TContext>), builderFactory, lifetime));
 
-			services.TryAdd(new ServiceDescriptor(typeof(IMongoDbConnection<TContext>), builderFactory, lifetime));
+			services.TryAdd(new ServiceDescriptor(typeof(IMongoDbConnection<TContext>), connectionFactory, lifetime));
 			services.TryAdd(new ServiceDescriptor(typeof(IMongoDbConnection), connectionFactory, lifetime));
 		}
 
