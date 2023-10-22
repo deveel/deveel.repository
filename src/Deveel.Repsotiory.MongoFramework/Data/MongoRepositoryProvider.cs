@@ -20,8 +20,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using MongoFramework;
 
 namespace Deveel.Data {
-
-
 	/// <summary>
 	/// An implementation of <see cref="IRepositoryProvider{TEntity}"/> that
 	/// is able to create a <see cref="MongoRepository{TEntity}"/> for a given
@@ -37,7 +35,7 @@ namespace Deveel.Data {
 	/// <typeparam name="TTenantInfo">
 	/// The type of the tenant information to be used to create the context
 	/// </typeparam>
-    public class MongoRepositoryProvider<TContext, TEntity, TTenantInfo> : IRepositoryProvider<TEntity>, IDisposable 
+	public class MongoRepositoryProvider<TContext, TEntity, TTenantInfo> : IRepositoryProvider<TEntity>, IDisposable 
 		where TContext : class, IMongoDbContext
 		where TTenantInfo : class, ITenantInfo, new()
 		where TEntity : class {
@@ -140,50 +138,8 @@ namespace Deveel.Data {
 			ArgumentNullException.ThrowIfNull(connection, nameof(connection));
 			ArgumentNullException.ThrowIfNull(tenantInfo, nameof(tenantInfo));
 
-			if (typeof(TContext) == typeof(MongoDbTenantContext))
-				return (new MongoDbTenantContext(connection, tenantInfo.Id)) as TContext;
-			if (typeof(TContext) == typeof(MongoDbContext))
-				return new MongoDbContext(connection) as TContext;
-
-			foreach (var ctor in typeof(TContext).GetConstructors()) {
-				var parameters = ctor.GetParameters();
-
-				if (parameters.Length == 2 &&
-					parameters[0].ParameterType == typeof(IMongoDbConnection<TContext>) &&
-					parameters[1].ParameterType == typeof(IMultiTenantContext<TTenantInfo>)) {
-					return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>(), CreateTenantContext(tenantInfo) }) as TContext;
-				} else if (parameters.Length == 2 &&
-					parameters[0].ParameterType == typeof(IMongoDbConnection<TContext>) &&
-					typeof(ITenantInfo).IsAssignableFrom(parameters[1].ParameterType)) {
-					return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>(), tenantInfo }) as TContext;
-				} 
-				else if (parameters.Length == 2 &&
-					parameters[0].ParameterType == typeof(IMongoDbConnection<TContext>) &&
-					parameters[1].ParameterType == typeof(string)) {
-					return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>(), tenantInfo.Id! }) as TContext;
-				} else if (parameters.Length == 1 &&
-					parameters[0].ParameterType == typeof(IMongoDbConnection<TContext>)) {
-					return Activator.CreateInstance(typeof(TContext), new object[] { connection.ForContext<TContext>() }) as TContext;
-				}
-			}
-
-			throw new NotSupportedException($"Cannot create '{typeof(TContext)}' MongoDB Context");
+			return (TContext) MongoDbContextUtil.CreateContext<TContext>(connection, tenantInfo);
         }
-
-		/// <summary>
-		/// Creates an instance of <see cref="IMultiTenantContext{TTenantInfo}"/>
-		/// for a given tenant.
-		/// </summary>
-		/// <param name="tenantInfo"></param>
-		/// <returns>
-		/// Returns an instance of <see cref="IMultiTenantContext{TTenantInfo}"/>
-		/// that can be used to create the repository for a given tenant.
-		/// </returns>
-		protected virtual IMultiTenantContext<TTenantInfo> CreateTenantContext(TTenantInfo tenantInfo) {
-			return new MultiTenantContext<TTenantInfo> {
-				TenantInfo = tenantInfo
-			};
-		}
 
 		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken) 
 			=> await GetRepositoryAsync(tenantId, cancellationToken);

@@ -115,12 +115,12 @@ namespace Deveel.Data {
 
 			AddConnection<TContext>(services, connectionBuilder, lifetime);
 
-			if (typeof(MongoDbTenantContext).IsAssignableFrom(typeof(TContext))) {
+			if (typeof(IMongoDbTenantContext).IsAssignableFrom(typeof(TContext))) {
 				var contextFactory = new Func<IServiceProvider, IMongoDbTenantContext>(provider => {
 					var builder = provider.GetRequiredService<MongoConnectionBuilder<TContext>>();
 					var tenantInfo = provider.GetRequiredService<ITenantInfo>();
 
-					return BuildTenantContext<TContext>(builder, tenantInfo);
+					return (IMongoDbTenantContext) MongoDbContextUtil.CreateContext<TContext>(builder, tenantInfo);
 				});
 
 				services.TryAdd(new ServiceDescriptor(typeof(TContext), contextFactory, lifetime));
@@ -148,19 +148,28 @@ namespace Deveel.Data {
 			return services;
 		}
 
-		private static IMongoDbTenantContext BuildTenantContext<TContext>(MongoConnectionBuilder<TContext> builder, ITenantInfo tenantInfo) where TContext : class, IMongoDbContext {
-			if (typeof(TContext) == typeof(MongoDbTenantContext))
-				return new MongoDbTenantContext(builder.Connection, tenantInfo.Id);
+		//private static IMongoDbTenantContext BuildTenantContext<TContext>(MongoConnectionBuilder<TContext> builder, ITenantInfo tenantInfo) where TContext : class, IMongoDbContext {
+		//	if (typeof(TContext) == typeof(MongoDbTenantContext))
+		//		return new MongoDbTenantContext(builder.Connection, tenantInfo.Id);
 
-			var ctor1 = typeof(TContext).GetConstructor(new Type[] { typeof(IMongoDbConnection<TContext>), typeof(ITenantInfo) });
-			if (ctor1 != null)
-				return (IMongoDbTenantContext)Activator.CreateInstance(typeof(TContext), new object[] { builder.Connection.ForContext<TContext>(), tenantInfo });
+		//	var ctors = typeof(TContext).GetConstructors();
+		//	foreach (var ctor in ctors) {
+		//		var parameters = ctor.GetParameters();
+		//		if (parameters.Length == 2) {
+		//			if (typeof(IMongoDbConnection<TContext>).IsAssignableFrom(parameters[0].ParameterType) &&
+		//				typeof(ITenantInfo).IsAssignableFrom(parameters[1].ParameterType)) {
+		//				return (IMongoDbTenantContext)Activator.CreateInstance(typeof(TContext), new object[] { builder.Connection.ForContext<TContext>(), tenantInfo })!;
+		//			} else if (typeof(IMongoDbConnection<TContext>).IsAssignableFrom(parameters[0].ParameterType) &&
+		//				parameters[1].ParameterType == typeof(string)) {
+		//				return (IMongoDbTenantContext)Activator.CreateInstance(typeof(TContext), new object[] { builder.Connection.ForContext<TContext>(), tenantInfo.Id })!;
+		//			} else if (typeof(IMongoDbConnection).IsAssignableFrom(parameters[0].ParameterType) &&
+		//				typeof(ITenantInfo).IsAssignableFrom(parameters[0].ParameterType)) {
+		//				return (IMongoDbTenantContext)Activator.CreateInstance(typeof(TContext), new object[] { builder.Connection, tenantInfo })!;
+		//			}
+		//		}
+		//	}
 
-			var ctor2 = typeof(TContext).GetConstructor(new Type[] { typeof(IMongoDbConnection<TContext>), typeof(string) });
-			if (ctor2 != null)
-				return (IMongoDbTenantContext)Activator.CreateInstance(typeof(TContext), new object[] { builder.Connection.ForContext<TContext>(), tenantInfo.Id });
-
-			throw new NotSupportedException($"Cannot create '{typeof(TContext)}' MongoDB Context");
-		}
+		//	throw new NotSupportedException($"Cannot create '{typeof(TContext)}' MongoDB Context");
+		//}
 	}
 }

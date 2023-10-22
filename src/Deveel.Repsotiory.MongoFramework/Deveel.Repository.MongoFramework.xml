@@ -650,17 +650,6 @@
             suitable constructor to be created.
             </exception>
         </member>
-        <member name="M:Deveel.Data.MongoRepositoryProvider`3.CreateTenantContext(`2)">
-            <summary>
-            Creates an instance of <see cref="T:Finbuckle.MultiTenant.IMultiTenantContext`1"/>
-            for a given tenant.
-            </summary>
-            <param name="tenantInfo"></param>
-            <returns>
-            Returns an instance of <see cref="T:Finbuckle.MultiTenant.IMultiTenantContext`1"/>
-            that can be used to create the repository for a given tenant.
-            </returns>
-        </member>
         <member name="M:Deveel.Data.MongoRepositoryProvider`3.GetRepositoryAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Gets an instance of <see cref="T:Deveel.Data.MongoRepository`1"/> for
