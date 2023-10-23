@@ -361,7 +361,7 @@ namespace Deveel.Data {
 		/// <exception cref="RepositoryException"></exception>
 		public virtual async Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
-				var query = Entities.AsQueryable();
+				var query = AsQueryable();
 				if (filter != null) {
 					query = filter.Apply(query);
 				}
@@ -386,7 +386,7 @@ namespace Deveel.Data {
 		/// <returns></returns>
         public virtual async Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
-				var query = Entities.AsQueryable();
+				var query = AsQueryable();
 				if (filter != null) {
 					query = filter.Apply(query);
 				}
@@ -401,7 +401,7 @@ namespace Deveel.Data {
 		/// <inheritdoc/>
         public virtual async Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
-				var result = query.Apply(Entities.AsQueryable());
+				var result = query.Apply(AsQueryable());
 
 				return await result.FirstOrDefaultAsync(cancellationToken);
 			} catch (Exception ex) {
@@ -413,7 +413,7 @@ namespace Deveel.Data {
 		/// <inheritdoc/>
 		public virtual async Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
-				var result = query.Apply(Entities.AsQueryable());
+				var result = query.Apply(AsQueryable());
 				return await result.ToListAsync(cancellationToken);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
