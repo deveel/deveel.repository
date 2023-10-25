@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<Description>Provides an implementation of the repository pattern that is backed by the MongoFramework library and provides multi-tenancy support through Finbuckle</Description>
-		<DocumentationFile>./Deveel.Repository.MongoFramework.xml</DocumentationFile>
     <PackageTags>repository;mongo;mongodb;client;nosql</PackageTags>
 	</PropertyGroup>
 

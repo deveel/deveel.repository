@@ -3,7 +3,6 @@
   <PropertyGroup>
     <PackageTags>repository;manager;entitymanager;entity;cache;caching;easycaching</PackageTags>
     <Description>Extends the Entity Manager with an implementation of the entity cache backed by EasyCaching</Description>
-    <DocumentationFile>./Deveel.Repository.Manager.EasyCaching.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

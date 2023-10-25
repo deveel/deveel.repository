@@ -4,7 +4,6 @@
 		<RootNamespace>Deveel</RootNamespace>
 		<Description>Provides an implementation of the repository pattern that is backed by the Entity Framework and provides multi-tenancy support through Finbuckle</Description>
     <PackageTags>repository;entityframework;ef;core;entityframeworkcore;efcore;entity;pattern;linq;queryable</PackageTags>
-    <DocumentationFile>./Deveel.Repository.EntityFramework.xml</DocumentationFile>
 	</PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">

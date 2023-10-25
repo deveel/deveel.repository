@@ -3,6 +3,10 @@
     <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <RootNamespace>Deveel</RootNamespace>
     <VersionPrefix>1.2.6</VersionPrefix>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- NuGet Metadata and Commands -->
     <Authors>Antonello Provenzano</Authors>
     <Company>Deveel AS</Company>
     <Copyright>(C) 2022-2023 Deveel AS</Copyright>
@@ -12,8 +16,6 @@
     <PackageIcon>deveel-logo.png</PackageIcon>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <IncludeSymbols>true</IncludeSymbols>

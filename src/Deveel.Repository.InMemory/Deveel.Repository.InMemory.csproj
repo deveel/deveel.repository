@@ -3,7 +3,6 @@
   <PropertyGroup>
     <PackageTags>repository;framework;repository;memory;in-memory;inmemory</PackageTags>
     <Description>An implementation of the repository model that is handled in-memory</Description>
-    <DocumentationFile>./Deveel.Repository.InMemory.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

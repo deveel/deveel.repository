@@ -45,9 +45,9 @@ namespace Deveel.Data {
 		/// Returns an instance of <typeparamref name="TEntity"/> that matches the given expression,
 		/// otherwise <c>null</c> if no entity is found.
 		/// </returns>
-		public static Task<TEntity?> FindAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.AsFilterable().FindAsync(new Query(new DynamicLinqFilter(paramName, expression)), cancellationToken);
+			=> repository.FindFirstAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
 		/// <summary>
 		/// Finds a single entity in the repository that matches the given dynamic LINQ expression.
@@ -70,7 +70,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static Task<TEntity?> FindAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.AsFilterable().FindAsync(new Query(new DynamicLinqFilter(expression)), cancellationToken);
+			=> repository.FindFirstAsync(new DynamicLinqFilter(expression), cancellationToken);
 
 		#endregion
 
@@ -186,13 +186,60 @@ namespace Deveel.Data {
 
 		#region Exists
 
+		/// <summary>
+		/// Checks if the repository contains at least one entity that matches
+		/// the given dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to check in the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to check.
+		/// </param>
+		/// <param name="paramName">
+		/// The name of the parameter to use in the expression.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the repository contains at least one entity
+		/// that matches the given expression, otherwise <c>false</c>.
+		/// </returns>
 		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.ExistsAsync<TEntity>(FilterExpression.AsLambda<TEntity>(paramName, expression), cancellationToken);
+			=> repository.ExistsAsync<TEntity>(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
+		/// <summary>
+		/// Checks if the repository contains at least one entity that matches
+		/// the given dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to check in the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to check.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <remarks>
+		/// The default parameter name used in the expression is 
+		/// <see cref="DynamicLinqFilter.DefaultParameterName"/>.
+		/// </remarks>
+		/// <returns>
+		/// Returns <c>true</c> if the repository contains at least one entity
+		/// that matches the given expression, otherwise <c>false</c>.
+		/// </returns>
 		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.ExistsAsync<TEntity>("x", expression, cancellationToken);
+			=> repository.ExistsAsync<TEntity>(DynamicLinqFilter.DefaultParameterName, expression, cancellationToken);
 
 		#endregion
 	}

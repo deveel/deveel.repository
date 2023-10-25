@@ -3,7 +3,6 @@
   <PropertyGroup>
     <PackageTags>repository;manager;business;validation;validate;operation</PackageTags>
     <Description>Extends the Repository model adding management functions, such as validation, caching, logging</Description>
-    <DocumentationFile>./Deveel.Repository.Manager.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

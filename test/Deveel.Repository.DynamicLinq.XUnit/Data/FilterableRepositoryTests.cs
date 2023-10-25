@@ -69,7 +69,7 @@
 			var person = RandomPerson();
 			var expected = persons.FirstOrDefault(x => x.FirstName == person.FirstName);
 
-			var result = await repository.FindAsync("p", $"p.FirstName == \"{person.FirstName}\"");
+			var result = await repository.FindFirstAsync("p", $"p.FirstName == \"{person.FirstName}\"");
 
 			Assert.Equal(expected, result);
 		}

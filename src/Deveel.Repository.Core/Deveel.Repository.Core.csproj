@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <Description>Abstractions for the definition of repositories of entities</Description>
-    <DocumentationFile>./Deveel.Repository.Core.xml</DocumentationFile>
     <PackageTags>repository;abstractions;extensions;pattern;cleanarchitecture;clean;collections;framework</PackageTags>
   </PropertyGroup>
 

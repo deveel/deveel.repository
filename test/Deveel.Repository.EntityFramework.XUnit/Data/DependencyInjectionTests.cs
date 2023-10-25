@@ -80,7 +80,7 @@ namespace Deveel.Data {
 
 			services.AddEntityRepositoryProvider<DbPerson, PersonDbContext>(tenant => {
 				return new DbContextOptionsBuilder<PersonDbContext>()
-				.UseSqlite(tenant.ConnectionString, x => x.UseNetTopologySuite())
+				.UseSqlite(tenant.ConnectionString!, x => x.UseNetTopologySuite())
 				.Options;
 			});
 

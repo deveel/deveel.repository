@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -21,6 +22,7 @@ namespace Deveel.Data {
 		IQueryableRepository<TEntity>
 		where TEntity : class {
 		private readonly IEnumerable<TEntity> entities;
+		private MemberInfo? idMember;
 
 		public RepositoryWrapper(IEnumerable<TEntity> entities) {
 			this.entities = entities ?? throw new ArgumentNullException(nameof(entities));
@@ -46,23 +48,31 @@ namespace Deveel.Data {
 
 		public IQueryable<TEntity> AsQueryable() => entities.AsQueryable();
 
+		private MemberInfo DiscoverKeyMember() {
+			if (idMember == null) {
+				var idMembers = typeof(TEntity).GetMembers(BindingFlags.Instance | BindingFlags.Public)
+					.Where(x => x.MemberType == MemberTypes.Property || x.MemberType == MemberTypes.Field)
+					.Where(x => Attribute.IsDefined(x, typeof(KeyAttribute)))
+					.ToList();
+
+				if (idMembers.Count == 0)
+					throw new NotSupportedException("The entity does not have an Id property");
+
+				if (idMembers.Count > 1)
+					throw new NotSupportedException("The entity has more than one Id property");
+
+				idMember = idMembers[0];
+			}
+
+			return idMember;
+		}
+
 		public object? GetEntityKey(TEntity entity) {
-			var idMembers = typeof(TEntity).GetMembers(BindingFlags.Instance | BindingFlags.Public)
-				.Where(x => x.MemberType == MemberTypes.Property || x.MemberType == MemberTypes.Field)
-				.Where(x => x.Name == "Id" || x.Name == "ID")
-				.ToList();
+			var member = DiscoverKeyMember();
 
-			if (idMembers.Count == 0)
-				throw new NotSupportedException("The entity does not have an Id property");
-
-			if (idMembers.Count > 1)
-				throw new NotSupportedException("The entity has more than one Id property");
-
-			var idMember = idMembers[0];
-
-			if (idMember is PropertyInfo propertyInfo) {
+			if (member is PropertyInfo propertyInfo) {
 				return propertyInfo.GetValue(entity);
-			} else if (idMember is FieldInfo fieldInfo) {
+			} else if (member is FieldInfo fieldInfo) {
 				return fieldInfo.GetValue(entity);
 			} else {
 				throw new NotSupportedException("The entity Id is not supported");
@@ -80,23 +90,12 @@ namespace Deveel.Data {
 		}
 
 		private string SetId(TEntity entity) {
-			var idMembers = typeof(TEntity).GetMembers(BindingFlags.Instance | BindingFlags.Public)
-				.Where(x => x.MemberType == MemberTypes.Property || x.MemberType == MemberTypes.Field)
-				.Where(x => x.Name == "Id" || x.Name == "ID")
-				.ToList();
-
-			if (idMembers.Count == 0)
-				throw new NotSupportedException("The entity does not have an Id property");
-
-			if (idMembers.Count > 1)
-				throw new NotSupportedException("The entity has more than one Id property");
-
-			var idMember = idMembers[0];
+			var member = DiscoverKeyMember();
 			var entityId = Guid.NewGuid().ToString("N");
 
-			if (idMember is PropertyInfo propertyInfo) {
+			if (member is PropertyInfo propertyInfo) {
 				propertyInfo.SetValue(entity, entityId);
-			} else if (idMember is FieldInfo fieldInfo) {
+			} else if (member is FieldInfo fieldInfo) {
 				fieldInfo.SetValue(entity, entityId);
 			} else {
 				throw new NotSupportedException("The entity Id is not supported");

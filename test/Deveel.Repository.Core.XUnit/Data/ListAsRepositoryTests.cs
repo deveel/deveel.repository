@@ -112,6 +112,18 @@
 		}
 
 		[Fact]
+		public async Task Mutable_RemoveRange() {
+			var personCount = persons.Count;
+			var toRemove = persons.Take(Math.Min(10, persons.Count)).ToList();
+			Assert.True(toRemove.Any());
+
+			await repository.RemoveRangeAsync(toRemove);
+
+			Assert.True(toRemove.All(x => repository.FindByKey(x.Id!) == null));
+			Assert.Equal(personCount - toRemove.Count, persons.Count);
+		}
+
+		[Fact]
 		public async Task ReadOnly_Remove() {
 			var list = persons.AsReadOnly();
 			var readOnlyRepository = list.AsRepository();
@@ -119,6 +131,15 @@
 			var person = RandomPerson();
 
 			await Assert.ThrowsAsync<NotSupportedException>(() => readOnlyRepository.RemoveAsync(person));
+		}
+
+		[Fact]
+		public async Task Filterable_Exists() {
+			var person = RandomPerson();
+
+			var result = await repository.ExistsAsync(x => x.LastName == person.LastName);
+
+			Assert.True(result);
 		}
 
 
@@ -149,6 +170,18 @@
 			var count = await repository.AsFilterable().CountAsync(x => x.FirstName == "Not Found");
 
 			Assert.Equal(0, count);
+		}
+
+		[Fact]
+		public async Task Filterable_FindFirst_WithFilter() {
+			var person = RandomPerson();
+
+			var found = await repository.FindFirstAsync(QueryFilter.Where<Person>(x => x.Id == person.Id));
+
+			Assert.NotNull(found);
+			Assert.Equal(person.Id, found.Id);
+			Assert.Equal(person.FirstName, found.FirstName);
+			Assert.Equal(person.LastName, found.LastName);
 		}
 
 		[Fact]
