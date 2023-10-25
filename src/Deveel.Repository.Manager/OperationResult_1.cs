@@ -163,7 +163,12 @@ namespace Deveel {
 		/// <param name="result">
 		/// The operation result that is to be converted.
 		/// </param>
-		public static implicit operator TValue?(OperationResult<TValue> result) => result.Value;
+		public static implicit operator TValue?(OperationResult<TValue> result) {
+			if (result.ResultType == OperationResultType.Error)
+				throw result.AsException()!;
+				
+			return result.Value;
+		}
 
 		/// <summary>
 		/// Creates a result that indicates a successful operation.

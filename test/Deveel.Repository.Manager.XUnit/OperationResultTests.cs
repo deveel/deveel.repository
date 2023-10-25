@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using Microsoft.VisualBasic;
+
 namespace Deveel {
 	public static class OperationResultTests {
 		[Fact]
@@ -157,6 +159,16 @@ namespace Deveel {
             Assert.Equal(expected, invoked);
         }
 
+		[Fact]
+		public static async Task HandleValue_Success() {
+			var result = OperationResult<int>.Success(22);
+
+			await result.HandleAsync((int i) => {
+				Assert.Equal(22, i);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Theory]
 		[InlineData(OperationResultType.Success, "success invoked")]
 		[InlineData(OperationResultType.Error, "failed invoked")]
@@ -217,12 +229,24 @@ namespace Deveel {
 		}
 
 		[Fact]
-		public static void ImplicitConvertResultValue_ToValue() {
+		public static void ImplicitConvertResultValue_Success_ToValue() {
 			var success = OperationResult<int>.Success(22);
 
 			int value = success;
 
 			Assert.Equal(22, value);
+		}
+
+		[Fact]
+		public static void ImplicitConvertResultValue_Error_ToValue() {
+			var error = OperationResult<int>.Fail("test", "Test error");
+
+			var ex = Assert.Throws<OperationException>(() => {
+				int value = error;
+			});
+
+			Assert.Equal("test", ex.ErrorCode);
+			Assert.Equal("Test error", ex.Message);
 		}
 
 		[Fact]
@@ -252,6 +276,15 @@ namespace Deveel {
 			var result = OperationResult<string>.Success("test");
 
 			var mapped = await result.MapAsync(x => Task.FromResult<string?>($"{x} mapped"));
+
+			Assert.Equal("test mapped", mapped);
+		}
+
+		[Fact]
+		public static void MapValue_Success() {
+			var result = OperationResult<string>.Success("test");
+
+			var mapped = result.Map(x => $"{x} mapped");
 
 			Assert.Equal("test mapped", mapped);
 		}

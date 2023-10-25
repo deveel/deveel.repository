@@ -160,5 +160,24 @@ namespace Deveel {
 
 			return Task.CompletedTask;
 		}
+
+		/// <summary>
+		/// If the result is an error, it casts it to
+		/// an exception.
+		/// </summary>
+		/// <param name="result">
+		/// The result object to cast to an exception.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="OperationException"/>,
+		/// if the result is an error, otherwise <c>null</c>.
+		/// </returns>
+		public static OperationException? AsException(this IOperationResult result) {
+			if (result.ResultType != OperationResultType.Error ||
+				result.Error == null)
+				return null;
+			
+			return new OperationException(result.Error.ErrorCode, result.Error.Message);
+		}
 	}
 }
