@@ -157,6 +157,15 @@ namespace Deveel {
 			=> new(result.ResultType, default, result.Error);
 
 		/// <summary>
+		/// Implicitly converts the given <paramref name="result"/>
+		/// to the value returned by the operation.
+		/// </summary>
+		/// <param name="result">
+		/// The operation result that is to be converted.
+		/// </param>
+		public static implicit operator TValue?(OperationResult<TValue> result) => result.Value;
+
+		/// <summary>
 		/// Creates a result that indicates a successful operation.
 		/// </summary>
 		/// <param name="value">

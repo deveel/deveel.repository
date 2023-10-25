@@ -111,6 +111,13 @@ namespace Deveel.Data {
         protected virtual DbSet<TEntity> Entities => Context.Set<TEntity>();
 
 		/// <summary>
+		/// Gets a value indicating if the repository is tracking the changes
+		/// to the entities returned by the queries.
+		/// </summary>
+		protected bool IsTrackingChanges => Entities.Local != null ||
+			Context.ChangeTracker.QueryTrackingBehavior != QueryTrackingBehavior.NoTracking;
+
+		/// <summary>
 		/// Gets the information about the tenant that the repository is using to access the data.
 		/// </summary>
         protected virtual ITenantInfo? TenantInfo { get; }
@@ -324,7 +331,17 @@ namespace Deveel.Data {
 
 				Logger.TraceUpdatingEntity(typeof(TEntity), entityId, TenantId);
 
-				var entry = Context.Entry(entity);
+				if (!IsTrackingChanges) {
+					var existing = await FindByKeyAsync(entityId, cancellationToken);
+					if (existing == null) {
+						Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+						return false;
+					}
+
+					var entry = Context.Entry(existing);
+					entry.CurrentValues.SetValues(entity);
+					entry.State = EntityState.Modified;
+				}
 
 				var count = await Context.SaveChangesAsync(cancellationToken);
 

@@ -139,7 +139,7 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public async Task UpdateEntity() {
+		public virtual async Task UpdateEntity() {
 			var person = People.Random()!;
 
 			var copy = new Person {
@@ -152,6 +152,7 @@ namespace Deveel.Data {
 			};
 
 			var result = await Manager.UpdateAsync(copy);
+
 			Assert.False(result.IsValidationError());
 			Assert.True(result.IsSuccess());
 

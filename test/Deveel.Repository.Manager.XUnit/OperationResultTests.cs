@@ -217,6 +217,37 @@ namespace Deveel {
 		}
 
 		[Fact]
+		public static void ImplicitConvertResultValue_ToValue() {
+			var success = OperationResult<int>.Success(22);
+
+			int value = success;
+
+			Assert.Equal(22, value);
+		}
+
+		[Fact]
+		public static void ImplicitConvertResultValue_FromSuccessOperationResult() {
+			var success = OperationResult.Success;
+
+			var result = (OperationResult<int>) success;
+
+			Assert.Equal(OperationResultType.Success, result.ResultType);
+			Assert.Equal(default, result.Value);
+			Assert.Null(result.Error);
+		}
+
+		[Fact]
+		public static void ImplicitConvertResultValue_FromFailOperationResult() {
+			var fail = OperationResult.Fail("ERROR_CODE", "An error has occurred");
+
+			var result = (OperationResult<int>)fail;
+
+			Assert.Equal(OperationResultType.Error, result.ResultType);
+			Assert.Equal(default, result.Value);
+			Assert.NotNull(result.Error);
+		}
+
+		[Fact]
 		public static async Task MapValueAsync() {
 			var result = OperationResult<string>.Success("test");
 
