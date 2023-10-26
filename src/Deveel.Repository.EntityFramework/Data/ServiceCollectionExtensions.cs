@@ -16,6 +16,7 @@ using Finbuckle.MultiTenant;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Deveel.Data {
 	/// <summary>
@@ -95,22 +96,40 @@ namespace Deveel.Data {
 			return services;
 		}
 
-		public static IServiceCollection AddEntityRepositoryProvider<TEntity, TContext>(this IServiceCollection services, Func<ITenantInfo, DbContextOptions<TContext>> optionsFactory, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+		public static IServiceCollection AddEntityRepositoryProvider<TEntity, TContext>(this IServiceCollection services, Action<ITenantInfo, DbContextOptionsBuilder<TContext>> optionsFactory, ServiceLifetime lifetime = ServiceLifetime.Scoped)
 			where TEntity : class
 			where TContext : DbContext {
 			services.AddRepositoryProvider<EntityRepositoryProvider<TContext, TEntity>>(lifetime);
+			services.AddDbContextOptionsFactory(optionsFactory, lifetime);
+			return services;
+		}
+
+		public static IServiceCollection AddDbContextOptionsFactory<TContext>(this IServiceCollection services, Action<ITenantInfo, DbContextOptionsBuilder<TContext>> optionsFactory, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+			where TContext : DbContext {
 			services.AddSingleton<IDbContextOptionsFactory<TContext>>(new DelegatedDbContextOptionsFactory<TContext>(optionsFactory));
 			return services;
 		}
 
-		class DelegatedDbContextOptionsFactory<TContext> : IDbContextOptionsFactory<TContext> where TContext : DbContext {
-			private readonly Func<ITenantInfo, DbContextOptions<TContext>> factory;
+		public static IServiceCollection AddDbContextOptionsFactory<TContext, TFactory>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+			where TContext : DbContext
+			where TFactory : class, IDbContextOptionsFactory<TContext> {
+			services.TryAdd(new ServiceDescriptor(typeof(IDbContextOptionsFactory<TContext>), typeof(TFactory), lifetime));
+			services.Add(new ServiceDescriptor(typeof(TFactory), typeof(TFactory), lifetime));
+			return services;
+		}
 
-			public DelegatedDbContextOptionsFactory(Func<ITenantInfo, DbContextOptions<TContext>> factory) {
+		class DelegatedDbContextOptionsFactory<TContext> : IDbContextOptionsFactory<TContext> where TContext : DbContext {
+			private readonly Action<ITenantInfo, DbContextOptionsBuilder<TContext>> factory;
+
+			public DelegatedDbContextOptionsFactory(Action<ITenantInfo, DbContextOptionsBuilder<TContext>> factory) {
 				this.factory = factory;
 			}
 
-			public DbContextOptions<TContext> Create(ITenantInfo tenantInfo) => factory(tenantInfo);
+			public DbContextOptions<TContext> Create(ITenantInfo tenantInfo) {
+				var builder = new DbContextOptionsBuilder<TContext>();
+				factory(tenantInfo, builder);
+				return builder.Options;
+			}
 		}
     }
 }

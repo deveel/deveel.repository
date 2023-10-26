@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Deveel.Data {
 	public static class DependencyInjectionTests {
@@ -78,10 +79,8 @@ namespace Deveel.Data {
 				})
 				.WithStaticStrategy(tenantId);
 
-			services.AddEntityRepositoryProvider<DbPerson, PersonDbContext>(tenant => {
-				return new DbContextOptionsBuilder<PersonDbContext>()
-				.UseSqlite(tenant.ConnectionString!, x => x.UseNetTopologySuite())
-				.Options;
+			services.AddEntityRepositoryProvider<DbPerson, PersonDbContext>((tenant, builder) => {
+				builder.UseSqlite(tenant.ConnectionString!, x => x.UseNetTopologySuite());
 			});
 
 			var provider = services.BuildServiceProvider();
@@ -95,5 +94,50 @@ namespace Deveel.Data {
 			Assert.IsType<EntityRepository<DbPerson>>(repository);
 		}
 
+		[Fact]
+		public static void AddCustomRepositoryProvider() {
+			var tenantId = Guid.NewGuid().ToString();
+			var services = new ServiceCollection();
+			services.AddMultiTenant<TenantInfo>()
+				.WithInMemoryStore(options => {
+					options.Tenants.Add(new TenantInfo {
+						Id = tenantId,
+						Identifier = tenantId,
+						Name = "Test Tenant",
+						ConnectionString = $"Data Source=:memory:;TenantID={tenantId}"
+					});
+				})
+				.WithStaticStrategy(tenantId);
+
+			services.AddDbContextOptionsFactory<PersonDbContext>((tenant, builder) => {
+				builder.UseSqlite(tenant.ConnectionString!, x => x.UseNetTopologySuite());
+			});
+
+			services.AddRepositoryProvider<MyEntityRepositoryProvider>();
+
+			var provider = services.BuildServiceProvider();
+
+			Assert.NotNull(provider.GetService<IRepositoryProvider<DbPerson>>());
+			Assert.NotNull(provider.GetService<MyEntityRepositoryProvider>());
+
+			var repository = provider.GetRequiredService<IRepositoryProvider<DbPerson>>().GetRepository(tenantId);
+
+			Assert.NotNull(repository);
+			Assert.IsType<MyEntityRepository>(repository);
+		}
+
+		class MyEntityRepository : EntityRepository<DbPerson> {
+			public MyEntityRepository(PersonDbContext context) : base(context) {
+			}
+		}
+
+		class MyEntityRepositoryProvider : EntityRepositoryProvider<PersonDbContext, DbPerson> {
+			public MyEntityRepositoryProvider(IDbContextOptionsFactory<PersonDbContext> factory, IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null) 
+				: base(factory, tenantStores, loggerFactory) {
+			}
+
+			protected override EntityRepository<DbPerson> CreateRepository(PersonDbContext dbContext, ITenantInfo tenantInfo) 
+				=> new MyEntityRepository(dbContext);
+		}
 	}
 }
