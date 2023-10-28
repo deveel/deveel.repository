@@ -6,14 +6,14 @@ Below you will find a quick and generic guide to start using the framework in yo
 
 To learn about the specific usage of the framework, you can read the following documentation:
 
-| Topic                                                      | Description                                                                                                                                                                    |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [_Using the Entity Framework Core Repository_](ef-core.md) | Learn how to use the Repository pattern with [Entity Framework Core](https://github.com/dotnet/efcore)                                                                         |
-| [_Using the MongoDB Repository_](mongodb.md)               | Accessing [MongoDB](https://mongodb.com) databases through the Repository pattern                                                                                              |
-| [_Using the In-Memory Repository_](in-memory.md)           | Interface a volatile and in-process storage using a Repository pattern.                                                                                                        |
-| [_The Entity Manager_](entity-manager/)                    | Provide your application with a business layer on top of the Repository for additional functions (_logging_, _validation_, _normalization_, _caching_, _event sourcing_, etc.) |
-| [_Extending the Repository_](custom-repository.md)         | Learn how to create a custom repository to access your data source, according to your specific data logic                                                                      |
-| [_Multi-Tenancy_](multi-tenancy.md)                        | Learn how to use the framework in a multi-tenant application                                                                                                                   |
+| Topic                                                                                 | Description                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [_Using the Entity Framework Core Repository_](repository-implementations/ef-core.md) | Learn how to use the Repository pattern with [Entity Framework Core](https://github.com/dotnet/efcore)                                                                         |
+| [_Using the MongoDB Repository_](repository-implementations/mongodb.md)               | Accessing [MongoDB](https://mongodb.com) databases through the Repository pattern                                                                                              |
+| [_Using the In-Memory Repository_](repository-implementations/in-memory.md)           | Interface a volatile and in-process storage using a Repository pattern.                                                                                                        |
+| [_The Entity Manager_](entity-manager/)                                               | Provide your application with a business layer on top of the Repository for additional functions (_logging_, _validation_, _normalization_, _caching_, _event sourcing_, etc.) |
+| [_Extending the Repository_](custom-repository.md)                                    | Learn how to create a custom repository to access your data source, according to your specific data logic                                                                      |
+| [_Multi-Tenancy_](multi-tenancy.md)                                                   | Learn how to use the framework in a multi-tenant application                                                                                                                   |
 
 ## Installation
 
@@ -54,11 +54,11 @@ dotnet add package Deveel.Repository.Core
 
 The library provides a set of drivers to access different data sources, that can be used as a dependency in your project.
 
-| Driver                                | Package                             | Description                                                                                                                                                                    |
-| ------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [_In-Memory_](in-memory.md)           | `Deveel.Repository.InMemory`        | A very simple implementation of the repository pattern that stores the data in-memory.                                                                                         |
-| [_MongoDB_](mongodb.md)               | `Deveel.Repository.MongoFramework`  | An implementation of the repository pattern that stores the data in a MongoDB database (using the [MongoFramework](https://github.com/turnersoftware/mongoframework) library). |
-| [_Entity Framework Core_](ef-core.md) | `Deveel.Repository.EntityFramework` | An implementation of the repository pattern that stores the data in a relational database, using the [Entity Framework Core](https://github.com/dotnet/efcore).                |
+| Driver                                                           | Package                             | Description                                                                                                                                                                    |
+| ---------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [_In-Memory_](repository-implementations/in-memory.md)           | `Deveel.Repository.InMemory`        | A very simple implementation of the repository pattern that stores the data in-memory.                                                                                         |
+| [_MongoDB_](repository-implementations/mongodb.md)               | `Deveel.Repository.MongoFramework`  | An implementation of the repository pattern that stores the data in a MongoDB database (using the [MongoFramework](https://github.com/turnersoftware/mongoframework) library). |
+| [_Entity Framework Core_](repository-implementations/ef-core.md) | `Deveel.Repository.EntityFramework` | An implementation of the repository pattern that stores the data in a relational database, using the [Entity Framework Core](https://github.com/dotnet/efcore).                |
 
 ## Instrumentation
 
