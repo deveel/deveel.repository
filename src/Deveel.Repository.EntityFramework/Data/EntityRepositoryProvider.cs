@@ -188,6 +188,9 @@ namespace Deveel.Data {
 		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken)
 			=> await GetRepositoryAsync(tenantId, cancellationToken);
 
+		async Task<IRepository<TEntity, object>> IRepositoryProvider<TEntity, object>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken)
+			=> await GetRepositoryAsync(tenantId, cancellationToken);
+
         private TContext ConstructDbContext(TTenantInfo tenantInfo) {
             if (contexts == null || !contexts.TryGetValue(tenantInfo.Id!, out var dbContext)) {
 				var options = optionsFactory.Create(tenantInfo);

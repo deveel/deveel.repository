@@ -95,6 +95,11 @@ namespace Deveel.Data {
 			return Task.FromResult<IRepository<TEntity>>(repo);
 		}
 
+		Task<IRepository<TEntity, object>> IRepositoryProvider<TEntity, object>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken) {
+			var repo = GetRepository(tenantId);
+			return Task.FromResult<IRepository<TEntity, object>>(repo);
+		}
+
 		/// <summary>
 		/// Disposes the provider and all the repositories created.
 		/// </summary>

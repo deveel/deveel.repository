@@ -35,7 +35,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="PageResult{TEntity}"/> that
 		/// is the result of the query.
 		/// </returns>
-		public static PageResult<TEntity> GetPage<TEntity>(this IQueryableRepository<TEntity> repository, PageQuery<TEntity> request)
+		public static PageResult<TEntity> GetPage<TEntity, TKey>(this IQueryableRepository<TEntity, TKey> repository, PageQuery<TEntity> request)
 			where TEntity : class {
 			var query = request.ApplyQuery(repository.AsQueryable());
 

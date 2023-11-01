@@ -102,7 +102,7 @@ namespace Deveel.Data {
 
 		string? IMultiTenantRepository<TEntity>.TenantId => TenantId;
 
-		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => DbSet.AsQueryable();
+		IQueryable<TEntity> IQueryableRepository<TEntity, object>.AsQueryable() => DbSet.AsQueryable();
 
 		/// <summary>
 		/// Gets the <see cref="IMongoCollection{TEntity}"/> instance that is used
@@ -167,7 +167,7 @@ namespace Deveel.Data {
 			return _dbSet;
 		}
 
-		object? IRepository<TEntity>.GetEntityKey(TEntity entity)
+		object? IRepository<TEntity, object>.GetEntityKey(TEntity entity)
 			=> GetEntityKey(entity);
 
 		/// <summary>

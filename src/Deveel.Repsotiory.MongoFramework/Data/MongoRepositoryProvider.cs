@@ -141,7 +141,10 @@ namespace Deveel.Data {
 			return (TContext) MongoDbContextUtil.CreateContext<TContext>(connection, tenantInfo);
         }
 
-		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken) 
+		async Task<IRepository<TEntity, object>> IRepositoryProvider<TEntity, object>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken) 
+			=> await GetRepositoryAsync(tenantId, cancellationToken);
+
+		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, System.Threading.CancellationToken cancellationToken)
 			=> await GetRepositoryAsync(tenantId, cancellationToken);
 
 		/// <summary>

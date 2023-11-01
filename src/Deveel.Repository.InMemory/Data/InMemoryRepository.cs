@@ -85,7 +85,7 @@ namespace Deveel.Data {
 			Dispose(disposing: false);
 		}
 
-		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => Entities.AsQueryable();
+		IQueryable<TEntity> IQueryableRepository<TEntity, object>.AsQueryable() => Entities.AsQueryable();
 
 		/// <summary>
 		/// Gets the read-only list of entities in the repository.
