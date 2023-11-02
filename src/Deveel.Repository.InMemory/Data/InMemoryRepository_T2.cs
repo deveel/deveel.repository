@@ -26,15 +26,19 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of entity managed by the repository.
 	/// </typeparam>
-	public class InMemoryRepository<TEntity> : 
-		IRepository<TEntity>, 
-		IQueryableRepository<TEntity>, 
-		IPageableRepository<TEntity>, 
-		IFilterableRepository<TEntity>,
-		IMultiTenantRepository<TEntity>,
+	/// <typeparam name="TKey">
+	/// The type of the key of the entity managed by the repository.
+	/// </typeparam>
+	public class InMemoryRepository<TEntity, TKey> :
+		IRepository<TEntity, TKey>,
+		IQueryableRepository<TEntity, TKey>,
+		IPageableRepository<TEntity, TKey>,
+		IFilterableRepository<TEntity, TKey>,
+		IMultiTenantRepository<TEntity, TKey>,
 		IDisposable
-		where TEntity : class {
-		private SortedList<object, TEntity> entities;
+		where TEntity : class 
+		where TKey : notnull {
+		private SortedList<TKey, TEntity> entities;
 		private bool disposedValue;
 		private MemberInfo? idMember;
 		private readonly IFieldMapper<TEntity>? fieldMapper;
@@ -71,7 +75,7 @@ namespace Deveel.Data {
 		/// A service that maps a field by name to an expression that
 		/// can select the field from an entity.
 		/// </param>
-		protected InMemoryRepository(string tenantId, 
+		protected InMemoryRepository(string tenantId,
 			IEnumerable<TEntity>? list = null,
 			IFieldMapper<TEntity>? fieldMapper = null)
 			: this(list, fieldMapper) {
@@ -85,14 +89,14 @@ namespace Deveel.Data {
 			Dispose(disposing: false);
 		}
 
-		IQueryable<TEntity> IQueryableRepository<TEntity, object>.AsQueryable() => Entities.AsQueryable();
+		IQueryable<TEntity> IQueryableRepository<TEntity, TKey>.AsQueryable() => Entities.AsQueryable();
 
 		/// <summary>
 		/// Gets the read-only list of entities in the repository.
 		/// </summary>
 		public virtual IReadOnlyList<TEntity> Entities => entities.Values.ToList().AsReadOnly();
 
-		string? IMultiTenantRepository<TEntity>.TenantId => TenantId;
+		string? IMultiTenantRepository<TEntity, TKey>.TenantId => TenantId;
 
 		/// <summary>
 		/// Gets the identifier of the tenant that owns the entities,
@@ -100,8 +104,8 @@ namespace Deveel.Data {
 		/// </summary>
 		protected virtual string? TenantId { get; }
 
-		private SortedList<object, TEntity> CopyList(IEnumerable<TEntity> source) {
-			var result = new SortedList<object, TEntity>();
+		private SortedList<TKey, TEntity> CopyList(IEnumerable<TEntity> source) {
+			var result = new SortedList<TKey, TEntity>();
 			foreach (var item in source) {
 				var id = GetEntityId(item);
 				if (id == null)
@@ -122,7 +126,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public virtual object? GetEntityKey(TEntity entity) {
+		public virtual TKey? GetEntityKey(TEntity entity) {
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			return GetEntityId(entity);
@@ -138,16 +142,16 @@ namespace Deveel.Data {
 			return idMember;
 		}
 
-		private static object? GetIdValue(MemberInfo memberInfo, TEntity entity) {
+		private static TKey? GetIdValue(MemberInfo memberInfo, TEntity entity) {
 			if (memberInfo is PropertyInfo propertyInfo)
-				return propertyInfo.GetValue(entity);
+				return (TKey?) propertyInfo.GetValue(entity);
 			if (memberInfo is FieldInfo fieldInfo)
-				return fieldInfo.GetValue(entity);
+				return (TKey?)fieldInfo.GetValue(entity);
 
 			throw new NotSupportedException($"The member {memberInfo} is not supported");
 		}
 
-		private static void SetIdValue(MemberInfo memberInfo, TEntity entity, object value) {
+		private static void SetIdValue(MemberInfo memberInfo, TEntity entity, TKey value) {
 			if (memberInfo is PropertyInfo propertyInfo) {
 				propertyInfo.SetValue(entity, value);
 			} else if (memberInfo is FieldInfo fieldInfo) {
@@ -157,7 +161,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		private void SetEntityId(TEntity entity, object value) {
+		private void SetEntityId(TEntity entity, TKey value) {
 			var member = DiscoverIdMember();
 			if (member == null)
 				throw new RepositoryException("The entity does not have an ID");
@@ -165,12 +169,22 @@ namespace Deveel.Data {
 			SetIdValue(member, entity, value);
 		}
 
-		private object? GetEntityId(TEntity entity) {
+		private TKey? GetEntityId(TEntity entity) {
 			var member = DiscoverIdMember();
 			if (member == null)
-				return null;
+				return default;
 
 			return GetIdValue(member, entity);
+		}
+
+		private TKey GenerateNewKey() {
+			// TODO: make this generator configurable ...
+			if (typeof(TKey) == typeof(Guid))
+				return (TKey)(object)(Guid.NewGuid());
+			if (typeof(TKey) == typeof(string))
+				return (TKey)(object)Guid.NewGuid().ToString();
+
+			throw new NotSupportedException($"The key type {typeof(TKey)} is not supported");
 		}
 
 		/// <inheritdoc/>
@@ -190,10 +204,10 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var id = Guid.NewGuid().ToString();
-				SetEntityId(entity, id);
+				var key = GenerateNewKey();
+				SetEntityId(entity, key);
 
-				entities.Add(id, Clone(entity));
+				entities.Add(key, Clone(entity));
 
 				return Task.CompletedTask;
 			} catch (RepositoryException) {
@@ -210,24 +224,24 @@ namespace Deveel.Data {
 
 			try {
 				foreach (var item in entities) {
-					var id = Guid.NewGuid().ToString();
-					SetEntityId(item, id);
+					var key = GenerateNewKey();
+					SetEntityId(item, key);
 
-					this.entities.Add(id, Clone(item));
+					this.entities.Add(key, Clone(item));
 				}
 
 				return Task.CompletedTask;
 			} catch (RepositoryException) {
 
 				throw;
-			} catch(Exception ex) {
+			} catch (Exception ex) {
 				throw new RepositoryException("Could not add the entities to the repository", ex);
 			}
 		}
 
 		/// <inheritdoc/>
 		public Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
-			if (entity is null) 
+			if (entity is null)
 				throw new ArgumentNullException(nameof(entity));
 
 			cancellationToken.ThrowIfCancellationRequested();
@@ -241,7 +255,7 @@ namespace Deveel.Data {
 			} catch (RepositoryException) {
 
 				throw;
-			} catch(Exception ex) {
+			} catch (Exception ex) {
 				throw new RepositoryException("Could not delete the entity", ex);
 			}
 		}
@@ -249,7 +263,7 @@ namespace Deveel.Data {
 		/// <inheritdoc/>
 		public Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
-			
+
 			ArgumentNullException.ThrowIfNull(entities, nameof(entities));
 
 			try {
@@ -290,7 +304,7 @@ namespace Deveel.Data {
 			try {
 				var result = entities.Values.AsQueryable().Any(filter);
 				return Task.FromResult(result);
-			} catch(Exception ex) {
+			} catch (Exception ex) {
 				throw new RepositoryException("Could not check if any entities exist in the repository", ex);
 			}
 		}
@@ -323,16 +337,13 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
+		public Task<TEntity?> FindByKeyAsync(TKey key, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(key, nameof(key));
 
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-                if (!(key is string s))
-                    throw new RepositoryException("The key must be a string");
-
-				if (!entities.TryGetValue(s, out var entity))
+				if (!entities.TryGetValue(key, out var entity))
 					return Task.FromResult<TEntity?>(null);
 
 				return Task.FromResult<TEntity?>(entity);
@@ -374,10 +385,10 @@ namespace Deveel.Data {
 					.Take(request.Size)
 					.ToList();
 
-				var result = new PageResult<TEntity>(request, itemCount,items);
+				var result = new PageResult<TEntity>(request, itemCount, items);
 				return Task.FromResult(result);
 			} catch (Exception ex) {
-				throw new RepositoryException("Unable to retrieve the page", ex) ;
+				throw new RepositoryException("Unable to retrieve the page", ex);
 			}
 		}
 
@@ -402,8 +413,8 @@ namespace Deveel.Data {
 			}
 		}
 
-		internal static InMemoryRepository<TEntity> Create(string tenantId, IList<TEntity>? entities = null, IFieldMapper<TEntity>? fieldMapper = null)
-			=> new InMemoryRepository<TEntity>(tenantId, entities, fieldMapper);
+		internal static InMemoryRepository<TEntity, TKey> Create(string tenantId, IList<TEntity>? entities = null, IFieldMapper<TEntity>? fieldMapper = null)
+			=> new InMemoryRepository<TEntity, TKey>(tenantId, entities, fieldMapper);
 
 		/// <summary>
 		/// Disposes the repository and releases all the resources

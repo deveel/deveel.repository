@@ -23,7 +23,7 @@ namespace Deveel.Data {
 	/// from a repository
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
-	/// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>
+	/// <seealso cref="IPageableRepository{TEntity,TKey}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>
 	public class PageQuery<TEntity> : IQuery where TEntity : class {
 		private QueryBuilder<TEntity> queryBuilder;
 

@@ -7,6 +7,7 @@ using MongoFramework;
 using System.Data;
 using Finbuckle.MultiTenant;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 
 namespace Deveel.Data {
 	public static class DependencyInjectionTests {
@@ -195,11 +196,11 @@ namespace Deveel.Data {
 				builder.UseConnection("mongodb://localhost:27017/testdb");
 			});
 
-			services.AddRepository<MyMongoPersonRepository>();
+			services.AddRepository<MyMongoPersonRepositoryNoKey>();
 
 			var provider = services.BuildServiceProvider();
 
-			Assert.NotNull(provider.GetService<MyMongoPersonRepository>());
+			Assert.NotNull(provider.GetService<MyMongoPersonRepositoryNoKey>());
 			Assert.NotNull(provider.GetService<MongoRepository<MongoPerson>>());
 			Assert.NotNull(provider.GetService<IRepository<MongoPerson>>());
 			Assert.NotNull(provider.GetService<IPageableRepository<MongoPerson>>());
@@ -227,11 +228,11 @@ namespace Deveel.Data {
 				builder.UseConnection("mongodb://localhost:27017/testdb");
 			});
 
-			services.AddRepositoryProvider<MyMongoPersonRepositoryProvider>();
+			services.AddRepositoryProvider<MyMongoPersonRepositoryProviderNoKey>();
 
 			var provider = services.BuildServiceProvider();
 
-			Assert.NotNull(provider.GetService<MyMongoPersonRepositoryProvider>());
+			Assert.NotNull(provider.GetService<MyMongoPersonRepositoryProviderNoKey>());
 			Assert.NotNull(provider.GetService<IRepositoryProvider<MongoPerson>>());
 			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>());
 
@@ -239,8 +240,42 @@ namespace Deveel.Data {
 
 			Assert.NotNull(repository);
 
-			Assert.IsNotAssignableFrom<IMyMongoPersonRepository>(repository);
-			Assert.IsType<MongoRepository<MongoPerson>>(repository);
+			Assert.IsType<MyMongoPersonRepositoryNoKey>(repository);
+			Assert.IsAssignableFrom<IMyMongoPersonRepository>(repository);
+			Assert.IsAssignableFrom<MongoRepository<MongoPerson>>(repository);
+		}
+
+		[Fact]
+		public static void AddCustomMongoRepositoryProviderNoKey_TenantConnection() {
+			var tenantId = Guid.NewGuid().ToString();
+			var services = new ServiceCollection();
+
+			services.AddMultiTenant<TenantInfo>()
+				.WithInMemoryStore(options => {
+					options.Tenants.Add(new TenantInfo {
+						Id = tenantId,
+						Identifier = tenantId,
+						ConnectionString = "mongodb://localhost:27017/testdb"
+					});
+				});
+
+			services.AddMongoDbContext<MongoDbTenantContext>((tenant, builder) => {
+				builder.UseConnection(tenant!.ConnectionString!);
+			});
+
+			services.AddRepositoryProvider<MyMongoPersonRepositoryProviderNoKey>();
+
+			var provider = services.BuildServiceProvider();
+
+			Assert.NotNull(provider.GetService<MyMongoPersonRepositoryProviderNoKey>());
+			Assert.NotNull(provider.GetService<IRepositoryProvider<MongoPerson>>());
+			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>());
+
+			var repository = provider.GetRequiredService<IRepositoryProvider<MongoPerson>>().GetRepository(tenantId);
+
+			Assert.NotNull(repository);
+			Assert.IsAssignableFrom<IMyMongoPersonRepository>(repository);
+			Assert.IsAssignableFrom<MongoRepository<MongoPerson>>(repository);
 		}
 
 		[Fact]
@@ -266,15 +301,16 @@ namespace Deveel.Data {
 			var provider = services.BuildServiceProvider();
 
 			Assert.NotNull(provider.GetService<MyMongoPersonRepositoryProvider>());
-			Assert.NotNull(provider.GetService<IRepositoryProvider<MongoPerson>>());
-			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>());
+			Assert.NotNull(provider.GetService<IRepositoryProvider<MongoPerson, ObjectId>>());
+			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, ObjectId, TenantInfo>>());
 
-			var repository = provider.GetRequiredService<IRepositoryProvider<MongoPerson>>().GetRepository(tenantId);
+			var repository = provider.GetRequiredService<IRepositoryProvider<MongoPerson, ObjectId>>().GetRepository(tenantId);
 
 			Assert.NotNull(repository);
 			Assert.IsNotAssignableFrom<IMyMongoPersonRepository>(repository);
-			Assert.IsType<MongoRepository<MongoPerson>>(repository);
+			Assert.IsType<MongoRepository<MongoPerson, ObjectId>>(repository);
 		}
+
 
 		interface IMyMongoPersonRepository : IRepository<MongoPerson> {
 		}
@@ -283,19 +319,36 @@ namespace Deveel.Data {
 			new Task<IMyMongoPersonRepository> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken);
 		}
 
-		class MyMongoPersonRepository : MongoRepository<MongoPerson>, IMyMongoPersonRepository {
-			public MyMongoPersonRepository(IMongoDbContext context, ILogger<MyMongoPersonRepository>? logger = null) : base(context, logger) {
+		class MyMongoPersonRepositoryNoKey : MongoRepository<MongoPerson>, IMyMongoPersonRepository {
+			public MyMongoPersonRepositoryNoKey(IMongoDbContext context, ILogger<MyMongoPersonRepositoryNoKey>? logger = null) : base(context, logger) {
 			}
 		}
 
-		class MyMongoPersonRepositoryProvider : MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>, IMyMongoPersonRepositoryProvider {
-			public MyMongoPersonRepositoryProvider(IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null) 
+		class MyMongoPersonRepositoryProviderNoKey : MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>, IMyMongoPersonRepositoryProvider {
+			public MyMongoPersonRepositoryProviderNoKey(IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null) 
 				: base(tenantStores, loggerFactory) {
 			}
 
+			protected override MongoRepository<MongoPerson> CreateRepository(MongoDbTenantContext context)
+				=> new MyMongoPersonRepositoryNoKey(context);
+
 			public new async Task<IMyMongoPersonRepository> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken) {
-				return (MyMongoPersonRepository) await base.GetRepositoryAsync(tenantId, cancellationToken);
+				return (IMyMongoPersonRepository)await base.GetRepositoryAsync(tenantId, cancellationToken);
 			}
+		}
+
+		class MyMongoPersonRepository : MongoRepository<MongoPerson, ObjectId> {
+			protected internal MyMongoPersonRepository(IMongoDbContext context, ILogger? logger = null) : base(context, logger) {
+			}
+		}
+
+		class MyMongoPersonRepositoryProvider : MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, ObjectId, TenantInfo> {
+			public MyMongoPersonRepositoryProvider(IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null)
+				: base(tenantStores, loggerFactory) {
+			}
+
+			protected override MongoRepository<MongoPerson, ObjectId> CreateRepository(MongoDbTenantContext context) 
+				=> new MongoRepository<MongoPerson, ObjectId>(context);
 		}
 	}
 }

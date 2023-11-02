@@ -153,7 +153,7 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the entity was removed successfully,
 		/// otherwise <c>false</c>.
 		/// </returns>
-		/// <seealso cref="IRepository{TEntity}.RemoveAsync(TEntity, CancellationToken)"/>
+		/// <seealso cref="IRepository{TEntity,TKey}.RemoveAsync(TEntity, CancellationToken)"/>
         public static bool Remove<TEntity>(this IRepository<TEntity> repository, TEntity entity)
             where TEntity : class
             => repository.RemoveAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -204,7 +204,7 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the entity was removed successfully,
 		/// otherwise it returns <c>false</c>.
 		/// </returns>
-		/// <seealso cref="IRepository{TEntity}.RemoveAsync(TEntity, CancellationToken)"/>
+		/// <seealso cref="IRepository{TEntity,TKey}.RemoveAsync(TEntity, CancellationToken)"/>
         public static bool RemoveByKey<TEntity>(this IRepository<TEntity> repository, object key)
             where TEntity : class
             => repository.RemoveByKeyAsync(key).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -241,10 +241,22 @@ namespace Deveel.Data {
 		/// Gets a page of entities from the repository,
 		/// given a request object that defines the scope
 		/// </summary>
-		/// <typeparam name="TEntity"></typeparam>
-		/// <param name="repository"></param>
-		/// <param name="request"></param>
-		/// <param name="cancellationToken"></param>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to retrieve the page.
+		/// </param>
+		/// <param name="request">
+		/// The request object that defines the scope of the page to retrieve
+		/// from the repository.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
 		/// <remarks>
 		/// <para>
 		/// This method attempts to cast the given repository to a
@@ -281,6 +293,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository to use to retrieve the page.
 		/// </param>
@@ -315,6 +330,9 @@ namespace Deveel.Data {
         /// <typeparam name="TEntity">
         /// The type of entity handled by the repository.
         /// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
         /// <param name="repository">
         /// The instance of the repository to use to retrieve the page.
         /// </param>
@@ -361,6 +379,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository to use to check the existence 
 		/// of any entity that matches the given filter.
@@ -386,6 +407,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository to use to check the existence
@@ -433,6 +457,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository to use to check the existence
 		/// of any entity that matches the given filter.
@@ -457,6 +484,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository to use to check the existence
@@ -484,6 +514,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository to use to count the entities.
@@ -517,6 +550,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
         /// The type of entity handled by the repository.
         /// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
 		/// <param name="repository">
         /// The instance of the repository to use to count the entities.
         /// </param>
@@ -540,75 +576,84 @@ namespace Deveel.Data {
 			throw new NotSupportedException("The repository does not support querying");
 		}
 
-        /// <summary>
-        /// Counts the number of entities in the repository,
-        /// given a filter expression to match.
-        /// </summary>
-        /// <typeparam name="TEntity">
-        /// The type of entity handled by the repository.
-        /// </typeparam>
-        /// <param name="repository">
-        /// The instance of the repository to use to count the entities.
-        /// </param>
-        /// <param name="filter">
-        /// The filter used to count the matching entities.
-        /// </param>
-        /// <returns>
-        /// Returns the number of entities in the repository that match
-        /// the given filter.
-        /// </returns>
-        /// <seealso cref="CountAsync{TEntity, TKey}(IRepository{TEntity, TKey}, Expression{Func{TEntity, bool}}, CancellationToken)"/>
-        public static long Count<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter)
+		/// <summary>
+		/// Counts the number of entities in the repository,
+		/// given a filter expression to match.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to count the entities.
+		/// </param>
+		/// <param name="filter">
+		/// The filter used to count the matching entities.
+		/// </param>
+		/// <returns>
+		/// Returns the number of entities in the repository that match
+		/// the given filter.
+		/// </returns>
+		/// <seealso cref="CountAsync{TEntity, TKey}(IRepository{TEntity, TKey}, Expression{Func{TEntity, bool}}, CancellationToken)"/>
+		public static long Count<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter)
             where TEntity : class
             => repository.CountAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        /// <summary>
-        /// Counts the number of entities in the repository
-        /// </summary>
-        /// <typeparam name="TEntity">
-        /// The type of entity handled by the repository.
-        /// </typeparam>
-        /// <param name="repository">
-        /// The instance of the repository to use to count the entities.
-        /// </param>
-        /// <returns>
-        /// Returns the number of entities in the repository.
-        /// </returns>
-        /// <seealso cref="CountAllAsync{TEntity, TKey}(IRepository{TEntity, TKey}, CancellationToken)"/>
+		/// <summary>
+		/// Counts the number of entities in the repository
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to count the entities.
+		/// </param>
+		/// <returns>
+		/// Returns the number of entities in the repository.
+		/// </returns>
+		/// <seealso cref="CountAllAsync{TEntity, TKey}(IRepository{TEntity, TKey}, CancellationToken)"/>
 		public static long CountAll<TEntity, TKey>(this IRepository<TEntity, TKey> repository)
 			where TEntity : class
 			=> repository.CountAllAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
-        #endregion
+		#endregion
 
-        #region FindById
+		#region FindById
 
-        /// <summary>
-        /// Finds a single entity in the repository, given the key
-        /// that uniquely identifies it
-        /// </summary>
-        /// <typeparam name="TEntity">
-        /// The type of entity handled by the repository.
-        /// </typeparam>
-        /// <param name="repository">
-        /// The instance of the repository to use to find the entity.
-        /// </param>
-        /// <param name="key">
-        /// The key that uniquely identifies the entity to find.
-        /// </param>
-        /// <returns>
-        /// Returns an instance of <typeparamref name="TEntity"/> that
-        /// is identified by the given key, or <c>null</c> if no entity
-        /// with the given key exists in the repository.
-        /// </returns>
-        /// <seealso cref="IRepository{TEntity, TKey}.FindByKeyAsync(TKey, CancellationToken)"/>
-        public static TEntity? FindByKey<TEntity, TKey>(this IRepository<TEntity, TKey> repository, TKey key)
+		/// <summary>
+		/// Finds a single entity in the repository, given the key
+		/// that uniquely identifies it
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to find the entity.
+		/// </param>
+		/// <param name="key">
+		/// The key that uniquely identifies the entity to find.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <typeparamref name="TEntity"/> that
+		/// is identified by the given key, or <c>null</c> if no entity
+		/// with the given key exists in the repository.
+		/// </returns>
+		/// <seealso cref="IRepository{TEntity, TKey}.FindByKeyAsync(TKey, CancellationToken)"/>
+		public static TEntity? FindByKey<TEntity, TKey>(this IRepository<TEntity, TKey> repository, TKey key)
             where TEntity : class
             => repository.FindByKeyAsync(key).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        #endregion
+		#endregion
 
-        #region FindFirst
+		#region FindFirst
 
 		/// <summary>
 		/// Finds the first entity in the repository that matches
@@ -616,6 +661,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The repository instance to use to find the entity.
@@ -652,6 +700,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The repository instance to use to find the entity.
 		/// </param>
@@ -677,6 +728,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The repository instance to use to find the entity.
 		/// </param>
@@ -694,7 +748,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support filtering.
 		/// </exception>
-        public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.FindFirstAsync(Query.Where(filter), cancellationToken);
 
@@ -703,6 +757,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The repository instance to use to find the entity.
@@ -715,7 +772,7 @@ namespace Deveel.Data {
 		/// is the first entity in the repository, or <c>null</c> if the
 		/// repository is empty.
 		/// </returns>
-        public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
+		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.RequireFilterable().FindAsync(Query.Empty, cancellationToken);
 
@@ -725,6 +782,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The repository instance to use to find the entity.
@@ -765,10 +825,10 @@ namespace Deveel.Data {
             where TEntity : class
             => repository.RequireFilterable().FindFirst(QueryFilter.Empty);
 
-        #endregion
+		#endregion
 
 
-        #region FindAll
+		#region FindAll
 
 		/// <summary>
 		/// Finds all the entities in the repository that match
@@ -776,6 +836,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The repository instance to use to find the entities.
@@ -813,6 +876,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The repository instance to use to find the entities.
 		/// </param>
@@ -837,6 +903,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The repository instance to use to find the entities.
 		/// </param>
@@ -860,6 +929,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The repository instance to use to find the entities.
 		/// </param>
@@ -873,7 +945,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying or filtering.
 		/// </exception>
-        public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
+		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.FindAllAsync(Query.Empty, cancellationToken);
 
@@ -883,6 +955,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The repository instance to use to find the entities.
@@ -903,6 +978,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The repository instance to use to find the entities.

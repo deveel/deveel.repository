@@ -121,7 +121,7 @@ namespace Deveel.Data {
 		public static IServiceCollection AddRepositoryProvider(this IServiceCollection services, Type providerType, ServiceLifetime lifetime = ServiceLifetime.Singleton) {
 			ArgumentNullException.ThrowIfNull(providerType, nameof(providerType));
 
-			if (!RepositoryRegistrationUtil.Implements(typeof(IRepositoryProvider<>), providerType))
+			if (!RepositoryRegistrationUtil.IsValidProviderType(providerType))
 				throw new ArgumentException($"The type '{providerType}' is not a valid repository provider type", nameof(providerType));
 
 			var serviceTypes = RepositoryRegistrationUtil.GetRepositoryProviderServiceTypes(providerType);

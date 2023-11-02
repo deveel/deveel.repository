@@ -28,23 +28,23 @@ namespace Deveel.Data {
 
 		[LoggerMessage(EventId = -100201, Level = LogLevel.Error,
 						Message = "Unknown error while operating on the repository for entity {EntityId}")]
-		public static partial void LogUnknownEntityError(this ILogger logger, Exception ex, object entityId);
+		public static partial void LogUnknownEntityError(this ILogger logger, Exception ex, object? entityId);
 
 		[LoggerMessage(EventId = 1000231, Level = LogLevel.Debug, 
 			Message = "Trying to find entity with ID {EntityId}")]
-		public static partial void TraceFindingById(this ILogger logger, object entityId);
+		public static partial void TraceFindingById(this ILogger logger, object? entityId);
 
 		[LoggerMessage(EventId = 1000232, Level = LogLevel.Debug, 
 			Message = "Trying to find entity with ID {EntityId} for tenant {TenantId}")]
-		public static partial void TraceFindingByIdForTenant(this ILogger logger, string tenantId, object entityId);
+		public static partial void TraceFindingByIdForTenant(this ILogger logger, string tenantId, object? entityId);
 
 		[LoggerMessage(EventId = 1000233, Level = LogLevel.Debug, 
 			Message = "An entity with ID {EntityId} found")]
-		public static partial void TraceFoundById(this ILogger logger, object entityId);
+		public static partial void TraceFoundById(this ILogger logger, object? entityId);
 
 		[LoggerMessage(EventId = 1000234, Level = LogLevel.Debug, 
 			Message = "An entity with ID {EntityId} found for tenant {TenantId}")]
-		public static partial void TraceFoundByIdForTenant(this ILogger logger, string tenantId, object entityId);
+		public static partial void TraceFoundByIdForTenant(this ILogger logger, string tenantId, object? entityId);
 
 		[LoggerMessage(EventId = 100024, Level = LogLevel.Debug, Message = "Deleting entity {EntityId}")]
 		public static partial void TraceDeleting(this ILogger logger, object entityId);

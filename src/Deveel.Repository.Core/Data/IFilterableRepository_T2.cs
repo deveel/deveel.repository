@@ -22,6 +22,9 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The strongly typed entity that is stored in the repository
 	/// </typeparam>
+	/// <typeparam name="TKey">
+	/// The type of key used to identify the entity in the repository
+	/// </typeparam>
 	public interface IFilterableRepository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class {
 		/// <summary>
 		/// Determines if at least one item in the repository exists for the

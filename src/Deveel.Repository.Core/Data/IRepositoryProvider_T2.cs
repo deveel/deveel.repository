@@ -20,6 +20,10 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of entity handled by the repository instances
 	/// </typeparam>
+	/// <typeparam name="TKey">
+	/// The type of key used to identify the entities
+	/// managed by the repository instances
+	/// </typeparam>
 	public interface IRepositoryProvider<TEntity, TKey> where TEntity : class {
 		/// <summary>
 		/// Gets a repository instance that is isolating the entities

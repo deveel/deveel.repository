@@ -30,15 +30,17 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of the entity managed by the repository.
 	/// </typeparam>
-	public class EntityRepository<TEntity> : 
-        IRepository<TEntity>,
-        IFilterableRepository<TEntity>,
-        IQueryableRepository<TEntity>,
-		IPageableRepository<TEntity>,
-        IDisposable
-        where TEntity : class {
-        private bool disposedValue;
-        private IKey primaryKey;
+	/// <typeparam name="TKey">
+	/// The type of the key of the entity managed by the repository.
+	/// </typeparam>
+	public class EntityRepository<TEntity, TKey> :
+		IRepository<TEntity, TKey>,
+		IFilterableRepository<TEntity, TKey>,
+		IQueryableRepository<TEntity, TKey>,
+		IPageableRepository<TEntity, TKey>,
+		IDisposable
+		where TEntity : class {
+		private bool disposedValue;
 
 		/// <summary>
 		/// Constructs the repository using the given <see cref="DbContext"/>.
@@ -53,9 +55,9 @@ namespace Deveel.Data {
 		/// When the given <paramref name="context"/> implements the <see cref="IMultiTenantDbContext"/>
 		/// the repository will use the tenant information to access the data.
 		/// </remarks>
-        public EntityRepository(DbContext context, ILogger<EntityRepository<TEntity>>? logger = null)
-            : this(context, (context as IMultiTenantDbContext)?.TenantInfo, logger) {
-        }
+		public EntityRepository(DbContext context, ILogger<EntityRepository<TEntity, TKey>>? logger = null)
+			: this(context, (context as IMultiTenantDbContext)?.TenantInfo, logger) {
+		}
 
 		/// <summary>
 		/// Constructs the repository using the given <see cref="DbContext"/> for
@@ -70,45 +72,55 @@ namespace Deveel.Data {
 		/// <param name="logger">
 		/// The logger used to log the operations of the repository.
 		/// </param>
-		public EntityRepository(DbContext context, ITenantInfo? tenantInfo, ILogger<EntityRepository<TEntity>>? logger = null)
-            : this(context, tenantInfo, (ILogger?) logger) {
-        }
+		public EntityRepository(DbContext context, ITenantInfo? tenantInfo, ILogger<EntityRepository<TEntity, TKey>>? logger = null)
+			: this(context, tenantInfo, (ILogger?)logger) {
+		}
 
-        internal EntityRepository(DbContext context, ITenantInfo? tenantInfo, ILogger? logger = null) {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-            Logger = logger ?? NullLogger.Instance;
+		internal EntityRepository(DbContext context, ITenantInfo? tenantInfo, ILogger? logger = null) {
+			Context = context ?? throw new ArgumentNullException(nameof(context));
+			Logger = logger ?? NullLogger.Instance;
 
-            var entityKey = Context.Model.FindEntityType(typeof(TEntity))?.FindPrimaryKey();
+			var entityKey = Context.Model.FindEntityType(typeof(TEntity))?.FindPrimaryKey();
 
-            if (entityKey == null)
-                throw new RepositoryException($"The model of the entity '{typeof(TEntity)}' has no primary key configured");
+			if (entityKey == null)
+				throw new RepositoryException($"The model of the entity '{typeof(TEntity)}' has no primary key configured");
+			if (entityKey.Properties.Count > 1)
+				throw new NotSupportedException("The repository does not support entities with composite primary keys");
 
-            primaryKey = entityKey;
+			//if (entityKey.Properties[0].ClrType != typeof(TKey))
+			//	throw new RepositoryException($"The primary key of the entity '{typeof(TEntity)}' is not of type '{typeof(TKey)}'");
 
-            TenantInfo = tenantInfo;
-        }
+			PrimaryKey = entityKey;
+
+			TenantInfo = tenantInfo;
+		}
 
 		/// <summary>
 		/// The destructor of the repository.
 		/// </summary>
-        ~EntityRepository() {
-            Dispose(disposing: false);
-        }
+		~EntityRepository() {
+			Dispose(disposing: false);
+		}
 
 		/// <summary>
 		/// Gets the instance of the <see cref="DbContext"/> used by the repository.
 		/// </summary>
-        protected DbContext Context { get; private set; }
+		protected DbContext Context { get; private set; }
+
+		/// <summary>
+		/// Gets a reference to the primary key of the entity.
+		/// </summary>
+		protected IKey PrimaryKey { get; }
 
 		/// <summary>
 		/// Gets the logger used by the repository.
 		/// </summary>
-        protected ILogger Logger { get; }
+		protected ILogger Logger { get; }
 
 		/// <summary>
 		/// Gets the <see cref="DbSet{TEntity}"/> used by the repository to access the data.
 		/// </summary>
-        protected virtual DbSet<TEntity> Entities => Context.Set<TEntity>();
+		protected virtual DbSet<TEntity> Entities => Context.Set<TEntity>();
 
 		/// <summary>
 		/// Gets a value indicating if the repository is tracking the changes
@@ -120,12 +132,12 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Gets the information about the tenant that the repository is using to access the data.
 		/// </summary>
-        protected virtual ITenantInfo? TenantInfo { get; }
+		protected virtual ITenantInfo? TenantInfo { get; }
 
 		/// <summary>
 		/// Gets the identifier of the tenant that the repository is using to access the data.
 		/// </summary>
-        protected string? TenantId => TenantInfo?.Id;
+		protected string? TenantId => TenantInfo?.Id;
 
 		/// <summary>
 		/// Assesses if the repository has been disposed.
@@ -133,10 +145,10 @@ namespace Deveel.Data {
 		/// <exception cref="ObjectDisposedException">
 		/// Thrown when the repository has been disposed.
 		/// </exception>
-        protected void ThrowIfDisposed() {
-            if (disposedValue)
-                throw new ObjectDisposedException(GetType().Name); 
-        }
+		protected void ThrowIfDisposed() {
+			if (disposedValue)
+				throw new ObjectDisposedException(GetType().Name);
+		}
 
 		/// <summary>
 		/// Converts the given value to the type of the 
@@ -152,15 +164,15 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentException">
 		/// Thrown when the given string is not a valid identifier for the entity.
 		/// </exception>
-		protected virtual object? ConvertEntityKey(object? key) {
+		protected virtual TKey? ConvertEntityKey(TKey? key) {
 			if (key == null)
-				return null;
+				return default;
 
-			var keyType = primaryKey.GetKeyType();
+			var keyType = PrimaryKey.GetKeyType();
 
 			if (keyType == null)
 				// The entity has no primary key
-				return null;
+				return default;
 
 			if (Nullable.GetUnderlyingType(keyType) != null)
 				keyType = Nullable.GetUnderlyingType(keyType);
@@ -173,36 +185,36 @@ namespace Deveel.Data {
 
 			if (key is string s) {
 				if (keyType == typeof(Guid) && Guid.TryParse(s, out var guid))
-					return guid;
+					return (TKey)(object) guid;
 
 				if (typeof(IConvertible).IsAssignableFrom(keyType))
-					return Convert.ChangeType(key, keyType, CultureInfo.InvariantCulture);
+					return (TKey) Convert.ChangeType(key, keyType, CultureInfo.InvariantCulture);
 			}
 
 			throw new ArgumentException($"The given key '{key}' is not a valid identifier for the entity '{typeof(TEntity)}'");
 		}
 
 		/// <inheritdoc/>
-		public virtual object? GetEntityKey(TEntity entity) {
-			var props = primaryKey.Properties.ToList();
+		public virtual TKey? GetEntityKey(TEntity entity) {
+			var props = PrimaryKey.Properties.ToList();
 			if (props.Count > 1)
 				throw new RepositoryException($"The entity '{typeof(TEntity)}' has more than one property has primary key");
 
 			var getter = props[0].GetGetter();
-			return getter.GetClrValue(entity);
+			return (TKey?) getter.GetClrValue(entity);
 		}
 
 		/// <inheritdoc/>
 		public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
-            ThrowIfDisposed();
+			ThrowIfDisposed();
 
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
-            Logger.TraceCreatingEntity(typeof(TEntity), TenantId);
+			Logger.TraceCreatingEntity(typeof(TEntity), TenantId);
 
-            try {
-                Entities.Add(entity);
-                var count = await Context.SaveChangesAsync(cancellationToken);
+			try {
+				Entities.Add(entity);
+				var count = await Context.SaveChangesAsync(cancellationToken);
 
 				if (count > 1) {
 					// TODO: warn about this...
@@ -210,16 +222,16 @@ namespace Deveel.Data {
 
 				var key = GetEntityKey(entity)!;
 
-                Logger.LogEntityCreated(typeof(TEntity), key, TenantId);
-            } catch (Exception ex) {
-                Logger.LogUnknownError(ex, typeof(TEntity));
-                throw new RepositoryException("Unknown error while trying to add an entity to the repository", ex);
-            }
-        }
+				Logger.LogEntityCreated(typeof(TEntity), key, TenantId);
+			} catch (Exception ex) {
+				Logger.LogUnknownError(ex, typeof(TEntity));
+				throw new RepositoryException("Unknown error while trying to add an entity to the repository", ex);
+			}
+		}
 
 		/// <inheritdoc/>
 		public virtual async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
-            ThrowIfDisposed();
+			ThrowIfDisposed();
 
 			try {
 				await Entities.AddRangeAsync(entities, cancellationToken);
@@ -229,7 +241,7 @@ namespace Deveel.Data {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unknown error while trying to add a range of entities to the repository", ex);
 			}
-        }
+		}
 
 		/// <inheritdoc/>
 		public virtual async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
@@ -238,43 +250,43 @@ namespace Deveel.Data {
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			try {
-                var entityId = GetEntityKey(entity)!;
+				var entityId = GetEntityKey(entity)!;
 
-                Logger.TraceDeletingEntity(typeof(TEntity), entityId, TenantId);
+				Logger.TraceDeletingEntity(typeof(TEntity), entityId, TenantId);
 
-                var existing = await FindByKeyAsync(entityId, cancellationToken);
-                if (existing == null) {
-                    Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
-                    return false;
-                }
+				var existing = await FindByKeyAsync(entityId, cancellationToken);
+				if (existing == null) {
+					Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+					return false;
+				}
 
 				var entry = Context.Entry(entity);
-                if (entry == null) {
-                    Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
-                    return false;
-                }
+				if (entry == null) {
+					Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+					return false;
+				}
 
 				entry.State = EntityState.Deleted;
 
 				var count = await Context.SaveChangesAsync(cancellationToken);
 
 				// It cannot be just one change, when the entity has related entities
-			   var deleted = count > 0;
+				var deleted = count > 0;
 
-                if (deleted) {
-                    Logger.LogEntityDeleted(typeof(TEntity), entityId, TenantId);
-                } else {
-                    Logger.WarnEntityNotDeleted(typeof(TEntity), entityId, TenantId);
-                }
+				if (deleted) {
+					Logger.LogEntityDeleted(typeof(TEntity), entityId, TenantId);
+				} else {
+					Logger.WarnEntityNotDeleted(typeof(TEntity), entityId, TenantId);
+				}
 
-                return deleted;
-			} catch(DbUpdateConcurrencyException ex) {
+				return deleted;
+			} catch (DbUpdateConcurrencyException ex) {
 				throw new RepositoryException("Concurrency problem while deleting the entity", ex);
 			} catch (Exception ex) {
-                Logger.LogUnknownError(ex, typeof(TEntity));
+				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unable to delete the entity", ex);
 			}
-        }
+		}
 
 		/// <inheritdoc/>
 		public virtual async Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
@@ -300,12 +312,12 @@ namespace Deveel.Data {
 		/// <param name="entity"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		protected virtual Task<TEntity> OnEntityFoundByKeyAsync(object key, TEntity entity, CancellationToken cancellationToken = default) {
+		protected virtual Task<TEntity> OnEntityFoundByKeyAsync(TKey key, TEntity entity, CancellationToken cancellationToken = default) {
 			return Task.FromResult(entity);
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
+		public virtual async Task<TEntity?> FindByKeyAsync(TKey key, CancellationToken cancellationToken = default) {
 			try {
 				// TODO: add support for composite keys
 				var result = await Entities.FindAsync(new object?[] { ConvertEntityKey(key) }, cancellationToken);
@@ -322,7 +334,7 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public virtual async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
-            ThrowIfDisposed();
+			ThrowIfDisposed();
 
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
@@ -355,10 +367,10 @@ namespace Deveel.Data {
 
 				return updated;
 			} catch (Exception ex) {
-                Logger.LogUnknownError(ex, typeof(TEntity));
-                throw new RepositoryException("Unable to update the entity because of an error", ex);
-            }
-        }
+				Logger.LogUnknownError(ex, typeof(TEntity));
+				throw new RepositoryException("Unable to update the entity because of an error", ex);
+			}
+		}
 
 
 		/// <summary>
@@ -401,7 +413,7 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation.
 		/// </param>
 		/// <returns></returns>
-        public virtual async Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public virtual async Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
 				var query = AsQueryable();
 				if (filter != null) {
@@ -416,7 +428,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-        public virtual async Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public virtual async Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
 				var result = query.Apply(AsQueryable());
 
@@ -425,7 +437,7 @@ namespace Deveel.Data {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unknown error while trying to find an entity", ex);
 			}
-        }
+		}
 
 		/// <inheritdoc/>
 		public virtual async Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
@@ -436,10 +448,10 @@ namespace Deveel.Data {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unable to list the entities", ex);
 			}
-        }
+		}
 
 		/// <inheritdoc/>
-        public virtual IQueryable<TEntity> AsQueryable() => Entities.AsQueryable();
+		public virtual IQueryable<TEntity> AsQueryable() => Entities.AsQueryable();
 
 		/// <summary>
 		/// Disposes the repository and frees all the resources used by it.
@@ -447,18 +459,18 @@ namespace Deveel.Data {
 		/// <param name="disposing">
 		/// Indicates if the repository is explicitly disposing.
 		/// </param>
-        protected virtual void Dispose(bool disposing) {
-            if (!disposedValue) {
-                Context = null;
-                disposedValue = true;
-            }
-        }
+		protected virtual void Dispose(bool disposing) {
+			if (!disposedValue) {
+				Context = null;
+				disposedValue = true;
+			}
+		}
 
 		/// <inheritdoc/>
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		public void Dispose() {
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
 		/// <inheritdoc/>
 		public virtual async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {

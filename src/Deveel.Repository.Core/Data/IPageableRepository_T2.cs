@@ -22,6 +22,9 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The strongly typed entity that is stored in the repository
 	/// </typeparam>
+	/// <typeparam name="TKey">
+	/// The type of the key that uniquely identifies the entity
+	/// </typeparam>
 	public interface IPageableRepository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class {
 		/// <summary>
 		/// Gets a page of items from the repository

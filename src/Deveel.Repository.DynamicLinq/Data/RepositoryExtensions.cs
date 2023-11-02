@@ -193,6 +193,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity to check in the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository to check.
 		/// </param>
@@ -219,6 +222,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity to check in the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository to check.

@@ -30,7 +30,12 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of the entity managed by the service.
 	/// </typeparam>
-	public class EntityManager<TEntity, TKey> : IDisposable, IAsyncDisposable where TEntity : class {
+	/// <typeparam name="TKey">
+	/// The type of the key of the entity managed by the service.
+	/// </typeparam>
+	public class EntityManager<TEntity, TKey> : IDisposable, IAsyncDisposable 
+		where TEntity : class 
+		where TKey : notnull {
 		private bool disposedValue;
 
 		/// <summary>
@@ -147,7 +152,7 @@ namespace Deveel.Data {
 		public virtual bool IsMultiTenant {
 			get {
 				ThrowIfDisposed();
-				return (Repository is IMultiTenantRepository<TEntity> multiTenant) &&
+				return (Repository is IMultiTenantRepository<TEntity, TKey> multiTenant) &&
 					!String.IsNullOrWhiteSpace(multiTenant.TenantId);
 			}
 		}
@@ -163,7 +168,7 @@ namespace Deveel.Data {
 			get {
 				ThrowIfDisposed();
 
-				if (Repository is IMultiTenantRepository<TEntity> multiTenant)
+				if (Repository is IMultiTenantRepository<TEntity, TKey> multiTenant)
 					return multiTenant.TenantId;
 
 				return null;
@@ -306,7 +311,7 @@ namespace Deveel.Data {
 		protected CancellationToken GetCancellationToken(CancellationToken? cancellationToken)
 			=> cancellationToken ?? CancellationToken;
 
-		private static string GenerateCacheKeyFrom(object key) {
+		private static string GenerateCacheKeyFrom(TKey key) {
 			var typeName = typeof(TEntity).Name.ToLowerInvariant();
 			// TODO: support combined keys
 			return $"{typeName}:{key}";
@@ -322,7 +327,7 @@ namespace Deveel.Data {
 		/// Returns a string that is the key to be used to cache
 		/// entities in the cache.
 		/// </returns>
-		protected virtual string GenerateCacheKey(object key) {
+		protected virtual string GenerateCacheKey(TKey key) {
 			var generator = EntityCacheKeyGenerator;
 			if (generator == null)
 				return GenerateCacheKeyFrom(key);
@@ -620,9 +625,9 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation.
 		/// </param>
 		/// <remarks>
-		/// This overload of the method uses the <see cref="GenerateCacheKey(object)"/>
+		/// This overload of the method uses the <see cref="GenerateCacheKey(TKey)"/>
 		/// to generate the cache key for the given entity key, and
-		/// it is better suited to be used by the <see cref="FindByKeyAsync(object, CancellationToken?)"/>
+		/// it is better suited to be used by the <see cref="FindByKeyAsync(TKey, CancellationToken?)"/>
 		/// methods and its overridden implementations.
 		/// </remarks>
 		/// <returns>
@@ -630,7 +635,7 @@ namespace Deveel.Data {
 		/// it returns <c>null</c> if the entity was not found
 		/// in the cache and the factory was not able to create it.
 		/// </returns>
-		protected async Task<TEntity?> GetOrSetByKeyAsync(object key, Func<Task<TEntity?>> valueFactory, CancellationToken cancellationToken) {
+		protected async Task<TEntity?> GetOrSetByKeyAsync(TKey key, Func<Task<TEntity?>> valueFactory, CancellationToken cancellationToken) {
 			return await GetOrSetAsync(GenerateCacheKey(key), valueFactory, cancellationToken);
 		}
 
@@ -729,7 +734,7 @@ namespace Deveel.Data {
 		/// Returns a result object that describes the result of the
 		/// operation.
 		/// </returns>
-		/// <seealso cref="IRepository{TEntity}.AddRangeAsync(IEnumerable{TEntity}, CancellationToken)"/>
+		/// <seealso cref="IRepository{TEntity,TKey}.AddRangeAsync(IEnumerable{TEntity}, CancellationToken)"/>
 		public virtual async Task<OperationResult> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken? cancellationToken = null) {
 			try {
 				Logger.LogAddingEntityRange(typeof(TEntity));
@@ -1061,7 +1066,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown when the given filter is <c>null</c>.
 		/// </exception>
-		/// <seealso cref="IFilterableRepository{TEntity}.FindAsync(IQuery, CancellationToken)"/>
+		/// <seealso cref="IFilterableRepository{TEntity,TKey}.FindAsync(IQuery, CancellationToken)"/>
 		// TODO: Is there any use case for using OperationResult<TEntity> here
 		//       instead of returning the entity?
 		public virtual async Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken? cancellationToken = null) {

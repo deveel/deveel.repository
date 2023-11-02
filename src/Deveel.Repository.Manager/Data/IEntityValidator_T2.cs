@@ -22,7 +22,12 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of the entity to be validated.
 	/// </typeparam>
-	public interface IEntityValidator<TEntity, TKey> where TEntity : class {
+	/// <typeparam name="TKey">
+	/// The type of the key of the entity to be validated.
+	/// </typeparam>
+	public interface IEntityValidator<TEntity, TKey> 
+		where TEntity : class
+		where TKey : notnull {
 		/// <summary>
 		/// Validates the given <paramref name="entity"/> asynchronously
 		/// </summary>

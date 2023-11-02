@@ -1,61 +1,34 @@
-﻿// Copyright 2023 Deveel AS
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+﻿using Finbuckle.MultiTenant;
 
-using Finbuckle.MultiTenant;
-
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 
 using MongoFramework;
 
 namespace Deveel.Data {
 	/// <summary>
-	/// An implementation of <see cref="IRepositoryProvider{TEntity}"/> that
-	/// is able to create a <see cref="MongoRepository{TEntity}"/> for a given
-	/// entity type and tenant.
+	/// A generic base class for the implementation of a repository provider
+	/// for the MongoFramework library.
 	/// </summary>
 	/// <typeparam name="TContext">
-	/// The type of the <see cref="IMongoDbContext"/> to be used to create the
-	/// instances of <see cref="MongoRepository{TEntity}"/> for a given tenant.
+	/// The type of the context that is used to create the repository.
 	/// </typeparam>
 	/// <typeparam name="TEntity">
-	/// The type of the entity to be managed by the repository.
+	/// The type of the entity that is managed by the repository.
 	/// </typeparam>
 	/// <typeparam name="TTenantInfo">
-	/// The type of the tenant information to be used to create the context
+	/// The type of the tenant information that is used to create the context.
 	/// </typeparam>
-	public class MongoRepositoryProvider<TContext, TEntity, TTenantInfo> : IRepositoryProvider<TEntity>, IDisposable 
+	public abstract class MongoRepositoryProviderBase<TContext, TEntity, TTenantInfo> : IDisposable
 		where TContext : class, IMongoDbContext
 		where TTenantInfo : class, ITenantInfo, new()
 		where TEntity : class {
 		private readonly IEnumerable<IMultiTenantStore<TTenantInfo>>? stores;
 		private bool disposedValue;
 
-		private IDictionary<string, MongoRepository<TEntity>>? repositories;
+		private IDictionary<string, object>? repositories;
 
-		/// <summary>
-		/// Constructs the provider with a given set of stores to be used to
-		/// resolve the tenant information and connection string.
-		/// </summary>
-		/// <param name="stores">
-		/// The set of stores to be used to resolve the tenant information
-		/// and connection string.
-		/// </param>
-		/// <param name="loggerFactory">
-		/// A factory to create the logger to be used by the repository.
-		/// </param>
-		public MongoRepositoryProvider(
+		internal MongoRepositoryProviderBase(
 			IEnumerable<IMultiTenantStore<TTenantInfo>>? stores = null,
 			ILoggerFactory? loggerFactory = null) {
 			this.stores = stores;
@@ -86,7 +59,7 @@ namespace Deveel.Data {
 			if (stores == null)
 				return null;
 
-			foreach(var store in stores) {
+			foreach (var store in stores) {
 				// TODO: making the IRepositoryProvider to be async
 				var tenantInfo = await store.TryGetAsync(tenantId);
 
@@ -138,31 +111,15 @@ namespace Deveel.Data {
 			ArgumentNullException.ThrowIfNull(connection, nameof(connection));
 			ArgumentNullException.ThrowIfNull(tenantInfo, nameof(tenantInfo));
 
-			return (TContext) MongoDbContextUtil.CreateContext<TContext>(connection, tenantInfo);
-        }
+			return (TContext)MongoDbContextUtil.CreateContext<TContext>(connection, tenantInfo);
+		}
 
-		async Task<IRepository<TEntity, object>> IRepositoryProvider<TEntity, object>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken) 
-			=> await GetRepositoryAsync(tenantId, cancellationToken);
+		internal abstract object CreateRepositoryInternal(TContext context);
 
-		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, System.Threading.CancellationToken cancellationToken)
-			=> await GetRepositoryAsync(tenantId, cancellationToken);
-
-		/// <summary>
-		/// Gets an instance of <see cref="MongoRepository{TEntity}"/> for
-		/// the given tenant.
-		/// </summary>
-		/// <param name="tenantId">
-		/// The identifier of the tenant to be used to create the repository.
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token to cancel the operation.
-		/// </param>
-		/// <returns></returns>
-		/// <exception cref="RepositoryException"></exception>
-		public async Task<MongoRepository<TEntity>> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken = default) {
+		internal async Task<TRepository> GetRepositoryAsync<TRepository>(string tenantId, CancellationToken cancellationToken = default) {
 			try {
 				if (repositories == null)
-					repositories = new Dictionary<string, MongoRepository<TEntity>>();
+					repositories = new Dictionary<string, object>();
 
 				if (!repositories.TryGetValue(tenantId, out var repository)) {
 					var tenantInfo = await GetTenantInfoAsync(tenantId, cancellationToken);
@@ -178,12 +135,12 @@ namespace Deveel.Data {
 					if (context == null)
 						throw new RepositoryException($"Unable to create the Mongo DB Context");
 
-					repository = CreateRepository(context);
+					repository = CreateRepositoryInternal(context);
 
 					repositories[tenantId] = repository;
 				}
 
-				return repository;
+				return (TRepository) repository;
 			} catch (RepositoryException) {
 				throw;
 			} catch (Exception ex) {
@@ -192,44 +149,12 @@ namespace Deveel.Data {
 		}
 
 		/// <summary>
-		/// Creates an instance of <see cref="MongoRepository{TEntity}"/> for
-		/// the given context.
-		/// </summary>
-		/// <param name="context">
-		/// The context to be used to create the repository.
-		/// </param>
-		/// <param name="logger">
-		/// A logger to be used by the repository.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of <see cref="MongoRepository{TEntity}"/> that
-		/// can be used to manage the entity of type <typeparamref name="TEntity"/>.
-		/// </returns>
-		protected virtual MongoRepository<TEntity> CreateRepository(TContext context, ILogger logger) {
-			return new MongoRepository<TEntity>(context, logger);
-		}
-
-		/// <summary>
-		/// Creates a repository for a given context.
-		/// </summary>
-		/// <param name="context">
-		/// The context to be used to create the repository.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of <see cref="MongoRepository{TEntity}"/> that
-		/// is used to manage the entity of type <typeparamref name="TEntity"/>.
-		/// </returns>
-        protected virtual MongoRepository<TEntity> CreateRepository(TContext context) {
-            return CreateRepository(context, CreateLogger());
-        }
-
-		/// <summary>
 		/// Disposes the provider and all the repositories created by it.
 		/// </summary>
 		/// <param name="disposing">
 		/// A flag indicating if the provider is disposing.
 		/// </param>
-        protected virtual void Dispose(bool disposing) {
+		protected virtual void Dispose(bool disposing) {
 			if (!disposedValue) {
 				if (disposing) {
 					DisposeRepositories();
@@ -242,7 +167,7 @@ namespace Deveel.Data {
 
 		private void DisposeRepositories() {
 			if (repositories != null) {
-				foreach (var repository in repositories.Values) { 
+				foreach (var repository in repositories.Values) {
 					if (repository is IDisposable disposable)
 						disposable.Dispose();
 				}
