@@ -20,7 +20,11 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of entity handled by the repository instances
 	/// </typeparam>
-	public interface IRepositoryProvider<TEntity> : IRepositoryProvider<TEntity, object> where TEntity : class {
+	/// <typeparam name="TKey">
+	/// The type of key used to identify the entities
+	/// managed by the repository instances
+	/// </typeparam>
+	public interface IRepositoryProvider<TEntity, TKey> where TEntity : class {
 		/// <summary>
 		/// Gets a repository instance that is isolating the entities
 		/// for a tenant.
@@ -35,6 +39,6 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="IRepository{TEntity}"/> that
 		/// is isolating the entities for the given tenant.
 		/// </returns>
-		new Task<IRepository<TEntity>> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken = default);
-    }
+		Task<IRepository<TEntity, TKey>> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken = default);
+	}
 }

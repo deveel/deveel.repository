@@ -25,6 +25,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository from which the entities are retrieved.
 		/// </param>
@@ -39,7 +42,7 @@ namespace Deveel.Data {
 		/// </param>
 		/// <remarks>
 		/// This method is a shortcut for the invocation of
-		/// <see cref="IPageableRepository{TEntity}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>,
+		/// <see cref="IPageableRepository{TEntity,TKey}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>,
 		/// without filtering and sorting.
 		/// </remarks>
 		/// <returns>
@@ -50,7 +53,7 @@ namespace Deveel.Data {
 		/// Thrown when the given page number is less than 1, or
 		/// if the given page size is less than 0.
 		/// </exception>
-		public static Task<PageResult<TEntity>> GetPageAsync<TEntity>(this IPageableRepository<TEntity> repository, int page, int size, CancellationToken cancellationToken = default)
+		public static Task<PageResult<TEntity>> GetPageAsync<TEntity, TKey>(this IPageableRepository<TEntity, TKey> repository, int page, int size, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.GetPageAsync(new PageQuery<TEntity>(page, size), cancellationToken);
 
@@ -60,6 +63,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository from which the entities are retrieved.
@@ -71,7 +77,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="PageResult{TEntity}"/> that
 		/// is the result of the query.
 		/// </returns>
-		public static PageResult<TEntity> GetPage<TEntity>(this IPageableRepository<TEntity> repository, PageQuery<TEntity> request)
+		public static PageResult<TEntity> GetPage<TEntity, TKey>(this IPageableRepository<TEntity, TKey> repository, PageQuery<TEntity> request)
 			where TEntity : class
 			=> repository.GetPageAsync(request).GetAwaiter().GetResult();
 	}

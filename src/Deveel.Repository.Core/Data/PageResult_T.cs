@@ -23,7 +23,7 @@ namespace Deveel.Data {
 	/// The type of entity handled by the repository.
 	/// </typeparam>
 	/// <seealso cref="PageQuery{TEntity}"/>
-	/// <seealso cref="IPageableRepository{TEntity}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>
+	/// <seealso cref="IPageableRepository{TEntity,TKey}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>
 	public class PageResult<TEntity> where TEntity : class {
 		/// <summary>
 		/// Constructs the result referencing the original request, a count

@@ -21,7 +21,10 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The strongly typed entity that is stored in the repository
 	/// </typeparam>
-	public interface IQueryableRepository<TEntity> : IRepository<TEntity> where TEntity : class {
+	/// <typeparam name="TKey">
+	/// The type of the key used to uniquely identify the entity.
+	/// </typeparam>
+	public interface IQueryableRepository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class {
 		/// <summary>
 		/// Gets a queryable object that can be used to query the repository
 		/// </summary>

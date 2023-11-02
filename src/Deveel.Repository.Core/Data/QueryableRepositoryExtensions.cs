@@ -25,6 +25,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of key used to identify the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository from which the entities are retrieved.
 		/// </param>
@@ -35,7 +38,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="PageResult{TEntity}"/> that
 		/// is the result of the query.
 		/// </returns>
-		public static PageResult<TEntity> GetPage<TEntity>(this IQueryableRepository<TEntity> repository, PageQuery<TEntity> request)
+		public static PageResult<TEntity> GetPage<TEntity, TKey>(this IQueryableRepository<TEntity, TKey> repository, PageQuery<TEntity> request)
 			where TEntity : class {
 			var query = request.ApplyQuery(repository.AsQueryable());
 

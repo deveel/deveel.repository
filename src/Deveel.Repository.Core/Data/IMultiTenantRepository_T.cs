@@ -16,13 +16,9 @@ using System;
 
 namespace Deveel.Data {
 	/// <summary>
-	/// Represents a repository that can be filtered to retrieve a subset of
-	/// the entities it contains.
+	/// Represents a repository that is capable of segregating the
+	/// data by the tenant that owns it.
 	/// </summary>
-	/// <typeparam name="TEntity">
-	/// The strongly typed entity that is stored in the repository
-	/// </typeparam>
-	/// <seealso cref="IFilterableRepository{TEntity, TKey}"/>
-    public interface IFilterableRepository<TEntity> : IFilterableRepository<TEntity, object> where TEntity : class {
+    public interface IMultiTenantRepository<TEntity> : IMultiTenantRepository<TEntity, object> where TEntity : class {
     }
 }

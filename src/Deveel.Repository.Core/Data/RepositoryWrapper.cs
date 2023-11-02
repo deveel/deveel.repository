@@ -18,6 +18,7 @@ using System.Reflection;
 
 namespace Deveel.Data {
 	class RepositoryWrapper<TEntity> : 
+		IRepository<TEntity>,
 		IFilterableRepository<TEntity>,
 		IQueryableRepository<TEntity>
 		where TEntity : class {

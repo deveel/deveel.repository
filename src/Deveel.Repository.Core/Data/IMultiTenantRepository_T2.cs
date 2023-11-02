@@ -19,10 +19,10 @@ namespace Deveel.Data {
 	/// Represents a repository that is capable of segregating the
 	/// data by the tenant that owns it.
 	/// </summary>
-    public interface IMultiTenantRepository<TEntity> : IRepository<TEntity> where TEntity : class {
+	public interface IMultiTenantRepository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class {
 		/// <summary>
 		/// Gets the identifier of the tenant that owns the data
 		/// </summary>
-        string? TenantId { get; }
-    }
+		string? TenantId { get; }
+	}
 }

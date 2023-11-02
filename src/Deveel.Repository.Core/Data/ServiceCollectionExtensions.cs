@@ -75,85 +75,18 @@ namespace Deveel.Data {
 			if (!repositoryType.IsClass || repositoryType.IsAbstract)
 				throw new ArgumentException($"The type '{repositoryType}' is not a valid repository type", nameof(repositoryType));
 
-			if (!Implements(typeof(IRepository<>), repositoryType))
+			if (!RepositoryRegistrationUtil.IsValidRepositoryType(repositoryType))
 				throw new ArgumentException($"The type '{repositoryType}' is not a valid repository type", nameof(repositoryType));
+				
+			var serviceTypes = RepositoryRegistrationUtil.GetRepositoryServiceTypes(repositoryType);
 
-			foreach (var iface in repositoryType.GetInterfaces()) {
-				var entityType = GetEntityType(iface);
-
-				if (entityType == null)
-					// skip the type if we cannot determine the entity
-					continue;
-
-				if (typeof(IRepository<>).MakeGenericType(entityType).IsAssignableFrom(repositoryType)) {
-					services.TryAdd(new ServiceDescriptor(typeof(IRepository<>).MakeGenericType(entityType), repositoryType, lifetime));
-					services.TryAdd(new ServiceDescriptor(iface, repositoryType, lifetime));
-
-					if (typeof(IQueryableRepository<>).MakeGenericType(entityType).IsAssignableFrom(repositoryType))
-						services.TryAdd(new ServiceDescriptor(typeof(IQueryableRepository<>).MakeGenericType(entityType), repositoryType, lifetime));
-					if (typeof(IFilterableRepository<>).MakeGenericType(entityType).IsAssignableFrom(repositoryType))
-						services.TryAdd(new ServiceDescriptor(typeof(IFilterableRepository<>).MakeGenericType(entityType), repositoryType, lifetime));
-					if (typeof(IPageableRepository<>).MakeGenericType(entityType).IsAssignableFrom(repositoryType))
-						services.TryAdd(new ServiceDescriptor(typeof(IPageableRepository<>).MakeGenericType(entityType), repositoryType, lifetime));
-				}
+			foreach (var serviceType in serviceTypes) {
+				services.TryAdd(new ServiceDescriptor(serviceType, repositoryType, lifetime));
 			}
 
 			services.Add(new ServiceDescriptor(repositoryType, repositoryType, lifetime));
 
-			var baseType = repositoryType.BaseType;
-			while (baseType != null) {
-				if (Implements(typeof(IRepository<>), baseType)) {
-					services.TryAdd(new ServiceDescriptor(baseType, repositoryType, lifetime));
-				}
-
-				baseType = baseType.BaseType;
-			}
-
 			return services;
-		}
-
-		private static bool Implements(Type genericType, Type type) {
-			if (type.IsGenericType) {
-				var genericTypeDefinition = type.GetGenericTypeDefinition();
-				if (genericTypeDefinition == genericType)
-					return true;
-			}
-
-			foreach (var iface in type.GetInterfaces()) {
-				if (Implements(genericType, iface))
-					return true;
-			}
-
-			var baseType = type.BaseType;
-			while (baseType != null) {
-				if (Implements(genericType, baseType)) 
-					return true;
-
-				baseType = baseType.BaseType;
-			}
-
-			return false;
-		}
-
-		private static Type? GetEntityType(Type serviceType) {
-			if (serviceType.IsGenericType) {
-				var genericTypeDefinition = serviceType.GetGenericTypeDefinition();
-				var genericTypes = serviceType.GenericTypeArguments;
-
-				if (genericTypes.Length == 1 && genericTypes[0].IsClass &&
-					typeof(IRepository<>).IsAssignableFrom(genericTypeDefinition) ||
-					typeof(IRepositoryProvider<>).IsAssignableFrom(genericTypeDefinition)) {
-					return genericTypes[0];
-				}
-			}
-
-			foreach (var iface in serviceType.GetInterfaces()) {
-				var entityType = GetEntityType(iface);
-				if (entityType != null)
-					return entityType;
-			}
-
-			return null;
 		}
 
         public static IServiceCollection AddRepositoryProvider<TProvider>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
@@ -188,31 +121,16 @@ namespace Deveel.Data {
 		public static IServiceCollection AddRepositoryProvider(this IServiceCollection services, Type providerType, ServiceLifetime lifetime = ServiceLifetime.Singleton) {
 			ArgumentNullException.ThrowIfNull(providerType, nameof(providerType));
 
-			if (!Implements(typeof(IRepositoryProvider<>), providerType))
+			if (!RepositoryRegistrationUtil.IsValidProviderType(providerType))
 				throw new ArgumentException($"The type '{providerType}' is not a valid repository provider type", nameof(providerType));
 
-			foreach (var iface in providerType.GetInterfaces()) {
-				var entityType = GetEntityType(iface);
+			var serviceTypes = RepositoryRegistrationUtil.GetRepositoryProviderServiceTypes(providerType);
 
-				if (entityType == null)
-					continue;
-
-				if (typeof(IRepositoryProvider<>).MakeGenericType(entityType).IsAssignableFrom(providerType)) {
-					services.TryAdd(new ServiceDescriptor(typeof(IRepositoryProvider<>).MakeGenericType(entityType), providerType, lifetime));
-					services.TryAdd(new ServiceDescriptor(iface, providerType, lifetime));
-				}
+			foreach (var serviceType in serviceTypes) {
+				services.TryAdd(new ServiceDescriptor(serviceType, providerType, lifetime));
 			}
 
 			services.Add(new ServiceDescriptor(providerType, providerType, lifetime));
-
-			var baseType = providerType.BaseType;
-			while(baseType != null) {
-				if (Implements(typeof(IRepositoryProvider<>), baseType)) {
-					services.TryAdd(new ServiceDescriptor(baseType, providerType, lifetime));
-				}
-
-				baseType = baseType.BaseType;
-			}
 
 			return services;
 

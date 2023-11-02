@@ -34,16 +34,18 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of the entity that is stored in the repository.
 	/// </typeparam>
-	public class MongoRepository<TEntity> : IRepository<TEntity>, 
-		IQueryableRepository<TEntity>, 
-		IPageableRepository<TEntity>, 
-		IFilterableRepository<TEntity>,
-		IMultiTenantRepository<TEntity>,
-		IControllableRepository, 
-		IAsyncDisposable, 
+	/// <typeparam name="TKey">
+	/// The type of the key of the entity that is stored in the repository.
+	/// </typeparam>
+	public class MongoRepository<TEntity, TKey> : IRepository<TEntity, TKey>,
+		IQueryableRepository<TEntity, TKey>,
+		IPageableRepository<TEntity, TKey>,
+		IFilterableRepository<TEntity, TKey>,
+		IMultiTenantRepository<TEntity, TKey>,
+		IControllableRepository,
+		IAsyncDisposable,
 		IDisposable
-		where TEntity : class 
-	{
+		where TEntity : class {
 		private IMongoDbSet<TEntity>? _dbSet;
 		private bool disposed;
 
@@ -73,7 +75,7 @@ namespace Deveel.Data {
 		/// <param name="logger">
 		/// A logger instance that is used to log messages from the repository.
 		/// </param>
-		public MongoRepository(IMongoDbContext context, ILogger<MongoRepository<TEntity>>? logger = null)
+		public MongoRepository(IMongoDbContext context, ILogger<MongoRepository<TEntity, TKey>>? logger = null)
 			: this(context, (ILogger?)logger) {
 		}
 
@@ -100,9 +102,9 @@ namespace Deveel.Data {
 		/// </summary>
 		protected string? TenantId { get; }
 
-		string? IMultiTenantRepository<TEntity>.TenantId => TenantId;
+		string? IMultiTenantRepository<TEntity, TKey>.TenantId => TenantId;
 
-		IQueryable<TEntity> IQueryableRepository<TEntity>.AsQueryable() => DbSet.AsQueryable();
+		IQueryable<TEntity> IQueryableRepository<TEntity, TKey>.AsQueryable() => DbSet.AsQueryable();
 
 		/// <summary>
 		/// Gets the <see cref="IMongoCollection{TEntity}"/> instance that is used
@@ -115,18 +117,18 @@ namespace Deveel.Data {
 			}
 		}
 
-		private static string RequireString(object? value) {
-			if (value is string s)
-				return s;
-			if (value is ObjectId id)
-				return id.ToString();
+		//private static string RequireString(object? value) {
+		//	if (value is string s)
+		//		return s;
+		//	if (value is ObjectId id)
+		//		return id.ToString();
 
-			var result = Convert.ToString(value, CultureInfo.InvariantCulture);
-			if (String.IsNullOrWhiteSpace(result))
-				throw new InvalidOperationException($"Could not convert '{value}' to string");
+		//	var result = Convert.ToString(value, CultureInfo.InvariantCulture);
+		//	if (String.IsNullOrWhiteSpace(result))
+		//		throw new InvalidOperationException($"Could not convert '{value}' to string");
 
-			return result;
-		}
+		//	return result;
+		//}
 
 		/// <summary>
 		/// Throws an exception if the repository has been disposed.
@@ -167,9 +169,6 @@ namespace Deveel.Data {
 			return _dbSet;
 		}
 
-		object? IRepository<TEntity>.GetEntityKey(TEntity entity)
-			=> GetEntityKey(entity);
-
 		/// <summary>
 		/// Gets the value of the ID property of the given entity.
 		/// </summary>
@@ -179,7 +178,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the value of the ID property of the given entity.
 		/// </returns>
-		protected virtual object? GetEntityKey(TEntity entity) {
+		public virtual TKey? GetEntityKey(TEntity entity) {
 			var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
 			var idProperty = entityDef.GetIdProperty();
@@ -187,7 +186,7 @@ namespace Deveel.Data {
 			if (idProperty == null)
 				throw new RepositoryException($"The type '{typeof(TEntity)}' has no ID property specified");
 
-			return entityDef.GetIdValue(entity);
+			return (TKey?) entityDef.GetIdValue(entity);
 		}
 
 		/// <summary>
@@ -209,9 +208,9 @@ namespace Deveel.Data {
 		/// Thrown when the value cannot be converted to the type of the ID
 		/// property of the entity managed by this repository.
 		/// </exception>
-		protected virtual object? ConvertKeyValue(object? key) {
+		protected virtual TKey? ConvertKeyValue(TKey? key) {
 			if (key == null)
-				return null;
+				return default;
 
 			var idType = key.GetType();
 			var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
@@ -228,10 +227,10 @@ namespace Deveel.Data {
 
 			if (idType == typeof(string)) {
 				if (valueType == typeof(ObjectId))
-					return ObjectId.Parse(key.ToString());
+					return (TKey)(object) ObjectId.Parse(key.ToString());
 
 				if (typeof(IConvertible).IsAssignableFrom(valueType))
-					return Convert.ChangeType(key, valueType, CultureInfo.InvariantCulture);
+					return (TKey) Convert.ChangeType(key, valueType, CultureInfo.InvariantCulture);
 			}
 
 			throw new NotSupportedException($"It is not possible to convert the ID to '{valueType}'");
@@ -518,7 +517,7 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public virtual async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
-			if (entity is null) 
+			if (entity is null)
 				throw new ArgumentNullException(nameof(entity));
 
 			ThrowIfDisposed();
@@ -566,7 +565,7 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public virtual async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
-			if (entity is null) 
+			if (entity is null)
 				throw new ArgumentNullException(nameof(entity));
 
 			ThrowIfDisposed();
@@ -576,13 +575,11 @@ namespace Deveel.Data {
 			if (entityId == null)
 				throw new ArgumentException("The entity does not have an ID", nameof(entity));
 
-			var id = RequireString(entityId);
-
 			try {
 				if (!String.IsNullOrWhiteSpace(TenantId)) {
-					Logger.TraceDeletingForTenant(TenantId, id);
+					Logger.TraceDeletingForTenant(TenantId, entityId);
 				} else {
-					Logger.TraceDeleting(id);
+					Logger.TraceDeleting(entityId);
 				}
 
 				var entry = Context.ChangeTracker.GetEntry(entity);
@@ -593,14 +590,14 @@ namespace Deveel.Data {
 				await Context.SaveChangesAsync(cancellationToken);
 
 				if (!String.IsNullOrWhiteSpace(TenantId)) {
-					Logger.TraceDeletedForTenant(TenantId, id);
+					Logger.TraceDeletedForTenant(TenantId, entityId);
 				} else {
-					Logger.TraceDeleted(id);
+					Logger.TraceDeleted(entityId);
 				}
 
 				return entry.State == EntityEntryState.Deleted;
 			} catch (Exception ex) {
-				Logger.LogUnknownEntityError(ex, id);
+				Logger.LogUnknownEntityError(ex, entityId);
 
 				throw new RepositoryException("Unable to delete the entity", ex);
 			}
@@ -625,7 +622,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
+		public async Task<TEntity?> FindByKeyAsync(TKey key, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 

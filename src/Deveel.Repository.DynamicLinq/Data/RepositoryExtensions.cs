@@ -193,6 +193,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity to check in the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository to check.
 		/// </param>
@@ -209,9 +212,9 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the repository contains at least one entity
 		/// that matches the given expression, otherwise <c>false</c>.
 		/// </returns>
-		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+		public static Task<bool> ExistsAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.ExistsAsync<TEntity>(new DynamicLinqFilter(paramName, expression), cancellationToken);
+			=> repository.ExistsAsync<TEntity, TKey>(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
 		/// <summary>
 		/// Checks if the repository contains at least one entity that matches
@@ -219,6 +222,9 @@ namespace Deveel.Data {
 		/// </summary>
 		/// <typeparam name="TEntity">
 		/// The type of entity to check in the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
 		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository to check.
@@ -237,9 +243,9 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the repository contains at least one entity
 		/// that matches the given expression, otherwise <c>false</c>.
 		/// </returns>
-		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
+		public static Task<bool> ExistsAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
-			=> repository.ExistsAsync<TEntity>(DynamicLinqFilter.DefaultParameterName, expression, cancellationToken);
+			=> repository.ExistsAsync<TEntity, TKey>(DynamicLinqFilter.DefaultParameterName, expression, cancellationToken);
 
 		#endregion
 	}

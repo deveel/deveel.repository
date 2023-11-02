@@ -96,6 +96,32 @@ namespace Deveel.Data {
 			return services;
 		}
 
+		/// <summary>
+		/// Registers a default implementation of the Entity Framework 
+		/// repository provider for the given entity type and context.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to register the repository provider for.
+		/// </typeparam>
+		/// <typeparam name="TContext">
+		/// The type of the <see cref="DbContext"/> to use to access the
+		/// data source for the given entity.
+		/// </typeparam>
+		/// <param name="services">
+		/// The service collection to register the repository provider into.
+		/// </param>
+		/// <param name="optionsFactory">
+		/// A function that is used to configure the options for the
+		/// instance of the <see cref="DbContext"/> to use to access the
+		/// tenant data source.
+		/// </param>
+		/// <param name="lifetime">
+		/// The desired lifetime of the repository provider in the service collection.
+		/// </param>
+		/// <returns>
+		/// Returns the service collection with the repository provider registered,
+		/// for chaining.
+		/// </returns>
 		public static IServiceCollection AddEntityRepositoryProvider<TEntity, TContext>(this IServiceCollection services, Action<ITenantInfo, DbContextOptionsBuilder<TContext>> optionsFactory, ServiceLifetime lifetime = ServiceLifetime.Scoped)
 			where TEntity : class
 			where TContext : DbContext {
