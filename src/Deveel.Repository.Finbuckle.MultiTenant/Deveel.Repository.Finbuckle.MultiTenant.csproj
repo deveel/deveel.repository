@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Deveel Repository Finbuckle Multi-Tenant Extension</Title>
+    <Description>This package provides some helpers and extensions to the Finbuckle Multi-Tenant framework to work with repositories</Description>
+    <PackageTags>repository;multitenant;finbuckle;extensions;tenant;tenantinfo;store;data;multitenancy</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Finbuckle.MultiTenant" Version="6.12.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
+  </ItemGroup>
+</Project>

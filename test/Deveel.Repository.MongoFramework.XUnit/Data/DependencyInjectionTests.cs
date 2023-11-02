@@ -137,16 +137,18 @@ namespace Deveel.Data {
 					});
 				});
 
+			services.AddRepositoryTenantResolver<TenantInfo>();
+
 			services.AddMongoDbContext<MongoDbTenantContext>(builder => {
 				builder.UseConnection("mongodb://localhost:27017/testdb");
 			});
 
-			services.AddRepositoryProvider<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>();
+			services.AddRepositoryProvider<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson>>();
 
 			var provider = services.BuildServiceProvider();
 
 			Assert.NotNull(provider.GetService<IRepositoryProvider<MongoPerson>>());
-			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>());
+			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson>>());
 
 			var repository = provider.GetRequiredService<IRepositoryProvider<MongoPerson>>().GetRepository(tenantId);
 
@@ -169,16 +171,18 @@ namespace Deveel.Data {
 					});
 				});
 
+			services.AddRepositoryTenantResolver<TenantInfo>();
+
 			services.AddMongoDbContext<MongoDbTenantContext>((tenant, builder) => {
 				builder.UseConnection(tenant!.ConnectionString!);
 			});
 
-			services.AddRepositoryProvider<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>();
+			services.AddRepositoryProvider<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson>>();
 
 			var provider = services.BuildServiceProvider();
 
 			Assert.NotNull(provider.GetService<IRepositoryProvider<MongoPerson>>());
-			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>());
+			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson>>());
 
 			var repository = provider.GetRequiredService<IRepositoryProvider<MongoPerson>>().GetRepository(tenantId);
 
@@ -224,6 +228,8 @@ namespace Deveel.Data {
 					});
 				});
 
+			services.AddRepositoryTenantResolver<TenantInfo>();
+
 			services.AddMongoDbContext<MongoDbTenantContext>(builder => {
 				builder.UseConnection("mongodb://localhost:27017/testdb");
 			});
@@ -234,7 +240,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(provider.GetService<MyMongoPersonRepositoryProviderNoKey>());
 			Assert.NotNull(provider.GetService<IRepositoryProvider<MongoPerson>>());
-			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>());
+			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson>>());
 
 			var repository = provider.GetRequiredService<IRepositoryProvider<MongoPerson>>().GetRepository(tenantId);
 
@@ -259,6 +265,8 @@ namespace Deveel.Data {
 					});
 				});
 
+			services.AddRepositoryTenantResolver<TenantInfo>();
+
 			services.AddMongoDbContext<MongoDbTenantContext>((tenant, builder) => {
 				builder.UseConnection(tenant!.ConnectionString!);
 			});
@@ -269,7 +277,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(provider.GetService<MyMongoPersonRepositoryProviderNoKey>());
 			Assert.NotNull(provider.GetService<IRepositoryProvider<MongoPerson>>());
-			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>>());
+			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson>>());
 
 			var repository = provider.GetRequiredService<IRepositoryProvider<MongoPerson>>().GetRepository(tenantId);
 
@@ -292,6 +300,8 @@ namespace Deveel.Data {
 					});
 				});
 
+			services.AddRepositoryTenantResolver<TenantInfo>();
+
 			services.AddMongoDbContext<MongoDbTenantContext>((tenant, builder) => {
 				builder.UseConnection(tenant!.ConnectionString!);
 			});
@@ -302,7 +312,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(provider.GetService<MyMongoPersonRepositoryProvider>());
 			Assert.NotNull(provider.GetService<IRepositoryProvider<MongoPerson, ObjectId>>());
-			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, ObjectId, TenantInfo>>());
+			Assert.NotNull(provider.GetService<MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, ObjectId>>());
 
 			var repository = provider.GetRequiredService<IRepositoryProvider<MongoPerson, ObjectId>>().GetRepository(tenantId);
 
@@ -324,9 +334,9 @@ namespace Deveel.Data {
 			}
 		}
 
-		class MyMongoPersonRepositoryProviderNoKey : MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, TenantInfo>, IMyMongoPersonRepositoryProvider {
-			public MyMongoPersonRepositoryProviderNoKey(IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null) 
-				: base(tenantStores, loggerFactory) {
+		class MyMongoPersonRepositoryProviderNoKey : MongoRepositoryProvider<MongoDbTenantContext, MongoPerson>, IMyMongoPersonRepositoryProvider {
+			public MyMongoPersonRepositoryProviderNoKey(IRepositoryTenantResolver tenantResolver, ILoggerFactory? loggerFactory = null) 
+				: base(tenantResolver, loggerFactory) {
 			}
 
 			protected override MongoRepository<MongoPerson> CreateRepository(MongoDbTenantContext context)
@@ -342,9 +352,9 @@ namespace Deveel.Data {
 			}
 		}
 
-		class MyMongoPersonRepositoryProvider : MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, ObjectId, TenantInfo> {
-			public MyMongoPersonRepositoryProvider(IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null)
-				: base(tenantStores, loggerFactory) {
+		class MyMongoPersonRepositoryProvider : MongoRepositoryProvider<MongoDbTenantContext, MongoPerson, ObjectId> {
+			public MyMongoPersonRepositoryProvider(IRepositoryTenantResolver tenantResolver, ILoggerFactory? loggerFactory = null)
+				: base(tenantResolver, loggerFactory) {
 			}
 
 			protected override MongoRepository<MongoPerson, ObjectId> CreateRepository(MongoDbTenantContext context) 

@@ -16,22 +16,18 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of the entity that is managed by the repository.
 	/// </typeparam>
-	/// <typeparam name="TTenantInfo">
-	/// The type of the tenant information that is used to create the context.
-	/// </typeparam>
-	public abstract class MongoRepositoryProviderBase<TContext, TEntity, TTenantInfo> : IDisposable
+	public abstract class MongoRepositoryProviderBase<TContext, TEntity> : IDisposable
 		where TContext : class, IMongoDbContext
-		where TTenantInfo : class, ITenantInfo, new()
 		where TEntity : class {
-		private readonly IEnumerable<IMultiTenantStore<TTenantInfo>>? stores;
+		private readonly IRepositoryTenantResolver tenantResolver;
 		private bool disposedValue;
 
 		private IDictionary<string, object>? repositories;
 
 		internal MongoRepositoryProviderBase(
-			IEnumerable<IMultiTenantStore<TTenantInfo>>? stores = null,
+			IRepositoryTenantResolver tenantResolver,
 			ILoggerFactory? loggerFactory = null) {
-			this.stores = stores;
+			this.tenantResolver = tenantResolver;
 			LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 		}
 
@@ -39,40 +35,6 @@ namespace Deveel.Data {
 		/// Gets the factory to create the logger to be used by the repository.
 		/// </summary>
 		protected ILoggerFactory LoggerFactory { get; }
-
-		/// <summary>
-		/// Attempts to resolve the tenant information for a given tenant ID.
-		/// </summary>
-		/// <param name="tenantId">
-		/// The identifier of the tenant to be resolved (that can
-		/// be the ID or the identifier of the tenant).
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token to cancel the operation.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of <typeparamref name="TTenantInfo"/> that
-		/// is identified by the given <paramref name="tenantId"/>, or
-		/// <c>null</c> if no tenant information could be resolved.
-		/// </returns>
-		protected virtual async Task<TTenantInfo?> GetTenantInfoAsync(string tenantId, CancellationToken cancellationToken) {
-			if (stores == null)
-				return null;
-
-			foreach (var store in stores) {
-				// TODO: making the IRepositoryProvider to be async
-				var tenantInfo = await store.TryGetAsync(tenantId);
-
-				if (tenantInfo == null)
-					tenantInfo = await store.TryGetByIdentifierAsync(tenantId);
-
-				if (tenantInfo != null) {
-					return tenantInfo;
-				}
-			}
-
-			return null;
-		}
 
 		/// <summary>
 		/// Creates a logger to be used by the repository.
@@ -107,7 +69,7 @@ namespace Deveel.Data {
 		/// Thrown when the <typeparamref name="TContext"/> has no
 		/// suitable constructor to be created.
 		/// </exception>
-		protected virtual TContext? CreateContext(IMongoDbConnection connection, TTenantInfo tenantInfo) {
+		protected virtual TContext? CreateContext(IMongoDbConnection connection, ITenantInfo tenantInfo) {
 			ArgumentNullException.ThrowIfNull(connection, nameof(connection));
 			ArgumentNullException.ThrowIfNull(tenantInfo, nameof(tenantInfo));
 
@@ -122,7 +84,7 @@ namespace Deveel.Data {
 					repositories = new Dictionary<string, object>();
 
 				if (!repositories.TryGetValue(tenantId, out var repository)) {
-					var tenantInfo = await GetTenantInfoAsync(tenantId, cancellationToken);
+					var tenantInfo = await tenantResolver.FindTenantAsync(tenantId, cancellationToken);
 
 					if (tenantInfo == null)
 						throw new RepositoryException($"Unable to find any tenant for the ID '{tenantId}' - cannot construct a context");

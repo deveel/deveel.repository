@@ -32,14 +32,10 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of the entity that is managed by the repository.
 	/// </typeparam>
-	/// <typeparam name="TTenantInfo">
-	/// The type of the tenant information that is used to create the context.
-	/// </typeparam>
-	public abstract class EntityRepositoryProviderBase<TContext, TEntity, TTenantInfo> : IDisposable
+	public abstract class EntityRepositoryProviderBase<TContext, TEntity> : IDisposable
 		where TContext : DbContext
-		where TEntity : class
-		where TTenantInfo : class, ITenantInfo, new() {
-		private readonly IEnumerable<IMultiTenantStore<TTenantInfo>> tenantStores;
+		where TEntity : class {
+		private readonly IRepositoryTenantResolver tenantResolver;
 		private readonly IDbContextOptionsFactory<TContext> optionsFactory;
 		private readonly ILoggerFactory loggerFactory;
 
@@ -49,18 +45,18 @@ namespace Deveel.Data {
 
 		internal EntityRepositoryProviderBase(
 			IDbContextOptionsFactory<TContext> optionsFactory,
-			IEnumerable<IMultiTenantStore<TTenantInfo>> tenantStores,
+			IRepositoryTenantResolver tenantResolver,
 			ILoggerFactory? loggerFactory = null) {
 			this.optionsFactory = optionsFactory ?? throw new ArgumentNullException(nameof(optionsFactory));
-			this.tenantStores = tenantStores;
+			this.tenantResolver = tenantResolver;
 			this.loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 		}
 
 		internal EntityRepositoryProviderBase(
 			DbContextOptions<TContext> options,
-			IEnumerable<IMultiTenantStore<TTenantInfo>> tenantStores,
+			IRepositoryTenantResolver tenantResolver,
 			ILoggerFactory? loggerFactory = null)
-			: this(new SingletonDbContextOptionsFactory(options), tenantStores, loggerFactory) {
+			: this(new SingletonDbContextOptionsFactory(options), tenantResolver, loggerFactory) {
 		}
 		
 		/// <summary>
@@ -70,23 +66,17 @@ namespace Deveel.Data {
 			Dispose(disposing: false);
 		}
 
-		internal async Task<TRepository> GetRepositoryAsync<TRepository>(string tenantId) {
+		internal async Task<TRepository> GetRepositoryAsync<TRepository>(string tenantId, CancellationToken cancellationToken = default) {
 			// TODO: move the cache here ...
 
-			foreach (var store in tenantStores) {
-				var tenant = await store.TryGetAsync(tenantId);
+			var tenant = await tenantResolver.FindTenantAsync(tenantId, cancellationToken);
+			if (tenant == null)
+				throw new RepositoryException($"The tenant '{tenantId}' was not found");
 
-				if (tenant == null)
-					tenant = await store.TryGetByIdentifierAsync(tenantId);
-
-				if (tenant != null)
-					return CreateRepository<TRepository>(tenant);
-			}
-
-			throw new RepositoryException($"The tenant '{tenantId}' was not found");
+			return CreateRepository<TRepository>(tenant);
 		}
 
-		private TContext ConstructDbContext(TTenantInfo tenantInfo) {
+		private TContext ConstructDbContext(ITenantInfo tenantInfo) {
 			if (contexts == null || !contexts.TryGetValue(tenantInfo.Id!, out var dbContext)) {
 				var options = optionsFactory.Create(tenantInfo);
 				var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -116,7 +106,7 @@ namespace Deveel.Data {
 			return dbContext;
 		}
 
-		private TRepository CreateRepository<TRepository>(TTenantInfo tenant) {
+		private TRepository CreateRepository<TRepository>(ITenantInfo tenant) {
 			try {
 				if (repositories == null || !repositories.TryGetValue(tenant.Id!, out var repository)) {
 					var dbContext = ConstructDbContext(tenant);
@@ -137,7 +127,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		internal abstract object CreateRepositoryInternal(TContext context, TTenantInfo tenant);
+		internal abstract object CreateRepositoryInternal(TContext context, ITenantInfo tenant);
 
 		/// <summary>
 		/// Creates a logger for a repository.

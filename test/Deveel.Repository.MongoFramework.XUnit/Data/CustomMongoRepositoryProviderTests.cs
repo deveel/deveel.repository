@@ -41,6 +41,8 @@ namespace Deveel.Data {
                     });
                 });
 
+			services.AddRepositoryTenantResolver<TenantInfo>();
+
             AddMongoDbContext(services);
 
             services.AddRepositoryController();
@@ -78,12 +80,12 @@ namespace Deveel.Data {
 			Assert.IsType<PersonRepositoryProvider>(RepositoryProvider);
 		}
 
-		protected class PersonRepositoryProvider : MongoRepositoryProvider<PersonsDbContext, MongoTenantPerson, TenantInfo> {
-            public PersonRepositoryProvider(IEnumerable<IMultiTenantStore<TenantInfo>> stores, ILoggerFactory? loggerFactory = null) 
-				:base(stores, loggerFactory) {
+		protected class PersonRepositoryProvider : MongoRepositoryProvider<PersonsDbContext, MongoTenantPerson> {
+            public PersonRepositoryProvider(IRepositoryTenantResolver tenantResolver, ILoggerFactory? loggerFactory = null) 
+				:base(tenantResolver, loggerFactory) {
             }
 
-            protected override PersonsDbContext CreateContext(IMongoDbConnection connection, TenantInfo tenantInfo) {
+            protected override PersonsDbContext CreateContext(IMongoDbConnection connection, ITenantInfo tenantInfo) {
                 return new PersonsDbContext(connection.ForContext<PersonsDbContext>(), tenantInfo?.Id ?? throw new InvalidOperationException());
             }
 
