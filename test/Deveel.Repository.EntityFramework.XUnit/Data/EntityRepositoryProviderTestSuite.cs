@@ -64,6 +64,7 @@ namespace Deveel.Data {
 					options.Tenants.Add(TenantInfo);
 				});
 
+			services.AddRepositoryTenantResolver<TenantInfo>();
 			services.AddDbContext<DbContext, TestDbContext>(builder => {
 				builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
 				builder.UseSqlite(sqliteConnection, x => x.UseNetTopologySuite());

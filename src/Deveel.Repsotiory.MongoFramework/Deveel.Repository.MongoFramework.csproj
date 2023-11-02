@@ -18,7 +18,7 @@
 		<PackageReference Include="MongoFramework" Version="0.29.0" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Deveel.Repository.Finbuckle.MultiTenant\Deveel.Repository.Finbuckle.MultiTenant.csproj" />
+  </ItemGroup>
 </Project>

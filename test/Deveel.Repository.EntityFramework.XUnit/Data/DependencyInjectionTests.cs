@@ -45,9 +45,9 @@ namespace Deveel.Data {
 						Identifier = tenantId,
 						Name = "Test Tenant"
 					});
-				})
-				.WithStaticStrategy(tenantId);
+				});
 
+			services.AddRepositoryTenantResolver<TenantInfo>();
 			services.AddDbContext<DbContext, PersonDbContext>((sp, options) =>
 					options.UseSqlite("Data Source=:memory:", x => x.UseNetTopologySuite()));
 
@@ -76,8 +76,9 @@ namespace Deveel.Data {
 						Name = "Test Tenant",
 						ConnectionString = $"Data Source=:memory:;TenantID={tenantId}"
 					});
-				})
-				.WithStaticStrategy(tenantId);
+				});
+
+			services.AddRepositoryTenantResolver<TenantInfo>();
 
 			services.AddEntityRepositoryProvider<DbPerson, PersonDbContext>((tenant, builder) => {
 				builder.UseSqlite(tenant.ConnectionString!, x => x.UseNetTopologySuite());
@@ -106,8 +107,9 @@ namespace Deveel.Data {
 						Name = "Test Tenant",
 						ConnectionString = $"Data Source=:memory:;TenantID={tenantId}"
 					});
-				})
-				.WithStaticStrategy(tenantId);
+				});
+
+			services.AddRepositoryTenantResolver<TenantInfo>();
 
 			services.AddDbContextOptionsFactory<PersonDbContext>((tenant, builder) => {
 				builder.UseSqlite(tenant.ConnectionString!, x => x.UseNetTopologySuite());
@@ -138,8 +140,9 @@ namespace Deveel.Data {
 						Name = "Test Tenant",
 						ConnectionString = $"Data Source=:memory:;TenantID={tenantId}"
 					});
-				})
-				.WithStaticStrategy(tenantId);
+				});
+
+			services.AddRepositoryTenantResolver<TenantInfo>();
 
 			services.AddDbContextOptionsFactory<PersonDbContext>((tenant, builder) => {
 				builder.UseSqlite(tenant.ConnectionString!, x => x.UseNetTopologySuite());
@@ -165,8 +168,8 @@ namespace Deveel.Data {
 		}
 
 		class MyEntityRepositoryProviderWithNoKey : EntityRepositoryProvider<PersonDbContext, DbPerson> {
-			public MyEntityRepositoryProviderWithNoKey(IDbContextOptionsFactory<PersonDbContext> factory, IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null) 
-				: base(factory, tenantStores, loggerFactory) {
+			public MyEntityRepositoryProviderWithNoKey(IDbContextOptionsFactory<PersonDbContext> factory, IRepositoryTenantResolver tenantResolver, ILoggerFactory? loggerFactory = null) 
+				: base(factory, tenantResolver, loggerFactory) {
 			}
 
 			protected override EntityRepository<DbPerson> CreateRepository(PersonDbContext dbContext, ITenantInfo tenantInfo) 
@@ -178,11 +181,11 @@ namespace Deveel.Data {
 			}
 		}
 
-		class MyEntityRepositoryProvider : EntityRepositoryProvider<PersonDbContext, DbPerson, Guid, TenantInfo> {
-			public MyEntityRepositoryProvider(IDbContextOptionsFactory<PersonDbContext> optionsFactory, IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null) : base(optionsFactory, tenantStores, loggerFactory) {
+		class MyEntityRepositoryProvider : EntityRepositoryProvider<PersonDbContext, DbPerson, Guid> {
+			public MyEntityRepositoryProvider(IDbContextOptionsFactory<PersonDbContext> optionsFactory, IRepositoryTenantResolver tenantResolver, ILoggerFactory? loggerFactory = null) : base(optionsFactory, tenantResolver, loggerFactory) {
 			}
 
-			public MyEntityRepositoryProvider(DbContextOptions<PersonDbContext> options, IEnumerable<IMultiTenantStore<TenantInfo>> tenantStores, ILoggerFactory? loggerFactory = null) : base(options, tenantStores, loggerFactory) {
+			public MyEntityRepositoryProvider(DbContextOptions<PersonDbContext> options, IRepositoryTenantResolver tenantResolver, ILoggerFactory? loggerFactory = null) : base(options, tenantResolver, loggerFactory) {
 			}
 
 			protected override EntityRepository<DbPerson, Guid> CreateRepository(PersonDbContext dbContext, ITenantInfo tenantInfo)

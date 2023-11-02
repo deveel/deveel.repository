@@ -42,6 +42,8 @@ namespace Deveel.Data {
 					}) ;
 				});
 
+			services.AddRepositoryTenantResolver<TenantInfo>();
+
 			AddMongoDbContext(services);
 			
 			services.AddRepositoryController();
@@ -51,7 +53,7 @@ namespace Deveel.Data {
 			//var builder = services.AddMongoTenantContext();
 			//builder.UseTenantConnection();
 
-			services.AddRepositoryProvider<MongoRepositoryProvider<MongoDbTenantContext, MongoTenantPerson, TenantInfo>>();
+			services.AddRepositoryProvider<MongoRepositoryProvider<MongoDbTenantContext, MongoTenantPerson>>();
 		}
 
         protected override async Task InitializeAsync() {

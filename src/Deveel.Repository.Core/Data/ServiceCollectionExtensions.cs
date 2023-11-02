@@ -89,7 +89,30 @@ namespace Deveel.Data {
 			return services;
 		}
 
-        public static IServiceCollection AddRepositoryProvider<TProvider>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+		/// <summary>
+		/// Registers a repository of the given type in the service collection.
+		/// </summary>
+		/// <typeparam name="TProvider">
+		/// The type of the repository to register.
+		/// </typeparam>
+		/// <param name="services">
+		/// The service collection to register the repository.
+		/// </param>
+		/// <param name="lifetime">
+		/// the lifetime of the repository in the service collection.
+		/// </param>
+		/// <returns>
+		/// Returns the same <see cref="IServiceCollection"/> to allow chaining.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the given <typeparamref name="TProvider"/> is not
+		/// a class or is abstract.
+		/// </exception>
+		/// <exception cref="RepositoryException">
+		/// Thrown when the given <typeparamref name="TProvider"/> is not a valid
+		/// repository type.
+		/// </exception>
+		public static IServiceCollection AddRepositoryProvider<TProvider>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
             where TProvider : class
 			=> services.AddRepositoryProvider(typeof(TProvider), lifetime);
 

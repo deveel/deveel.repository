@@ -32,35 +32,30 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of the entity to be managed by the repository.
 	/// </typeparam>
-	/// <typeparam name="TKey">
-	/// The type of the key of the entity to be managed by the repository.
-	/// </typeparam>
-	/// <typeparam name="TTenantInfo">
-	/// The type of the tenant information to be used to create the context
-	/// </typeparam>
-	public class MongoRepositoryProvider<TContext, TEntity, TKey, TTenantInfo> : MongoRepositoryProviderBase<TContext, TEntity, TTenantInfo>,
-		IRepositoryProvider<TEntity, TKey>
+	public class MongoRepositoryProvider<TContext, TEntity> : MongoRepositoryProviderBase<TContext, TEntity>,
+		IRepositoryProvider<TEntity>
 		where TContext : class, IMongoDbContext
-		where TTenantInfo : class, ITenantInfo, new()
 		where TEntity : class {
 
 		/// <summary>
 		/// Constructs the provider with a given set of stores to be used to
 		/// resolve the tenant information and connection string.
 		/// </summary>
-		/// <param name="stores">
-		/// The set of stores to be used to resolve the tenant information
-		/// and connection string.
+		/// <param name="tenantResolver">
+		/// A service to be used to resolve the tenant information.
 		/// </param>
 		/// <param name="loggerFactory">
 		/// A factory to create the logger to be used by the repository.
 		/// </param>
 		public MongoRepositoryProvider(
-			IEnumerable<IMultiTenantStore<TTenantInfo>>? stores = null,
-			ILoggerFactory? loggerFactory = null) : base(stores, loggerFactory) {
+			IRepositoryTenantResolver tenantResolver,
+			ILoggerFactory? loggerFactory = null) : base(tenantResolver, loggerFactory) {
 		}
 
-		async Task<IRepository<TEntity, TKey>> IRepositoryProvider<TEntity, TKey>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken)
+		async Task<IRepository<TEntity, object>> IRepositoryProvider<TEntity, object>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken) 
+			=> await GetRepositoryAsync(tenantId, cancellationToken);
+
+		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, System.Threading.CancellationToken cancellationToken)
 			=> await GetRepositoryAsync(tenantId, cancellationToken);
 
 		/// <summary>
@@ -75,11 +70,12 @@ namespace Deveel.Data {
 		/// </param>
 		/// <returns></returns>
 		/// <exception cref="RepositoryException"></exception>
-		public async Task<MongoRepository<TEntity, TKey>> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken = default) {
-			return await GetRepositoryAsync<MongoRepository<TEntity, TKey>>(tenantId, cancellationToken);
+		public async Task<MongoRepository<TEntity>> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken = default) {
+			return await GetRepositoryAsync<MongoRepository<TEntity>>(tenantId, cancellationToken);
 		}
 
-		internal override object CreateRepositoryInternal(TContext context) => CreateRepository(context);
+		internal override object CreateRepositoryInternal(TContext context) =>
+			CreateRepository(context);
 
 		/// <summary>
 		/// Creates an instance of <see cref="MongoRepository{TEntity}"/> for
@@ -95,8 +91,8 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="MongoRepository{TEntity}"/> that
 		/// can be used to manage the entity of type <typeparamref name="TEntity"/>.
 		/// </returns>
-		protected virtual MongoRepository<TEntity, TKey> CreateRepository(TContext context, ILogger logger) {
-			return new MongoRepository<TEntity, TKey>(context, logger);
+		protected virtual MongoRepository<TEntity> CreateRepository(TContext context, ILogger logger) {
+			return new MongoRepository<TEntity>(context, logger);
 		}
 
 		/// <summary>
@@ -109,8 +105,8 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="MongoRepository{TEntity}"/> that
 		/// is used to manage the entity of type <typeparamref name="TEntity"/>.
 		/// </returns>
-		protected virtual MongoRepository<TEntity, TKey> CreateRepository(TContext context) {
-			return CreateRepository(context, CreateLogger());
-		}
+        protected virtual MongoRepository<TEntity> CreateRepository(TContext context) {
+            return CreateRepository(context, CreateLogger());
+        }
 	}
 }

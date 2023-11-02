@@ -30,21 +30,13 @@ namespace Deveel.Data {
 	/// <typeparam name="TEntity">
 	/// The type of entity managed by the repository
 	/// </typeparam>
-	/// <typeparam name="TKey">
-	/// The type of the key of the entity managed by the repository.
-	/// </typeparam>
 	/// <typeparam name="TContext">
 	/// The type of <see cref="DbContext"/> used to manage the entities
 	/// </typeparam>
-	/// <typeparam name="TTenantInfo">
-	/// The type of the tenant that is is ued to resolve the context
-	/// of the tenant.
-	/// </typeparam>
-	public class EntityRepositoryProvider<TContext, TEntity, TKey, TTenantInfo> : EntityRepositoryProviderBase<TContext, TEntity, TTenantInfo>,
-		IRepositoryProvider<TEntity, TKey>
-		where TContext : DbContext
-		where TEntity : class
-		where TTenantInfo : class, ITenantInfo, new() {
+	public class EntityRepositoryProvider<TContext, TEntity> : EntityRepositoryProviderBase<TContext, TEntity>,
+		IRepositoryProvider<TEntity>
+        where TContext : DbContext
+        where TEntity : class {
 
 		/// <summary>
 		/// Constructs the provider with the given options factory
@@ -54,17 +46,17 @@ namespace Deveel.Data {
 		/// A service that is used to create the options for the context
 		/// and a specific tenant.
 		/// </param>
-		/// <param name="tenantStores">
-		/// A list of the available stores to retrieve the tenants from.
+		/// <param name="tenantResolver">
+		/// A service that is used to resolve the tenant for a given context.
 		/// </param>
 		/// <param name="loggerFactory">
 		/// A factory to create loggers for the repositories.
 		/// </param>
-		public EntityRepositoryProvider(
+        public EntityRepositoryProvider(
 			IDbContextOptionsFactory<TContext> optionsFactory,
-			IEnumerable<IMultiTenantStore<TTenantInfo>> tenantStores,
-			ILoggerFactory? loggerFactory = null) : base(optionsFactory, tenantStores, loggerFactory) {
-		}
+			IRepositoryTenantResolver tenantResolver,
+			ILoggerFactory? loggerFactory = null) : base(optionsFactory, tenantResolver, loggerFactory) {
+        }
 
 		/// <summary>
 		/// Constructs the provider with the given options and 
@@ -74,17 +66,17 @@ namespace Deveel.Data {
 		/// The instance of options that are used to create the context
 		/// for the tenants.
 		/// </param>
-		/// <param name="tenantStores">
-		/// The list of stores to retrieve the tenants from.
+		/// <param name="tenantResolver">
+		/// A service that is used to resolve the tenant for a given context.
 		/// </param>
 		/// <param name="loggerFactory">
 		/// A factory to create loggers for the repositories.
 		/// </param>
 		public EntityRepositoryProvider(
 			DbContextOptions<TContext> options,
-			IEnumerable<IMultiTenantStore<TTenantInfo>> tenantStores,
-			ILoggerFactory? loggerFactory = null)
-			: base(options, tenantStores, loggerFactory) {
+			IRepositoryTenantResolver tenantResolver,
+			ILoggerFactory? loggerFactory = null) 
+			: base(options, tenantResolver, loggerFactory) {
 
 		}
 
@@ -105,11 +97,14 @@ namespace Deveel.Data {
 		/// Thrown when the tenant was not found or the repository could not be
 		/// constructed with the given tenant.
 		/// </exception>
-		protected virtual async Task<EntityRepository<TEntity, TKey>> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken = default) {
-			return await base.GetRepositoryAsync<EntityRepository<TEntity, TKey>>(tenantId);
-		}
+        protected virtual async Task<EntityRepository<TEntity>> GetRepositoryAsync(string tenantId, CancellationToken cancellationToken = default) {
+			return await base.GetRepositoryAsync<EntityRepository<TEntity>>(tenantId);
+        }
 
-		async Task<IRepository<TEntity, TKey>> IRepositoryProvider<TEntity, TKey>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken)
+		async Task<IRepository<TEntity>> IRepositoryProvider<TEntity>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken)
+			=> await GetRepositoryAsync(tenantId, cancellationToken);
+
+		async Task<IRepository<TEntity, object>> IRepositoryProvider<TEntity, object>.GetRepositoryAsync(string tenantId, CancellationToken cancellationToken)
 			=> await GetRepositoryAsync(tenantId, cancellationToken);
 
 		/// <summary>
@@ -120,11 +115,11 @@ namespace Deveel.Data {
 		/// </param>
 		/// <param name="tenantInfo"></param>
 		/// <returns></returns>
-		protected virtual EntityRepository<TEntity, TKey> CreateRepository(TContext dbContext, ITenantInfo tenantInfo) {
-			var logger = CreateLogger();
-			return new EntityRepository<TEntity, TKey>(dbContext, tenantInfo, logger);
-		}
+		protected virtual EntityRepository<TEntity> CreateRepository(TContext dbContext, ITenantInfo tenantInfo) {
+            var logger = base.CreateLogger();
+            return new EntityRepository<TEntity>(dbContext, tenantInfo, logger);
+        }
 
-		internal override object CreateRepositoryInternal(TContext context, TTenantInfo tenant) => CreateRepository(context, tenant);
+		internal override object CreateRepositoryInternal(TContext context, ITenantInfo tenant) => CreateRepository(context, tenant);
 	}
 }
