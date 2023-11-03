@@ -108,6 +108,17 @@ namespace Deveel.Data {
 						services.Add(new ServiceDescriptor(managerType, managerType, lifetime));
 
 					break;
+				} else if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(EntityManager<,>)) {
+					var entityType = baseType.GetGenericArguments()[0];
+					var keyType = baseType.GetGenericArguments()[1];
+					var compareType = typeof(EntityManager<,>).MakeGenericType(entityType, keyType);
+
+					services.TryAdd(new ServiceDescriptor(compareType, managerType, lifetime));
+
+					if (compareType != managerType)
+						services.Add(new ServiceDescriptor(managerType, managerType, lifetime));
+
+					break;
 				}
 
 				if (baseType == typeof(object))
@@ -252,7 +263,8 @@ namespace Deveel.Data {
 		/// </returns>
 		/// <seealso cref="AddEntityValidator(IServiceCollection, Type, ServiceLifetime)"/>
 		public static IServiceCollection AddEntityValidator<TValidator>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
-			where TValidator : class => AddEntityValidator(services, typeof(TValidator), lifetime);
+			where TValidator : class 
+			=> AddEntityValidator(services, typeof(TValidator), lifetime);
 
 		/// <summary>
 		/// Adds an entity validator service in the collection of services.
@@ -274,6 +286,11 @@ namespace Deveel.Data {
 			foreach (var interfaceType in interfaceTypes) {
 				if (interfaceType.GetGenericTypeDefinition() == typeof(IEntityValidator<>)) {
 					var compareType = typeof(IEntityValidator<>).MakeGenericType(interfaceType.GetGenericArguments()[0]);
+
+					services.TryAdd(new ServiceDescriptor(compareType, validatorType, lifetime));
+				} else if (interfaceType.GetGenericTypeDefinition() == typeof(IEntityValidator<,>)) {
+					var argTypes = interfaceType.GetGenericArguments();
+					var compareType = typeof(IEntityValidator<,>).MakeGenericType(argTypes[0], argTypes[1]);
 
 					services.TryAdd(new ServiceDescriptor(compareType, validatorType, lifetime));
 				}

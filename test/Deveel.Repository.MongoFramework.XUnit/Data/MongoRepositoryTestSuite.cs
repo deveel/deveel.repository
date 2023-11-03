@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Deveel.Data {
 	[Collection(nameof(MongoSingleDatabaseCollection))]
-	public abstract class MongoRepositoryTestSuite<TPerson> : RepositoryTestSuite<TPerson, MongoPersonRelationship> 
+	public abstract class MongoRepositoryTestSuite<TPerson> : RepositoryTestSuite<TPerson, ObjectId, MongoPersonRelationship> 
 		where TPerson : MongoPerson {
 		private MongoSingleDatabase mongo;
 
@@ -25,7 +25,7 @@ namespace Deveel.Data {
 
 		// protected string DatabaseName => "test_db";
 
-		protected override string GeneratePersonId() => ObjectId.GenerateNewId().ToString();
+		protected override ObjectId GeneratePersonId() => ObjectId.GenerateNewId();
 
 		protected override Faker<MongoPersonRelationship> RelationshipFaker => new MongoPersonRelationshipFaker();
 
@@ -51,14 +51,14 @@ namespace Deveel.Data {
 
 		protected override async Task InitializeAsync() {
 			var controller = Services.GetRequiredService<IRepositoryController>();
-			await controller.CreateRepositoryAsync<MongoPerson>();
+			await controller.CreateRepositoryAsync<MongoPerson, ObjectId>();
 
 			await base.InitializeAsync();
 		}
 
 		protected override async Task DisposeAsync() {
 			var controller = Services.GetRequiredService<IRepositoryController>();
-			await controller.DropRepositoryAsync<MongoPerson>();
+			await controller.DropRepositoryAsync<MongoPerson, ObjectId>();
 
 			await base.DisposeAsync();
 		}
@@ -67,7 +67,7 @@ namespace Deveel.Data {
 		public async Task FindByObjectId() {
 			var person = await RandomPersonAsync();
 
-			var found = await Repository.FindByKeyAsync(person.Id);
+			var found = await Repository.FindAsync(person.Id);
 
 			Assert.NotNull(found);
 			Assert.Equal(person.Id, found.Id);
@@ -77,7 +77,7 @@ namespace Deveel.Data {
 		public async Task FindByObjectId_NotExisting() {
 			var personId = ObjectId.GenerateNewId();
 
-			var found = await Repository.FindByKeyAsync(personId.ToString());
+			var found = await Repository.FindAsync(personId);
 
 			Assert.Null(found);
 		}

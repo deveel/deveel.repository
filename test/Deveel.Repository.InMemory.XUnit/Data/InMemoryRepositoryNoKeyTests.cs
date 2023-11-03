@@ -5,8 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-	public class InMemoryRepositoryTests : RepositoryTestSuite<Person, string, PersonRelationship> {
-		public InMemoryRepositoryTests(ITestOutputHelper outputHelper) : base(outputHelper) {
+	public class InMemoryRepositoryNoKeyTests : RepositoryTestSuite<Person, PersonRelationship> {
+		public InMemoryRepositoryNoKeyTests(ITestOutputHelper outputHelper) : base(outputHelper) {
 		}
 
 		protected override Faker<Person> PersonFaker { get; } = new PersonFaker();

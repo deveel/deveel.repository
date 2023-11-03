@@ -622,7 +622,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<TEntity?> FindByKeyAsync(TKey key, CancellationToken cancellationToken = default) {
+		public async Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -660,7 +660,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public async Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
 				var entities = query.Apply(DbSet.AsQueryable());
 				return await entities.FirstOrDefaultAsync(cancellationToken);

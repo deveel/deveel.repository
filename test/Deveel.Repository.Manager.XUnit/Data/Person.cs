@@ -4,7 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Deveel.Data {
-	public class Person : IHaveTimeStamp {
+	public class Person : IPerson<string>, IPerson {
 		[Key]
 		public string? Id { get; set; }
 
@@ -12,14 +12,18 @@ namespace Deveel.Data {
 
 		public string LastName { get; set;}
 
-		public DateTime? BirthDate { get; set; }
+		public DateTime? DateOfBirth { get; set; }
 
 		public string? Email { get; set; }
 
-		public string? Phone { get; set; }
+		public string? PhoneNumber { get; set; }
 
 		public DateTimeOffset? CreatedAtUtc { get; set; }
 
 		public DateTimeOffset? UpdatedAtUtc { get; set; }
+
+		public List<PersonRelationship> Relationships { get; set; } = new List<PersonRelationship>();
+
+		IEnumerable<IRelationship> IPerson<string>.Relationships => Relationships;
 	}
 }

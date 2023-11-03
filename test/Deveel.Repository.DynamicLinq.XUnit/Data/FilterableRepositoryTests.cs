@@ -79,14 +79,14 @@
 			var person = RandomPerson();
 			var expected = persons.FirstOrDefault(x => x.FirstName == person.FirstName);
 
-			var result = await repository.FindAsync($"x.FirstName == \"{person.FirstName}\"");
+			var result = await repository.FindFirstAsync<Person>($"x.FirstName == \"{person.FirstName}\"");
 
 			Assert.Equal(expected, result);
 		}
 
 		[Fact]
 		public async Task Find_WithInvalidExpression() {
-			await Assert.ThrowsAsync<InvalidOperationException>(() => repository.FindAsync("x.FirstName"));
+			await Assert.ThrowsAsync<InvalidOperationException>(() => repository.FindFirstAsync<Person>("x.FirstName"));
 		}
 
 		[Fact]

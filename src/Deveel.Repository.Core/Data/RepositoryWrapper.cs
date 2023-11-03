@@ -116,7 +116,7 @@ namespace Deveel.Data {
 			return Task.CompletedTask;
 		}
 
-		public Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) {
+		public Task<TEntity?> FindAsync(object key, CancellationToken cancellationToken = default) {
 			var entity = entities.FirstOrDefault(x => GetEntityKey(x) == key);
 			return Task.FromResult<TEntity?>(entity);
 		}
@@ -191,7 +191,7 @@ namespace Deveel.Data {
 			return Task.FromResult(true);
 		}
 
-		public Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
 			TEntity? result;
 
 			if (entities is IQueryable<TEntity> queryable) {

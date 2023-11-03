@@ -10,8 +10,9 @@ using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-	public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifetime 
-		where TPerson : class, IPerson
+	public abstract class RepositoryTestSuite<TPerson, TKey, TRelationship> : IAsyncLifetime 
+		where TPerson : class, IPerson<TKey>
+		where TKey : notnull
 		where TRelationship : class, IRelationship {
 		private IServiceProvider? services;
 		private AsyncServiceScope scope;
@@ -30,7 +31,7 @@ namespace Deveel.Data {
 
 		protected IServiceProvider Services => scope.ServiceProvider;
 
-		protected virtual IRepository<TPerson> Repository => Services.GetRequiredService<IRepository<TPerson>>();
+		protected virtual IRepository<TPerson, TKey> Repository => Services.GetRequiredService<IRepository<TPerson, TKey>>();
 
 		protected abstract Faker<TPerson> PersonFaker { get; }
 
@@ -44,7 +45,7 @@ namespace Deveel.Data {
 
 		protected IList<TPerson> GeneratePeople(int count) => PersonFaker.Generate(count);
 
-		protected virtual string GeneratePersonId() => Guid.NewGuid().ToString();
+		protected abstract TKey GeneratePersonId();
 
 		protected virtual void ConfigureServices(IServiceCollection services) {
 			if (TestOutput != null)
@@ -86,7 +87,7 @@ namespace Deveel.Data {
 			return Task.CompletedTask;
 		}
 
-		protected virtual async Task SeedAsync(IRepository<TPerson> repository) {
+		protected virtual async Task SeedAsync(IRepository<TPerson, TKey> repository) {
 			if (People != null)
 				await repository.AddRangeAsync(People);
 		}
@@ -100,7 +101,7 @@ namespace Deveel.Data {
 		protected abstract Task RemoveRelationshipAsync(TPerson person, TRelationship relationship);
 
 		protected virtual Task<TPerson?> FindPersonAsync(object id) {
-			var entity = People?.FirstOrDefault(x => Repository.GetEntityKey(x) == id);
+			var entity = People?.FirstOrDefault(x => Repository.GetEntityKey(x)?.Equals(id) ?? false);
 			return Task.FromResult(entity);
 		}
 
@@ -123,7 +124,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(id);
 
-			var found = await Repository.FindByKeyAsync(id);
+			var found = await Repository.FindAsync(id);
 			Assert.NotNull(found);
 			Assert.Equal(person.FirstName, found.FirstName);
 			Assert.Equal(person.LastName, found.LastName);
@@ -140,7 +141,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(id);
 
-			var found = await Repository.FindByKeyAsync(id);
+			var found = await Repository.FindAsync(id);
 			
 			Assert.NotNull(found);
 			Assert.Equal(person.FirstName, found.FirstName);
@@ -158,7 +159,7 @@ namespace Deveel.Data {
 				var key = Repository.GetEntityKey(item);
 				Assert.NotNull(key);
 
-				var found = await Repository.FindByKeyAsync(key);
+				var found = await Repository.FindAsync(key);
 				Assert.NotNull(found);
 			}
 		}
@@ -301,7 +302,7 @@ namespace Deveel.Data {
 			var person = await RandomPersonAsync();
 			var id = person.Id!;
 
-			var result = await Repository.FindByKeyAsync(id);
+			var result = await Repository.FindAsync(id);
 
 			Assert.NotNull(result);
 			Assert.Equal(id, result.Id);
@@ -373,7 +374,7 @@ namespace Deveel.Data {
 		public async Task FindByKey_Existing() {
 			var person = await RandomPersonAsync();
 
-			var result = await Repository.FindByKeyAsync(person.Id!);
+			var result = await Repository.FindAsync(person.Id!);
 
 			Assert.NotNull(result);
 			Assert.Equal(person.Id, result.Id);
@@ -386,7 +387,7 @@ namespace Deveel.Data {
 		public async Task FindByKey_NotFound() {
 			var id = GeneratePersonId();
 
-			var result = await Repository.FindByKeyAsync(id);
+			var result = await Repository.FindAsync(id);
 
 			Assert.Null(result);
 		}
@@ -395,7 +396,7 @@ namespace Deveel.Data {
 		public async Task FindByKey_Sync() {
 			var person = await RandomPersonAsync();
 
-			var result = Repository.FindByKey(person.Id!);
+			var result = Repository.Find(person.Id!);
 
 			Assert.NotNull(result);
 			Assert.Equal(person.Id, result.Id);
@@ -407,7 +408,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(person);
 
-			var result = await Repository.FindByKeyAsync(person.Id!);
+			var result = await Repository.FindAsync(person.Id!);
 
 			Assert.NotNull(result);
 			Assert.NotNull(result.Relationships);
@@ -659,14 +660,14 @@ namespace Deveel.Data {
 			var id = Repository.GetEntityKey(person);
 
 			Assert.NotNull(id);
-			Assert.Equal(person.Id, id.ToString());
+			Assert.Equal(person.Id, id);
 		}
 
 		[Fact]
 		public async Task UpdateExisting() {
 			var person = await RandomPersonAsync(x => x.FirstName != "John");
 
-			var toUpdate = await Repository.FindByKeyAsync(person.Id!);
+			var toUpdate = await Repository.FindAsync(person.Id!);
 
 			Assert.NotNull(toUpdate);
 
@@ -676,7 +677,7 @@ namespace Deveel.Data {
 
 			Assert.True(result);
 
-			var updated = await Repository.FindByKeyAsync(person.Id!);
+			var updated = await Repository.FindAsync(person.Id!);
 
 			Assert.NotNull(updated);
 			Assert.Equal(toUpdate.FirstName, updated.FirstName);
@@ -689,7 +690,7 @@ namespace Deveel.Data {
 		public async Task UpdateExisting_Sync() {
 			var person = await RandomPersonAsync(x => x.FirstName != "John");
 
-			var toUpdate = await Repository.FindByKeyAsync(person.Id!);
+			var toUpdate = await Repository.FindAsync(person.Id!);
 
 			Assert.NotNull(toUpdate);
 
@@ -699,7 +700,7 @@ namespace Deveel.Data {
 
 			Assert.True(result);
 
-			var updated = await Repository.FindByKeyAsync(person.Id!);
+			var updated = await Repository.FindAsync(person.Id!);
 
 			Assert.NotNull(updated);
 			Assert.Equal(toUpdate.FirstName, updated.FirstName);
@@ -723,13 +724,13 @@ namespace Deveel.Data {
 		public async Task UpdateExisting_NoChange() {
 			var person = await RandomPersonAsync();
 
-			var toUpdate = await Repository.FindByKeyAsync(person.Id!);
+			var toUpdate = await Repository.FindAsync(person.Id!);
 
 			Assert.NotNull(toUpdate);
 
 			await Repository.UpdateAsync(toUpdate);
 
-			var updated = await Repository.FindByKeyAsync(person.Id!);
+			var updated = await Repository.FindAsync(person.Id!);
 			Assert.NotNull(updated);
 			Assert.Equal(toUpdate, updated);
 		}
@@ -742,7 +743,7 @@ namespace Deveel.Data {
 
 			var relationship = GenerateRelationship();
 
-			var toUpdate = await Repository.FindByKeyAsync(person.Id!);
+			var toUpdate = await Repository.FindAsync(person.Id!);
 
 			Assert.NotNull(toUpdate);
 
@@ -752,7 +753,7 @@ namespace Deveel.Data {
 
 			Assert.True(result);
 
-			var updated = await Repository.FindByKeyAsync(person.Id!);
+			var updated = await Repository.FindAsync(person.Id!);
 
 			Assert.NotNull(updated);
 			Assert.NotNull(updated.Relationships);
@@ -766,7 +767,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(person);
 
-			var toUpdate = await Repository.FindByKeyAsync(person.Id!);
+			var toUpdate = await Repository.FindAsync(person.Id!);
 
 			Assert.NotNull(toUpdate);
 
@@ -778,7 +779,7 @@ namespace Deveel.Data {
 
 			Assert.True(result);
 
-			var updated = await Repository.FindByKeyAsync(person.Id!);
+			var updated = await Repository.FindAsync(person.Id!);
 			Assert.NotNull(updated);
 			Assert.NotNull(updated.Relationships);
 			Assert.Equal(relCount - 1, updated.Relationships.Count());

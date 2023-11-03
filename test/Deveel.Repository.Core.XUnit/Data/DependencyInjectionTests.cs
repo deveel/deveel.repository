@@ -36,7 +36,7 @@ namespace Deveel.Data {
 
 		public Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) => Repository.AddAsync(entity, cancellationToken);
 		public Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) => Repository.AddRangeAsync(entities, cancellationToken);
-		public Task<TEntity?> FindByKeyAsync(object key, CancellationToken cancellationToken = default) => Repository.FindByKeyAsync(key, cancellationToken);
+		public Task<TEntity?> FindAsync(object key, CancellationToken cancellationToken = default) => Repository.FindAsync(key, cancellationToken);
 		public object? GetEntityKey(TEntity entity) => Repository.GetEntityKey(entity);
 		public Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) => Repository.RemoveAsync(entity, cancellationToken);
 		public Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) => Repository.RemoveRangeAsync(entities, cancellationToken);

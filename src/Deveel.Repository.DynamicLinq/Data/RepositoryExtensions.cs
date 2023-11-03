@@ -55,6 +55,36 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity to find in the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository to perform the search.
+		/// </param>
+		/// <param name="paramName">
+		/// The name of the parameter to use in the expression.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <typeparamref name="TEntity"/> that matches the given expression,
+		/// otherwise <c>null</c> if no entity is found.
+		/// </returns>
+		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+			where TEntity : class
+			=> repository.FindFirstAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
+
+
+		/// <summary>
+		/// Finds a single entity in the repository that matches the given dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to find in the repository.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The repository to perform the search.
 		/// </param>
@@ -68,9 +98,36 @@ namespace Deveel.Data {
 		/// Returns an instance of <typeparamref name="TEntity"/> that matches the given expression,
 		/// otherwise <c>null</c> if no entity is found.
 		/// </returns>
-		public static Task<TEntity?> FindAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
+		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindFirstAsync(new DynamicLinqFilter(expression), cancellationToken);
+
+		/// <summary>
+		/// Finds a single entity in the repository that matches the given dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to find in the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository to perform the search.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <typeparamref name="TEntity"/> that matches the given expression,
+		/// otherwise <c>null</c> if no entity is found.
+		/// </returns>
+		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
+			where TEntity : class
+			=> repository.FindFirstAsync(new DynamicLinqFilter(expression), cancellationToken);
+
 
 		#endregion
 
@@ -104,6 +161,37 @@ namespace Deveel.Data {
 			=> repository.FindAllAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
 		/// <summary>
+		/// Finds all the entities in the repository that match the given 
+		/// dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to find in the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository to perform the search.
+		/// </param>
+		/// <param name="paramName">
+		/// The name of the parameter to use in the expression.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a list of <typeparamref name="TEntity"/> that match the 
+		/// given expression.
+		/// </returns>
+		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+			where TEntity : class
+			=> repository.FindAllAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
+
+
+		/// <summary>
 		/// Finds all the entities in the repository that match the given
 		/// dynamic LINQ expression.
 		/// </summary>
@@ -126,6 +214,34 @@ namespace Deveel.Data {
 		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindAllAsync(new DynamicLinqFilter(expression), cancellationToken);
+
+		/// <summary>
+		/// Finds all the entities in the repository that match the given
+		/// dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to find in the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository to perform the search.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a list of <typeparamref name="TEntity"/> that match the
+		/// given expression.
+		/// </returns>
+		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
+			where TEntity : class
+			=> repository.FindAllAsync(new DynamicLinqFilter(expression), cancellationToken);
+
 
 		#endregion
 
@@ -159,6 +275,37 @@ namespace Deveel.Data {
 			=> repository.AsFilterable().CountAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
 		/// <summary>
+		/// Counts the number of entities in the repository that match 
+		/// the given dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to count in the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository that contains the entities 
+		/// to count.
+		/// </param>
+		/// <param name="paramName">
+		/// The name of the parameter to use in the expression.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the number of entities that match the given expression.
+		/// </returns>
+		public static Task<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+			where TEntity : class
+			=> repository.AsFilterable().CountAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
+
+
+		/// <summary>
 		/// Counts the number of entities in the repository that match
 		/// the given dynamic LINQ expression.
 		/// </summary>
@@ -181,6 +328,34 @@ namespace Deveel.Data {
 		public static Task<long> CountAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.AsFilterable().CountAsync(new DynamicLinqFilter(expression), cancellationToken);
+
+		/// <summary>
+		/// Counts the number of entities in the repository that match
+		/// the given dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to count in the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository that contains the entities
+		/// to be counted.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A cancellation token that can be used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the number of entities that match the given expression.
+		/// </returns>
+		public static Task<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
+			where TEntity : class
+			=> repository.AsFilterable().CountAsync(new DynamicLinqFilter(expression), cancellationToken);
+
 
 		#endregion
 

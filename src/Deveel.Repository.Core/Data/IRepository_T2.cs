@@ -145,6 +145,6 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the provided <paramref name="key"/> is <c>null</c>
 		/// </exception>
-		Task<TEntity?> FindByKeyAsync(TKey key, CancellationToken cancellationToken = default);
+		Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default);
 	}
 }

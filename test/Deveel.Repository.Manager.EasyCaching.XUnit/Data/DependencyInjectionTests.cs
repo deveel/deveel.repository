@@ -96,9 +96,9 @@ namespace Deveel.Data {
 					Id = cached.Id,
 					FirstName = cached.FirstName,
 					LastName = cached.LastName,
-					BirthDate = cached.BirthDate,
+					DateOfBirth = cached.DateOfBirth,
 					Email = cached.Email,
-					Phone = cached.Phone
+					PhoneNumber = cached.PhoneNumber
 				};
 			}
 
@@ -107,9 +107,9 @@ namespace Deveel.Data {
 					Id = entity.Id,
 					FirstName = entity.FirstName,
 					LastName = entity.LastName,
-					BirthDate = entity.BirthDate,
+					DateOfBirth = entity.DateOfBirth,
 					Email = entity.Email,
-					Phone = entity.Phone
+					PhoneNumber = entity.PhoneNumber
 				};
 			}
 		}

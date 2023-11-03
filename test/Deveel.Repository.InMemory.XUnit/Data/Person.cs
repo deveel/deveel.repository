@@ -4,7 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Deveel.Data {
-	public class Person : IPerson {
+	public class Person : IPerson<string>, IPerson {
 		public string FirstName { get; set; }
 
 		public string LastName { get; set; }
@@ -24,7 +24,7 @@ namespace Deveel.Data {
 
 		public List<PersonRelationship> Relationships { get; set; }
 
-		IEnumerable<IRelationship> IPerson.Relationships => Relationships ?? Enumerable.Empty<IRelationship>();
+		IEnumerable<IRelationship> IPerson<string>.Relationships => Relationships ?? Enumerable.Empty<IRelationship>();
 	}
 
 	public class PersonRelationship : IRelationship {

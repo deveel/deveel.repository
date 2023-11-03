@@ -185,7 +185,7 @@ namespace Deveel.Data {
 			get {
 				ThrowIfDisposed();
 
-				return (Repository is IPageableRepository<TEntity>);
+				return (Repository is IPageableRepository<TEntity, TKey>);
 			}
 		}
 
@@ -198,11 +198,11 @@ namespace Deveel.Data {
 		/// <exception cref="ObjectDisposedException">
 		/// Throws when the service has been disposed.
 		/// </exception>
-		protected virtual IPageableRepository<TEntity> PageableRepository {
+		protected virtual IPageableRepository<TEntity, TKey> PageableRepository {
 			get {
 				ThrowIfDisposed();
 
-				if (!(Repository is IPageableRepository<TEntity> pageable))
+				if (!(Repository is IPageableRepository<TEntity, TKey> pageable))
 					throw new NotSupportedException("The repository does not support paging");
 
 				return pageable;
@@ -219,7 +219,7 @@ namespace Deveel.Data {
 			get {
 				ThrowIfDisposed();
 
-				return (Repository is IQueryableRepository<TEntity>);
+				return (Repository is IQueryableRepository<TEntity, TKey>);
 			}
 		}
 
@@ -237,7 +237,7 @@ namespace Deveel.Data {
 			get {
 				ThrowIfDisposed();
 
-				if (!(Repository is IQueryableRepository<TEntity> queryable))
+				if (!(Repository is IQueryableRepository<TEntity, TKey> queryable))
 					throw new NotSupportedException("The repository does not support queries");
 
 				return queryable.AsQueryable();
@@ -254,7 +254,7 @@ namespace Deveel.Data {
 			get {
 				ThrowIfDisposed();
 
-				return (Repository is IFilterableRepository<TEntity>);
+				return (Repository is IFilterableRepository<TEntity, TKey>);
 			}
 		}
 
@@ -267,11 +267,11 @@ namespace Deveel.Data {
 		/// <exception cref="ObjectDisposedException">
 		/// Thrown when the service has been disposed.
 		/// </exception>
-		protected virtual IFilterableRepository<TEntity> FilterableRepository {
+		protected virtual IFilterableRepository<TEntity, TKey> FilterableRepository {
 			get {
 				ThrowIfDisposed();
 
-				if (!(Repository is IFilterableRepository<TEntity> filterable))
+				if (!(Repository is IFilterableRepository<TEntity, TKey> filterable))
 					throw new NotSupportedException("The repository does not support filters");
 
 				return filterable;
@@ -627,7 +627,7 @@ namespace Deveel.Data {
 		/// <remarks>
 		/// This overload of the method uses the <see cref="GenerateCacheKey(TKey)"/>
 		/// to generate the cache key for the given entity key, and
-		/// it is better suited to be used by the <see cref="FindByKeyAsync(TKey, CancellationToken?)"/>
+		/// it is better suited to be used by the <see cref="FindAsync(TKey, CancellationToken?)"/>
 		/// methods and its overridden implementations.
 		/// </remarks>
 		/// <returns>
@@ -862,14 +862,14 @@ namespace Deveel.Data {
 			var entityKey = GetEntityKey(entity);
 
 			try {
-				if (entityKey == null)
+				if (entityKey == null || Equals(entityKey, default(TKey)))
 					return Fail(EntityErrorCodes.NotValid, "The entity does not have a valid key");
 
 				Logger.LogUpdatingEntity(typeof(TEntity), entityKey);
 
 				var token = GetCancellationToken(cancellationToken);
 
-				var existing = await FindByKeyAsync(entityKey, token);
+				var existing = await FindAsync(entityKey, token);
 				if (existing == null) {
 					LogEntityNotFound(entityKey);
 					return Fail(EntityErrorCodes.NotFound);
@@ -936,14 +936,14 @@ namespace Deveel.Data {
 			var entityKey = GetEntityKey(entity);
 
 			try {
-				if (entityKey == null)
+				if (entityKey == null || Equals(default(TKey), entityKey))
 					return Fail(EntityErrorCodes.NotValid, "The entity does not have a valid key");
 
 				var token = GetCancellationToken(cancellationToken);
 
 				Logger.LogRemovingEntity(typeof(TEntity), entityKey);
 
-				var found = await FindByKeyAsync(entityKey, token);
+				var found = await FindAsync(entityKey, token);
 				if (found == null) {
 					LogEntityNotFound(entityKey);
 					return Fail(EntityErrorCodes.NotFound);
@@ -1020,7 +1020,7 @@ namespace Deveel.Data {
 		/// </exception>
 		// TODO: Is there any use case for using OperationResult<TEntity> here
 		//       instead of returning an entity?
-		public virtual async Task<TEntity?> FindByKeyAsync(TKey key, CancellationToken? cancellationToken = null) {
+		public virtual async Task<TEntity?> FindAsync(TKey key, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			ArgumentNullException.ThrowIfNull(key, nameof(key));
@@ -1029,7 +1029,7 @@ namespace Deveel.Data {
 				Logger.LogFindingEntityByKey(typeof(TEntity), key);
 
 				var token = GetCancellationToken(cancellationToken);
-				var result = await GetOrSetByKeyAsync(key, () => Repository.FindByKeyAsync(key, token), token);
+				var result = await GetOrSetByKeyAsync(key, () => Repository.FindAsync(key, token), token);
 
 				if (result == null) {
 					Logger.LogEntityNotFound(typeof(TEntity), key);
@@ -1066,7 +1066,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown when the given filter is <c>null</c>.
 		/// </exception>
-		/// <seealso cref="IFilterableRepository{TEntity,TKey}.FindAsync(IQuery, CancellationToken)"/>
+		/// <seealso cref="IFilterableRepository{TEntity,TKey}.FindFirstAsync(IQuery, CancellationToken)"/>
 		// TODO: Is there any use case for using OperationResult<TEntity> here
 		//       instead of returning the entity?
 		public virtual async Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken? cancellationToken = null) {
@@ -1078,7 +1078,7 @@ namespace Deveel.Data {
 			try {
 				Logger.LogFindingFirstEntityByQuery(typeof(TEntity));
 
-				return await FilterableRepository.FindAsync(query, GetCancellationToken(cancellationToken));
+				return await FilterableRepository.FindFirstAsync(query, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogUnknownError(ex);
 				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);

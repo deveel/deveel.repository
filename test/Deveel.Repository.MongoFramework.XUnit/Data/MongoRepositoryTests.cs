@@ -31,7 +31,7 @@ namespace Deveel.Data {
 				})
 				.AddRepositoryController();
 
-			services.AddRepository<MongoRepository<MongoPerson>>();
+			services.AddRepository<MongoRepository<MongoPerson, ObjectId>>();
 		}
 
 		protected async Task<MongoPerson?> FindPerson(ObjectId id) {

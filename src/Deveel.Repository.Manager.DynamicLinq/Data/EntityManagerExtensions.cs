@@ -44,6 +44,35 @@ namespace Deveel.Data {
 			=> manager.FindFirstAsync(new Query(new DynamicLinqFilter(expression)), cancellationToken);
 
 		/// <summary>
+		/// Finds the first entity in the repository that matches the given
+		/// dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to find.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
+		/// <param name="manager">
+		/// The entity manager to use to find the entity.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entity.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the first entity that matches the given expression, or
+		/// <c>null</c> if no entity was found.
+		/// </returns>
+		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this EntityManager<TEntity, TKey> manager, string expression, CancellationToken? cancellationToken = null)
+			where TEntity : class
+			where TKey : notnull
+			=> manager.FindFirstAsync(new Query(new DynamicLinqFilter(expression)), cancellationToken);
+
+
+		/// <summary>
 		/// Finds a range of entities in the repository that matches the given
 		/// dynamic LINQ expression.
 		/// </summary>
@@ -67,6 +96,34 @@ namespace Deveel.Data {
 			=> manager.FindAllAsync(new Query(new DynamicLinqFilter(expression)), cancellationToken);
 
 		/// <summary>
+		/// Finds a range of entities in the repository that matches the given
+		/// dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to find.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
+		/// <param name="manager">
+		/// The entity manager to use to find the entity.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entity.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a list of entities that matches the given expression.
+		/// </returns>
+		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this EntityManager<TEntity, TKey> manager, string expression, CancellationToken? cancellationToken = null)
+			where TEntity : class
+			where TKey : notnull
+			=> manager.FindAllAsync(new Query(new DynamicLinqFilter(expression)), cancellationToken);
+
+
+		/// <summary>
 		/// Counts the number of entities in the repository that matches the
 		/// dynamic LINQ expression.
 		/// </summary>
@@ -88,5 +145,33 @@ namespace Deveel.Data {
 		public static Task<long> CountAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
 			where TEntity : class
 			=> manager.CountAsync(new DynamicLinqFilter(expression), cancellationToken);
+
+		/// <summary>
+		/// Counts the number of entities in the repository that matches the
+		/// dynamic LINQ expression.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of the entity to count.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
+		/// <param name="manager">
+		/// The entity manager to use to count the entities.
+		/// </param>
+		/// <param name="expression">
+		/// The dynamic LINQ expression to use to filter the entity.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the number of entities that matches the given expression.
+		/// </returns>
+		public static Task<long> CountAsync<TEntity, TKey>(this EntityManager<TEntity, TKey> manager, string expression, CancellationToken? cancellationToken = null)
+			where TEntity : class
+			where TKey : notnull
+			=> manager.CountAsync(new DynamicLinqFilter(expression), cancellationToken);
+
 	}
 }

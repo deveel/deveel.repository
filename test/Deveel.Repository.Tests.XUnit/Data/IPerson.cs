@@ -1,6 +1,6 @@
 ﻿namespace Deveel.Data {
-	public interface IPerson {
-		string? Id { get; set; }
+	public interface IPerson<TKey> : IHaveTimeStamp where TKey : notnull {
+		TKey? Id { get; set; }
 
 		string FirstName { get; set; }
 
@@ -13,5 +13,8 @@
 		string? PhoneNumber { get; set; }
 
 		IEnumerable<IRelationship> Relationships { get; }
+	}
+
+	public interface IPerson : IPerson<string> {
 	}
 }

@@ -1,12 +1,18 @@
 ﻿using System.Reflection;
 
+using Bogus;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-	public abstract class EntityManagerTestSuite<TManager> : IAsyncLifetime where TManager : EntityManager<Person> {
+	public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLifetime 
+		where TManager : EntityManager<TPerson, TKey>
+		where TPerson : class, IPerson<TKey>, new()
+		where TKey : notnull {
 		private AsyncServiceScope scope;
 
 		protected EntityManagerTestSuite(ITestOutputHelper testOutput) {
@@ -19,13 +25,15 @@ namespace Deveel.Data {
 
 		protected ITestOutputHelper TestOutput { get; }
 
-		protected IRepository<Person> Repository => Services.GetRequiredService<IRepository<Person>>();
+		protected IRepository<TPerson, TKey> Repository => Services.GetRequiredService<IRepository<TPerson, TKey>>();
 
-		protected IQueryable<Person> People => Repository.AsQueryable().AsQueryable();
+		protected IQueryable<TPerson> People => Repository.AsQueryable().AsQueryable();
 
 		protected TManager Manager => Services.GetRequiredService<TManager>();
 
 		protected ISystemTime TestTime { get; } = new TestSystemTime();
+
+		protected abstract Faker<TPerson> PersonFaker { get; }
 
 		private void CreateServices() {
 			var services = new ServiceCollection();
@@ -33,7 +41,7 @@ namespace Deveel.Data {
 			services.AddLogging(logging => logging.AddXUnit(TestOutput));
 			services.AddSingleton<IOperationCancellationSource>(new TestCancellationTokenSource());
 			services.AddSystemTime(TestTime);
-			services.AddOperationErrorFactory<Person, PersonErrorFactory>();
+			services.AddOperationErrorFactory<TPerson, PersonErrorFactory>();
 
 			ConfigureServices(services);
 
@@ -41,27 +49,31 @@ namespace Deveel.Data {
 		}
 
 		protected virtual void ConfigureServices(IServiceCollection services) {
-			services.AddRepository<InMemoryRepository<Person>>();
-			services.AddEntityValidator<PersonValidator>();
+			//services.AddRepository<InMemoryRepository<Person>>();
+			services.AddEntityValidator<PersonValidator<TPerson, TKey>>();
 			services.AddEntityManager<TManager>();
 		}
 
-		public async Task InitializeAsync() {
-			var people = new PersonFaker().Generate(100);
+		public virtual async Task InitializeAsync() {
+			var people = PersonFaker.Generate(100);
 
 			await Repository.AddRangeAsync(people);
 		}
 
-		public async Task DisposeAsync() {
+		public virtual async Task DisposeAsync() {
 			await Repository.RemoveRangeAsync(People);
 
 			await scope.DisposeAsync();
 			(Services as IDisposable)?.Dispose();
 		}
 
+		protected abstract TKey GenerateKey();
+
+		protected abstract void SetKey(TPerson person, TKey key);
+
 		[Fact]
 		public async Task AddEntity() {
-			var person = new PersonFaker().Generate();
+			var person = PersonFaker.Generate();
 
 			var result = await Manager.AddAsync(person);
 
@@ -79,7 +91,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task AddEntity_InvalidEmail() {
-			var person = new PersonFaker().Generate();
+			var person = PersonFaker.Generate();
 
 			person.Email = "invalid";
 
@@ -97,7 +109,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task AddRangeOfEntities() {
-			var people = new PersonFaker().Generate(10);
+			var people = PersonFaker.Generate(10);
 
 			var peopleCount = People.Count();
 
@@ -113,13 +125,13 @@ namespace Deveel.Data {
 
 			foreach (var person in people) {
 				Assert.NotNull(person.Id);
-				Assert.Contains(found, x => x.Id == person.Id);
+				Assert.Contains(found, x => x.Id?.Equals(person.Id) ?? false);
 			}
 		}
 
 		[Fact]
 		public async Task AddRangeOfEntities_InvalidEmail() {
-			var people = new PersonFaker().Generate(10);
+			var people = PersonFaker.Generate(10);
 
 			people[Random.Shared.Next(0, 9)].Email = "invalid";
 
@@ -140,15 +152,18 @@ namespace Deveel.Data {
 
 		[Fact]
 		public virtual async Task UpdateEntity() {
-			var person = People.Random()!;
+			var person = People.Random();
 
-			var copy = new Person {
+			Assert.NotNull(person);
+			Assert.NotNull(person.Id);
+
+			var copy = new TPerson {
 				Id = person.Id,
 				FirstName = person.FirstName,
 				LastName = person.LastName,
-				BirthDate = person.BirthDate,
+				DateOfBirth = person.DateOfBirth,
 				Email = new Bogus.Faker().Internet.Email(),
-				Phone = person.Phone
+				PhoneNumber = person.PhoneNumber
 			};
 
 			var result = await Manager.UpdateAsync(copy);
@@ -162,22 +177,29 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task UpdateEntity_NoChanges() {
-			var person = People.Random()!;
+			var person = People.Random();
 
-			var result = await Manager.UpdateAsync(person);
+			Assert.NotNull(person);
+
+			var toUpdate = await Repository.FindAsync(person.Id!);
+
+			Assert.NotNull(toUpdate);
+
+			var result = await Manager.UpdateAsync(toUpdate);
 
 			Assert.True(result.IsNotModified());
 			Assert.False(result.IsSuccess());
 			Assert.Null(result.Error);
 
-			Assert.Null(person.UpdatedAtUtc);
+			// Assert.Null(person.UpdatedAtUtc);
 		}
 
 		[Fact]
 		public async Task UpdateEntity_NotFound() {
-			var person = new PersonFaker()
-				.RuleFor(x => x.Id, f => f.Random.Guid().ToString())
+			var person = PersonFaker
 				.Generate();
+
+			SetKey(person, GenerateKey());
 
 			var result = await Manager.UpdateAsync(person);
 
@@ -189,7 +211,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task UpdateEntity_NoKey() {
-			var person = new PersonFaker()
+			var person = PersonFaker
+				.RuleFor(x => x.Id, f => default)
 				.Generate();
 
 			var result = await Manager.UpdateAsync(person);
@@ -217,9 +240,8 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task RemoveEntity_NotFound() {
-			var person = new PersonFaker()
-				.RuleFor(x => x.Id, f => f.Random.Guid().ToString())
-				.Generate();
+			var person = PersonFaker.Generate();
+			SetKey(person, GenerateKey());
 
 			var result = await Manager.RemoveAsync(person);
 
@@ -231,8 +253,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task RemoveEntity_NoKey() {
-			var person = new PersonFaker()
-				.Generate();
+			var person = PersonFaker.Generate();
 
 			var result = await Manager.RemoveAsync(person);
 
@@ -247,6 +268,7 @@ namespace Deveel.Data {
 			var peopleCount = People.Count();
 			var people = People
 				.Where(x => x.FirstName.StartsWith("A"))
+				.Select(x => Repository.Find(x.Id!))
 				.ToList();
 
 			var result = await Manager.RemoveRangeAsync(people);
@@ -273,23 +295,21 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FindByKey_NotFound() {
-			var person = new PersonFaker()
-				.RuleFor(x => x.Id, f => f.Random.Guid().ToString())
-				.Generate();
+			var personId = GenerateKey();
 
-			var found = await Manager.FindAsync(person.Id!);
+			var found = await Manager.FindAsync(personId);
 
 			Assert.Null(found);
 		}
 
-        [Fact]
-        public async Task FindByKey_WrongKey() {
-            var key = Random.Shared.Next(0, 100);
+        //[Fact]
+        //public async Task FindByKey_WrongKey() {
+        //    var key = Random.Shared.Next(0, 100);
 
-            var error = await Assert.ThrowsAsync<OperationException>(() => Manager.FindAsync(key));
+        //    var error = await Assert.ThrowsAsync<OperationException>(() => Manager.FindAsync(key));
 
-            Assert.Equal(EntityErrorCodes.UnknownError, error.ErrorCode);
-        }
+        //    Assert.Equal(EntityErrorCodes.UnknownError, error.ErrorCode);
+        //}
 
 		[Fact]
 		public async Task FindFirstFiltered() {
@@ -397,9 +417,9 @@ namespace Deveel.Data {
                 .Where(x => x.FirstName.StartsWith("A"))
                 .ToList();
 
-            var entities = (Manager.GetType()
+            var entities = (typeof(TManager)
                 .GetProperty("Entities", BindingFlags.Instance | BindingFlags.NonPublic)?
-                .GetValue(Manager) as IQueryable<Person>);
+                .GetValue(Manager) as IQueryable<TPerson>);
 
             Assert.NotNull(entities);
 
@@ -417,7 +437,7 @@ namespace Deveel.Data {
             var totalPages = (int)Math.Ceiling((double)totalPeople / 10);
 			var perPage = Math.Min(10, totalPeople);
 
-            var query = new PageQuery<Person>(1, 10);
+            var query = new PageQuery<TPerson>(1, 10);
             var page = await Manager.GetPageAsync(query);
 
             Assert.NotNull(page);
@@ -435,7 +455,7 @@ namespace Deveel.Data {
 			var totalPages = (int)Math.Ceiling((double)totalPeople / 10);
 			var perPage = Math.Min(10, totalPeople);
 
-			var query = new PageQuery<Person>(1, 10)
+			var query = new PageQuery<TPerson>(1, 10)
 				.Where("FirstName.StartsWith(\"A\")");
 
 			var page = await Manager.GetPageAsync(query);

@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Deveel.Data {
 	[Collection(nameof(SqlConnectionCollection))]
-	public class EntityRepositoryTestSuite : RepositoryTestSuite<DbPerson, DbRelationship> {
+	public class EntityRepositoryTestSuite : RepositoryTestSuite<DbPerson, Guid, DbRelationship> {
 		private readonly SqlTestConnection sql;
 
 		public EntityRepositoryTestSuite(SqlTestConnection sql, ITestOutputHelper? testOutput) : base(testOutput) {
@@ -21,6 +21,8 @@ namespace Deveel.Data {
 		protected override Faker<DbRelationship> RelationshipFaker => new DbPersonRelationshipFaker();
 
 		protected DbPersonRepository PersonRepository => (DbPersonRepository)Repository;
+
+		protected override Guid GeneratePersonId() => Guid.NewGuid();
 
 		protected override Task AddRelationshipAsync(DbPerson person, DbRelationship relationship) {
 			if (person.Relationships == null)
@@ -76,7 +78,7 @@ namespace Deveel.Data {
 		public async Task FindByKey_WithRelationships() {
 			var person = await RandomPersonAsync(x => x.Relationships != null);
 
-			var found = await Repository.FindByKeyAsync(person.Id!);
+			var found = await Repository.FindAsync(person.Id!);
 
 			Assert.NotNull(found);
 			Assert.NotNull(found.Relationships);
@@ -88,12 +90,12 @@ namespace Deveel.Data {
 			var newEmail = new Faker().Internet.Email();
 			var person = await RandomPersonAsync(x => x.Email != newEmail);
 
-			var toUpdate = await PersonRepository.FindByKeyAsync(person.Id!);
+			var toUpdate = await PersonRepository.FindAsync(person.Id!);
 
 			await PersonRepository.SetEmailAsync(toUpdate!, newEmail);
 			Assert.True(await PersonRepository.UpdateAsync(toUpdate!));
 
-			var updated = await PersonRepository.FindByKeyAsync(person.Id!);
+			var updated = await PersonRepository.FindAsync(person.Id!);
 
 			Assert.NotNull(updated);
 			Assert.Equal(newEmail, updated.Email);

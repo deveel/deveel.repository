@@ -4,6 +4,8 @@ using Finbuckle.MultiTenant;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using MongoDB.Bson;
+
 using MongoFramework;
 
 using Xunit.Abstractions;
@@ -19,10 +21,10 @@ namespace Deveel.Data {
 
 		protected string TenantId { get; } = Guid.NewGuid().ToString("N");
 
-		protected IRepositoryProvider<MongoTenantPerson> RepositoryProvider => 
-			Services.GetRequiredService<IRepositoryProvider<MongoTenantPerson>>();
+		protected IRepositoryProvider<MongoTenantPerson, ObjectId> RepositoryProvider => 
+			Services.GetRequiredService<IRepositoryProvider<MongoTenantPerson, ObjectId>>();
 
-		protected override IRepository<MongoTenantPerson> Repository => 
+		protected override IRepository<MongoTenantPerson, ObjectId> Repository => 
 			RepositoryProvider.GetRepository(TenantId);
 
 		protected override void ConfigureServices(IServiceCollection services) {
@@ -53,12 +55,12 @@ namespace Deveel.Data {
 			//var builder = services.AddMongoTenantContext();
 			//builder.UseTenantConnection();
 
-			services.AddRepositoryProvider<MongoRepositoryProvider<MongoDbTenantContext, MongoTenantPerson>>();
+			services.AddRepositoryProvider<MongoRepositoryProvider<MongoDbTenantContext, MongoTenantPerson, ObjectId>>();
 		}
 
         protected override async Task InitializeAsync() {
 			var controller = Services.GetRequiredService<IRepositoryController>();
-			await controller.CreateTenantRepositoryAsync<MongoTenantPerson>(TenantId);
+			await controller.CreateTenantRepositoryAsync<MongoTenantPerson, ObjectId>(TenantId);
 
 			var repository = await RepositoryProvider.GetRepositoryAsync(TenantId);
 			
@@ -67,7 +69,7 @@ namespace Deveel.Data {
 
 		protected override async Task DisposeAsync() {
 			var controller = Services.GetRequiredService<IRepositoryController>();
-			await controller.DropTenantRepositoryAsync<MongoTenantPerson>(TenantId);
+			await controller.DropTenantRepositoryAsync<MongoTenantPerson, ObjectId>(TenantId);
 		}
 	}
 }

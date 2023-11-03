@@ -85,6 +85,37 @@ namespace Deveel.Data {
 		}
 
 		/// <summary>
+		/// Gets a version of the repository that is filterable
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to filter
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to get the filterable version.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="IFilterableRepository{TEntity}"/>
+		/// that can be used to filter the entities in the repository.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository is not filterable
+		/// </exception>
+		public static IFilterableRepository<TEntity, TKey> AsFilterable<TEntity, TKey>(this IRepository<TEntity, TKey> repository)
+			where TEntity : class {
+			if (!(repository is IFilterableRepository<TEntity, TKey> filterable))
+				throw new NotSupportedException("The repository is not filterable");
+
+			// TODO: If the repository is a queryable, we can wrap it
+			//        in a filterable version, so that we can use the filter
+
+			return filterable;
+		}
+
+
+		/// <summary>
 		/// Gets a version of the repository that is queryable.
 		/// </summary>
 		/// <typeparam name="TEntity">
@@ -107,6 +138,34 @@ namespace Deveel.Data {
 
 			return queryable;
 		}
+
+		/// <summary>
+		/// Gets a version of the repository that is queryable.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to query
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to get the queryable version.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <see cref="IQueryableRepository{TEntity}"/>
+		/// if the repository is queryable, otherwise it throws an exception.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository is not queryable
+		/// </exception>
+		public static IQueryableRepository<TEntity, TKey> AsQueryable<TEntity, TKey>(this IRepository<TEntity, TKey> repository)
+			where TEntity : class {
+			if (!(repository is IQueryableRepository<TEntity, TKey> queryable))
+				throw new NotSupportedException("The repository is not queryable");
+
+			return queryable;
+		}
+
 
 		#endregion
 
@@ -133,9 +192,34 @@ namespace Deveel.Data {
             where TEntity : class
             => repository.AddAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        #endregion
+		/// <summary>
+		/// Adds a new entity in the repository synchronously
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity to add
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to create the entity
+		/// </param>
+		/// <param name="entity">
+		/// The instance of the entity to create
+		/// </param>
+		/// <returns>
+		/// Returns a string that uniquely identifies the created entity
+		/// within the underlying storage.
+		/// </returns>
+		public static void Add<TEntity, TKey>(this IRepository<TEntity, TKey> repository, TEntity entity)
+			where TEntity : class
+			where TKey : notnull
+			=> repository.AddAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        #region Remove
+
+		#endregion
+
+		#region Remove
 
 		/// <summary>
 		/// Removes an entity from the repository synchronously
@@ -154,9 +238,35 @@ namespace Deveel.Data {
 		/// otherwise <c>false</c>.
 		/// </returns>
 		/// <seealso cref="IRepository{TEntity,TKey}.RemoveAsync(TEntity, CancellationToken)"/>
-        public static bool Remove<TEntity>(this IRepository<TEntity> repository, TEntity entity)
+		public static bool Remove<TEntity>(this IRepository<TEntity> repository, TEntity entity)
             where TEntity : class
             => repository.RemoveAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Removes an entity from the repository synchronously
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository from which the entity is removed
+		/// </param>
+		/// <param name="entity">
+		/// The instance of the entity to remove
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the entity was removed successfully,
+		/// otherwise <c>false</c>.
+		/// </returns>
+		/// <seealso cref="IRepository{TEntity,TKey}.RemoveAsync(TEntity, CancellationToken)"/>
+		public static bool Remove<TEntity, TKey>(this IRepository<TEntity, TKey> repository, TEntity entity)
+			where TEntity : class
+			where TKey : notnull
+			=> repository.RemoveAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
+
 
 		/// <summary>
 		/// Removes an entity, identified by the given key,
@@ -178,14 +288,46 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the entity was removed successfully,
 		/// otherwise it returns <c>false</c>.
 		/// </returns>
-        public static async Task<bool> RemoveByKeyAsync<TEntity>(this IRepository<TEntity> repository, object key, CancellationToken cancellationToken = default)
+		public static async Task<bool> RemoveByKeyAsync<TEntity>(this IRepository<TEntity> repository, object key, CancellationToken cancellationToken = default)
             where TEntity : class {
-            var entity = await repository.FindByKeyAsync(key, cancellationToken);
+            var entity = await repository.FindAsync(key, cancellationToken);
             if (entity == null)
                 return false;
 
             return await repository.RemoveAsync(entity, cancellationToken);
         }
+
+		/// <summary>
+		/// Removes an entity, identified by the given key,
+		/// from the repository
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository from which the entity is removed
+		/// </param>
+		/// <param name="key">
+		/// The key that uniquely identifies the entity to remove
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the entity was removed successfully,
+		/// otherwise it returns <c>false</c>.
+		/// </returns>
+		public static async Task<bool> RemoveByKeyAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, TKey key, CancellationToken cancellationToken = default)
+			where TEntity : class {
+			var entity = await repository.FindAsync(key, cancellationToken);
+			if (entity == null)
+				return false;
+
+			return await repository.RemoveAsync(entity, cancellationToken);
+		}
 
 		/// <summary>
 		/// Synchronously removes an entity, identified by the given key,
@@ -205,13 +347,36 @@ namespace Deveel.Data {
 		/// otherwise it returns <c>false</c>.
 		/// </returns>
 		/// <seealso cref="IRepository{TEntity,TKey}.RemoveAsync(TEntity, CancellationToken)"/>
-        public static bool RemoveByKey<TEntity>(this IRepository<TEntity> repository, object key)
+		public static bool RemoveByKey<TEntity>(this IRepository<TEntity> repository, object key)
             where TEntity : class
             => repository.RemoveByKeyAsync(key).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        #endregion
+		/// <summary>
+		/// Synchronously removes an entity, identified by the given key,
+		/// from the repository
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository from which the entity is removed.
+		/// </param>
+		/// <param name="key">
+		/// The key that uniquely identifies the entity to remove.
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the entity was removed successfully,
+		/// otherwise it returns <c>false</c>.
+		/// </returns>
+		/// <seealso cref="IRepository{TEntity,TKey}.RemoveAsync(TEntity, CancellationToken)"/>
+		public static bool RemoveByKey<TEntity, TKey>(this IRepository<TEntity, TKey> repository, TKey key)
+			where TEntity : class
+			=> repository.RemoveByKeyAsync(key).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        #region Update
+
+		#endregion
+
+		#region Update
 
 		/// <summary>
 		/// Updates an entity in the repository synchronously
@@ -229,13 +394,37 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the entity was updated successfully,
 		/// otherwise <c>false</c>.
 		/// </returns>
-        public static bool Update<TEntity>(this IRepository<TEntity> repository, TEntity entity)
+		public static bool Update<TEntity>(this IRepository<TEntity> repository, TEntity entity)
             where TEntity : class
             => repository.UpdateAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        #endregion
+		/// <summary>
+		/// Updates an entity in the repository synchronously
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository from which the entity is updated
+		/// </param>
+		/// <param name="entity">
+		/// The instance of the entity to update
+		/// </param>
+		/// <returns>
+		/// Returns <c>true</c> if the entity was updated successfully,
+		/// otherwise <c>false</c>.
+		/// </returns>
+		public static bool Update<TEntity, TKey>(this IRepository<TEntity, TKey> repository, TEntity entity)
+			where TEntity : class
+			=> repository.UpdateAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
 
-        #region GetPage
+
+		#endregion
+
+		#region GetPage
 
 		/// <summary>
 		/// Gets a page of entities from the repository,
@@ -623,7 +812,7 @@ namespace Deveel.Data {
 
 		#endregion
 
-		#region FindById
+		#region Find
 
 		/// <summary>
 		/// Finds a single entity in the repository, given the key
@@ -646,10 +835,10 @@ namespace Deveel.Data {
 		/// is identified by the given key, or <c>null</c> if no entity
 		/// with the given key exists in the repository.
 		/// </returns>
-		/// <seealso cref="IRepository{TEntity, TKey}.FindByKeyAsync(TKey, CancellationToken)"/>
-		public static TEntity? FindByKey<TEntity, TKey>(this IRepository<TEntity, TKey> repository, TKey key)
+		/// <seealso cref="IRepository{TEntity, TKey}.FindAsync(TKey, CancellationToken)"/>
+		public static TEntity? Find<TEntity, TKey>(this IRepository<TEntity, TKey> repository, TKey key)
             where TEntity : class
-            => repository.FindByKeyAsync(key).ConfigureAwait(false).GetAwaiter().GetResult();
+            => repository.FindAsync(key).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		#endregion
 
@@ -686,7 +875,7 @@ namespace Deveel.Data {
 		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQuery query, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
-				return repository.RequireFilterable().FindAsync(query, cancellationToken);
+				return repository.RequireFilterable().FindFirstAsync(query, cancellationToken);
 			if (repository.IsQueryable())
 				return Task.FromResult(query.Apply(repository.RequireQueryable().AsQueryable()).FirstOrDefault());
 
@@ -774,7 +963,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
             where TEntity : class
-            => repository.RequireFilterable().FindAsync(Query.Empty, cancellationToken);
+            => repository.RequireFilterable().FindFirstAsync(Query.Empty, cancellationToken);
 
 		/// <summary>
 		/// Finds the first entity in the repository that matches

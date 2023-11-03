@@ -119,7 +119,7 @@
 
 			await repository.RemoveRangeAsync(toRemove);
 
-			Assert.True(toRemove.All(x => repository.FindByKey(x.Id!) == null));
+			Assert.True(toRemove.All(x => repository.Find(x.Id!) == null));
 			Assert.Equal(personCount - toRemove.Count, persons.Count);
 		}
 

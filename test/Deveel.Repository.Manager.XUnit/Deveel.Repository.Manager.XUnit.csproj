@@ -5,9 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Data\EntityManagerTestSuite_1.cs" />
+    <Compile Remove="Data\PersonValidator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Deveel.Repository.InMemory\Deveel.Repository.InMemory.csproj" />
-    <ProjectReference Include="..\..\src\Deveel.Repository.Manager.DynamicLinq\Deveel.Repository.Manager.DynamicLinq.csproj" />
-    <ProjectReference Include="..\..\src\Deveel.Repository.Manager\Deveel.Repository.Manager.csproj" />
+    <ProjectReference Include="..\Deveel.Repository.Management.Tests\Deveel.Repository.Management.Tests.csproj" />
     <ProjectReference Include="..\Deveel.Repository.Test.Utils\Deveel.Repository.Test.Utils.csproj" />
   </ItemGroup>
 
