@@ -278,6 +278,63 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <summary>
+		/// Gets a value indicating if the repository supports
+		/// tracking entity changes that are returned.
+		/// </summary>
+		public virtual bool SupportsTracking {
+			get {
+				ThrowIfDisposed();
+
+				return (Repository is ITrackingRepository<TEntity, TKey>);
+			}
+		}
+
+		/// <summary>
+		/// Gets a value indicating if the repository is tracking
+		/// entity changes that are returned.
+		/// </summary>
+		public virtual bool IsTrackingChanges {
+			get {
+				ThrowIfDisposed();
+
+				return (Repository is ITrackingRepository<TEntity, TKey> tracking) &&
+					tracking.IsTrackingChanges;
+			}
+		}
+
+		/// <summary>
+		/// Gets the repository that supports tracking entity changes.
+		/// </summary>
+		protected virtual ITrackingRepository<TEntity, TKey> TrackingRepository {
+			get {
+				ThrowIfDisposed();
+
+				if (!(Repository is ITrackingRepository<TEntity, TKey> tracking))
+					throw new NotSupportedException("The repository does not support tracking");
+
+				return tracking;
+			}
+		}
+
+		/// <summary>
+		/// Gets a service that is used to compare entities
+		/// </summary>
+		protected virtual IEqualityComparer<TEntity> EntityComparer {
+			get {
+				ThrowIfDisposed();
+
+				if (Repository is IEqualityComparer<TEntity> comparerRepository)
+					return comparerRepository;
+
+				var comparer = Services?.GetService<IEqualityComparer<TEntity>>();
+				if (comparer != null)
+					return comparer;
+
+				return EqualityComparer<TEntity>.Default;
+			}
+		}
+
 		// shortcut to the logger method
 		private void LogUnknownError(Exception ex) {
 			Logger.LogUnknownError(typeof(TEntity), ex);
@@ -817,13 +874,17 @@ namespace Deveel.Data {
 			if (existing == null)
 				return false;
 
-			if (Repository is IEqualityComparer<TEntity> comparer)
-				return comparer.Equals(existing, other);
-
 			if (typeof(IEquatable<TEntity>).IsAssignableFrom(typeof(TEntity)))
 				return ((IEquatable<TEntity>)existing).Equals(other);
 
-			return existing.Equals(other);
+			return EntityComparer.Equals(existing, other);
+		}
+
+		private Task<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken) {
+			if (SupportsTracking && IsTrackingChanges)
+				return TrackingRepository.FindOriginalAsync(key, cancellationToken);
+
+			return FindAsync(key, cancellationToken);
 		}
 
 		/// <summary>
@@ -869,7 +930,7 @@ namespace Deveel.Data {
 
 				var token = GetCancellationToken(cancellationToken);
 
-				var existing = await FindAsync(entityKey, token);
+				var existing = await FindOriginalAsync(entityKey, token);
 				if (existing == null) {
 					LogEntityNotFound(entityKey);
 					return Fail(EntityErrorCodes.NotFound);

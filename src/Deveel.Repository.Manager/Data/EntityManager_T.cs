@@ -64,6 +64,27 @@ namespace Deveel.Data {
 			ILoggerFactory? loggerFactory = null) : base(repository, WrapValidator(validator), cache, systemTime, errorFactory, services, loggerFactory) {
 		}
 
+		/// <inheritdoc/>
+		public override bool IsTrackingChanges {
+			get {
+				ThrowIfDisposed();
+
+				return (Repository is ITrackingRepository<TEntity> trackingRepository);
+			}
+		}
+
+		/// <inheritdoc/>
+		protected override ITrackingRepository<TEntity, object> TrackingRepository {
+			get {
+				ThrowIfDisposed();
+
+				if (!(Repository is ITrackingRepository<TEntity> trackingRepository))
+					throw new InvalidOperationException("The repository is not tracking changes.");
+
+				return trackingRepository;
+			}
+		}
+
 		private static IEntityValidator<TEntity, object>? WrapValidator(IEntityValidator<TEntity>? validator) => 
 			validator == null ? null : new EntityValidatorWrapper(validator);
 

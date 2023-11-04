@@ -10,9 +10,9 @@ using MongoFramework;
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-	public class MongoRepositoryTests : MongoRepositoryTestSuite<MongoPerson> {
+	public class MongoRepositoryNoKeyTests : MongoRepositoryNoKeyTestSuite<MongoPerson> {
 
-		public MongoRepositoryTests(MongoSingleDatabase mongo, ITestOutputHelper outputHelper) : base(mongo, outputHelper) {
+		public MongoRepositoryNoKeyTests(MongoSingleDatabase mongo, ITestOutputHelper outputHelper) : base(mongo, outputHelper) {
 		}
 
 		protected override Faker<MongoPerson> PersonFaker { get; } = new MongoPersonFaker();
@@ -25,12 +25,12 @@ namespace Deveel.Data {
 
 		protected virtual void AddRepository(IServiceCollection services) {
 			services
-				.AddMongoDbContext<MongoDbContext>(builder => { 
+				.AddMongoDbContext<MongoDbContext>(builder => {
 					builder.UseConnection(ConnectionString);
 				})
 				.AddRepositoryController();
 
-			services.AddRepository<MongoRepository<MongoPerson, ObjectId>>();
+			services.AddRepository<MongoRepository<MongoPerson>>();
 		}
 
 		protected async Task<MongoPerson?> FindPerson(ObjectId id) {

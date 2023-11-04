@@ -659,7 +659,7 @@ namespace Deveel.Data {
 			var id = Repository.GetEntityKey(person);
 
 			Assert.NotNull(id);
-			Assert.Equal(person.Id, id);
+			Assert.Equal(person.Id, id?.ToString());
 		}
 
 		[Fact]

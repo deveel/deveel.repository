@@ -50,6 +50,7 @@ namespace Deveel.Data {
 
 		protected virtual void ConfigureServices(IServiceCollection services) {
 			//services.AddRepository<InMemoryRepository<Person>>();
+			services.AddSingleton<IEqualityComparer<TPerson>, PersonComparer<TPerson, TKey>>();
 			services.AddEntityValidator<PersonValidator<TPerson, TKey>>();
 			services.AddEntityManager<TManager>();
 		}
@@ -151,28 +152,21 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
-		public virtual async Task UpdateEntity() {
+		public async Task UpdateEntity() {
 			var person = People.Random();
 
 			Assert.NotNull(person);
 			Assert.NotNull(person.Id);
 
-			var copy = new TPerson {
-				Id = person.Id,
-				FirstName = person.FirstName,
-				LastName = person.LastName,
-				DateOfBirth = person.DateOfBirth,
-				Email = new Bogus.Faker().Internet.Email(),
-				PhoneNumber = person.PhoneNumber
-			};
+			person.Email = new Bogus.Faker().Internet.Email();
 
-			var result = await Manager.UpdateAsync(copy);
+			var result = await Manager.UpdateAsync(person);
 
 			Assert.False(result.IsValidationError());
 			Assert.True(result.IsSuccess());
 
-			Assert.NotNull(copy.UpdatedAtUtc);
-			Assert.Equal(TestTime.UtcNow, copy.UpdatedAtUtc.Value);
+			Assert.NotNull(person.UpdatedAtUtc);
+			Assert.Equal(TestTime.UtcNow, person.UpdatedAtUtc.Value);
 		}
 
 		[Fact]
@@ -181,11 +175,13 @@ namespace Deveel.Data {
 
 			Assert.NotNull(person);
 
-			var toUpdate = await Repository.FindAsync(person.Id!);
+			//var toUpdate = await Repository.FindAsync(person.Id!);
 
-			Assert.NotNull(toUpdate);
+			//Assert.NotNull(toUpdate);
 
-			var result = await Manager.UpdateAsync(toUpdate);
+			// var result = await Manager.UpdateAsync(toUpdate);
+
+			var result = await Manager.UpdateAsync(person);
 
 			Assert.True(result.IsNotModified());
 			Assert.False(result.IsSuccess());

@@ -126,7 +126,9 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="IList{TEntity}"/> that
 		/// is the result of the search.
 		/// </returns>
-		/// <exception cref="ArgumentException"></exception>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the given repository is not a <see cref="MongoRepository{TEntity}"/>.
+		/// </exception>
 		public static Task<IList<TEntity>> FindAllByGeoDistanceAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, object>> field, GeoPoint point, double? maxDistance = null)
 			where TEntity : class {
 			ArgumentNullException.ThrowIfNull(repository, nameof(repository));

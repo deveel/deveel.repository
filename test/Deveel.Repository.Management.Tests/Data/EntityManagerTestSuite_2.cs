@@ -154,14 +154,11 @@ namespace Deveel.Data {
 			Assert.NotNull(person);
 			Assert.NotNull(person.Id);
 
-			var copy = new TPerson {
-				Id = person.Id,
-				FirstName = person.FirstName,
-				LastName = person.LastName,
-				DateOfBirth = person.DateOfBirth,
-				Email = new Bogus.Faker().Internet.Email(),
-				PhoneNumber = person.PhoneNumber
-			};
+			var copy = (TPerson) (typeof(TPerson)
+				.GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic)!
+				.Invoke(person, new object[0])!);
+
+			copy.Email = new Bogus.Faker().Internet.Email();
 
 			var result = await Manager.UpdateAsync(copy);
 

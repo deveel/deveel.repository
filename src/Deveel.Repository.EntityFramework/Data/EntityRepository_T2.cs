@@ -39,6 +39,7 @@ namespace Deveel.Data {
 		IFilterableRepository<TEntity, TKey>,
 		IQueryableRepository<TEntity, TKey>,
 		IPageableRepository<TEntity, TKey>,
+		ITrackingRepository<TEntity, TKey>,
 		IDisposable
 		where TEntity : class {
 		private bool disposedValue;
@@ -129,6 +130,8 @@ namespace Deveel.Data {
 		/// </summary>
 		protected bool IsTrackingChanges => Entities.Local != null ||
 			Context.ChangeTracker.QueryTrackingBehavior != QueryTrackingBehavior.NoTracking;
+
+		bool ITrackingRepository<TEntity, TKey>.IsTrackingChanges => IsTrackingChanges;
 
 		/// <summary>
 		/// Gets the information about the tenant that the repository is using to access the data.
@@ -448,13 +451,29 @@ namespace Deveel.Data {
 				if (result == null)
 					return result;
 
-				if (result != null)
-					result = await OnEntityFoundByKeyAsync(key, result, cancellationToken);
+				result = await OnEntityFoundByKeyAsync(key, result, cancellationToken);
 
 				return result;
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unable to find an entity in the repository because of an error", ex);
+			}
+		}
+
+		/// <inheritdoc/>
+		public virtual async Task<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken = default) {
+			ThrowIfDisposed();
+
+			try {
+				var result = await Entities.FindAsync(new object?[] { ConvertEntityKey(key) }, cancellationToken);
+				if (result == null)
+					return result;
+
+				var entry = Context.Entry(result);
+				return (TEntity) entry.OriginalValues.ToObject();
+			} catch (Exception ex) {
+				Logger.LogUnknownError(ex, typeof(TEntity));
+				throw new RepositoryException("Unable to find an entity int he repository because of an error", ex);
 			}
 		}
 
