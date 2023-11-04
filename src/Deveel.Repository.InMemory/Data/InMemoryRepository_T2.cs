@@ -428,7 +428,7 @@ namespace Deveel.Data {
 				if (!entities.TryGetValue(entityId, out var entry))
 					return Task.FromResult(false);
 
-				entry.Entity = entity;
+				entry.Update(entity);
 				return Task.FromResult(true);
 			} catch (Exception ex) {
 				throw new RepositoryException("Unable to update the entity", ex);
@@ -467,9 +467,14 @@ namespace Deveel.Data {
 				Original = Clone(entity);
 			}
 
-			public TEntity Original { get; }
+			public TEntity Original { get; private set; }
 
-			public TEntity Entity { get; set; }
+			public TEntity Entity { get; private set; }
+
+			public void Update(TEntity entity) {
+				Original = Clone(entity);
+				Entity = entity;
+			}
 		}
 	}
 }
