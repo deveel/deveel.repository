@@ -174,20 +174,19 @@ namespace Deveel.Data {
 			var person = People.Random();
 
 			Assert.NotNull(person);
+			Assert.NotNull(person.Id);
 
-			//var toUpdate = await Repository.FindAsync(person.Id!);
+			var toUpdate = await Repository.FindAsync(person.Id);
 
-			//Assert.NotNull(toUpdate);
+			Assert.NotNull(toUpdate);
 
-			// var result = await Manager.UpdateAsync(toUpdate);
-
-			var result = await Manager.UpdateAsync(person);
+			var result = await Manager.UpdateAsync(toUpdate);
 
 			Assert.True(result.IsNotModified());
 			Assert.False(result.IsSuccess());
 			Assert.Null(result.Error);
 
-			// Assert.Null(person.UpdatedAtUtc);
+			Assert.Null(person.UpdatedAtUtc);
 		}
 
 		[Fact]
@@ -264,7 +263,7 @@ namespace Deveel.Data {
 			var peopleCount = People.Count();
 			var people = People
 				.Where(x => x.FirstName.StartsWith("A"))
-				.Select(x => Repository.Find(x.Id!))
+				// .Select(x => Repository.Find(x.Id!))
 				.ToList();
 
 			var result = await Manager.RemoveRangeAsync(people);

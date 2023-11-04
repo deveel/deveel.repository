@@ -130,6 +130,28 @@ namespace Deveel.Data {
 			return services;
 		}
 
+		/// <summary>
+		/// Adds a service that is used to create the options for the
+		/// DbContext of the given type.
+		/// </summary>
+		/// <typeparam name="TContext">
+		/// The type of the <see cref="DbContext"/> to create the options for.
+		/// </typeparam>
+		/// <param name="services">
+		/// The service collection to register the options factory into.
+		/// </param>
+		/// <param name="optionsFactory">
+		/// A function that is used to configure the options for the
+		/// instance of the <see cref="DbContext"/> to use to access the
+		/// data of the tenant.
+		/// </param>
+		/// <param name="lifetime">
+		/// The desired lifetime of the options factory in the service collection.
+		/// </param>
+		/// <returns>
+		/// Returns the service collection with the options factory registered,
+		/// for chaining.
+		/// </returns>
 		public static IServiceCollection AddDbContextOptionsFactory<TContext>(this IServiceCollection services, Action<ITenantInfo, DbContextOptionsBuilder<TContext>> optionsFactory, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TContext : DbContext {
 			services.AddSingleton<IDbContextOptionsFactory<TContext>>(new DelegatedDbContextOptionsFactory<TContext>(optionsFactory));

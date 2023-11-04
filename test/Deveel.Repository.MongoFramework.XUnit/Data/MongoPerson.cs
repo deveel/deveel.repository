@@ -16,7 +16,7 @@ namespace Deveel.Data {
 		[Key, Column("_id")]
 		public ObjectId Id { get; set; }
 
-		string IPerson<string>.Id {
+		string? IPerson<string>.Id {
 			get => Id.ToString();
 			set => Id = ObjectId.Parse(value);
 		}

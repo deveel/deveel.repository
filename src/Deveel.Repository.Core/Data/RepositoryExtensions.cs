@@ -20,22 +20,6 @@ namespace Deveel.Data {
 	/// to provide a set of utility methods to perform common operations
 	/// </summary>
 	public static class RepositoryExtensions {
-        private static IFilterableRepository<TEntity, TKey> RequireFilterable<TEntity, TKey>(this IRepository<TEntity, TKey> repository)
-            where TEntity : class {
-            if (!(repository is IFilterableRepository<TEntity, TKey> filterable))
-                throw new NotSupportedException("The repository is not filterable");
-
-            return filterable;
-        }
-
-		private static IQueryableRepository<TEntity, TKey> RequireQueryable<TEntity, TKey>(this IRepository<TEntity, TKey> repository)
-			where TEntity : class {
-			if (!(repository is IQueryableRepository<TEntity, TKey> queryable))
-				throw new NotSupportedException("The repository is not queryable");
-
-			return queryable;
-		}
-
 		private static bool IsFilterable<TEntity, TKey>(this IRepository<TEntity, TKey> repository) where TEntity : class {
 			return repository is IFilterableRepository<TEntity, TKey>;
 		}
@@ -358,6 +342,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The instance of the repository from which the entity is removed.
 		/// </param>
@@ -470,7 +457,7 @@ namespace Deveel.Data {
 			if (repository.IsPageable())
 				return repository.RequirePageable().GetPageAsync(request, cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult(repository.RequireQueryable().GetPage(request));
+				return Task.FromResult(repository.AsQueryable().GetPage(request));
 
 			throw new NotSupportedException("The repository does not support paging");
 		}
@@ -552,7 +539,7 @@ namespace Deveel.Data {
 			if (repository.IsPageable())
 				return repository.RequirePageable().GetPage(query);
 			if (repository.IsQueryable())
-				return repository.RequireQueryable().GetPage(query);
+				return repository.AsQueryable().GetPage(query);
 
 			throw new NotSupportedException("The repository does not support paging");
 		}
@@ -632,9 +619,9 @@ namespace Deveel.Data {
 		public static Task<bool> ExistsAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
-				return repository.RequireFilterable().ExistsAsync(filter, cancellationToken);
+				return repository.AsFilterable().ExistsAsync(filter, cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult(repository.RequireQueryable().AsQueryable().Any(filter.AsLambda<TEntity>()));
+				return Task.FromResult(repository.AsQueryable().AsQueryable().Any(filter.AsLambda<TEntity>()));
 
 			throw new NotSupportedException("The repository does not support querying");
 		}
@@ -726,9 +713,9 @@ namespace Deveel.Data {
         public static Task<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class {
 			if (repository.IsFilterable())
-				return repository.RequireFilterable().CountAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
+				return repository.AsFilterable().CountAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult(repository.RequireQueryable().AsQueryable().LongCount(filter));
+				return Task.FromResult(repository.AsQueryable().AsQueryable().LongCount(filter));
 
 			throw new NotSupportedException("The repository does not support querying");
 		}
@@ -758,9 +745,9 @@ namespace Deveel.Data {
 		public static Task<long> CountAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
-				return repository.RequireFilterable().CountAsync(QueryFilter.Empty, cancellationToken);
+				return repository.AsFilterable().CountAsync(QueryFilter.Empty, cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult(repository.RequireQueryable().AsQueryable().LongCount());
+				return Task.FromResult(repository.AsQueryable().AsQueryable().LongCount());
 
 			throw new NotSupportedException("The repository does not support querying");
 		}
@@ -875,9 +862,9 @@ namespace Deveel.Data {
 		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQuery query, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
-				return repository.RequireFilterable().FindFirstAsync(query, cancellationToken);
+				return repository.AsFilterable().FindFirstAsync(query, cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult(query.Apply(repository.RequireQueryable().AsQueryable()).FirstOrDefault());
+				return Task.FromResult(query.Apply(repository.AsQueryable().AsQueryable()).FirstOrDefault());
 
 			throw new NotSupportedException("The repository does not support querying");
 		}
@@ -963,7 +950,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
             where TEntity : class
-            => repository.RequireFilterable().FindFirstAsync(Query.Empty, cancellationToken);
+            => repository.AsFilterable().FindFirstAsync(Query.Empty, cancellationToken);
 
 		/// <summary>
 		/// Finds the first entity in the repository that matches
@@ -1012,7 +999,7 @@ namespace Deveel.Data {
 		/// </returns>
 		public static TEntity? FindFirst<TEntity, TKey>(this IRepository<TEntity, TKey> repository)
             where TEntity : class
-            => repository.RequireFilterable().FindFirst(QueryFilter.Empty);
+            => repository.AsFilterable().FindFirst(QueryFilter.Empty);
 
 		#endregion
 
@@ -1051,9 +1038,9 @@ namespace Deveel.Data {
 		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQuery query, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
-				return repository.RequireFilterable().FindAllAsync(query, cancellationToken);
+				return repository.AsFilterable().FindAllAsync(query, cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult<IList<TEntity>>(query.Apply(repository.RequireQueryable().AsQueryable()).ToList());
+				return Task.FromResult<IList<TEntity>>(query.Apply(repository.AsQueryable().AsQueryable()).ToList());
 
 			throw new NotSupportedException("The repository does not support querying");
 		}

@@ -1,4 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectCapability Remove="TestContainer"/>
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\src\Deveel.Repository.Manager.DynamicLinq\Deveel.Repository.Manager.DynamicLinq.csproj" />
     <ProjectReference Include="..\..\src\Deveel.Repository.Manager\Deveel.Repository.Manager.csproj" />

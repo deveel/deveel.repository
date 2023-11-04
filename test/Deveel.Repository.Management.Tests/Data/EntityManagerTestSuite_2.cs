@@ -262,7 +262,7 @@ namespace Deveel.Data {
 			var peopleCount = People.Count();
 			var people = People
 				.Where(x => x.FirstName.StartsWith("A"))
-				.Select(x => Repository.Find(x.Id!))
+				// .Select(x => Repository.Find(x.Id!))
 				.ToList();
 
 			var result = await Manager.RemoveRangeAsync(people);

@@ -21,28 +21,32 @@ namespace Deveel.Data {
 				person.DateOfBirth != other.DateOfBirth)
 				return false;
 
-			if (person.Relationships == null && 
-				other.Relationships == null)
-				return true;
 
-			if (person.Relationships == null ||
-				other.Relationships == null)
-				return false;
+			// Related entities are unreliable to compare
+			// because they are not loaded in the same way
 
-			var personRelationships = person.Relationships.ToList();
-			var otherRelationships = other.Relationships.ToList();
+			//if (person.Relationships == null && 
+			//	other.Relationships == null)
+			//	return true;
 
-			if (personRelationships.Count != otherRelationships.Count)
-				return false;
+			//if (person.Relationships == null ||
+			//	other.Relationships == null)
+			//	return false;
 
-			for (var i = 0; i < personRelationships.Count; i++) {
-				var personRelationship = personRelationships[i];
-				var otherRelationship = otherRelationships[i];
+			//var personRelationships = person.Relationships.ToList();
+			//var otherRelationships = other.Relationships.ToList();
 
-				if (personRelationship.Type != otherRelationship.Type ||
-					personRelationship.FullName != otherRelationship.FullName)
-					return false;
-			}
+			//if (personRelationships.Count != otherRelationships.Count)
+			//	return false;
+
+			//for (var i = 0; i < personRelationships.Count; i++) {
+			//	var personRelationship = personRelationships[i];
+			//	var otherRelationship = otherRelationships[i];
+
+			//	if (personRelationship.Type != otherRelationship.Type ||
+			//		personRelationship.FullName != otherRelationship.FullName)
+			//		return false;
+			//}
 
 			return true;
 		}

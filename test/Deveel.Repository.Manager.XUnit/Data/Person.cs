@@ -4,7 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Deveel.Data {
-	public class Person : IPerson<string>, IPerson {
+	public class Person : IPerson {
 		[Key]
 		public string? Id { get; set; }
 

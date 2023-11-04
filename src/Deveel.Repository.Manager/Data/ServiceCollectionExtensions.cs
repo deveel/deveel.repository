@@ -96,35 +96,43 @@ namespace Deveel.Data {
 			if (!managerType.IsClass || managerType.IsAbstract)
 				throw new ArgumentException($"The type {managerType} is not a concrete class", nameof(managerType));
 
+			var serviceTypes = new List<Type>();
+
 			var baseType = managerType;
 			while(baseType != null) {
-				if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(EntityManager<>)) {
-					var entityType = baseType.GetGenericArguments()[0];
-					var compareType = typeof(EntityManager<>).MakeGenericType(entityType);
+				if (baseType.IsGenericType) {
+					var genericType = baseType.GetGenericTypeDefinition();
+					var genericArgs = baseType.GetGenericArguments();
+					var entityType = genericArgs[0];
 
-					services.TryAdd(new ServiceDescriptor(compareType, managerType, lifetime));
+					if (genericType == typeof(EntityManager<>)) {
+						var compareType = genericType.MakeGenericType(entityType);
 
-					if (compareType != managerType)
-						services.Add(new ServiceDescriptor(managerType, managerType, lifetime));
+						serviceTypes.Add(compareType);
+					} else if (genericType == typeof(EntityManager<,>)) {
+						var keyType = genericArgs[1];
 
-					break;
-				} else if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(EntityManager<,>)) {
-					var entityType = baseType.GetGenericArguments()[0];
-					var keyType = baseType.GetGenericArguments()[1];
-					var compareType = typeof(EntityManager<,>).MakeGenericType(entityType, keyType);
+						var compareType = genericType.MakeGenericType(entityType, keyType);
 
-					services.TryAdd(new ServiceDescriptor(compareType, managerType, lifetime));
-
-					if (compareType != managerType)
-						services.Add(new ServiceDescriptor(managerType, managerType, lifetime));
-
-					break;
+						serviceTypes.Add(compareType);
+					}
 				}
 
-				if (baseType == typeof(object))
-					throw new ArgumentException($"The type {managerType} is not a valid manager type", nameof(managerType));
-
 				baseType = baseType.BaseType;
+			}
+
+			if (serviceTypes.Count == 0)
+				throw new ArgumentException($"The type {managerType} is not a valid manager type", nameof(managerType));
+
+			if (!serviceTypes.Contains(managerType))
+				serviceTypes.Add(managerType);
+
+			foreach (var serviceType in serviceTypes) {
+				if (serviceType == managerType) {
+					services.Add(ServiceDescriptor.Describe(serviceType, managerType, lifetime));
+				} else {
+					services.TryAdd(ServiceDescriptor.Describe(serviceType, managerType, lifetime));
+				}
 			}
 
 			return services;

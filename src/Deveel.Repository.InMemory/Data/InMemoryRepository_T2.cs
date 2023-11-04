@@ -120,18 +120,6 @@ namespace Deveel.Data {
 			return result;
 		}
 
-		private static TEntity Clone(TEntity entity) {
-			var cloneMethod = typeof(TEntity)
-				.GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic);
-
-			return (TEntity)cloneMethod!.Invoke(entity, new object[0])!;
-			//var serializer = new DataContractSerializer(typeof(TEntity));
-			//using var stream = new MemoryStream();
-			//serializer.WriteObject(stream, entity);
-			//stream.Position = 0;
-			//return (TEntity)serializer.ReadObject(stream)!;
-		}
-
 		/// <inheritdoc/>
 		public virtual TKey? GetEntityKey(TEntity entity) {
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
@@ -474,6 +462,13 @@ namespace Deveel.Data {
 			public void Update(TEntity entity) {
 				Original = Clone(entity);
 				Entity = entity;
+			}
+
+			private static TEntity Clone(TEntity entity) {
+				var cloneMethod = typeof(TEntity)
+					.GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic);
+
+				return (TEntity)cloneMethod!.Invoke(entity, new object[0])!;
 			}
 		}
 	}

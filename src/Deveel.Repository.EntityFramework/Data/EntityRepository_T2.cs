@@ -258,16 +258,18 @@ namespace Deveel.Data {
 
 				Logger.TraceDeletingEntity(typeof(TEntity), entityId, TenantId);
 
-				var existing = await FindAsync(entityId, cancellationToken);
-				if (existing == null) {
-					Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
-					return false;
-				}
-
 				var entry = Context.Entry(entity);
 				if (entry == null) {
 					Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
 					return false;
+				} else if (entry.State == EntityState.Detached) {
+					var existing = await FindAsync(entityId, cancellationToken);
+					if (existing == null) {
+						Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+						return false;
+					}
+
+					entry = Context.Entry(existing);
 				}
 
 				entry.State = EntityState.Deleted;
@@ -297,7 +299,26 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 
 			try {
-				Entities.RemoveRange(entities);
+				foreach (var item in entities) {
+					var entityId = GetEntityKey(item);
+					if (entityId == null)
+						throw new RepositoryException("One of the entities has no primary key configured");
+
+					var entry = Context.Entry(item);
+					if (entry.State == EntityState.Detached) {
+						var existing = await FindAsync(entityId, cancellationToken);
+						if (existing == null) {
+							Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+							throw new RepositoryException($"The entity with the key '{entityId}' was not found in the repository");
+						}
+
+						entry = Context.Entry(existing);
+					}
+
+					entry.State = EntityState.Deleted;
+				}
+
+				//Entities.RemoveRange(entities);
 
 				await Context.SaveChangesAsync(true, cancellationToken);
 			} catch (Exception ex) {
@@ -470,6 +491,10 @@ namespace Deveel.Data {
 					return result;
 
 				var entry = Context.Entry(result);
+				
+				//TODO: find a way to get the original values
+				//      of related entities...
+
 				return (TEntity) entry.OriginalValues.ToObject();
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));

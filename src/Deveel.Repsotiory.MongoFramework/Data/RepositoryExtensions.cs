@@ -146,6 +146,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of the entity to be found.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
 		/// <param name="repository">
 		/// The repository to search into.
 		/// </param>

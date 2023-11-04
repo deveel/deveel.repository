@@ -54,6 +54,8 @@ namespace Deveel.Data {
 
 			await dbContext.Database.EnsureDeletedAsync();
 
+			await dbContext.DisposeAsync();
+
 			await base.DisposeAsync();
 		}
 	}
