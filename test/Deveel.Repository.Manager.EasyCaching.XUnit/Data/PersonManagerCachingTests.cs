@@ -1,15 +1,28 @@
-﻿using Deveel.Data.Caching;
+﻿using Bogus;
+
+using Deveel.Data.Caching;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-	public class PersonManagerCachingTests : EntityManagerTestSuite<PersonManager> {
+	public class PersonManagerCachingTests : EntityManagerTestSuite<PersonManager, Person, string> {
 		public PersonManagerCachingTests(ITestOutputHelper testOutput) : base(testOutput) {
 		}
 
+		protected override Faker<Person> PersonFaker { get; } = new PersonFaker();
+
+		protected override string GenerateKey() => Guid.NewGuid().ToString();
+
+		protected override void SetKey(Person person, string key) {
+			person.Id = key;
+		}
+
 		protected override void ConfigureServices(IServiceCollection services) {
+			services.AddRepository<InMemoryRepository<Person>>();
+			// services.AddEntityValidator<PersonValidator>();
+
 			services.AddEasyCaching(options => {
 				options.UseInMemory("default");
 			});

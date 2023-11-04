@@ -8,14 +8,9 @@ using NetTopologySuite.Geometries;
 
 namespace Deveel.Data {
 	[Table("people")]
-	public class DbPerson : IPerson {
+	public class DbPerson : IPerson<Guid> {
 		[Key]
-		public Guid? Id { get; set; }
-
-		string? IPerson.Id {
-			get => Id.ToString();
-			set => Id = value == null ? null : Guid.Parse(value);
-		}
+		public Guid Id { get; set; }
 
 		public string FirstName { get; set; }
 
@@ -27,7 +22,7 @@ namespace Deveel.Data {
 
 		public virtual List<DbRelationship>? Relationships { get; set; }
 
-		IEnumerable<IRelationship> IPerson.Relationships
+		IEnumerable<IRelationship> IPerson<Guid>.Relationships
 			=> Relationships ?? Enumerable.Empty<IRelationship>();
 
 		public string? Email { get; set; }
@@ -35,6 +30,10 @@ namespace Deveel.Data {
 		public DateTime? DateOfBirth { get; set; }
 
 		public string? PhoneNumber { get; set; }
+
+		public DateTimeOffset? CreatedAtUtc { get; set; }
+
+		public DateTimeOffset? UpdatedAtUtc { get; set; }
 	}
 
 	[Table("person_relationships")]

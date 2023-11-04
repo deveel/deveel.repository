@@ -9,11 +9,11 @@ namespace Deveel.Data {
 		public InMemoryRepositoryProviderTests(ITestOutputHelper outputHelper) : base(outputHelper) {
 		}
 
-		protected override IRepository<Person> Repository 
-			=> Services.GetRequiredService<IRepositoryProvider<Person>>().GetRepository(tenantId);
+		protected override IRepository<Person, string> Repository 
+			=> Services.GetRequiredService<IRepositoryProvider<Person, string>>().GetRepository(tenantId);
 
 		protected override void AddRepository(IServiceCollection services) {
-			services.AddRepositoryProvider<InMemoryRepositoryProvider<Person>>();
+			services.AddRepositoryProvider<InMemoryRepositoryProvider<Person, string>>();
 		}
 	}
 }

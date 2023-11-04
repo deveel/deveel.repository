@@ -30,7 +30,8 @@ namespace Deveel.Data {
         IRepository<TEntity>,
         IFilterableRepository<TEntity>,
         IQueryableRepository<TEntity>,
-		IPageableRepository<TEntity>
+		IPageableRepository<TEntity>,
+		ITrackingRepository<TEntity>
         where TEntity : class {
 
 		/// <summary>

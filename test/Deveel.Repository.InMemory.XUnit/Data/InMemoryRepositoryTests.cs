@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-	public class InMemoryRepositoryTests : RepositoryTestSuite<Person, PersonRelationship> {
+	public class InMemoryRepositoryTests : RepositoryTestSuite<Person, string, PersonRelationship> {
 		public InMemoryRepositoryTests(ITestOutputHelper outputHelper) : base(outputHelper) {
 		}
 
@@ -14,6 +14,8 @@ namespace Deveel.Data {
 		protected override Faker<PersonRelationship> RelationshipFaker => new PersonRelationshipFaker();
 
 		protected override IEnumerable<Person> NaturalOrder(IEnumerable<Person> source) => source.OrderBy(x => x.Id);
+
+		protected override string GeneratePersonId() => Guid.NewGuid().ToString("N");
 
 		protected override Task AddRelationshipAsync(Person person, PersonRelationship relationship) {
 			if (person.Relationships == null)

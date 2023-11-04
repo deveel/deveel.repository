@@ -18,6 +18,7 @@ using Finbuckle.MultiTenant;
 using Finbuckle.MultiTenant.EntityFrameworkCore;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -38,6 +39,7 @@ namespace Deveel.Data {
 		IFilterableRepository<TEntity, TKey>,
 		IQueryableRepository<TEntity, TKey>,
 		IPageableRepository<TEntity, TKey>,
+		ITrackingRepository<TEntity, TKey>,
 		IDisposable
 		where TEntity : class {
 		private bool disposedValue;
@@ -128,6 +130,8 @@ namespace Deveel.Data {
 		/// </summary>
 		protected bool IsTrackingChanges => Entities.Local != null ||
 			Context.ChangeTracker.QueryTrackingBehavior != QueryTrackingBehavior.NoTracking;
+
+		bool ITrackingRepository<TEntity, TKey>.IsTrackingChanges => IsTrackingChanges;
 
 		/// <summary>
 		/// Gets the information about the tenant that the repository is using to access the data.
@@ -254,16 +258,18 @@ namespace Deveel.Data {
 
 				Logger.TraceDeletingEntity(typeof(TEntity), entityId, TenantId);
 
-				var existing = await FindByKeyAsync(entityId, cancellationToken);
-				if (existing == null) {
-					Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
-					return false;
-				}
-
 				var entry = Context.Entry(entity);
 				if (entry == null) {
 					Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
 					return false;
+				} else if (entry.State == EntityState.Detached) {
+					var existing = await FindAsync(entityId, cancellationToken);
+					if (existing == null) {
+						Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+						return false;
+					}
+
+					entry = Context.Entry(existing);
 				}
 
 				entry.State = EntityState.Deleted;
@@ -293,7 +299,26 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 
 			try {
-				Entities.RemoveRange(entities);
+				foreach (var item in entities) {
+					var entityId = GetEntityKey(item);
+					if (entityId == null)
+						throw new RepositoryException("One of the entities has no primary key configured");
+
+					var entry = Context.Entry(item);
+					if (entry.State == EntityState.Detached) {
+						var existing = await FindAsync(entityId, cancellationToken);
+						if (existing == null) {
+							Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+							throw new RepositoryException($"The entity with the key '{entityId}' was not found in the repository");
+						}
+
+						entry = Context.Entry(existing);
+					}
+
+					entry.State = EntityState.Deleted;
+				}
+
+				//Entities.RemoveRange(entities);
 
 				await Context.SaveChangesAsync(true, cancellationToken);
 			} catch (Exception ex) {
@@ -317,22 +342,6 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task<TEntity?> FindByKeyAsync(TKey key, CancellationToken cancellationToken = default) {
-			try {
-				// TODO: add support for composite keys
-				var result = await Entities.FindAsync(new object?[] { ConvertEntityKey(key) }, cancellationToken);
-
-				if (result != null)
-					result = await OnEntityFoundByKeyAsync(key, result, cancellationToken);
-
-				return result;
-			} catch (Exception ex) {
-				Logger.LogUnknownError(ex, typeof(TEntity));
-				throw new RepositoryException("Unable to find an entity in the repository because of an error", ex);
-			}
-		}
-
-		/// <inheritdoc/>
 		public virtual async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
@@ -343,17 +352,32 @@ namespace Deveel.Data {
 
 				Logger.TraceUpdatingEntity(typeof(TEntity), entityId, TenantId);
 
+				EntityEntry<TEntity>? entry = null;
+
 				if (!IsTrackingChanges) {
-					var existing = await FindByKeyAsync(entityId, cancellationToken);
+					var existing = await FindAsync(entityId, cancellationToken);
 					if (existing == null) {
 						Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
 						return false;
 					}
 
-					var entry = Context.Entry(existing);
-					entry.CurrentValues.SetValues(entity);
-					entry.State = EntityState.Modified;
+					entry = Context.Entry(existing);
+				} else {
+					entry = Context.Entry(entity);
+
+					if (entry.State == EntityState.Detached) {
+						var existing = await FindAsync(entityId, cancellationToken);
+						if (existing == null) {
+							Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+							return false;
+						}
+
+						entry = Context.Entry(existing);
+					}
 				}
+
+				entry.CurrentValues.SetValues(entity);
+				entry.State = EntityState.Modified;
 
 				var count = await Context.SaveChangesAsync(cancellationToken);
 
@@ -428,7 +452,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public virtual async Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
 				var result = query.Apply(AsQueryable());
 
@@ -436,6 +460,45 @@ namespace Deveel.Data {
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unknown error while trying to find an entity", ex);
+			}
+		}
+
+		/// <inheritdoc/>
+		public virtual async Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default) {
+			ThrowIfDisposed();
+
+			try {
+				var result = await Entities.FindAsync(new object?[] { ConvertEntityKey(key) }, cancellationToken);
+				if (result == null)
+					return result;
+
+				result = await OnEntityFoundByKeyAsync(key, result, cancellationToken);
+
+				return result;
+			} catch (Exception ex) {
+				Logger.LogUnknownError(ex, typeof(TEntity));
+				throw new RepositoryException("Unable to find an entity in the repository because of an error", ex);
+			}
+		}
+
+		/// <inheritdoc/>
+		public virtual async Task<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken = default) {
+			ThrowIfDisposed();
+
+			try {
+				var result = await Entities.FindAsync(new object?[] { ConvertEntityKey(key) }, cancellationToken);
+				if (result == null)
+					return result;
+
+				var entry = Context.Entry(result);
+				
+				//TODO: find a way to get the original values
+				//      of related entities...
+
+				return (TEntity) entry.OriginalValues.ToObject();
+			} catch (Exception ex) {
+				Logger.LogUnknownError(ex, typeof(TEntity));
+				throw new RepositoryException("Unable to find an entity int he repository because of an error", ex);
 			}
 		}
 

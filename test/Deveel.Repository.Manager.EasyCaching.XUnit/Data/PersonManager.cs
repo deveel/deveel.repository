@@ -3,10 +3,10 @@
 using Microsoft.Extensions.Logging;
 
 namespace Deveel.Data {
-	public class PersonManager : EntityManager<Person> {
+	public class PersonManager : EntityManager<Person, string> {
 		public PersonManager(
-			IRepository<Person> repository, 
-			IEntityValidator<Person>? validator = null, 
+			IRepository<Person, string> repository, 
+			IEntityValidator<Person, string>? validator = null, 
 			IEntityCache<Person>? cache = null,
 			ISystemTime? systemTime = null,
 			IOperationErrorFactory<Person>? errorFactory = null,

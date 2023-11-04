@@ -12,13 +12,12 @@ using MongoFramework.Attributes;
 
 namespace Deveel.Data {
 	[Table("persons")]
-	public class MongoPerson : IPerson, IHaveTimeStamp {
+	public class MongoPerson : IPerson<ObjectId>, IPerson, IHaveTimeStamp {
 		[Key, Column("_id")]
 		public ObjectId Id { get; set; }
 
-
-		string? IPerson.Id {
-			get => Id.ToEntityId();
+		string? IPerson<string>.Id {
+			get => Id.ToString();
 			set => Id = ObjectId.Parse(value);
 		}
 
@@ -53,7 +52,9 @@ namespace Deveel.Data {
 		[Index(IndexType.Geo2dSphere)]
 		public GeoJsonPoint<GeoJson2DGeographicCoordinates>? Location { get; set; }
 
-		IEnumerable<IRelationship> IPerson.Relationships => Relationships ?? Enumerable.Empty<IRelationship>();
+		IEnumerable<IRelationship> IPerson<ObjectId>.Relationships => Relationships ?? Enumerable.Empty<IRelationship>();
+
+		IEnumerable<IRelationship> IPerson<string>.Relationships => Relationships ?? Enumerable.Empty<IRelationship>();
 	}
 
 	public class MongoPersonRelationship : IRelationship {

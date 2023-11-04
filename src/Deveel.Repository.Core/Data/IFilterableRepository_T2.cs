@@ -87,7 +87,7 @@ namespace Deveel.Data {
 		/// Throw if the <paramref name="query"/> defines a filter or a sort rule
 		/// that is not supported by the repository
 		/// </exception>
-		Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default);
+		Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Finds all the items in the repository that match the given filtering condition

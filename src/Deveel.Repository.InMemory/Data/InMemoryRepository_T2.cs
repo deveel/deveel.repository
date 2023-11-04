@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -34,11 +33,12 @@ namespace Deveel.Data {
 		IQueryableRepository<TEntity, TKey>,
 		IPageableRepository<TEntity, TKey>,
 		IFilterableRepository<TEntity, TKey>,
+		ITrackingRepository<TEntity, TKey>,
 		IMultiTenantRepository<TEntity, TKey>,
 		IDisposable
 		where TEntity : class 
 		where TKey : notnull {
-		private SortedList<TKey, TEntity> entities;
+		private SortedList<TKey, Entry> entities;
 		private bool disposedValue;
 		private MemberInfo? idMember;
 		private readonly IFieldMapper<TEntity>? fieldMapper;
@@ -91,10 +91,13 @@ namespace Deveel.Data {
 
 		IQueryable<TEntity> IQueryableRepository<TEntity, TKey>.AsQueryable() => Entities.AsQueryable();
 
+		bool ITrackingRepository<TEntity, TKey>.IsTrackingChanges => true;
+
 		/// <summary>
 		/// Gets the read-only list of entities in the repository.
 		/// </summary>
-		public virtual IReadOnlyList<TEntity> Entities => entities.Values.ToList().AsReadOnly();
+		public virtual IReadOnlyList<TEntity> Entities => entities.Values.Select(x => x.Entity)
+			.ToList().AsReadOnly();
 
 		string? IMultiTenantRepository<TEntity, TKey>.TenantId => TenantId;
 
@@ -104,25 +107,17 @@ namespace Deveel.Data {
 		/// </summary>
 		protected virtual string? TenantId { get; }
 
-		private SortedList<TKey, TEntity> CopyList(IEnumerable<TEntity> source) {
-			var result = new SortedList<TKey, TEntity>();
+		private SortedList<TKey, Entry> CopyList(IEnumerable<TEntity> source) {
+			var result = new SortedList<TKey, Entry>();
 			foreach (var item in source) {
 				var id = GetEntityId(item);
 				if (id == null)
 					throw new RepositoryException("The entity does not have an ID");
 
-				result.Add(id, Clone(item));
+				result.Add(id, new Entry(item));
 			}
 
 			return result;
-		}
-
-		private static TEntity Clone(TEntity entity) {
-			var serializer = new DataContractSerializer(typeof(TEntity));
-			using var stream = new MemoryStream();
-			serializer.WriteObject(stream, entity);
-			stream.Position = 0;
-			return (TEntity)serializer.ReadObject(stream)!;
 		}
 
 		/// <inheritdoc/>
@@ -192,7 +187,7 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var result = entities.Values.AsQueryable().LongCount(filter);
+				var result = Entities.AsQueryable().LongCount(filter);
 				return Task.FromResult(result);
 			} catch (Exception ex) {
 				throw new RepositoryException("Could not count the entities", ex);
@@ -207,7 +202,7 @@ namespace Deveel.Data {
 				var key = GenerateNewKey();
 				SetEntityId(entity, key);
 
-				entities.Add(key, Clone(entity));
+				entities.Add(key, new Entry(entity));
 
 				return Task.CompletedTask;
 			} catch (RepositoryException) {
@@ -227,7 +222,7 @@ namespace Deveel.Data {
 					var key = GenerateNewKey();
 					SetEntityId(item, key);
 
-					this.entities.Add(key, Clone(item));
+					this.entities.Add(key, new Entry(item));
 				}
 
 				return Task.CompletedTask;
@@ -302,7 +297,7 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var result = entities.Values.AsQueryable().Any(filter);
+				var result = Entities.AsQueryable().Any(filter);
 				return Task.FromResult(result);
 			} catch (Exception ex) {
 				throw new RepositoryException("Could not check if any entities exist in the repository", ex);
@@ -315,7 +310,7 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var result = query.Apply(entities.Values.AsQueryable()).ToList();
+				var result = query.Apply(Entities.AsQueryable()).ToList();
 
 				return Task.FromResult<IList<TEntity>>(result);
 			} catch (Exception ex) {
@@ -325,11 +320,11 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<TEntity?> FindAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var result = query.Apply(entities.Values.AsQueryable()).FirstOrDefault();
+				var result = query.Apply(Entities.AsQueryable()).FirstOrDefault();
 				return Task.FromResult(result);
 			} catch (Exception ex) {
 				throw new RepositoryException("Error while searching for any entities in the repository matching the filter", ex);
@@ -337,7 +332,22 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<TEntity?> FindByKeyAsync(TKey key, CancellationToken cancellationToken = default) {
+		public Task<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken = default) {
+			ArgumentNullException.ThrowIfNull(key, nameof(key));
+			cancellationToken.ThrowIfCancellationRequested();
+
+			try {
+				if (!entities.TryGetValue(key, out var entry))
+					return Task.FromResult<TEntity?>(null);
+
+				return Task.FromResult<TEntity?>(entry.Original);
+			} catch (Exception ex) {
+				throw new RepositoryException("Error while searching any entities with the given ID", ex);
+			}
+		}
+
+		/// <inheritdoc/>
+		public Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(key, nameof(key));
 
 			cancellationToken.ThrowIfCancellationRequested();
@@ -346,7 +356,7 @@ namespace Deveel.Data {
 				if (!entities.TryGetValue(key, out var entity))
 					return Task.FromResult<TEntity?>(null);
 
-				return Task.FromResult<TEntity?>(entity);
+				return Task.FromResult<TEntity?>(entity.Entity);
 			} catch (Exception ex) {
 				throw new RepositoryException("Error while searching any entities with the given ID", ex);
 			}
@@ -377,7 +387,7 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var entitySet = request.ApplyQuery(entities.Values.AsQueryable());
+				var entitySet = request.ApplyQuery(Entities.AsQueryable());
 
 				var itemCount = entitySet.Count();
 				var items = entitySet
@@ -403,10 +413,10 @@ namespace Deveel.Data {
 				if (entityId == null)
 					return Task.FromResult(false);
 
-				if (!entities.TryGetValue(entityId, out var existing))
+				if (!entities.TryGetValue(entityId, out var entry))
 					return Task.FromResult(false);
 
-				entities[entityId] = entity;
+				entry.Update(entity);
 				return Task.FromResult(true);
 			} catch (Exception ex) {
 				throw new RepositoryException("Unable to update the entity", ex);
@@ -437,6 +447,29 @@ namespace Deveel.Data {
 		public void Dispose() {
 			Dispose(disposing: true);
 			GC.SuppressFinalize(this);
+		}
+
+		class Entry {
+			public Entry(TEntity entity) {
+				Entity = entity;
+				Original = Clone(entity);
+			}
+
+			public TEntity Original { get; private set; }
+
+			public TEntity Entity { get; private set; }
+
+			public void Update(TEntity entity) {
+				Original = Clone(entity);
+				Entity = entity;
+			}
+
+			private static TEntity Clone(TEntity entity) {
+				var cloneMethod = typeof(TEntity)
+					.GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic);
+
+				return (TEntity)cloneMethod!.Invoke(entity, new object[0])!;
+			}
 		}
 	}
 }

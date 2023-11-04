@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Deveel.Data {
 	[Collection(nameof(SqlTenantConnectionCollection))]
-    public class EntityRepositoryProviderTestSuite : RepositoryTestSuite<DbTenantPerson, DbTenantPersonRelationship> {
+    public class EntityRepositoryProviderTestSuite : RepositoryTestSuite<DbTenantPerson, Guid, DbTenantPersonRelationship> {
         private readonly SqliteConnection sqliteConnection;
 
         public EntityRepositoryProviderTestSuite(SqlTestConnection sql, ITestOutputHelper outputHelper) : base(outputHelper) {
@@ -33,12 +33,14 @@ namespace Deveel.Data {
 
 		protected TenantInfo TenantInfo { get; }
 
+		protected override Guid GeneratePersonId() => Guid.NewGuid();
+
 		protected string TenantId => TenantInfo.Id;
 
-        protected IRepositoryProvider<DbTenantPerson> RepositoryProvider 
-			=> Services.GetRequiredService<IRepositoryProvider<DbTenantPerson>>();
+        protected IRepositoryProvider<DbTenantPerson, Guid> RepositoryProvider 
+			=> Services.GetRequiredService<IRepositoryProvider<DbTenantPerson, Guid>>();
 
-        protected override IRepository<DbTenantPerson> Repository => RepositoryProvider.GetRepository(TenantId);
+        protected override IRepository<DbTenantPerson, Guid> Repository => RepositoryProvider.GetRepository(TenantId);
 
 		protected override IEnumerable<DbTenantPerson> NaturalOrder(IEnumerable<DbTenantPerson> source) => source.OrderBy(x => x.Id);
 
@@ -70,7 +72,7 @@ namespace Deveel.Data {
 				builder.UseSqlite(sqliteConnection, x => x.UseNetTopologySuite());
 				builder.LogTo(TestOutput!.WriteLine);
 			})
-				.AddRepositoryProvider<EntityRepositoryProvider<TestDbContext, DbTenantPerson>>();
+				.AddRepositoryProvider<EntityRepositoryProvider<TestDbContext, DbTenantPerson, Guid>>();
 
 			base.ConfigureServices(services);
 		}

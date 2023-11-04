@@ -5,6 +5,8 @@ using Finbuckle.MultiTenant;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using MongoDB.Bson;
+
 using MongoFramework;
 
 using Xunit.Abstractions;
@@ -20,9 +22,11 @@ namespace Deveel.Data {
 
         protected string TenantId { get; } = Guid.NewGuid().ToString("N");
 
-        protected IRepositoryProvider<MongoTenantPerson> RepositoryProvider => Services.GetRequiredService<IRepositoryProvider<MongoTenantPerson>>();
+        protected IRepositoryProvider<MongoTenantPerson, ObjectId> RepositoryProvider 
+			=> Services.GetRequiredService<IRepositoryProvider<MongoTenantPerson, ObjectId>>();
 
-        protected override IRepository<MongoTenantPerson> Repository => RepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
+        protected override IRepository<MongoTenantPerson, ObjectId> Repository 
+			=> RepositoryProvider.GetRepositoryAsync(TenantId).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		protected override void ConfigureServices(IServiceCollection services) {
 			AddRepositoryProvider(services);
@@ -60,7 +64,7 @@ namespace Deveel.Data {
 
         protected override async Task InitializeAsync() {
             var controller = Services.GetRequiredService<IRepositoryController>();
-            await controller.CreateTenantRepositoryAsync<MongoTenantPerson>(TenantId);
+            await controller.CreateTenantRepositoryAsync<MongoTenantPerson, ObjectId>(TenantId);
 
             var repository = await RepositoryProvider.GetRepositoryAsync(TenantId);
 
@@ -71,7 +75,7 @@ namespace Deveel.Data {
 
         protected override async Task DisposeAsync() {
             var controller = Services.GetRequiredService<IRepositoryController>();
-            await controller.DropTenantRepositoryAsync<MongoTenantPerson>(TenantId);
+            await controller.DropTenantRepositoryAsync<MongoTenantPerson, ObjectId>(TenantId);
         }
 
 		[Fact]
@@ -80,7 +84,7 @@ namespace Deveel.Data {
 			Assert.IsType<PersonRepositoryProvider>(RepositoryProvider);
 		}
 
-		protected class PersonRepositoryProvider : MongoRepositoryProvider<PersonsDbContext, MongoTenantPerson> {
+		protected class PersonRepositoryProvider : MongoRepositoryProvider<PersonsDbContext, MongoTenantPerson, ObjectId> {
             public PersonRepositoryProvider(IRepositoryTenantResolver tenantResolver, ILoggerFactory? loggerFactory = null) 
 				:base(tenantResolver, loggerFactory) {
             }
@@ -89,13 +93,13 @@ namespace Deveel.Data {
                 return new PersonsDbContext(connection.ForContext<PersonsDbContext>(), tenantInfo?.Id ?? throw new InvalidOperationException());
             }
 
-            protected override MongoRepository<MongoTenantPerson> CreateRepository(PersonsDbContext context) {
+            protected override MongoRepository<MongoTenantPerson, ObjectId> CreateRepository(PersonsDbContext context) {
                 var logger = LoggerFactory.CreateLogger<PersonRepository>();
                 return new PersonRepository(context, logger);
             }
         }
 
-        protected class PersonRepository : MongoRepository<MongoTenantPerson> {
+        protected class PersonRepository : MongoRepository<MongoTenantPerson, ObjectId> {
             public PersonRepository(PersonsDbContext context, ILogger<PersonRepository>? logger = null) 
 				: base(context, logger) {
             }

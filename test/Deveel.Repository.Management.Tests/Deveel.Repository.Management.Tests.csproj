@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectCapability Remove="TestContainer"/>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Deveel.Repository.Manager.DynamicLinq\Deveel.Repository.Manager.DynamicLinq.csproj" />
+    <ProjectReference Include="..\..\src\Deveel.Repository.Manager\Deveel.Repository.Manager.csproj" />
+    <ProjectReference Include="..\Deveel.Repository.Tests.XUnit\Deveel.Repository.Tests.XUnit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.core" Version="2.6.1" />
+    <PackageReference Include="xunit.assert" Version="2.6.1" />
+  </ItemGroup>
+</Project>

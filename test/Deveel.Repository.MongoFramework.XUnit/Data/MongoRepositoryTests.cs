@@ -10,7 +10,6 @@ using MongoFramework;
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-	[Collection(nameof(MongoSingleDatabaseCollection))]
 	public class MongoRepositoryTests : MongoRepositoryTestSuite<MongoPerson> {
 
 		public MongoRepositoryTests(MongoSingleDatabase mongo, ITestOutputHelper outputHelper) : base(mongo, outputHelper) {
@@ -31,7 +30,7 @@ namespace Deveel.Data {
 				})
 				.AddRepositoryController();
 
-			services.AddRepository<MongoRepository<MongoPerson>>();
+			services.AddRepository<MongoRepository<MongoPerson, ObjectId>>();
 		}
 
 		protected async Task<MongoPerson?> FindPerson(ObjectId id) {

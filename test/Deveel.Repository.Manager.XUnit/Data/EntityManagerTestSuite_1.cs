@@ -71,7 +71,7 @@ namespace Deveel.Data {
 			Assert.Null(person.UpdatedAtUtc);
 			Assert.Equal(TestTime.UtcNow, person.CreatedAtUtc.Value);
 
-			var found = await Repository.FindByKeyAsync(person.Id);
+			var found = await Repository.FindAsync(person.Id);
 
 			Assert.NotNull(found);
 			Assert.Equal(person.Id, found.Id);
@@ -210,7 +210,7 @@ namespace Deveel.Data {
 			Assert.False(result.IsError());
 			Assert.Null(result.Error);
 
-			var found = await Repository.FindByKeyAsync(person.Id!);
+			var found = await Repository.FindAsync(person.Id!);
 
 			Assert.Null(found);
 		}
@@ -265,7 +265,7 @@ namespace Deveel.Data {
 		public async Task FindByKey() {
 			var person = People.Random()!;
 
-			var found = await Manager.FindByKeyAsync(person.Id!);
+			var found = await Manager.FindAsync(person.Id!);
 
 			Assert.NotNull(found);
 			Assert.Equal(person.Id, found.Id);
@@ -277,7 +277,7 @@ namespace Deveel.Data {
 				.RuleFor(x => x.Id, f => f.Random.Guid().ToString())
 				.Generate();
 
-			var found = await Manager.FindByKeyAsync(person.Id!);
+			var found = await Manager.FindAsync(person.Id!);
 
 			Assert.Null(found);
 		}
@@ -286,7 +286,7 @@ namespace Deveel.Data {
         public async Task FindByKey_WrongKey() {
             var key = Random.Shared.Next(0, 100);
 
-            var error = await Assert.ThrowsAsync<OperationException>(() => Manager.FindByKeyAsync(key));
+            var error = await Assert.ThrowsAsync<OperationException>(() => Manager.FindAsync(key));
 
             Assert.Equal(EntityErrorCodes.UnknownError, error.ErrorCode);
         }

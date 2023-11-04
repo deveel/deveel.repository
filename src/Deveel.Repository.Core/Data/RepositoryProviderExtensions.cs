@@ -25,6 +25,9 @@ namespace Deveel.Data {
 		/// <typeparam name="TEntity">
 		/// The type of entity handled by the repository.
 		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key used to identify the entity.
+		/// </typeparam>
 		/// <param name="provider">
 		/// The instance of the provider that resolves the repository.
 		/// </param>

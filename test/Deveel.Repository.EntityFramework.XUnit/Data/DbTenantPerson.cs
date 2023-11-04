@@ -6,14 +6,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Deveel.Data {
 	[Table("tenant_people")]
-	public class DbTenantPerson : IPerson {
+	public class DbTenantPerson : IPerson<Guid> {
 		[Key]
-		public Guid? Id { get; set; }
-
-		string? IPerson.Id {
-			get => Id.ToString();
-			set => Id = value == null ? null : Guid.Parse(value);
-		}
+		public Guid Id { get; set; }
 
 		public string FirstName { get; set; }
 
@@ -27,9 +22,13 @@ namespace Deveel.Data {
 
 		public string TenantId { get; set; }
 
+		public DateTimeOffset? CreatedAtUtc { get; set; }
+
+		public DateTimeOffset? UpdatedAtUtc { get; set; }
+
 		public virtual List<DbTenantPersonRelationship> Relationships { get; set; }
 
-		IEnumerable<IRelationship> IPerson.Relationships => Relationships;
+		IEnumerable<IRelationship> IPerson<Guid>.Relationships => Relationships;
 	}
 
 	[Table("tenant_person_relationships")]	

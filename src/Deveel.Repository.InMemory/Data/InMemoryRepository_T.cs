@@ -80,8 +80,8 @@ namespace Deveel.Data {
 			return GetEntityKey(entity);
 		}
 
-		Task<TEntity?> IRepository<TEntity, object>.FindByKeyAsync(object key, CancellationToken cancellationToken) {
-			return FindByKeyAsync(NormalizeKey(key), cancellationToken);
+		Task<TEntity?> IRepository<TEntity, object>.FindAsync(object key, CancellationToken cancellationToken) {
+			return FindAsync(NormalizeKey(key), cancellationToken);
 		}
 
 		private string NormalizeKey(object key) {
