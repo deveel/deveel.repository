@@ -17,10 +17,14 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+  </ItemGroup>
+
   <ItemGroup>    
     <PackageReference Include="Bogus" Version="34.0.2" />
     <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
-    <PackageReference Include="xunit" Version="2.6.0" />
+    <PackageReference Include="xunit" Version="2.6.1" />
   </ItemGroup>
   
   <ItemGroup>
