@@ -42,5 +42,5 @@ jobs:
       run: dotnet build --no-restore --version-suffix $GITHUB_RUN_ID -c Release -f ${{ env.DOTNET_FX_VERSION }}
       
     - name: Test
-      run: dotnet test --no-build --no-restore --verbosity normal -c Release -f ${{ env.DOTNET_FX_VERSION }}
+      run: dotnet test --no-build --no-restore -c Release -f ${{ env.DOTNET_FX_VERSION }} --logger "console;verbosity=diagnostics"
 
