@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SQLitePCLRaw.bundle_sqlite3" Version="2.1.6" Condition="'$(OS)' != 'Windows_NT'" />
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.6" Condition="'$(OS)' == 'Windows_NT'" />
+    <PackageReference Include="SQLitePCLRaw.bundle_sqlite3" Version="2.1.8" Condition="'$(OS)' != 'Windows_NT'" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.8" Condition="'$(OS)' == 'Windows_NT'" />
   </ItemGroup>
 
 	<ItemGroup>
