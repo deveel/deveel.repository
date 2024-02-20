@@ -12,10 +12,10 @@ jobs:
         dotnet: [ '6.0.x', '7.0.x', '8.0.x' ]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup .NET ${{ matrix.dotnet }} Framework
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ matrix.dotnet }}
      
@@ -39,6 +39,10 @@ jobs:
     #   with:
     #     token: ${{ secrets.CODECOV_TOKEN }}
 
+  pack:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
     - name: Pack NuGet
       run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release -o ./nuget
       
@@ -47,5 +51,5 @@ jobs:
 
   clean:
     name: "Clean Old Packages"
-    needs: build
+    needs: pack
     uses: ./.github/workflows/clean-packages.yml
