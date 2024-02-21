@@ -6,7 +6,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -15,10 +14,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
   
-    - uses: ./.github/workflows/tfm.yml
+    - uses: actions/tfm@v1
       with:
         dotnet-version: ${{ matrix.dotnet }}
-  
+    
     # - name: Emit .NET 6.0 Framework Version
     #   if: matrix.dotnet == '6.0.x'
     #   run: echo "DOTNET_FX_VERSION=net6.0" >> $GITHUB_ENV
