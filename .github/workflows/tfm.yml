@@ -1,15 +1,15 @@
-name: "Extract TFM"
+name: "Emit TFM"
 
 on:
   workflow_call:
     inputs:
       dotnet-version:
-        description: "The .NET Framework version to extract"
+        description: "The .NET Framework version to obtain the TFM"
         required: true
         type: string
 
 jobs:
-  extract:
+  emit:
     runs-on: ubuntu-latest
     steps:
     - name: Emit .NET 6.0 Framework Version
