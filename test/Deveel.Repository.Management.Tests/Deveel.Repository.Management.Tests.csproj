@@ -13,7 +13,7 @@
     <ProjectReference Include="..\Deveel.Repository.Tests.XUnit\Deveel.Repository.Tests.XUnit.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="xunit.core" Version="2.6.1" />
-    <PackageReference Include="xunit.assert" Version="2.6.1" />
+    <PackageReference Include="xunit.core" Version="2.7.0" />
+    <PackageReference Include="xunit.assert" Version="2.7.0" />
   </ItemGroup>
 </Project>

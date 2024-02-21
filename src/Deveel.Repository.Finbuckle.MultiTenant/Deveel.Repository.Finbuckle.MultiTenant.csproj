@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Title>Deveel Repository Finbuckle Multi-Tenant Extension</Title>
@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Finbuckle.MultiTenant" Version="6.12.0" />
+    <PackageReference Include="Finbuckle.MultiTenant" Version="6.13.1" />
   </ItemGroup>
 
   <ItemGroup>

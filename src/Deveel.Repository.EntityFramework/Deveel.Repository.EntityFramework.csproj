@@ -12,10 +12,12 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.12" />
   </ItemGroup>
-
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
+  </ItemGroup>
 
   <ItemGroup>
-		<PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="6.12.0" />
+		<PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="6.13.1" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />

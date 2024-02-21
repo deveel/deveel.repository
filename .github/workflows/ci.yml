@@ -1,51 +1,71 @@
 name: Repository CI/CD
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   push:
     branches: [ "main" ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet: [ '6.0.x', '7.0.x', '8.0.x' ]
 
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup .NET Framework
-      uses: actions/setup-dotnet@v3
+    - uses: actions/checkout@v4
+  
+    - name: Emit .NET 6.0 Framework Version
+      if: matrix.dotnet == '6.0.x'
+      run: echo "DOTNET_FX_VERSION=net6.0" >> $GITHUB_ENV
+
+    - name: Emit .NET 7.0 Framework Version
+      if: matrix.dotnet == '7.0.x'
+      run: echo "DOTNET_FX_VERSION=net7.0" >> $GITHUB_ENV
+
+    - name: Emit .NET 8.0 Framework Version
+      if: matrix.dotnet == '8.0.x'
+      run: echo "DOTNET_FX_VERSION=net8.0" >> $GITHUB_ENV
+        
+    - name: Setup .NET ${{ matrix.dotnet }} Framework
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-            6.0.x
-            7.0.x
+        dotnet-version: ${{ matrix.dotnet }}
      
     - name: Install SQLite Spatial
       run: sudo apt-get install -y libsqlite3-mod-spatialite
 
-    - name: Add Deveel GitHub NuGet Source
-      run: dotnet nuget add source "https://nuget.pkg.github.com/deveel/index.json" -n "Deveel GitHub" -u ${{ secrets.DEVEEL_NUGET_USER }} -p ${{ secrets.DEVEEL_NUGET_TOKEN }} --store-password-in-clear-text
+    # - name: Add Deveel GitHub NuGet Source
+    #   run: dotnet nuget add source "https://nuget.pkg.github.com/deveel/index.json" -n "Deveel GitHub" -u ${{ secrets.DEVEEL_NUGET_USER }} -p ${{ secrets.DEVEEL_NUGET_TOKEN }} --store-password-in-clear-text
       
     - name: Restore dependencies
       run: dotnet restore
       
     - name: Build
-      run: dotnet build --no-restore --version-suffix $GITHUB_RUN_ID -c Release
+      run: dotnet build --no-restore --version-suffix $GITHUB_RUN_ID -c Release -f ${{ env.DOTNET_FX_VERSION }}
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+      run: dotnet test --no-build --verbosity normal -c Release -f ${{ env.DOTNET_FX_VERSION }} /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
       
-    - name: Collect to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+    # - name: Collect to Codecov
+    #   uses: codecov/codecov-action@v3
+    #   with:
+    #     token: ${{ secrets.CODECOV_TOKEN }}
 
+  pack:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
     - name: Pack NuGet
       run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release --no-build --no-restore --include-symbols -o ./nuget
       
     - name: Push NutGet
-      run: dotnet nuget push ./nuget/*.nupkg -s "Deveel GitHub" --skip-duplicate --api-key ${{secrets.DEVEEL_NUGET_TOKEN}}
+      run: dotnet nuget push ./nuget/*.nupkg -s "https://nuget.pkg.github.com/deveel/index.json" --skip-duplicate --api-key ${{secrets.GITHUB_TOKEN}}
 
   clean:
     name: "Clean Old Packages"
-    needs: build
+    needs: pack
     uses: ./.github/workflows/clean-packages.yml

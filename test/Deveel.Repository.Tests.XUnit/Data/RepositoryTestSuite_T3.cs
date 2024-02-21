@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-	public abstract class RepositoryTestSuite<TPerson, TKey, TRelationship> : IAsyncLifetime 
+	public abstract class RepositoryTestSuite<TPerson, TKey, TRelationship> : IAsyncLifetime, IAsyncDisposable
 		where TPerson : class, IPerson<TKey>
 		where TKey : notnull
 		where TRelationship : class, IRelationship {
@@ -74,13 +74,15 @@ namespace Deveel.Data {
 			await SeedAsync(Repository);
 		}
 
-		async Task IAsyncLifetime.DisposeAsync() {
-			await DisposeAsync();
-
+		async ValueTask IAsyncDisposable.DisposeAsync() {
 			People = null;
 
 			await scope.DisposeAsync();
 			(services as IDisposable)?.Dispose();
+		}
+
+		async Task IAsyncLifetime.DisposeAsync() {
+			await DisposeAsync();
 		}
 
 		protected virtual Task DisposeAsync() {
