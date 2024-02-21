@@ -19,10 +19,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - uses: ./.github/workflows/tfm.yml
-      with:
-        dotnet-version: ${{ matrix.dotnet-version }}
 
+    - name: Emit .NET 6.0 Framework Version
+      if: matrix.dotnet == '6.0.x'
+      run: echo "DOTNET_FX_VERSION=net6.0" >> $GITHUB_ENV
+
+    - name: Emit .NET 7.0 Framework Version
+      if: matrix.dotnet == '7.0.x'
+      run: echo "DOTNET_FX_VERSION=net7.0" >> $GITHUB_ENV
+
+    - name: Emit .NET 8.0 Framework Version
+      if: matrix.dotnet == '8.0.x'
+      run: echo "DOTNET_FX_VERSION=net8.0" >> $GITHUB_ENV
+    
     - name: Setup .NET ${{ matrix.dotnet-version }} Framework
       uses: actions/setup-dotnet@v4
       with:
