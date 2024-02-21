@@ -1,5 +1,9 @@
 name: Repository Release
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   push:
     tags:
@@ -8,17 +12,21 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        dotnet-version: [ '6.0.x', '7.0.x', '8.0.x' ]
 
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Setup .NET Framework
+    - uses: ./.github/workflows/tfm.yml
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+
+    - name: Setup .NET ${{ matrix.dotnet-version }} Framework
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-            6.0.x
-            7.0.x
-            8.0.x
+        dotnet-version: ${{ matrix.dotnet-version }}
 
     - name: Get tag
       id: tag
@@ -29,8 +37,8 @@ jobs:
     - name: Install SQLite Spatial
       run: sudo apt-get install -y libsqlite3-mod-spatialite
         
-    - name: Add Deveel GitHub NuGet Source
-      run: dotnet nuget add source "https://nuget.pkg.github.com/deveel/index.json" -n "Deveel GitHub" -u ${{ secrets.DEVEEL_NUGET_USER }} -p ${{ secrets.DEVEEL_NUGET_TOKEN }} --store-password-in-clear-text
+    # - name: Add Deveel GitHub NuGet Source
+    #   run: dotnet nuget add source "https://nuget.pkg.github.com/deveel/index.json" -n "Deveel GitHub" -u ${{ secrets.DEVEEL_NUGET_USER }} -p ${{ secrets.DEVEEL_NUGET_TOKEN }} --store-password-in-clear-text
       
     - name: Restore dependencies
       run: dotnet restore
@@ -46,11 +54,15 @@ jobs:
       with:
         token: ${{ secrets.DEVEEL_CODECOV_TOKEN }}
 
+  publish:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
     - name: Pack NuGet
       run: dotnet pack -p:PackageVersion=${{steps.tag.outputs.tag}} -c Release -o ./nuget
       
     - name: Push Github Nuget
-      run: dotnet nuget push ./nuget/*.nupkg -s "Deveel GitHub" --skip-duplicate --api-key ${{secrets.DEVEEL_NUGET_TOKEN}}
+      run: dotnet nuget push ./nuget/*.nupkg -s "https://nuget.pkg.github.com/deveel/index.json" --skip-duplicate --api-key ${{secrets.GITHUB_TOKEN}}
 
     - name: Push to Github.org
       run: dotnet nuget push ./nuget/**/*.nupkg --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json

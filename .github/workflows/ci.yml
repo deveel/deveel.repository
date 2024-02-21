@@ -1,5 +1,9 @@
 name: Repository CI/CD
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   push:
     branches: [ "main" ]
@@ -22,8 +26,8 @@ jobs:
     - name: Install SQLite Spatial
       run: sudo apt-get install -y libsqlite3-mod-spatialite
 
-    - name: Add Deveel GitHub NuGet Source
-      run: dotnet nuget add source "https://nuget.pkg.github.com/deveel/index.json" -n "Deveel GitHub" -u ${{ secrets.DEVEEL_NUGET_USER }} -p ${{ secrets.DEVEEL_NUGET_TOKEN }} --store-password-in-clear-text
+    # - name: Add Deveel GitHub NuGet Source
+    #   run: dotnet nuget add source "https://nuget.pkg.github.com/deveel/index.json" -n "Deveel GitHub" -u ${{ secrets.DEVEEL_NUGET_USER }} -p ${{ secrets.DEVEEL_NUGET_TOKEN }} --store-password-in-clear-text
       
     - name: Restore dependencies
       run: dotnet restore
@@ -47,7 +51,7 @@ jobs:
       run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release -o ./nuget
       
     - name: Push NutGet
-      run: dotnet nuget push ./nuget/*.nupkg -s "Deveel GitHub" --skip-duplicate --api-key ${{secrets.DEVEEL_NUGET_TOKEN}}
+      run: dotnet nuget push ./nuget/*.nupkg -s "https://nuget.pkg.github.com/deveel/index.json" --skip-duplicate --api-key ${{secrets.GITHUB_TOKEN}}
 
   clean:
     name: "Clean Old Packages"
