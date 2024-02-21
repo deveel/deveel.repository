@@ -59,8 +59,15 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v4
+  
+    - name: Setup .NET 8.0 Framework
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
     - name: Pack NuGet
-      run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release --no-build --no-restore --include-symbols -o ./nuget
+      run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release --include-symbols --include-sources -o ./nuget
       
     - name: Push NutGet
       run: dotnet nuget push ./nuget/*.nupkg -s "https://nuget.pkg.github.com/deveel/index.json" --skip-duplicate --api-key ${{secrets.GITHUB_TOKEN}}
