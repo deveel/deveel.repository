@@ -9,7 +9,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -37,42 +37,49 @@ jobs:
      
     - name: Install SQLite Spatial
       run: sudo apt-get install -y libsqlite3-mod-spatialite
-
-    # - name: Add Deveel GitHub NuGet Source
-    #   run: dotnet nuget add source "https://nuget.pkg.github.com/deveel/index.json" -n "Deveel GitHub" -u ${{ secrets.DEVEEL_NUGET_USER }} -p ${{ secrets.DEVEEL_NUGET_TOKEN }} --store-password-in-clear-text
       
     - name: Restore dependencies
       run: dotnet restore
       
     - name: Build
-      run: dotnet build --no-restore --version-suffix $GITHUB_RUN_ID -c Release -f ${{ env.DOTNET_FX_VERSION }}
+      run: dotnet build --no-restore -c Release -f ${{ env.DOTNET_FX_VERSION }}
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal -c Release -f ${{ env.DOTNET_FX_VERSION }} /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+      run: dotnet test --no-build --verbosity normal -c Release -f ${{ env.DOTNET_FX_VERSION }}
       
-    # - name: Collect to Codecov
-    #   uses: codecov/codecov-action@v3
-    #   with:
-    #     token: ${{ secrets.CODECOV_TOKEN }}
-
-  pack:
-    needs: build
+  build:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0
+      with:
+        versionSpec: '5.x'
+
+    - name: Determine Version
+      uses: gittools/actions/gitversion/execute@v0
+      with:
+        updateAssemblyInfo: true
   
     - name: Setup .NET 8.0 Framework
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
+    - name: Build
+      run: dotnet build -c Release
+
     - name: Pack NuGet
-      run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release --include-symbols --include-source -o ./nuget
+      run: dotnet pack -c Release --no-build --include-symbols --include-source -o ./nuget
       
     - name: Push NutGet
       run: dotnet nuget push ./nuget/*.nupkg -s "https://nuget.pkg.github.com/deveel/index.json" --skip-duplicate --api-key ${{secrets.GITHUB_TOKEN}}
 
   clean:
     name: "Clean Old Packages"
-    needs: pack
+    needs: build
     uses: ./.github/workflows/clean-packages.yml
