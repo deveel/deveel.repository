@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyCaching.Core" Version="1.9.1" />
+    <PackageReference Include="EasyCaching.Core" Version="1.9.2" />
   </ItemGroup>
 
   <ItemGroup>

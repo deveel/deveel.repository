@@ -9,7 +9,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace Deveel.Data {
-	public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLifetime 
+	public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLifetime, IAsyncDisposable
 		where TManager : EntityManager<TPerson, TKey>
 		where TPerson : class, IPerson<TKey>, new()
 		where TKey : notnull {
@@ -63,7 +63,9 @@ namespace Deveel.Data {
 
 		public virtual async Task DisposeAsync() {
 			await Repository.RemoveRangeAsync(People);
+		}
 
+		async ValueTask IAsyncDisposable.DisposeAsync() {
 			await scope.DisposeAsync();
 			(Services as IDisposable)?.Dispose();
 		}

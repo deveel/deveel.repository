@@ -56,7 +56,7 @@ namespace Deveel.Data {
 
 			await dbContext.DisposeAsync();
 
-			await base.DisposeAsync();
+			// await base.DisposeAsync();
 		}
 	}
 }
