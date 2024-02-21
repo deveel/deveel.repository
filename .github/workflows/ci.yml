@@ -40,7 +40,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Pack NuGet
-      run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release -o ./nuget
+      run: dotnet pack --version-suffix $GITHUB_RUN_ID -c Release --no-build --no-restore --include-symbols -o ./nuget
       
     - name: Push NutGet
       run: dotnet nuget push ./nuget/*.nupkg -s "Deveel GitHub" --skip-duplicate --api-key ${{secrets.DEVEEL_NUGET_TOKEN}}
