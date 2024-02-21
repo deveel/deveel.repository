@@ -48,22 +48,13 @@ jobs:
       run: dotnet test --no-build --verbosity normal -c Release -f ${{ env.DOTNET_FX_VERSION }}
       
   build:
+    name: "Build and Push Artifacts"
     needs: validate
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v0
-      with:
-        versionSpec: '5.x'
-
-    - name: Determine Version
-      uses: gittools/actions/gitversion/execute@v0
-      with:
-        updateAssemblyInfo: true
   
     - name: Setup .NET 8.0 Framework
       uses: actions/setup-dotnet@v4
@@ -71,10 +62,10 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Build
-      run: dotnet build -c Release
+      run: dotnet build -c Release --version-suffix $GITHUB_RUN_ID
 
     - name: Pack NuGet
-      run: dotnet pack -c Release --no-build --include-symbols --include-source -o ./nuget
+      run: dotnet pack -c Release --no-build --include-symbols --include-source --version-suffix $GITHUB_RUN_ID -o ./nuget
       
     - name: Push NutGet
       run: dotnet nuget push ./nuget/*.nupkg -s "https://nuget.pkg.github.com/deveel/index.json" --skip-duplicate --api-key ${{secrets.GITHUB_TOKEN}}
