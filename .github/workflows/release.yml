@@ -68,7 +68,7 @@ jobs:
         strip_v: true
 
     - name: Pack NuGet
-      run: dotnet pack -p:PackageVersion=${{steps.tag.outputs.tag}} -c Release -o ./nuget
+      run: dotnet pack -p:PackageVersion=${{steps.tag.outputs.tag}} -c Release -o ./nuget -p:Version=${{steps.tag.outputs.tag}}
       
     - name: Push Github Nuget
       run: dotnet nuget push ./nuget/*.nupkg -s "https://nuget.pkg.github.com/deveel/index.json" --skip-duplicate --api-key ${{secrets.GITHUB_TOKEN}}

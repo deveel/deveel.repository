@@ -1,0 +1,28 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version to release"
+        required: true
+        type: string
+
+jobs:
+  release:    
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get tag
+      id: tag
+      uses: dawidd6/action-get-tag@v1
+      with:
+        strip_v: true
+
+    - name: Pack NuGet
+      run: dotnet pack -p:PackageVersion=${{inputs.version}} -c Release -o ./nuget -p:Version=${{inputs.version}}
+      
+    - name: Push Github Nuget
+      run: dotnet nuget push ./nuget/*.nupkg -s "https://nuget.pkg.github.com/deveel/index.json" --skip-duplicate --api-key ${{secrets.GITHUB_TOKEN}}
+
+    - name: Push to Github.org
+      run: dotnet nuget push ./nuget/**/*.nupkg --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
