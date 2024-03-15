@@ -37,12 +37,6 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
 
-    - name: Get tag
-      id: tag
-      uses: dawidd6/action-get-tag@v1
-      with:
-        strip_v: true
-
     - name: Install SQLite Spatial
       run: sudo apt-get install -y libsqlite3-mod-spatialite
         
@@ -53,7 +47,7 @@ jobs:
       run: dotnet restore
       
     - name: Build
-      run: dotnet build --no-restore -p:Version=${{steps.tag.outputs.tag}} -c Release
+      run: dotnet build --no-restore -c Release
       
     - name: Test
       run: dotnet test --no-build --verbosity normal -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
@@ -67,6 +61,12 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     steps:
+    - name: Get tag
+      id: tag
+      uses: dawidd6/action-get-tag@v1
+      with:
+        strip_v: true
+
     - name: Pack NuGet
       run: dotnet pack -p:PackageVersion=${{steps.tag.outputs.tag}} -c Release -o ./nuget
       
