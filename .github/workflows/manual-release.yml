@@ -12,11 +12,7 @@ jobs:
   release:    
     runs-on: ubuntu-latest
     steps:
-    - name: Get tag
-      id: tag
-      uses: dawidd6/action-get-tag@v1
-      with:
-        strip_v: true
+    - uses: actions/checkout@v4
 
     - name: Pack NuGet
       run: dotnet pack -p:PackageVersion=${{inputs.version}} -c Release -o ./nuget -p:Version=${{inputs.version}}
