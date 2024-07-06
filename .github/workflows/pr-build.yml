@@ -1,5 +1,8 @@
 name: Repository PR Build
 
+permissions:
+  packages: read
+
 on:
   pull_request:
     branches: [ "main" ]
@@ -13,6 +16,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+  
+    - name: Add GitHub Nuget As Source
+      run: dotnet nuget add source https://nuget.pkg.github.com/deveel/index.json --name github --username tsutomi --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
       
     - name: Emit .NET 6.0 Framework Version
       if: matrix.dotnet == '6.0.x'
