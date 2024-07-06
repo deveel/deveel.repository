@@ -1,11 +1,11 @@
 ﻿namespace Deveel.Data {
 	public sealed class PersonErrorFactory : OperationErrorFactory {
-		protected override string ResolveErrorCode(string errorCode)
+		protected override string ResolveErrorCode(string errorCode, string domain)
 			=> errorCode switch {
 				EntityErrorCodes.NotFound => PersonErrorCodes.NotFound,
 				EntityErrorCodes.NotValid => PersonErrorCodes.NotValid,
 				EntityErrorCodes.UnknownError => PersonErrorCodes.UnknownError,
-				_ => base.ResolveErrorCode(errorCode)
+				_ => base.ResolveErrorCode(errorCode, domain)
 			};
 
 		protected override string? GetErrorMessage(string errorCode)

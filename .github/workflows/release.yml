@@ -24,7 +24,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
+  
     - name: Emit .NET 6.0 Framework Version
       if: matrix.dotnet == '6.0.x'
       run: echo "DOTNET_FX_VERSION=net6.0" >> $GITHUB_ENV

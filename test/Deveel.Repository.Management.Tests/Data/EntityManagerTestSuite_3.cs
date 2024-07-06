@@ -100,7 +100,7 @@ namespace Deveel.Data {
 
 			var result = await Manager.AddAsync(person);
 
-			Assert.True(result.IsValidationError());
+			Assert.True(result.HasValidationErrors());
 			Assert.NotNull(result.Error);
 
 			var validationError = Assert.IsAssignableFrom<IValidationError>(result.Error);
@@ -140,7 +140,7 @@ namespace Deveel.Data {
 
 			var result = await Manager.AddRangeAsync(people);
 
-			Assert.True(result.IsValidationError());
+			Assert.True(result.HasValidationErrors());
 			Assert.NotNull(result.Error);
 
 			var validationError = Assert.IsAssignableFrom<IValidationError>(result.Error);
@@ -164,7 +164,7 @@ namespace Deveel.Data {
 
 			var result = await Manager.UpdateAsync(person);
 
-			Assert.False(result.IsValidationError());
+			Assert.False(result.HasValidationErrors());
 			Assert.True(result.IsSuccess());
 
 			Assert.NotNull(person.UpdatedAtUtc);
@@ -184,7 +184,7 @@ namespace Deveel.Data {
 
 			var result = await Manager.UpdateAsync(toUpdate);
 
-			Assert.True(result.IsNotModified());
+			Assert.True(result.IsUnchanged());
 			Assert.False(result.IsSuccess());
 			Assert.Null(result.Error);
 
@@ -203,7 +203,7 @@ namespace Deveel.Data {
 			Assert.True(result.IsError());
 			Assert.False(result.IsSuccess());
 			Assert.NotNull(result.Error);
-			Assert.Equal(PersonErrorCodes.NotFound, result.Error.ErrorCode);
+			Assert.Equal(PersonErrorCodes.NotFound, result.Error.Code);
 		}
 
 		[Fact]
@@ -217,7 +217,7 @@ namespace Deveel.Data {
 			Assert.True(result.IsError());
 			Assert.False(result.IsSuccess());
 			Assert.NotNull(result.Error);
-			Assert.Equal(PersonErrorCodes.NotValid, result.Error.ErrorCode);
+			Assert.Equal(PersonErrorCodes.NotValid, result.Error.Code);
 		}
 
 		[Fact]
@@ -245,7 +245,7 @@ namespace Deveel.Data {
 			Assert.True(result.IsError());
 			Assert.False(result.IsSuccess());
 			Assert.NotNull(result.Error);
-			Assert.Equal(PersonErrorCodes.NotFound, result.Error.ErrorCode);
+			Assert.Equal(PersonErrorCodes.NotFound, result.Error.Code);
 		}
 
 		[Fact]
@@ -257,7 +257,7 @@ namespace Deveel.Data {
 			Assert.True(result.IsError());
 			Assert.False(result.IsSuccess());
 			Assert.NotNull(result.Error);
-			Assert.Equal(PersonErrorCodes.NotValid, result.Error.ErrorCode);
+			Assert.Equal(PersonErrorCodes.NotValid, result.Error.Code);
 		}
 
 		[Fact]
