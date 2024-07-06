@@ -5,15 +5,20 @@ permissions:
   packages: write
 
 on:
-  push:
-    tags:
-      - '*'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+       version:
+         type: string
+         required: true
+         description: The version to be published
 
 jobs:
   release:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         dotnet-version: [ '6.0.x', '7.0.x', '8.0.x' ]
 
@@ -61,14 +66,16 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     steps:
-    - name: Get tag
-      id: tag
-      uses: dawidd6/action-get-tag@v1
-      with:
-        strip_v: true
+    - name: Extract the Version
+      run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | sed -e 's/^v//')" >> $GITHUB_ENV
+      if: github.event.release.tag_name != null
+
+    - name: Set the Version from Input
+      run: echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+      if: github.event.release.tag_name == null
 
     - name: Pack NuGet
-      run: dotnet pack -p:PackageVersion=${{steps.tag.outputs.tag}} -c Release -o ./nuget -p:Version=${{steps.tag.outputs.tag}}
+      run: dotnet pack -p:PackageVersion=${{ env.VERSION }} -c Release -o ./nuget -p:Version=${{ env.VERSION }}
       
     - name: Push Github Nuget
       run: dotnet nuget push ./nuget/*.nupkg -s "https://nuget.pkg.github.com/deveel/index.json" --skip-duplicate --api-key ${{secrets.GITHUB_TOKEN}}
