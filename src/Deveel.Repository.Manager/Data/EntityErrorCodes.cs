@@ -19,6 +19,11 @@ namespace Deveel.Data {
 	/// </summary>
 	public static class EntityErrorCodes {
 		/// <summary>
+		/// The application domain is unknown
+		/// </summary>
+		public const string UnknownDomain = "Unknown";
+
+		/// <summary>
 		/// The entity to be added or updated is not valid.
 		/// </summary>
 		public const string NotValid = "NOT_VALID";

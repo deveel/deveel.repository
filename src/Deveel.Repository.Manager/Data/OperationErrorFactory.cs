@@ -35,7 +35,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns an error code normalized to a standard format.
 		/// </returns>
-		protected virtual string ResolveErrorCode(string errorCode) {
+		protected virtual string ResolveErrorCode(string errorCode, string domain) {
 			return errorCode;
 		}
 
@@ -54,26 +54,28 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public virtual IOperationError CreateError(string errorCode, string? message = null)
-			=> new OperationError(ResolveErrorCode(errorCode), message == null ? GetErrorMessage(ResolveErrorCode(errorCode)) : message);
+		public virtual IOperationError CreateError(string errorCode, string domain, string? message = null)
+			=> new OperationError(ResolveErrorCode(errorCode, domain), domain, message == null ? GetErrorMessage(ResolveErrorCode(errorCode, domain)) : message);
 
 		/// <inheritdoc/>
 		public virtual IOperationError CreateError(Exception exception) {
-			string? errorCode = null, errorMessage = null;
+			string? errorCode = null, errorDomain = null, errorMessage = null;
 			if (exception is OperationException opError) {
 				errorCode = opError.ErrorCode;
+				errorDomain = opError.ErrorDomain;
 				errorMessage = opError.Message;
 			} else {
+				errorDomain = EntityErrorCodes.UnknownDomain;
 				errorCode = EntityErrorCodes.UnknownError;
 				errorMessage = exception.Message;
 			}
 
-			return new OperationError(errorCode, errorMessage);
+			return new OperationError(errorCode, errorDomain, errorMessage);
 		}
 
 		/// <inheritdoc/>
-		public virtual IValidationError CreateValidationError(string errorCode, IList<ValidationResult> validationResults) {
-			return new EntityValidationError(ResolveErrorCode(errorCode), validationResults);
+		public virtual IValidationError CreateValidationError(string errorCode, string domain, IReadOnlyList<ValidationResult> validationResults) {
+			return new OperationValidationError(ResolveErrorCode(errorCode, domain), domain, validationResults);
 		}
 	}
 }
