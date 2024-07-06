@@ -2,6 +2,7 @@ name: Repository PR Build
 
 permissions:
   packages: read
+  contents: read
 
 on:
   pull_request:
