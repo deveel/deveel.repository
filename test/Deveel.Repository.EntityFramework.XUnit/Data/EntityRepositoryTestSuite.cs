@@ -41,7 +41,7 @@ namespace Deveel.Data {
 		}
 
 		protected override void ConfigureServices(IServiceCollection services) {
-			services.AddDbContext<DbContext, PersonDbContext>(builder => {
+			services.AddDbContext<PersonDbContext>(builder => {
 				builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 				builder.UseSqlite(sql.Connection, sqlite => {
 					sqlite.UseNetTopologySuite();
