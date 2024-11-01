@@ -149,38 +149,6 @@ namespace Deveel.Data {
 			=> Services?.GetService<IOperationCancellationSource>()?.Token ?? default;
 
 		/// <summary>
-		/// Gets a value indicating if the repository is multi-tenant
-		/// </summary>
-		/// <exception cref="ObjectDisposedException">
-		/// Throws when the service has been disposed.
-		/// </exception>
-		public virtual bool IsMultiTenant {
-			get {
-				ThrowIfDisposed();
-				return (Repository is IMultiTenantRepository<TEntity, TKey> multiTenant) &&
-					!String.IsNullOrWhiteSpace(multiTenant.TenantId);
-			}
-		}
-
-		/// <summary>
-		/// When the repository is multi-tenant, gets the identifier
-		/// of the tenant that is being managed by the service.
-		/// </summary>
-		/// <exception cref="ObjectDisposedException">
-		/// Throws when the service has been disposed.
-		/// </exception>
-		public virtual string? TenantId {
-			get {
-				ThrowIfDisposed();
-
-				if (Repository is IMultiTenantRepository<TEntity, TKey> multiTenant)
-					return multiTenant.TenantId;
-
-				return null;
-			}
-		}
-
-		/// <summary>
 		/// Gets a value indicating if the repository supports paging
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">

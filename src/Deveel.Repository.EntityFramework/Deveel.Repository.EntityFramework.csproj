@@ -21,7 +21,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
-	  <ProjectReference Include="..\Deveel.Repository.Finbuckle.MultiTenant\Deveel.Repository.Finbuckle.MultiTenant.csproj" />
 	</ItemGroup>
 
 </Project>

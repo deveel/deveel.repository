@@ -41,7 +41,6 @@ namespace Deveel.Data {
 		IQueryableRepository<TEntity, TKey>,
 		IPageableRepository<TEntity, TKey>,
 		IFilterableRepository<TEntity, TKey>,
-		IMultiTenantRepository<TEntity, TKey>,
 		IControllableRepository,
 		IAsyncDisposable,
 		IDisposable
@@ -61,9 +60,6 @@ namespace Deveel.Data {
 		protected internal MongoRepository(IMongoDbContext context, ILogger? logger = null) {
 			Context = context;
 			Logger = logger ?? NullLogger.Instance;
-
-			if (context is IMongoDbTenantContext tenantContext)
-				TenantId = tenantContext.TenantId;
 		}
 
 		/// <summary>
@@ -94,15 +90,6 @@ namespace Deveel.Data {
 		/// Gets the <see cref="ILogger"/> instance that is used to log messages
 		/// </summary>
 		protected ILogger Logger { get; }
-
-		/// <summary>
-		/// When the underlying context is a <see cref="IMongoDbTenantContext"/>,
-		/// this property returns the tenant identifier that is used to filter
-		/// the data in the repository.
-		/// </summary>
-		protected string? TenantId { get; }
-
-		string? IMultiTenantRepository<TEntity, TKey>.TenantId => TenantId;
 
 		IQueryable<TEntity> IQueryableRepository<TEntity, TKey>.AsQueryable() => DbSet.AsQueryable();
 
@@ -459,11 +446,7 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
-			if (!String.IsNullOrWhiteSpace(TenantId)) {
-				Logger.TraceCreatingForTenant(TenantId);
-			} else {
-				Logger.TraceCreating();
-			}
+			Logger.TraceCreating();
 
 			try {
 				entity = OnAddEntity(entity);
@@ -473,11 +456,7 @@ namespace Deveel.Data {
 
 				var id = GetEntityKey(entity);
 
-				if (!String.IsNullOrWhiteSpace(TenantId)) {
-					Logger.TraceCreatedForTenant(TenantId, id!);
-				} else {
-					Logger.TraceCreated(id!);
-				}
+				Logger.TraceCreated(id!);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex);
 				throw new RepositoryException("Unable to create the entity", ex);
@@ -528,11 +507,7 @@ namespace Deveel.Data {
 			if (id == null)
 				throw new ArgumentException(nameof(entity), "Cannot determine the identifier of the entity");
 
-			if (!String.IsNullOrWhiteSpace(TenantId)) {
-				Logger.TraceUpdatingForTenant(TenantId, id.ToString()!);
-			} else {
-				Logger.TraceUpdating(id.ToString()!);
-			}
+			Logger.TraceUpdating(id.ToString()!);
 
 			try {
 				var entry = Context.ChangeTracker.GetEntryById<TEntity>(id);
@@ -547,11 +522,7 @@ namespace Deveel.Data {
 				await Context.SaveChangesAsync(cancellationToken);
 
 				if (updated) {
-					if (!String.IsNullOrWhiteSpace(TenantId)) {
-						Logger.TraceUpdatedForTenant(TenantId, id.ToString()!);
-					} else {
-						Logger.TraceUpdated(id.ToString()!);
-					}
+					Logger.TraceUpdated(id.ToString()!);
 				}
 
 				return updated;
@@ -576,11 +547,7 @@ namespace Deveel.Data {
 				throw new ArgumentException("The entity does not have an ID", nameof(entity));
 
 			try {
-				if (!String.IsNullOrWhiteSpace(TenantId)) {
-					Logger.TraceDeletingForTenant(TenantId, entityId);
-				} else {
-					Logger.TraceDeleting(entityId);
-				}
+				Logger.TraceDeleting(entityId);
 
 				var entry = Context.ChangeTracker.GetEntry(entity);
 				if (entry == null)
@@ -588,12 +555,8 @@ namespace Deveel.Data {
 
 				DbSet.Remove(entity);
 				await Context.SaveChangesAsync(cancellationToken);
-
-				if (!String.IsNullOrWhiteSpace(TenantId)) {
-					Logger.TraceDeletedForTenant(TenantId, entityId);
-				} else {
-					Logger.TraceDeleted(entityId);
-				}
+	
+				Logger.TraceDeleted(entityId);
 
 				return entry.State == EntityEntryState.Deleted;
 			} catch (Exception ex) {
@@ -626,12 +589,7 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
-
-			if (!String.IsNullOrWhiteSpace(TenantId)) {
-				Logger.TraceFindingByIdForTenant(TenantId, key);
-			} else {
-				Logger.TraceFindingById(key);
-			}
+			Logger.TraceFindingById(key);
 
 			try {
 				var keyValue = ConvertKeyValue(key);
@@ -645,12 +603,7 @@ namespace Deveel.Data {
 				if (result == null)
 					return null;
 
-
-				if (!String.IsNullOrWhiteSpace(TenantId)) {
-					Logger.TraceFoundByIdForTenant(TenantId, key);
-				} else {
-					Logger.TraceFoundById(key);
-				}
+				Logger.TraceFoundById(key);
 
 				return result;
 			} catch (Exception ex) {

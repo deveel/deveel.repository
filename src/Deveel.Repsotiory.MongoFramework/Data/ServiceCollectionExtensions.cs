@@ -19,37 +19,16 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using MongoFramework;
 
+#if NET7_0_OR_GREATER
+using ITenantInfo = Finbuckle.MultiTenant.TenantInfo;
+#endif
+
 namespace Deveel.Data {
 	/// <summary>
 	/// Extends the <see cref="IServiceCollection"/> to provide methods
 	/// to register a <see cref="IMongoDbContext"/> in service collections.
 	/// </summary>
     public static class ServiceCollectionExtensions {
-		/// <summary>
-		/// Adds a <see cref="IMongoDbContext"/> to the service collection
-		/// for a given tenant.
-		/// </summary>
-		/// <typeparam name="TContext">
-		/// The type of the context to register.
-		/// </typeparam>
-		/// <param name="services">
-		/// The service collection to add the context to.
-		/// </param>
-		/// <param name="connectionBuilder">
-		/// A delegate to a method that builds the connection string
-		/// for a given tenant.
-		/// </param>
-		/// <param name="lifetime">
-		/// The lifetime of the context in the service collection.
-		/// </param>
-		/// <returns>
-		/// Returns the service collection for chaining.
-		/// </returns>
-		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<ITenantInfo?, MongoConnectionBuilder> connectionBuilder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			where TContext : class, IMongoDbContext {
-			return services.AddMongoDbContext<TContext>((provider, builder) => connectionBuilder(provider.GetService<ITenantInfo>(), builder), lifetime);
-		}
-
 		/// <summary>
 		/// Adds a <see cref="IMongoDbContext"/> to the service collection.
 		/// </summary>
@@ -83,6 +62,15 @@ namespace Deveel.Data {
 
 			Func<IServiceProvider, IMongoDbConnection<TContext>> connectionFactory = provider => {
 				var builder = provider.GetRequiredService<MongoConnectionBuilder<TContext>>();
+				if (builder.IsUsingTenant)
+				{
+					var tenantInfo = provider.GetRequiredService(builder.TenantType!) as MongoDbTenantInfo;
+					if (tenantInfo == null)
+						throw new InvalidOperationException("No tenant information was found in the service collection");
+
+					return new MongoDbConnection<TContext>(MongoDbConnection.FromConnectionString(tenantInfo.ConnectionString));
+				}
+
 				return new MongoDbConnection<TContext>(builder.Connection);
 			};
 
@@ -118,7 +106,7 @@ namespace Deveel.Data {
 			if (typeof(IMongoDbTenantContext).IsAssignableFrom(typeof(TContext))) {
 				var contextFactory = new Func<IServiceProvider, IMongoDbTenantContext>(provider => {
 					var builder = provider.GetRequiredService<MongoConnectionBuilder<TContext>>();
-					var tenantInfo = provider.GetRequiredService<ITenantInfo>();
+					var tenantInfo = provider.GetRequiredService<MongoDbTenantInfo>();
 
 					return (IMongoDbTenantContext) MongoDbContextUtil.CreateContext<TContext>(builder, tenantInfo);
 				});

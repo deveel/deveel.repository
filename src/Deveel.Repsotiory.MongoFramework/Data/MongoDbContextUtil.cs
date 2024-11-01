@@ -16,6 +16,10 @@ using Finbuckle.MultiTenant;
 
 using MongoFramework;
 
+#if NET7_0_OR_GREATER
+using ITenantInfo = Finbuckle.MultiTenant.TenantInfo;
+#endif
+
 namespace Deveel.Data {
 	static class MongoDbContextUtil {
 		public static IMongoDbContext CreateContext<TContext>(IMongoDbConnection connection, ITenantInfo tenantInfo)

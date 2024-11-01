@@ -59,41 +59,5 @@ namespace Deveel.Data {
 			Assert.NotNull(serviceProvider.GetService<IQueryableRepository<Person>>());
 			Assert.IsType<PersonRepository>(serviceProvider.GetService<IQueryableRepository<Person>>());
 		}
-
-		[Fact]
-		public static async Task AddInMemoryRepositoryProvider_NoKey() {
-			var services = new ServiceCollection();
-			services.AddRepositoryProvider<PersonRepositoryProviderNoKey>();
-
-			var serviceProvider = services.BuildServiceProvider();
-
-			Assert.NotNull(serviceProvider.GetService<PersonRepositoryProviderNoKey>());
-			Assert.NotNull(serviceProvider.GetService<IRepositoryProvider<Person>>());
-			Assert.IsType<PersonRepositoryProviderNoKey>(serviceProvider.GetService<IRepositoryProvider<Person>>());
-
-			var repository = await serviceProvider.GetRequiredService<IRepositoryProvider<Person>>().GetRepositoryAsync(Guid.NewGuid().ToString());
-
-			Assert.NotNull(repository);
-			Assert.IsType<PersonRepository>(repository);
-		}
-
-		[Fact]
-		public static async Task AddInMemoryRepositoryProvider() {
-			var services = new ServiceCollection();
-			services.AddRepositoryProvider<PersonRepositoryProvider>();
-
-			var serviceProvider = services.BuildServiceProvider();
-
-			Assert.NotNull(serviceProvider.GetService<PersonRepositoryProvider>());
-			Assert.NotNull(serviceProvider.GetService<IRepositoryProvider<Person, string>>());
-			Assert.IsType<PersonRepositoryProvider>(serviceProvider.GetService<IRepositoryProvider<Person, string>>());
-
-			var repository = await serviceProvider.GetRequiredService<IRepositoryProvider<Person, string>>()
-				.GetRepositoryAsync(Guid.NewGuid().ToString());
-
-			Assert.NotNull(repository);
-			Assert.IsType<PersonRepository>(repository);
-		}
-
 	}
 }

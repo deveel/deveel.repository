@@ -58,7 +58,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Managemen
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "management", "management", "{85200FA4-CC68-4758-B6E5-287E8AFA79FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Finbuckle.MultiTenant.XUnit", "test\Deveel.Repository.Finbuckle.MultiTenant.XUnit\Deveel.Repository.Finbuckle.MultiTenant.XUnit.csproj", "{BE852D51-A08A-4151-A8C1-396096F0AB52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Finbuckle.MultiTenant.XUnit", "test\Deveel.Repository.Finbuckle.MultiTenant.XUnit\Deveel.Repository.Finbuckle.MultiTenant.XUnit.csproj", "{BE852D51-A08A-4151-A8C1-396096F0AB52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

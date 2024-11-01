@@ -26,7 +26,6 @@ namespace Deveel.Data {
 		IQueryableRepository<TEntity>, 
 		IPageableRepository<TEntity>, 
 		IFilterableRepository<TEntity>,
-		IMultiTenantRepository<TEntity>,
 		IDisposable
 		where TEntity : class {
 		/// <summary>
@@ -46,26 +45,6 @@ namespace Deveel.Data {
 		}
 
 		/// <summary>
-		/// Constructs the repository with the given list of
-		/// initial entities for the given tenant.
-		/// </summary>
-		/// <param name="tenantId">
-		/// The identifier of the tenant that owns the entities.
-		/// </param>
-		/// <param name="list">
-		/// A list of entities to initialize the repository with.
-		/// </param>
-		/// <param name="fieldMapper">
-		/// A service that maps a field by name to an expression that
-		/// can select the field from an entity.
-		/// </param>
-		protected InMemoryRepository(string tenantId, 
-			IEnumerable<TEntity>? list = null,
-			IFieldMapper<TEntity>? fieldMapper = null)
-			: base(tenantId, list, fieldMapper) {
-		}
-
-		/// <summary>
 		/// Destroys the instance of the repository.
 		/// </summary>
 		~InMemoryRepository() {
@@ -73,8 +52,6 @@ namespace Deveel.Data {
 		}
 
 		IQueryable<TEntity> IQueryableRepository<TEntity, object>.AsQueryable() => Entities.AsQueryable();
-
-		string? IMultiTenantRepository<TEntity, object>.TenantId => TenantId;
 
 		object? IRepository<TEntity, object>.GetEntityKey(TEntity entity) {
 			return GetEntityKey(entity);
@@ -92,8 +69,5 @@ namespace Deveel.Data {
 
 			throw new RepositoryException($"The key '{key}' is not supported");
 		}
-
-		internal static new InMemoryRepository<TEntity> Create(string tenantId, IList<TEntity>? entities = null, IFieldMapper<TEntity>? fieldMapper = null)
-			=> new InMemoryRepository<TEntity>(tenantId, entities, fieldMapper);
 	}
 }

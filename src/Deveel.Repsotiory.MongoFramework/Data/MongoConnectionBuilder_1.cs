@@ -32,5 +32,9 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public override IMongoDbConnection Connection => new MongoDbConnection<TContext>(builder.Connection);
+
+		internal override bool IsUsingTenant => builder.IsUsingTenant;
+
+		internal override Type? TenantType => builder.TenantType;
 	}
 }
