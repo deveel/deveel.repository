@@ -14,4 +14,8 @@
     <ProjectReference Include="..\..\src\Deveel.Repository.Finbuckle.MultiTenant\Deveel.Repository.Finbuckle.MultiTenant.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
+
 </Project>

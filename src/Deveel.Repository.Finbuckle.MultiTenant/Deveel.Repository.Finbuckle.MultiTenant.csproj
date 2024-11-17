@@ -13,4 +13,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
 </Project>

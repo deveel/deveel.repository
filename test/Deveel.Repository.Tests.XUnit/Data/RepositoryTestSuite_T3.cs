@@ -31,7 +31,7 @@ namespace Deveel.Data {
 
 		protected IServiceProvider Services => scope.ServiceProvider;
 
-		protected virtual IRepository<TPerson, TKey> Repository => Services.GetRequiredService<IRepository<TPerson, TKey>>();
+		protected virtual IRepository<TPerson, TKey> Repository { get; private set; }
 
 		protected abstract Faker<TPerson> PersonFaker { get; }
 
@@ -52,6 +52,11 @@ namespace Deveel.Data {
 				services.AddLogging(logging => { logging.ClearProviders(); logging.AddXUnit(TestOutput); });
 		}
 
+		protected virtual Task<IRepository<TPerson, TKey>> GetRepositoryAsync()
+		{
+			return Task.FromResult(Services.GetRequiredService<IRepository<TPerson, TKey>>());
+		}
+
 		private void BuildServices() {
 			var services = new ServiceCollection();
 			services.AddSystemTime(TestTime);
@@ -66,6 +71,7 @@ namespace Deveel.Data {
 			BuildServices();
 
 			People = GeneratePeople(EntitySetCount).ToImmutableList();
+			Repository = await GetRepositoryAsync();
 
 			await InitializeAsync();
 		}

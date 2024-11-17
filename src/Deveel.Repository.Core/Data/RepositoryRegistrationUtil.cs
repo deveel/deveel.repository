@@ -20,6 +20,19 @@ namespace Deveel.Data {
 			=> Implements(typeof(IRepository<>), repositoryType) ||
 				Implements(typeof(IRepository<,>), repositoryType);
 
+		public static bool IsValidRepositoryProviderType(Type repositoryProviderType)
+		{
+			if (!Implements(typeof(IRepositoryProvider<>), repositoryProviderType))
+				return false;
+
+			var repositoryType = GetRepositoryServiceFromProviderType(repositoryProviderType);
+			if (repositoryType == null)
+				return false;
+
+			return IsValidRepositoryType(repositoryType);
+		}
+
+
 		public static bool Implements(Type genericType, Type type) {
 			if (type.IsGenericType) {
 				var genericTypeDefinition = type.GetGenericTypeDefinition();
@@ -108,6 +121,18 @@ namespace Deveel.Data {
 			}
 
 			return false;
+		}
+
+		public static Type? GetRepositoryServiceFromProviderType(Type repositoryProviderType)
+		{
+			if (!Implements(typeof(IRepositoryProvider<>), repositoryProviderType))
+				return null;
+
+			var repositoryType = repositoryProviderType.GenericTypeArguments[0];
+			if (!IsValidRepositoryType(repositoryType))
+				return null;
+
+			return repositoryType;
 		}
 
 		public static IReadOnlyList<Type> GetRepositoryServiceTypes(Type repositoryType) {

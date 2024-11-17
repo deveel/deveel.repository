@@ -89,6 +89,37 @@ namespace Deveel.Data {
 			return services;
 		}
 
+		public static IServiceCollection AddRepositoryProvider<TProvider>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+			=> services.AddRepositoryProvider(typeof(TProvider), lifetime);
+
+
+		public static IServiceCollection AddRepositoryProvider(this IServiceCollection services, Type providerType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+		{
+			ArgumentNullException.ThrowIfNull(providerType, nameof(providerType));
+
+			if (!providerType.IsClass || providerType.IsAbstract)
+				throw new ArgumentException($"The type '{providerType}' is not a valid repository provider type", nameof(providerType));
+
+			if (!RepositoryRegistrationUtil.IsValidRepositoryProviderType(providerType))
+				throw new ArgumentException($"The type '{providerType}' is not a valid repository provider type", nameof(providerType));
+
+			var repositoryType = RepositoryRegistrationUtil.GetRepositoryServiceFromProviderType(providerType);
+			if (repositoryType == null)
+				throw new RepositoryException($"The provider type '{providerType}' does not provide a valid repository type");
+
+			var serviceTypes = RepositoryRegistrationUtil.GetRepositoryServiceTypes(repositoryType);
+
+			foreach (var serviceType in serviceTypes)
+			{
+				var providerServiceType = typeof(IRepositoryProvider<>).MakeGenericType(serviceType);
+				services.TryAdd(new ServiceDescriptor(providerServiceType, providerType, lifetime));
+			}
+
+			services.Add(new ServiceDescriptor(providerType, providerType, lifetime));
+
+			return services;
+		}
+
         public static IServiceCollection AddRepositoryController<TController>(this IServiceCollection services, Action<RepositoryControllerOptions>? configure = null)
             where TController : class, IRepositoryController {
 

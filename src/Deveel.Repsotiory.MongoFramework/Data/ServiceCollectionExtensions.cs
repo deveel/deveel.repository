@@ -19,10 +19,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using MongoFramework;
 
-#if NET7_0_OR_GREATER
-using ITenantInfo = Finbuckle.MultiTenant.TenantInfo;
-#endif
-
 namespace Deveel.Data {
 	/// <summary>
 	/// Extends the <see cref="IServiceCollection"/> to provide methods
@@ -136,28 +132,16 @@ namespace Deveel.Data {
 			return services;
 		}
 
-		//private static IMongoDbTenantContext BuildTenantContext<TContext>(MongoConnectionBuilder<TContext> builder, ITenantInfo tenantInfo) where TContext : class, IMongoDbContext {
-		//	if (typeof(TContext) == typeof(MongoDbTenantContext))
-		//		return new MongoDbTenantContext(builder.Connection, tenantInfo.Id);
+		public static IServiceCollection AddMongoRepositoryProvider(this IServiceCollection services, Type repositoryType, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+		{
+			var providerType = typeof(MongoRepositoryProvider<>).MakeGenericType(repositoryType);
+			return services.AddRepositoryProvider(providerType, lifetime);
+		}
 
-		//	var ctors = typeof(TContext).GetConstructors();
-		//	foreach (var ctor in ctors) {
-		//		var parameters = ctor.GetParameters();
-		//		if (parameters.Length == 2) {
-		//			if (typeof(IMongoDbConnection<TContext>).IsAssignableFrom(parameters[0].ParameterType) &&
-		//				typeof(ITenantInfo).IsAssignableFrom(parameters[1].ParameterType)) {
-		//				return (IMongoDbTenantContext)Activator.CreateInstance(typeof(TContext), new object[] { builder.Connection.ForContext<TContext>(), tenantInfo })!;
-		//			} else if (typeof(IMongoDbConnection<TContext>).IsAssignableFrom(parameters[0].ParameterType) &&
-		//				parameters[1].ParameterType == typeof(string)) {
-		//				return (IMongoDbTenantContext)Activator.CreateInstance(typeof(TContext), new object[] { builder.Connection.ForContext<TContext>(), tenantInfo.Id })!;
-		//			} else if (typeof(IMongoDbConnection).IsAssignableFrom(parameters[0].ParameterType) &&
-		//				typeof(ITenantInfo).IsAssignableFrom(parameters[0].ParameterType)) {
-		//				return (IMongoDbTenantContext)Activator.CreateInstance(typeof(TContext), new object[] { builder.Connection, tenantInfo })!;
-		//			}
-		//		}
-		//	}
-
-		//	throw new NotSupportedException($"Cannot create '{typeof(TContext)}' MongoDB Context");
-		//}
+		public static IServiceCollection AddMongoRepositoryProvider<TRepository>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+			where TRepository : class
+		{
+			return services.AddMongoRepositoryProvider(typeof(TRepository), lifetime);
+		}
 	}
 }
