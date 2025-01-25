@@ -90,8 +90,9 @@ namespace Deveel.Data
 		protected override TEntity OnAddingEntity(TEntity entity)
 		{
 			var userId = UserId;
-			if (userId != null && !Equals(entity.Owner, userId))
-				entity.SetOwner(userId);
+			if (!Equals(default(TUserKey), UserId) 
+				&& !Equals(entity.Owner, userId))
+				entity.SetOwner(userId!);
 
 			return entity;
 		}
