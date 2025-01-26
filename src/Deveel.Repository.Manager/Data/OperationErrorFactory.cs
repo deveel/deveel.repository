@@ -26,6 +26,9 @@ namespace Deveel.Data {
 		/// <param name="errorCode">
 		/// The error code to normalize.
 		/// </param>
+		/// <param name="domain">
+		/// The domain where the error belongs to.
+		/// </param>
 		/// <remarks>
 		/// The aim of this method is to provide a way to map
 		/// a given error code to a normalized format, so that
