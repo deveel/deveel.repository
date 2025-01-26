@@ -5,6 +5,7 @@
 * [Getting Started](index.md)
 * [Customize the Repository](custom-repository.md)
 * [Multi-Tenancy of Data Sources](multi-tenancy.md)
+* [User Entities](user-entities.md)
 * [Repository Implementations](repository-implementations/README.md)
   * [In-Memory Repositories](repository-implementations/in-memory.md)
   * [Entity Framework Core Repositories](repository-implementations/ef-core.md)
