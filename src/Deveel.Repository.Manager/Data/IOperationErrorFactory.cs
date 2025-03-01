@@ -20,25 +20,28 @@ namespace Deveel.Data {
 	/// that can be used to report errors in an operation.
 	/// </summary>
 	public interface IOperationErrorFactory {
-		/// <summary>
-		/// Creates an instance of <see cref="IOperationError"/>
-		/// with the given error code and message.
-		/// </summary>
-		/// <param name="errorCode">
-		/// The code that identifies the class of the error.
-		/// </param>
-		/// <param name="message">
-		/// A message that describes the error.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of <see cref="IOperationError"/>
-		/// with the given error code and message.
-		/// </returns>
-		/// <exception cref="ArgumentNullException">
-		/// Thrown when the given <paramref name="errorCode"/> is <c>null</c>
-		/// or empty.
-		/// </exception>
-		IOperationError CreateError(string errorCode, string? message = null);
+        /// <summary>
+        /// Creates an instance of <see cref="IOperationError"/>
+        /// with the given error code and message.
+        /// </summary>
+        /// <param name="errorCode">
+        /// The code that identifies the class of the error.
+        /// </param>
+        /// <param name="domain">
+        /// The application domain that the error belongs to.
+        /// </param>
+        /// <param name="message">
+        /// A message that describes the error.
+        /// </param>
+        /// <returns>
+        /// Returns an instance of <see cref="IOperationError"/>
+        /// with the given error code and message.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when the given <paramref name="errorCode"/> is <c>null</c>
+        /// or empty.
+        /// </exception>
+        IOperationError CreateError(string errorCode, string domain, string? message = null);
 
 		/// <summary>
 		/// Creates an instance of <see cref="IValidationError"/>
@@ -47,6 +50,9 @@ namespace Deveel.Data {
 		/// <param name="errorCode">
 		/// The code that identifies the class of the error.
 		/// </param>
+		/// <param name="domain">
+		/// The application domain that the error belongs to.
+		/// </param>
 		/// <param name="validationResults">
 		/// The list of validation results that describe the error.
 		/// </param>
@@ -54,7 +60,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="IValidationError"/>
 		/// that represents a failed validation of an entity.
 		/// </returns>
-		IValidationError CreateValidationError(string errorCode, IList<ValidationResult> validationResults);
+		IValidationError CreateValidationError(string errorCode, string domain, IReadOnlyList<ValidationResult> validationResults);
 
 		/// <summary>
 		/// Creates an instance of <see cref="IOperationError"/>

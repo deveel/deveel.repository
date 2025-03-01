@@ -114,6 +114,11 @@ namespace Deveel.Data {
 		protected IEntityCache<TEntity>? EntityCache { get; }
 
 		/// <summary>
+		/// Gets the domain of the entities managed by the service.
+		/// </summary>
+		protected virtual string Domain => typeof(TEntity).Name;
+
+		/// <summary>
 		/// Gets an instance of the generator used to create the
 		/// keys for caching entities.
 		/// </summary>
@@ -456,7 +461,7 @@ namespace Deveel.Data {
 		/// describes the error.
 		/// </returns>
 		protected virtual IOperationError OperationError(string errorCode, string? message = null)
-			=> ErrorFactory?.CreateError(errorCode, message) ?? new OperationError(errorCode, message);
+			=> ErrorFactory?.CreateError(errorCode, Domain, message) ?? new OperationError(errorCode, Domain, message);
 
 		/// <summary>
 		/// Creates a validation error object with the given 
@@ -472,8 +477,8 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="IValidationError"/> that
 		/// represents a validation error.
 		/// </returns>
-		protected virtual IValidationError ValidationError(string errorCode, IList<ValidationResult> validationResults)
-			=> ErrorFactory?.CreateValidationError(errorCode, validationResults) ?? new EntityValidationError(errorCode, validationResults);
+		protected virtual IValidationError ValidationError(string errorCode, IReadOnlyList<ValidationResult> validationResults)
+			=> ErrorFactory?.CreateValidationError(errorCode, Domain, validationResults) ?? new OperationValidationError(errorCode, Domain, validationResults);
 
 		/// <summary>
 		/// Creates an error object with the given code and message
@@ -524,8 +529,8 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="OperationResult"/> that
 		/// represents a failed validation of an entity.
 		/// </returns>
-		/// <see cref="ValidationError(string, IList{ValidationResult})"/>
-		protected OperationResult ValidationFailed(string errorCode, IList<ValidationResult> validationResults)
+		/// <see cref="ValidationError(string, IReadOnlyList{ValidationResult})"/>
+		protected OperationResult ValidationFailed(string errorCode, IReadOnlyList<ValidationResult> validationResults)
 			=> OperationResult.Fail(ValidationError(errorCode, validationResults));
 
 		/// <summary>
@@ -546,7 +551,7 @@ namespace Deveel.Data {
 		/// represents an operation that has not modified the state of
 		/// an entity.
 		/// </returns>
-		protected OperationResult NotModified() => OperationResult.NotModified;
+		protected OperationResult NotChanged() => OperationResult.NotChanged;
 
 		/// <summary>
 		/// Validates the given entity before it is added or updated
@@ -561,7 +566,7 @@ namespace Deveel.Data {
 		/// Returns a list of <see cref="ValidationResult"/> that
 		/// describe the validation errors.
 		/// </returns>
-		protected virtual async Task<IList<ValidationResult>> ValidateAsync(TEntity entity, CancellationToken cancellationToken) {
+		protected virtual async Task<IReadOnlyList<ValidationResult>> ValidateAsync(TEntity entity, CancellationToken cancellationToken) {
 			if (EntityValidator == null)
 				return new List<ValidationResult>();
 
@@ -938,7 +943,7 @@ namespace Deveel.Data {
 
 				if (AreEqual(existing, entity)) {
 					Logger.LogEntityNotModified(typeof(TEntity), entityKey);
-					return NotModified();
+					return NotChanged();
 				}
 
 				var validation = await ValidateAsync(entity, token);
@@ -951,7 +956,7 @@ namespace Deveel.Data {
 
 				if (!await Repository.UpdateAsync(entity, token)) {
 					Logger.LogEntityNotModified(typeof(TEntity), entityKey);
-					return NotModified();
+					return NotChanged();
 				}
 
 				Logger.LogEntityUpdated(entityKey);
@@ -1012,7 +1017,7 @@ namespace Deveel.Data {
 
 				if (!await Repository.RemoveAsync(found, token)) {
 					Logger.LogEntityNotRemoved(typeof(TEntity), entityKey);
-					return NotModified();
+					return NotChanged();
 				}
 
 				await EvictAsync(entity, token);
@@ -1101,7 +1106,7 @@ namespace Deveel.Data {
 				return result;
 			} catch (Exception ex) {
 				LogEntityUnknownError(key, ex);
-				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
+				throw new OperationException(EntityErrorCodes.UnknownError, Domain, "Could not look for the entity", ex);
 			}
 		}
 
@@ -1142,7 +1147,7 @@ namespace Deveel.Data {
 				return await FilterableRepository.FindFirstAsync(query, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogUnknownError(ex);
-				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
+				throw new OperationException(EntityErrorCodes.UnknownError, Domain, "Could not look for the entity", ex);
 			}
 		}
 
@@ -1197,7 +1202,7 @@ namespace Deveel.Data {
 				return await FilterableRepository.FindAllAsync(query, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogUnknownError(ex);
-				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
+				throw new OperationException(EntityErrorCodes.UnknownError, Domain, "Could not look for the entity", ex);
 			}
 		}
 
@@ -1261,7 +1266,7 @@ namespace Deveel.Data {
 				return FilterableRepository.CountAsync(filter, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogUnknownError(ex);
-				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
+				throw new OperationException(EntityErrorCodes.UnknownError, Domain, "Could not look for the entity", ex);
 			}
 		}
 
@@ -1313,7 +1318,7 @@ namespace Deveel.Data {
 				return await PageableRepository.GetPageAsync(query, GetCancellationToken(cancellationToken));
 			} catch (Exception ex) {
 				LogUnknownError(ex);
-				throw new OperationException(EntityErrorCodes.UnknownError, "Could not look for the entity", ex);
+				throw new OperationException(EntityErrorCodes.UnknownError, Domain, "Could not look for the entity", ex);
 			}
 		}
 	}

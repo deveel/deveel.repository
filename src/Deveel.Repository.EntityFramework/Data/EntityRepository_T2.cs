@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Globalization;
-
 using Finbuckle.MultiTenant;
 using Finbuckle.MultiTenant.EntityFrameworkCore;
 
@@ -23,7 +21,10 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Deveel.Data {
+using System.Globalization;
+
+namespace Deveel.Data
+{
 	/// <summary>
 	/// A repository that uses an <see cref="DbContext"/> to access the data
 	/// of the entities.
@@ -208,6 +209,21 @@ namespace Deveel.Data {
 			return (TKey?) getter.GetClrValue(entity);
 		}
 
+		/// <summary>
+		/// A method that is invoked when an entity is 
+		/// being added to the repository.
+		/// </summary>
+		/// <param name="entity">
+		/// The entity that is being added to the repository.
+		/// </param>
+		/// <returns>
+		/// Returns the entity that will be added to the repository.
+		/// </returns>
+		protected virtual TEntity OnAddingEntity(TEntity entity)
+		{
+			return entity;
+		}
+
 		/// <inheritdoc/>
 		public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
@@ -217,7 +233,8 @@ namespace Deveel.Data {
 			Logger.TraceCreatingEntity(typeof(TEntity), TenantId);
 
 			try {
-				Entities.Add(entity);
+				Entities.Add(OnAddingEntity(entity));
+
 				var count = await Context.SaveChangesAsync(cancellationToken);
 
 				if (count > 1) {
@@ -238,7 +255,9 @@ namespace Deveel.Data {
 			ThrowIfDisposed();
 
 			try {
-				await Entities.AddRangeAsync(entities, cancellationToken);
+				var toAdd = entities.Select(OnAddingEntity).ToList();
+
+				await Entities.AddRangeAsync(toAdd, cancellationToken);
 
 				var count = await Context.SaveChangesAsync(true, cancellationToken);
 			} catch (Exception ex) {

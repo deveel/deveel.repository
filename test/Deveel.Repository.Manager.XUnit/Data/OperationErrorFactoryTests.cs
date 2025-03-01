@@ -4,10 +4,11 @@
 		public static void CreateError() {
 			var factory = new OperationErrorFactory();
 
-			var error = factory.CreateError(EntityErrorCodes.NotFound);
+			var error = factory.CreateError(EntityErrorCodes.NotFound, "test");
 
 			Assert.NotNull(error);
-			Assert.Equal(EntityErrorCodes.NotFound, error.ErrorCode);
+			Assert.Equal(EntityErrorCodes.NotFound, error.Code);
+			Assert.Equal("test", error.Domain);
 			Assert.Null(error.Message);
 		}
 
@@ -15,10 +16,11 @@
 		public static void CreateError_WithMessage() {
 			var factory = new OperationErrorFactory();
 
-			var error = factory.CreateError(EntityErrorCodes.NotFound, "The entity was not found");
+			var error = factory.CreateError(EntityErrorCodes.NotFound, "test", "The entity was not found");
 
 			Assert.NotNull(error);
-			Assert.Equal(EntityErrorCodes.NotFound, error.ErrorCode);
+			Assert.Equal("test", error.Domain);	
+			Assert.Equal(EntityErrorCodes.NotFound, error.Code);
 			Assert.Equal("The entity was not found", error.Message);
 		}
 
@@ -29,7 +31,8 @@
 			var error = factory.CreateError(new Exception("Something went wrong"));
 
 			Assert.NotNull(error);
-			Assert.Equal(EntityErrorCodes.UnknownError, error.ErrorCode);
+			Assert.Equal(EntityErrorCodes.UnknownError, error.Code);
+			Assert.Equal(EntityErrorCodes.UnknownDomain, error.Domain);
 			Assert.Equal("Something went wrong", error.Message);
 		}
 
@@ -37,10 +40,10 @@
 		public static void CreateError_OperationException() {
 			var factory = new OperationErrorFactory();
 
-			var error = factory.CreateError(new OperationException(EntityErrorCodes.NotFound));
+			var error = factory.CreateError(new OperationException(EntityErrorCodes.NotFound, "test"));
 
 			Assert.NotNull(error);
-			Assert.Equal(EntityErrorCodes.NotFound, error.ErrorCode);
+			Assert.Equal(EntityErrorCodes.NotFound, error.Code);
 			Assert.NotNull(error.Message);
 		}
 
@@ -48,10 +51,10 @@
 		public static void CreateError_OperationException_WithMessage() {
 			var factory = new OperationErrorFactory();
 
-			var error = factory.CreateError(new OperationException(EntityErrorCodes.NotFound, "The entity was not found"));
+			var error = factory.CreateError(new OperationException(EntityErrorCodes.NotFound, "test", "The entity was not found"));
 
 			Assert.NotNull(error);
-			Assert.Equal(EntityErrorCodes.NotFound, error.ErrorCode);
+			Assert.Equal(EntityErrorCodes.NotFound, error.Code);
 			Assert.Equal("The entity was not found", error.Message);
 		}
 	}

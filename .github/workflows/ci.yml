@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-  
+    
     - name: Emit .NET 6.0 Framework Version
       if: matrix.dotnet == '6.0.x'
       run: echo "DOTNET_FX_VERSION=net6.0" >> $GITHUB_ENV
@@ -39,7 +39,7 @@ jobs:
       run: sudo apt-get install -y libsqlite3-mod-spatialite
       
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore -p:TargetFrameworks=${{ env.DOTNET_FX_VERSION }}
       
     - name: Build
       run: dotnet build --no-restore -c Release -f ${{ env.DOTNET_FX_VERSION }}
@@ -70,7 +70,7 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Build
-      run: dotnet build -c Release --no-restore /p:Version="${{ env.GitVersion_SemVer }}" /p:AssemblyVersion="${{ env.GitVersion_AssemblySemVer }}" /p:FileVersion="${{ env.GitVersion_AssemblySemFileVer }}"
+      run: dotnet build -c Release /p:Version="${{ env.GitVersion_SemVer }}" /p:AssemblyVersion="${{ env.GitVersion_AssemblySemVer }}" /p:FileVersion="${{ env.GitVersion_AssemblySemFileVer }}"
 
     - name: Pack the Nuget Packages
       run: dotnet pack -c Release --no-build --no-restore --include-symbols --include-source --output nupkgs /p:PackageVersion="${{ env.GitVersion_NuGetVersionV2 }}" 
