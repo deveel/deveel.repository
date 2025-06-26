@@ -13,7 +13,7 @@ namespace Deveel.Data {
 
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
-					options.Tenants.Add(new TenantInfo {
+					options.Tenants.Add(new TestTenantInfo {
 						Id = tenantId,
 						Identifier = tenantIdentifier,
 						ConnectionString = "Data Source=.;Initial Catalog=tenant1;Integrated Security=True"
@@ -31,14 +31,16 @@ namespace Deveel.Data {
 			Assert.NotNull(tenant);
 			Assert.Equal(tenantId, tenant.Id);
 			Assert.Equal(tenantIdentifier, tenant.Identifier);
-			Assert.Equal("Data Source=.;Initial Catalog=tenant1;Integrated Security=True", tenant.ConnectionString);
+			var testTenantInfo = Assert.IsType<TestTenantInfo>(tenant);
+			Assert.Equal("Data Source=.;Initial Catalog=tenant1;Integrated Security=True", testTenantInfo.ConnectionString);
 
 			tenant = await resolver.FindTenantAsync(tenantIdentifier);
 
 			Assert.NotNull(tenant);
 			Assert.Equal(tenantId, tenant.Id);
 			Assert.Equal(tenantIdentifier, tenant.Identifier);
-			Assert.Equal("Data Source=.;Initial Catalog=tenant1;Integrated Security=True", tenant.ConnectionString);
+			testTenantInfo = Assert.IsType<TestTenantInfo>(tenant);
+			Assert.Equal("Data Source=.;Initial Catalog=tenant1;Integrated Security=True", testTenantInfo.ConnectionString);
 		}
 
 		[Fact]
@@ -50,7 +52,7 @@ namespace Deveel.Data {
 
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
-					options.Tenants.Add(new TenantInfo {
+					options.Tenants.Add(new TestTenantInfo {
 						Id = tenantId,
 						Identifier = tenantIdentifier,
 						ConnectionString = "Data Source=.;Initial Catalog=tenant1;Integrated Security=True"

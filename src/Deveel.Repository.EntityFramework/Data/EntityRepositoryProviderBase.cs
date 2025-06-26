@@ -16,6 +16,10 @@ using System.Reflection;
 
 using Finbuckle.MultiTenant;
 
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -72,11 +76,13 @@ namespace Deveel.Data {
 			var tenant = await tenantResolver.FindTenantAsync(tenantId, cancellationToken);
 			if (tenant == null)
 				throw new RepositoryException($"The tenant '{tenantId}' was not found");
+			if (tenant is not DbTenantInfo dbTenant)
+				throw new RepositoryException($"The tenant '{tenantId}' is not a valid DB Tenant");
 
-			return CreateRepository<TRepository>(tenant);
+			return CreateRepository<TRepository>(dbTenant);
 		}
 
-		private TContext ConstructDbContext(ITenantInfo tenantInfo) {
+		private TContext ConstructDbContext(DbTenantInfo tenantInfo) {
 			if (contexts == null || !contexts.TryGetValue(tenantInfo.Id!, out var dbContext)) {
 				var options = optionsFactory.Create(tenantInfo);
 				var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -106,7 +112,7 @@ namespace Deveel.Data {
 			return dbContext;
 		}
 
-		private TRepository CreateRepository<TRepository>(ITenantInfo tenant) {
+		private TRepository CreateRepository<TRepository>(DbTenantInfo tenant) {
 			try {
 				if (repositories == null || !repositories.TryGetValue(tenant.Id!, out var repository)) {
 					var dbContext = ConstructDbContext(tenant);
@@ -192,7 +198,7 @@ namespace Deveel.Data {
 				this.options = options;
 			}
 
-			public DbContextOptions<TContext> Create(ITenantInfo tenantInfo) => options;
+			public DbContextOptions<TContext> Create(DbTenantInfo tenantInfo) => options;
 		}
 	}
 }

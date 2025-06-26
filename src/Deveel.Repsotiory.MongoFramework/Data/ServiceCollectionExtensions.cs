@@ -45,9 +45,9 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the service collection for chaining.
 		/// </returns>
-		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<ITenantInfo?, MongoConnectionBuilder> connectionBuilder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<MongoTenantInfo?, MongoConnectionBuilder> connectionBuilder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TContext : class, IMongoDbContext {
-			return services.AddMongoDbContext<TContext>((provider, builder) => connectionBuilder(provider.GetService<ITenantInfo>(), builder), lifetime);
+			return services.AddMongoDbContext<TContext>((provider, builder) => connectionBuilder(provider.GetService<MongoTenantInfo>(), builder), lifetime);
 		}
 
 		/// <summary>
@@ -118,7 +118,7 @@ namespace Deveel.Data {
 			if (typeof(IMongoDbTenantContext).IsAssignableFrom(typeof(TContext))) {
 				var contextFactory = new Func<IServiceProvider, IMongoDbTenantContext>(provider => {
 					var builder = provider.GetRequiredService<MongoConnectionBuilder<TContext>>();
-					var tenantInfo = provider.GetRequiredService<ITenantInfo>();
+					var tenantInfo = provider.GetRequiredService<MongoTenantInfo>();
 
 					return (IMongoDbTenantContext) MongoDbContextUtil.CreateContext<TContext>(builder, tenantInfo);
 				});

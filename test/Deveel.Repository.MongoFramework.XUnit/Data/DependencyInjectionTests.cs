@@ -1,13 +1,15 @@
-﻿using Bogus;
-using System;
+﻿using Finbuckle.MultiTenant;
+
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using MongoDB.Bson;
 
 using MongoFramework;
-using System.Data;
-using Finbuckle.MultiTenant;
-using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
 
 namespace Deveel.Data {
 	public static class DependencyInjectionTests {
@@ -47,7 +49,7 @@ namespace Deveel.Data {
 				builder.UseConnection(tenant!.ConnectionString!);
 			});
 
-			services.AddSingleton<ITenantInfo>(new TenantInfo {
+			services.AddSingleton<ITenantInfo>(new MongoTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -129,7 +131,7 @@ namespace Deveel.Data {
 
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
-					options.Tenants.Add(new TenantInfo {
+					options.Tenants.Add(new MongoTenantInfo {
 						Name = "test-tenant",
 						Id = tenantId,
 						Identifier = tenantId,
@@ -164,7 +166,7 @@ namespace Deveel.Data {
 
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
-					options.Tenants.Add(new TenantInfo {
+					options.Tenants.Add(new MongoTenantInfo {
 						Id = tenantId,
 						Identifier = tenantId,
 						ConnectionString = "mongodb://localhost:27017/testdb"
@@ -220,7 +222,7 @@ namespace Deveel.Data {
 
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
-					options.Tenants.Add(new TenantInfo {
+					options.Tenants.Add(new MongoTenantInfo {
 						Name = "test-tenant",
 						Id = tenantId,
 						Identifier = tenantId,
@@ -258,7 +260,7 @@ namespace Deveel.Data {
 
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
-					options.Tenants.Add(new TenantInfo {
+					options.Tenants.Add(new MongoTenantInfo {
 						Id = tenantId,
 						Identifier = tenantId,
 						ConnectionString = "mongodb://localhost:27017/testdb"
@@ -293,7 +295,7 @@ namespace Deveel.Data {
 
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
-					options.Tenants.Add(new TenantInfo {
+					options.Tenants.Add(new MongoTenantInfo {
 						Id = tenantId,
 						Identifier = tenantId,
 						ConnectionString = "mongodb://localhost:27017/testdb"

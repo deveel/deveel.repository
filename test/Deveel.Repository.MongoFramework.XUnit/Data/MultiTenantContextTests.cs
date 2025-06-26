@@ -2,6 +2,10 @@
 
 using Finbuckle.MultiTenant;
 
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
+
 using Microsoft.Extensions.DependencyInjection;
 
 using MongoFramework;
@@ -23,6 +27,26 @@ namespace Deveel.Data {
 			serviceProvider = services.BuildServiceProvider();
 		}
 
+#if NET7_0_OR_GREATER
+		private async Task ResolveTenant() {
+			var accessor = serviceProvider.GetRequiredService<IMultiTenantContextAccessor<TenantInfo>>();
+			if (accessor.MultiTenantContext == null) {
+				var setter = serviceProvider.GetRequiredService<IMultiTenantContextSetter>();
+				var context = new MultiTenantContext<TenantInfo> {
+					TenantInfo = new MongoTenantInfo {
+						Id = tenantId,
+						Identifier = "test-tenant",
+						Name = "Test Tenant",
+						ConnectionString = mongo.ConnectionString
+					}
+				};
+				setter.MultiTenantContext = context;
+
+				serviceProvider.GetRequiredService<ITenantInfo>();
+			}
+		}
+
+#else
 		private async Task ResolveTenant() {
 			var accessor = serviceProvider.GetRequiredService<IMultiTenantContextAccessor<TenantInfo>>();
 			if (accessor.MultiTenantContext == null) {
@@ -33,11 +57,12 @@ namespace Deveel.Data {
 				serviceProvider.GetRequiredService<ITenantInfo>();
 			}
 		}
+#endif
 
 		private void AddRepository(IServiceCollection services) {
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(config => {
-					config.Tenants.Add(new TenantInfo { 
+					config.Tenants.Add(new MongoTenantInfo { 
 						Id = tenantId, 
 						Identifier = "test-tenant", 
 						Name = "Test Tenant",
@@ -48,7 +73,7 @@ namespace Deveel.Data {
 
 			services.AddSingleton<IMultiTenantContext<TenantInfo>>(_ => {
 				return new MultiTenantContext<TenantInfo> {
-					TenantInfo = new TenantInfo {
+					TenantInfo = new MongoTenantInfo {
 						Id = tenantId,
 						Identifier = "test-tenant",
 						Name = "Test Tenant",

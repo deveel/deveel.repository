@@ -14,6 +14,10 @@
 
 using Finbuckle.MultiTenant;
 
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -122,7 +126,7 @@ namespace Deveel.Data {
 		/// Returns the service collection with the repository provider registered,
 		/// for chaining.
 		/// </returns>
-		public static IServiceCollection AddEntityRepositoryProvider<TEntity, TContext>(this IServiceCollection services, Action<ITenantInfo, DbContextOptionsBuilder<TContext>> optionsFactory, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+		public static IServiceCollection AddEntityRepositoryProvider<TEntity, TContext>(this IServiceCollection services, Action<DbTenantInfo, DbContextOptionsBuilder<TContext>> optionsFactory, ServiceLifetime lifetime = ServiceLifetime.Scoped)
 			where TEntity : class
 			where TContext : DbContext {
 			services.AddRepositoryProvider<EntityRepositoryProvider<TContext, TEntity>>(lifetime);
@@ -152,7 +156,7 @@ namespace Deveel.Data {
 		/// Returns the service collection with the options factory registered,
 		/// for chaining.
 		/// </returns>
-		public static IServiceCollection AddDbContextOptionsFactory<TContext>(this IServiceCollection services, Action<ITenantInfo, DbContextOptionsBuilder<TContext>> optionsFactory, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+		public static IServiceCollection AddDbContextOptionsFactory<TContext>(this IServiceCollection services, Action<DbTenantInfo, DbContextOptionsBuilder<TContext>> optionsFactory, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TContext : DbContext {
 			services.AddSingleton<IDbContextOptionsFactory<TContext>>(new DelegatedDbContextOptionsFactory<TContext>(optionsFactory));
 			return services;
@@ -167,13 +171,13 @@ namespace Deveel.Data {
 		}
 
 		class DelegatedDbContextOptionsFactory<TContext> : IDbContextOptionsFactory<TContext> where TContext : DbContext {
-			private readonly Action<ITenantInfo, DbContextOptionsBuilder<TContext>> factory;
+			private readonly Action<DbTenantInfo, DbContextOptionsBuilder<TContext>> factory;
 
-			public DelegatedDbContextOptionsFactory(Action<ITenantInfo, DbContextOptionsBuilder<TContext>> factory) {
+			public DelegatedDbContextOptionsFactory(Action<DbTenantInfo, DbContextOptionsBuilder<TContext>> factory) {
 				this.factory = factory;
 			}
 
-			public DbContextOptions<TContext> Create(ITenantInfo tenantInfo) {
+			public DbContextOptions<TContext> Create(DbTenantInfo tenantInfo) {
 				var builder = new DbContextOptionsBuilder<TContext>();
 				factory(tenantInfo, builder);
 				return builder.Options;

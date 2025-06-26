@@ -14,6 +14,10 @@
 
 using Finbuckle.MultiTenant;
 
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
+
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
 
@@ -102,8 +106,10 @@ namespace Deveel.Data {
 
 					if (tenantInfo == null)
 						throw new RepositoryException($"Unable to find any tenant for the ID '{tenantId}' - cannot construct a context");
+					if (!(tenantInfo is MongoTenantInfo mongoTenantInfo))
+						throw new RepositoryException($"The tenant '{tenantId}' is not a MongoDB tenant");
 
-					var connection = MongoDbConnection.FromConnectionString(tenantInfo.ConnectionString);
+					var connection = MongoDbConnection.FromConnectionString(mongoTenantInfo.ConnectionString);
 
 					// var tenantContext = CreateTenantContext(tenantInfo);
 					var context = CreateContext(connection, tenantInfo);
