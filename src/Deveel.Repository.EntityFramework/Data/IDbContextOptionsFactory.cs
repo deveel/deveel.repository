@@ -14,6 +14,10 @@
 
 using Finbuckle.MultiTenant;
 
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Deveel.Data {
@@ -38,6 +42,6 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="DbContextOptions{TContext}"/>
 		/// that is specific for the given tenant.
 		/// </returns>
-		DbContextOptions<TContext> Create(ITenantInfo tenantInfo);
+		DbContextOptions<TContext> Create(DbTenantInfo tenantInfo);
 	}
 }

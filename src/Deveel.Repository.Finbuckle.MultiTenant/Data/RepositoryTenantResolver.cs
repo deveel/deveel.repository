@@ -14,6 +14,10 @@
 
 using Finbuckle.MultiTenant;
 
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
+
 namespace Deveel.Data {
 	/// <summary>
 	/// A default implementation of <see cref="IRepositoryTenantResolver"/>

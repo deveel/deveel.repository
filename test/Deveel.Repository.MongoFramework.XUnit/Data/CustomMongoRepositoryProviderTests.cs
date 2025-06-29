@@ -2,6 +2,10 @@
 
 using Finbuckle.MultiTenant;
 
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -37,7 +41,7 @@ namespace Deveel.Data {
 		protected virtual void AddRepositoryProvider(IServiceCollection services) {
             services.AddMultiTenant<TenantInfo>()
                 .WithInMemoryStore(config => {
-                    config.Tenants.Add(new TenantInfo {
+                    config.Tenants.Add(new MongoTenantInfo {
                         Id = TenantId,
                         Identifier = "test",
                         Name = "Test Tenant",

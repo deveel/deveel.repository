@@ -1,5 +1,9 @@
 ﻿using Finbuckle.MultiTenant;
 
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -40,7 +44,7 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
-					options.Tenants.Add(new TenantInfo {
+					options.Tenants.Add(new DbTenantInfo {
 						Id = tenantId,
 						Identifier = tenantId,
 						Name = "Test Tenant"
@@ -70,7 +74,7 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
-					options.Tenants.Add(new TenantInfo {
+					options.Tenants.Add(new DbTenantInfo {
 						Id = tenantId,
 						Identifier = tenantId,
 						Name = "Test Tenant",
@@ -101,7 +105,7 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
-					options.Tenants.Add(new TenantInfo {
+					options.Tenants.Add(new DbTenantInfo {
 						Id = tenantId,
 						Identifier = tenantId,
 						Name = "Test Tenant",
@@ -134,7 +138,7 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
-					options.Tenants.Add(new TenantInfo {
+					options.Tenants.Add(new DbTenantInfo {
 						Id = tenantId,
 						Identifier = tenantId,
 						Name = "Test Tenant",

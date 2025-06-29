@@ -36,7 +36,7 @@ namespace Deveel.Data {
 		protected virtual void AddRepositoryProvider(IServiceCollection services) {
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(config => {
-					config.Tenants.Add(new TenantInfo {
+					config.Tenants.Add(new MongoTenantInfo {
 						Id = TenantId,
 						Identifier = "test",
 						Name = "Test Tenant",
