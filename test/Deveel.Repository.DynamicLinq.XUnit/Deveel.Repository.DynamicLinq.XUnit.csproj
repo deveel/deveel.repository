@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
+    <RunSettingsFilePath>D:\deveel\deveel.repository\test\Deveel.Repository.DynamicLinq.XUnit\bin\Debug\net6.0\fine-code-coverage\coverage-tool-output\Deveel.Repository.DynamicLinq.XUnit %28net6.0%29-fcc-mscodecoverage-generated.runsettings</RunSettingsFilePath>
   </PropertyGroup>
 
   <ItemGroup>

@@ -13,6 +13,9 @@
 // limitations under the License.
 
 using Finbuckle.MultiTenant;
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -47,7 +50,11 @@ namespace Deveel.Data {
 		/// </returns>
 		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<MongoTenantInfo?, MongoConnectionBuilder> connectionBuilder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TContext : class, IMongoDbContext {
-			return services.AddMongoDbContext<TContext>((provider, builder) => connectionBuilder(provider.GetService<MongoTenantInfo>(), builder), lifetime);
+			return services.AddMongoDbContext<TContext>((provider, builder) => {
+				var context = provider.GetService<IMultiTenantContextAccessor<MongoTenantInfo>>();
+				var tenantInfo = context?.MultiTenantContext?.TenantInfo;
+				connectionBuilder(tenantInfo, builder);
+			}, lifetime);
 		}
 
 		/// <summary>
@@ -118,7 +125,8 @@ namespace Deveel.Data {
 			if (typeof(IMongoDbTenantContext).IsAssignableFrom(typeof(TContext))) {
 				var contextFactory = new Func<IServiceProvider, IMongoDbTenantContext>(provider => {
 					var builder = provider.GetRequiredService<MongoConnectionBuilder<TContext>>();
-					var tenantInfo = provider.GetRequiredService<MongoTenantInfo>();
+					var accessor = provider.GetRequiredService<IMultiTenantContextAccessor<MongoTenantInfo>>();
+					var tenantInfo = accessor.MultiTenantContext?.TenantInfo!;
 
 					return (IMongoDbTenantContext) MongoDbContextUtil.CreateContext<TContext>(builder, tenantInfo);
 				});

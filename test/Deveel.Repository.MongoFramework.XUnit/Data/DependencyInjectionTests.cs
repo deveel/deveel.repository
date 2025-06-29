@@ -1,4 +1,6 @@
-﻿using Finbuckle.MultiTenant;
+﻿using Deveel.Utils;
+
+using Finbuckle.MultiTenant;
 
 #if NET7_0_OR_GREATER
 using Finbuckle.MultiTenant.Abstractions;
@@ -49,7 +51,7 @@ namespace Deveel.Data {
 				builder.UseConnection(tenant!.ConnectionString!);
 			});
 
-			services.AddSingleton<ITenantInfo>(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -79,7 +81,9 @@ namespace Deveel.Data {
 		public static void AddTenantDbContext_DefaultConnection() {
 			var services = new ServiceCollection();
 
-			services.AddSingleton<ITenantInfo>(new TenantInfo { Id = Guid.NewGuid().ToString() });
+			services.AddMongoTenantContext(new MongoTenantInfo {
+				Id = Guid.NewGuid().ToString()
+			});
 
 			services.AddMongoDbContext<MongoDbTenantContext>(builder => {
 				builder.UseConnection("mongodb://localhost:27017/testdb");
@@ -132,11 +136,11 @@ namespace Deveel.Data {
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
 					options.Tenants.Add(new MongoTenantInfo {
-						Name = "test-tenant",
-						Id = tenantId,
-						Identifier = tenantId,
-						ConnectionString = "mongodb://localhost:27017/testdb"
-					});
+				Name = "test-tenant",
+				Id = tenantId,
+				Identifier = tenantId,
+				ConnectionString = "mongodb://localhost:27017/testdb"
+			});
 				});
 
 			services.AddRepositoryTenantResolver<TenantInfo>();
@@ -167,10 +171,10 @@ namespace Deveel.Data {
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
 					options.Tenants.Add(new MongoTenantInfo {
-						Id = tenantId,
-						Identifier = tenantId,
-						ConnectionString = "mongodb://localhost:27017/testdb"
-					});
+				Id = tenantId,
+				Identifier = tenantId,
+				ConnectionString = "mongodb://localhost:27017/testdb"
+			});
 				});
 
 			services.AddRepositoryTenantResolver<TenantInfo>();
@@ -223,11 +227,11 @@ namespace Deveel.Data {
 			services.AddMultiTenant<TenantInfo>()
 				.WithInMemoryStore(options => {
 					options.Tenants.Add(new MongoTenantInfo {
-						Name = "test-tenant",
-						Id = tenantId,
-						Identifier = tenantId,
-						ConnectionString = "mongodb://localhost:27017/testdb"
-					});
+				Name = "test-tenant",
+				Id = tenantId,
+				Identifier = tenantId,
+				ConnectionString = "mongodb://localhost:27017/testdb"
+			});
 				});
 
 			services.AddRepositoryTenantResolver<TenantInfo>();
