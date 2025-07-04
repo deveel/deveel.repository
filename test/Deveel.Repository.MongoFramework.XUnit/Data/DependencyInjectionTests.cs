@@ -1,4 +1,10 @@
-﻿using Finbuckle.MultiTenant;
+﻿using Deveel.Utils;
+
+using Finbuckle.MultiTenant;
+
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -7,8 +13,7 @@ using MongoDB.Bson;
 
 using MongoFramework;
 
-namespace Deveel.Data
-{
+namespace Deveel.Data {
 	public static class DependencyInjectionTests {
 		[Fact]
 		public static void AddDefaultDbContext_DefaultConnection() {
@@ -46,8 +51,7 @@ namespace Deveel.Data
 				builder.UseTenant();
 			});
 
-			services.AddSingleton(new MongoDbTenantInfo
-			{
+			services.AddMongoTenantContext(new MongoTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -77,7 +81,9 @@ namespace Deveel.Data
 		public static void AddTenantDbContext_DefaultConnection() {
 			var services = new ServiceCollection();
 
-			services.AddSingleton(new MongoDbTenantInfo { Id = Guid.NewGuid().ToString() });
+			services.AddMongoTenantContext(new MongoTenantInfo {
+				Id = Guid.NewGuid().ToString()
+			});
 
 			services.AddMongoDbContext<MongoDbTenantContext>(builder => {
 				builder.UseConnection("mongodb://localhost:27017/testdb");

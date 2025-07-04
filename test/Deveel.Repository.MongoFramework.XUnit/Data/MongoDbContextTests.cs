@@ -1,4 +1,10 @@
-﻿using Finbuckle.MultiTenant;
+﻿using Deveel.Utils;
+
+using Finbuckle.MultiTenant;
+
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -32,7 +38,7 @@ namespace Deveel.Data {
 				builder.UseTenant();
 			});
 
-			services.AddSingleton(new MongoDbTenantInfo {
+			services.AddMongoTenantContext(new MongoTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -48,8 +54,7 @@ namespace Deveel.Data {
 		public static void AddDefaultTenantContext_SharedConnection() {
 			var services = new ServiceCollection();
 
-			services.AddSingleton(new MongoDbTenantInfo
-			{
+			services.AddMongoTenantContext(new MongoTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant"
 			});
@@ -73,8 +78,7 @@ namespace Deveel.Data {
 				builder.UseTenant();
 			});
 
-			services.AddSingleton(new MongoDbTenantInfo
-			{
+			services.AddMongoTenantContext(new MongoTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -110,8 +114,7 @@ namespace Deveel.Data {
 				builder.UseTenant();
 			});
 
-			services.AddSingleton(new MongoDbTenantInfo
-			{
+			services.AddMongoTenantContext(new MongoTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -147,8 +150,7 @@ namespace Deveel.Data {
 				builder.UseTenant();
 			});
 
-			services.AddSingleton(new MongoDbTenantInfo
-			{
+			services.AddMongoTenantContext(new MongoTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -165,8 +167,7 @@ namespace Deveel.Data {
 		public static void AddCustomTenantContext_SharedConnection() {
 			var services = new ServiceCollection();
 
-			services.AddSingleton(new MongoDbTenantInfo
-			{
+			services.AddMongoTenantContext(new MongoTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant"
 			});
@@ -190,8 +191,7 @@ namespace Deveel.Data {
 				builder.UseTenant();
 			});
 
-			services.AddSingleton(new MongoDbTenantInfo
-			{
+			services.AddMongoTenantContext(new MongoTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"

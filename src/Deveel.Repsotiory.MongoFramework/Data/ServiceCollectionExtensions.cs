@@ -13,6 +13,9 @@
 // limitations under the License.
 
 using Finbuckle.MultiTenant;
+#if NET7_0_OR_GREATER
+using Finbuckle.MultiTenant.Abstractions;
+#endif
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -102,7 +105,8 @@ namespace Deveel.Data {
 			if (typeof(IMongoDbTenantContext).IsAssignableFrom(typeof(TContext))) {
 				var contextFactory = new Func<IServiceProvider, IMongoDbTenantContext>(provider => {
 					var builder = provider.GetRequiredService<MongoConnectionBuilder<TContext>>();
-					var tenantInfo = provider.GetRequiredService<MongoDbTenantInfo>();
+					var accessor = provider.GetRequiredService<IMultiTenantContextAccessor<MongoTenantInfo>>();
+					var tenantInfo = accessor.MultiTenantContext?.TenantInfo!;
 
 					return (IMongoDbTenantContext) MongoDbContextUtil.CreateContext<TContext>(builder, tenantInfo);
 				});

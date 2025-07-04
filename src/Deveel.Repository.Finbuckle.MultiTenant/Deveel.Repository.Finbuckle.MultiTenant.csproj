@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Finbuckle.MultiTenant" Version="6.13.1" />
+    <PackageReference Include="Finbuckle.MultiTenant" Version="6.13.1" Condition="$(TargetFramework) == 'net6.0'" />
+    <PackageReference Include="Finbuckle.MultiTenant" Version="7.0.2" Condition="$(TargetFramework) == 'net7.0'" />
+    <PackageReference Include="Finbuckle.MultiTenant" Version="8.1.3" Condition="$(TargetFramework) == 'net8.0'" />
   </ItemGroup>
 
   <ItemGroup>
