@@ -63,7 +63,9 @@ namespace Deveel.Data {
 				var builder = provider.GetRequiredService<MongoConnectionBuilder<TContext>>();
 				if (builder.IsUsingTenant)
 				{
-					var tenantInfo = provider.GetRequiredService(builder.TenantType!) as MongoDbTenantInfo;
+					var contextType = typeof(IMultiTenantContextAccessor<>).MakeGenericType(builder.TenantType!);
+					var tenantContextAccessor = (IMultiTenantContextAccessor) provider.GetRequiredService(contextType);
+					var tenantInfo = tenantContextAccessor.MultiTenantContext?.TenantInfo as MongoDbTenantInfo;
 					if (tenantInfo == null)
 						throw new InvalidOperationException("No tenant information was found in the service collection");
 
@@ -105,7 +107,7 @@ namespace Deveel.Data {
 			if (typeof(IMongoDbTenantContext).IsAssignableFrom(typeof(TContext))) {
 				var contextFactory = new Func<IServiceProvider, IMongoDbTenantContext>(provider => {
 					var builder = provider.GetRequiredService<MongoConnectionBuilder<TContext>>();
-					var accessor = provider.GetRequiredService<IMultiTenantContextAccessor<MongoTenantInfo>>();
+					var accessor = provider.GetRequiredService<IMultiTenantContextAccessor<MongoDbTenantInfo>>();
 					var tenantInfo = accessor.MultiTenantContext?.TenantInfo!;
 
 					return (IMongoDbTenantContext) MongoDbContextUtil.CreateContext<TContext>(builder, tenantInfo);
@@ -134,18 +136,6 @@ namespace Deveel.Data {
 			}
 
 			return services;
-		}
-
-		public static IServiceCollection AddMongoRepositoryProvider(this IServiceCollection services, Type repositoryType, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-		{
-			var providerType = typeof(MongoRepositoryProvider<>).MakeGenericType(repositoryType);
-			return services.AddRepositoryProvider(providerType, lifetime);
-		}
-
-		public static IServiceCollection AddMongoRepositoryProvider<TRepository>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			where TRepository : class
-		{
-			return services.AddMongoRepositoryProvider(typeof(TRepository), lifetime);
 		}
 	}
 }

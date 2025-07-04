@@ -38,7 +38,7 @@ namespace Deveel.Data {
 				builder.UseTenant();
 			});
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -54,7 +54,7 @@ namespace Deveel.Data {
 		public static void AddDefaultTenantContext_SharedConnection() {
 			var services = new ServiceCollection();
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant"
 			});
@@ -78,7 +78,7 @@ namespace Deveel.Data {
 				builder.UseTenant();
 			});
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -114,7 +114,7 @@ namespace Deveel.Data {
 				builder.UseTenant();
 			});
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -150,7 +150,7 @@ namespace Deveel.Data {
 				builder.UseTenant();
 			});
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -167,7 +167,7 @@ namespace Deveel.Data {
 		public static void AddCustomTenantContext_SharedConnection() {
 			var services = new ServiceCollection();
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant"
 			});
@@ -191,7 +191,7 @@ namespace Deveel.Data {
 				builder.UseTenant();
 			});
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"

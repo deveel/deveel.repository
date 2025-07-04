@@ -51,7 +51,7 @@ namespace Deveel.Data {
 				builder.UseTenant();
 			});
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -81,7 +81,7 @@ namespace Deveel.Data {
 		public static void AddTenantDbContext_DefaultConnection() {
 			var services = new ServiceCollection();
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString()
 			});
 
@@ -147,36 +147,6 @@ namespace Deveel.Data {
 			Assert.NotNull(provider.GetService<IPageableRepository<MongoPerson>>());
 			Assert.NotNull(provider.GetService<IFilterableRepository<MongoPerson>>());
 			Assert.NotNull(provider.GetService<IQueryableRepository<MongoPerson>>());
-		}
-
-		[Fact]
-		public static void AddMongoRepositoryProvider()
-		{
-			var services = new ServiceCollection();
-
-			services.AddMongoDbContext<MongoDbContext>(builder =>
-			{
-				builder.UseConnection("mongodb://localhost:27017/testdb");
-			});
-
-			services.AddMongoRepositoryProvider<MyMongoPersonRepository>();
-
-			var provider = services.BuildServiceProvider();
-
-			Assert.NotNull(provider.GetService<IRepositoryProvider<MyMongoPersonRepository>>());
-		}
-
-		[Fact]
-		public static void AddWrongRepositoryProvider()
-		{
-			var services = new ServiceCollection();
-
-			services.AddMongoDbContext<MongoDbContext>(builder =>
-			{
-				builder.UseConnection("mongodb://localhost:27017/testdb");
-			});
-
-			Assert.Throws<ArgumentException>(() => services.AddMongoRepositoryProvider<MongoPerson>());
 		}
 
 
