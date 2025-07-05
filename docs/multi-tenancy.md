@@ -4,11 +4,11 @@ Software-as-a-Service (SaaS) applications and Enterprise-level applications ofte
 
 By default, the _kernel_ library doesn't provides any set of abstractions and implementations to support multi-tenancy in your application, but the single drivers can provide it, accordingly to their specific capabilities.
 
-| Driver | Multi-Tenancy |
-| ------ | ------------- |
-| _In-Memory_ | :x: |
-| _MongoDB_ | :white_check_mark: |
-| _Entity Framework Core_ | :white_check_mark: |
+| Driver | Multi-Tenancy | Notes
+| ------ | ------------- |------|
+| _In-Memory_ | :x: | |
+| _MongoDB_ | :white_check_mark: | |
+| _Entity Framework Core_ | :warning: | _Starting from version 1.4, the support was removed, and depdends from Finbuckle MultiTenant for EntityFramework_ |
 
 ### The Tenant Context
 
@@ -19,6 +19,8 @@ Some scenarios anyway require the access to those segregated information from a 
 To learn more about the usage of the `IRepositoryProvider<TEntity>` interface, you can read the documentation [here](multi-tenancy.md).
 
 ## Repository Providers
+
+:warning: _The repository providers are not available anymore starting from the version 1.4 of the Deveel.Repository framework._
 
 The preferred approach of the library is to use the [Finbuckle.MultiTenant](https://www.finbuckle.com/MultiTenant) framework to implement multi-tenant applications, and to use the `ITenantInfo` interface to retrieve the current tenant information: this is obtained by scanning the current HTTP request, and retrieving the tenant information from the request.
 
@@ -34,3 +36,86 @@ Task<IRepository<TEntity>> GetRepositoryAsync(string tenantId, CancellationToken
 ```
 
 Every driver that supports multi-tenancy will implement this interface, and the `IRepository<TEntity>` instance returned will be specific for the tenant identifier passed as parameter.
+
+## Finbuckle.MultiTenant for Entity Framework Core
+
+Starting from version 1.4, the support for multi-tenancy in Entity Framework Core was removed from the kernel library, and it is now provided by the [Finbuckle.MultiTenant](https://www.finbuckle.com/MultiTenant) library.
+
+To enable multi-tenancy in a repository that is based on the Entity Framework Core, you need to install the `Finbuckle.MultiTenant.EntityFrameworkCore` package, and configure the `DbContext` to use the `ITenantInfo` interface to retrieve the tenant information.
+
+To do this, you need to add the `Finbuckle.MultiTenant` services in the `ConfigureServices` method of your `Startup` class:
+
+```csharp
+services.AddMultiTenant()
+	.WithConfigurationStore()
+	.WithRouteStrategy();
+```
+Then, you can use the `ITenantInfo` interface to retrieve the current tenant information in your `DbContext`:
+
+```csharp
+public class MyDbContext : DbContext
+{
+	private readonly IMultiTenantContext _tenantContext;
+
+	public MyDbContext(DbContextOptions<MyDbContext> options, IMultiTenantContext<DbTenantInfo> tenantContext)
+		: base(options)
+	{
+		_tenantContext = tenantContext;
+	}
+
+	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+	{
+		// Configure the DbContext to use the tenant information
+		optionsBuilder.UseSql(_tenantContext.Tenant.ConnectionString);
+	}
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		// Use _tenantInfo to configure the model for the specific tenant
+	}
+}
+```
+
+This way, the `DbContext` will be configured to use the tenant information from the `ITenantInfo` interface, and you can use it to access the data for the specific tenant.
+
+You can then use the `IRepository<TEntity>` interface to access the data for the specific tenant as you would normally do:
+
+```csharp
+var repository = serviceProvider.GetRequiredService<IRepository<MyEntity>>();
+
+var entity = await repository.FindByIdAsync(entityId, cancellationToken);
+```
+
+In fact the data segregation is handled by the `DbContext` and the `ITenantInfo` interface, so you don't need to worry about it in your application code.
+
+## Multi-Tenancy in MongoDB
+
+The repository implementation to interface the MongoDB database in the Deveel.Repository library is based on the [MongoFramework](https://github.com/TurnerSoftware/MongoFramework) project, that provides a set of abstractions to handle multi-tenancy in MongoDB.
+
+Unfortunately, some design limitations from the model used by the project made us to add some additional code to handle multi-tenancy in MongoDB, that is not available in the original project.
+
+To use multi-tenancy in MongoDB, you need to install the `Deveel.Repository.MongoFramework` package, and configure it to be used in your application.
+
+To do this, you need to add the `MongoRepository` service in the `ConfigureServices` method of your `Startup` class:
+
+```csharp
+services.AddMultiTenant<MongoDbTenantInfo>()
+	.WithConfigurationStore()
+	.WithRouteStrategy();
+
+services.AddMongoRepository(options =>
+{
+	// this will instruct the MongoDB driver 
+	// to use the tenant information from the
+	// current context
+	options.UseTenant();
+});
+```
+
+Then, you can use the `IRepository<TEntity>` interface to access the data for the specific tenant as you would normally do:
+
+```csharp
+var repository = serviceProvider.GetRequiredService<IRepository<MyEntity>>();
+
+var entity = await repository.FindByIdAsync(entityId, cancellationToken);
+```
