@@ -443,6 +443,8 @@ namespace Deveel.Data {
 		/// underlying database.
 		/// </exception>
 		public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
+
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -465,6 +467,8 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+			ArgumentNullException.ThrowIfNull(entities, nameof(entities));
+
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -496,8 +500,7 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public virtual async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
-			if (entity is null)
-				throw new ArgumentNullException(nameof(entity));
+			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
@@ -536,8 +539,7 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public virtual async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
-			if (entity is null)
-				throw new ArgumentNullException(nameof(entity));
+			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
@@ -568,6 +570,8 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public async Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+			ArgumentNullException.ThrowIfNull(entities, nameof(entities));
+
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -586,6 +590,8 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public async Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default) {
+			ArgumentNullException.ThrowIfNull(key, nameof(key));
+
 			ThrowIfDisposed();
 			cancellationToken.ThrowIfCancellationRequested();
 

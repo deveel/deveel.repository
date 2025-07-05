@@ -170,6 +170,39 @@ namespace Deveel.Data {
 		}
 
 		[Fact]
+		public async Task AddNullPerson_ThrowsArgumentNullException() {
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.AddAsync(null!));
+		}
+
+		[Fact]
+		public async Task AddRange_NullList_ThrowsArgumentNullException() {
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.AddRangeAsync(null!));
+		}
+
+		[Fact]
+		public async Task RemoveNullPerson_ThrowsArgumentNullException() {
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.RemoveAsync(null!));
+		}
+
+		[Fact]
+		public async Task RemoveRange_NullList_ThrowsArgumentNullException() {
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.RemoveRangeAsync(null!));
+		}
+
+		[Fact]
+		public async Task FindAsync_NullKey_ThrowsArgumentNullException() {
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.FindAsync(default!));
+		}
+
+		[Fact]
+		public async Task AddDuplicatePerson() {
+			var person = GeneratePerson();
+			await Repository.AddAsync(person);
+			// Try adding the same person again, expect exception or specific behavior
+			await Assert.ThrowsAsync<RepositoryException>(() => Repository.AddAsync(person));
+		}
+
+		[Fact]
 		public async Task RemoveExisting() {
 			var person = await RandomPersonAsync();
 
@@ -603,7 +636,6 @@ namespace Deveel.Data {
 			Assert.Equal(perPage, result.Items.Count);
 		}
 
-
 		[Fact]
 		public async Task GetDescendingSortedPage() {
 			var sorted = People!.Where(x => x.LastName != null)
@@ -723,6 +755,37 @@ namespace Deveel.Data {
 			var result = await Repository.UpdateAsync(person);
 
 			Assert.False(result);
+		}
+
+		[Fact]
+		public async Task UpdateNullPerson_ThrowsArgumentNullException() {
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.UpdateAsync(null!));
+		}
+
+		[Fact]
+		public async Task UpdatePerson_CancellationRequested() {
+			var person = await RandomPersonAsync();
+			using var cts = new CancellationTokenSource();
+			cts.Cancel();
+			await Assert.ThrowsAsync<OperationCanceledException>(() => Repository.UpdateAsync(person, cts.Token));
+		}
+
+		[Fact]
+		public async Task AddRange_EmptyList() {
+			var emptyList = new List<TPerson>();
+			await Repository.AddRangeAsync(emptyList);
+			// Should not throw, and repository should remain unchanged
+			var count = await Repository.CountAllAsync();
+			Assert.Equal(PeopleCount, count);
+		}
+
+		[Fact]
+		public async Task RemoveRange_EmptyList() {
+			var emptyList = new List<TPerson>();
+			await Repository.RemoveRangeAsync(emptyList);
+			// Should not throw, and repository should remain unchanged
+			var count = await Repository.CountAllAsync();
+			Assert.Equal(PeopleCount, count);
 		}
 
 		[Fact]

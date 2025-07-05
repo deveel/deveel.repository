@@ -166,13 +166,20 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
+
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var key = GenerateNewKey();
-				SetEntityId(entity, key);
+				var key = GetEntityId(entity);
+				if (key == null)
+				{
+					key = GenerateNewKey();
+					SetEntityId(entity, key);
+				}
 
-				entities.Add(key, new Entry(entity));
+				if (!entities.TryAdd(key, new Entry(entity)))
+					throw new RepositoryException("An entity with the same ID already exists in the repository");
 
 				return Task.CompletedTask;
 			} catch (RepositoryException) {
@@ -185,6 +192,8 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+			ArgumentNullException.ThrowIfNull(entities, nameof(entities));
+
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
@@ -206,8 +215,7 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
-			if (entity is null)
-				throw new ArgumentNullException(nameof(entity));
+			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			cancellationToken.ThrowIfCancellationRequested();
 

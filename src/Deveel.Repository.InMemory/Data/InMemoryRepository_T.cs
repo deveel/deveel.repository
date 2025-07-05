@@ -62,6 +62,8 @@ namespace Deveel.Data {
 		}
 
 		private string NormalizeKey(object key) {
+			ArgumentNullException.ThrowIfNull(key, nameof(key));
+
 			if (key is string s)
 				return s;
 			if (key is Guid guid)
