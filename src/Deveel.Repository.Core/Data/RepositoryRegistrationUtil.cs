@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Deveel AS
+﻿// Copyright 2023-2025 Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,9 +20,18 @@ namespace Deveel.Data {
 			=> Implements(typeof(IRepository<>), repositoryType) ||
 				Implements(typeof(IRepository<,>), repositoryType);
 
-		public static bool IsValidProviderType(Type providerType)
-			=> Implements(typeof(IRepositoryProvider<>), providerType) ||
-				Implements(typeof(IRepositoryProvider<,>), providerType);
+		public static bool IsValidRepositoryProviderType(Type repositoryProviderType)
+		{
+			if (!Implements(typeof(IRepositoryProvider<>), repositoryProviderType))
+				return false;
+
+			var repositoryType = GetRepositoryServiceFromProviderType(repositoryProviderType);
+			if (repositoryType == null)
+				return false;
+
+			return IsValidRepositoryType(repositoryType);
+		}
+
 
 		public static bool Implements(Type genericType, Type type) {
 			if (type.IsGenericType) {
@@ -53,12 +62,10 @@ namespace Deveel.Data {
 				var genericTypes = serviceType.GenericTypeArguments;
 
 				if (genericTypes.Length == 1 && genericTypes[0].IsClass &&
-					typeof(IRepository<>).IsAssignableFrom(genericTypeDefinition) ||
-					typeof(IRepositoryProvider<>).IsAssignableFrom(genericTypeDefinition)) {
+					typeof(IRepository<>).IsAssignableFrom(genericTypeDefinition)) {
 					return genericTypes[0];
 				} else if (genericTypes.Length == 2 && genericTypes[0].IsClass &&
-					typeof(IRepository<,>).IsAssignableFrom(genericTypeDefinition) || 
-					typeof(IRepositoryProvider<,>).IsAssignableFrom(genericTypeDefinition)) {
+					typeof(IRepository<,>).IsAssignableFrom(genericTypeDefinition)) {
 					return genericTypes[0];
 				}
 			}
@@ -78,8 +85,7 @@ namespace Deveel.Data {
 				var genericTypes = serviceType.GenericTypeArguments;
 
 				if (genericTypes.Length == 2 && genericTypes[0].IsClass) {
-					if (typeof(IRepository<,>).IsAssignableFrom(genericTypeDefinition) ||
-						typeof(IRepositoryProvider<,>).IsAssignableFrom(genericTypeDefinition))
+					if (typeof(IRepository<,>).IsAssignableFrom(genericTypeDefinition))
 					return genericTypes[1];
 				}
 			}
@@ -115,6 +121,18 @@ namespace Deveel.Data {
 			}
 
 			return false;
+		}
+
+		public static Type? GetRepositoryServiceFromProviderType(Type repositoryProviderType)
+		{
+			if (!Implements(typeof(IRepositoryProvider<>), repositoryProviderType))
+				return null;
+
+			var repositoryType = repositoryProviderType.GenericTypeArguments[0];
+			if (!IsValidRepositoryType(repositoryType))
+				return null;
+
+			return repositoryType;
 		}
 
 		public static IReadOnlyList<Type> GetRepositoryServiceTypes(Type repositoryType) {
@@ -161,46 +179,6 @@ namespace Deveel.Data {
 				if (Implements(typeof(IRepository<,>), baseType) &&
 					!types.Contains(baseType))
 					types.Add(baseType);
-
-				baseType = baseType.BaseType;
-			}
-
-			return types.AsReadOnly();
-		}
-
-		public static IReadOnlyList<Type> GetRepositoryProviderServiceTypes(Type providerType) {
-			var types = new List<Type>();
-
-			foreach (var iface in providerType.GetInterfaces()) {
-				var entityType = GetEntityType(iface);
-
-				if (entityType == null)
-					continue;
-
-				if (RegisterIfAssignable(types, typeof(IRepositoryProvider<>), entityType, providerType)) {
-					if (!types.Contains(iface))
-						types.Add(iface);
-				}
-
-				var keyType = GetKeyType(iface);
-				if (keyType != null) {
-					if (RegisterIfAssignable(types, typeof(IRepositoryProvider<,>), entityType, keyType, providerType)) {
-						if (!types.Contains(iface))
-							types.Add(iface);
-					}
-				}
-			}
-
-			var baseType = providerType.BaseType;
-			while (baseType != null) {
-				if (Implements(typeof(IRepositoryProvider<>), baseType)) {
-					if (!types.Contains(baseType))
-						types.Add(baseType);
-				}
-				if (Implements(typeof(IRepositoryProvider<,>), baseType)) {
-					if (!types.Contains(baseType))
-						types.Add(baseType);
-				}
 
 				baseType = baseType.BaseType;
 			}

@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Deveel AS
+﻿// Copyright 2023-2025 Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ namespace Deveel.Data {
 		IPageableRepository<TEntity, TKey>,
 		IFilterableRepository<TEntity, TKey>,
 		ITrackingRepository<TEntity, TKey>,
-		IMultiTenantRepository<TEntity, TKey>,
 		IDisposable
 		where TEntity : class 
 		where TKey : notnull {
@@ -62,27 +61,6 @@ namespace Deveel.Data {
 		}
 
 		/// <summary>
-		/// Constructs the repository with the given list of
-		/// initial entities for the given tenant.
-		/// </summary>
-		/// <param name="tenantId">
-		/// The identifier of the tenant that owns the entities.
-		/// </param>
-		/// <param name="list">
-		/// A list of entities to initialize the repository with.
-		/// </param>
-		/// <param name="fieldMapper">
-		/// A service that maps a field by name to an expression that
-		/// can select the field from an entity.
-		/// </param>
-		protected InMemoryRepository(string tenantId,
-			IEnumerable<TEntity>? list = null,
-			IFieldMapper<TEntity>? fieldMapper = null)
-			: this(list, fieldMapper) {
-			TenantId = tenantId;
-		}
-
-		/// <summary>
 		/// Destroys the instance of the repository.
 		/// </summary>
 		~InMemoryRepository() {
@@ -98,14 +76,6 @@ namespace Deveel.Data {
 		/// </summary>
 		public virtual IReadOnlyList<TEntity> Entities => entities.Values.Select(x => x.Entity)
 			.ToList().AsReadOnly();
-
-		string? IMultiTenantRepository<TEntity, TKey>.TenantId => TenantId;
-
-		/// <summary>
-		/// Gets the identifier of the tenant that owns the entities,
-		/// if any tenant is set.
-		/// </summary>
-		protected virtual string? TenantId { get; }
 
 		private SortedList<TKey, Entry> CopyList(IEnumerable<TEntity> source) {
 			var result = new SortedList<TKey, Entry>();
@@ -422,9 +392,6 @@ namespace Deveel.Data {
 				throw new RepositoryException("Unable to update the entity", ex);
 			}
 		}
-
-		internal static InMemoryRepository<TEntity, TKey> Create(string tenantId, IList<TEntity>? entities = null, IFieldMapper<TEntity>? fieldMapper = null)
-			=> new InMemoryRepository<TEntity, TKey>(tenantId, entities, fieldMapper);
 
 		/// <summary>
 		/// Disposes the repository and releases all the resources

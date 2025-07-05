@@ -10,6 +10,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 using MongoFramework;
 
+#if NET7_0_OR_GREATER
+using ITenantInfo = Finbuckle.MultiTenant.TenantInfo;
+#endif
+
 namespace Deveel.Data {
 	public static class MongoDbContextTests {
 		[Fact]
@@ -30,11 +34,11 @@ namespace Deveel.Data {
 		public static void AddDefaultContext_TenantConnection() {
 			var services = new ServiceCollection();
 
-			services.AddMongoDbContext<MongoDbContext>((tenant, builder) => {
-				builder.UseConnection(tenant!.ConnectionString!);
+			services.AddMongoDbContext<MongoDbContext>(builder => {
+				builder.UseTenant();
 			});
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -50,7 +54,7 @@ namespace Deveel.Data {
 		public static void AddDefaultTenantContext_SharedConnection() {
 			var services = new ServiceCollection();
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant"
 			});
@@ -70,11 +74,11 @@ namespace Deveel.Data {
 		public static void AddDefaultTenantContext_TenantConnection() {
 			var services = new ServiceCollection();
 
-			services.AddMongoDbContext<MongoDbTenantContext>((tenant, builder) => {
-				builder.UseConnection(tenant!.ConnectionString!);
+			services.AddMongoDbContext<MongoDbTenantContext>(builder => {
+				builder.UseTenant();
 			});
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -106,11 +110,11 @@ namespace Deveel.Data {
 		public static void AddSimpleCustomContext_TenantConnection() {
 			var services = new ServiceCollection();
 
-			services.AddMongoDbContext<MyMongoContext>((tenant, builder) => {
-				builder.UseConnection(tenant!.ConnectionString!);
+			services.AddMongoDbContext<MyMongoContext>(builder => {
+				builder.UseTenant();
 			});
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -142,11 +146,11 @@ namespace Deveel.Data {
 		public static void AddCustomContextWithConnection_TenantConnection() {
 			var services = new ServiceCollection();
 
-			services.AddMongoDbContext<MyMongoContextWithConnection>((tenant, builder) => {
-				builder.UseConnection(tenant!.ConnectionString!);
+			services.AddMongoDbContext<MyMongoContextWithConnection>(builder => {
+				builder.UseTenant();
 			});
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"
@@ -163,7 +167,7 @@ namespace Deveel.Data {
 		public static void AddCustomTenantContext_SharedConnection() {
 			var services = new ServiceCollection();
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant"
 			});
@@ -183,11 +187,11 @@ namespace Deveel.Data {
 		public static void AddCustomTenantContext_TenantConnection() {
 			var services = new ServiceCollection();
 
-			services.AddMongoDbContext<MyMongoTenantContext>((tenant, builder) => {
-				builder.UseConnection(tenant!.ConnectionString!);
+			services.AddMongoDbContext<MyMongoTenantContext>(builder => {
+				builder.UseTenant();
 			});
 
-			services.AddMongoTenantContext(new MongoTenantInfo {
+			services.AddMongoTenantContext(new MongoDbTenantInfo {
 				Id = Guid.NewGuid().ToString(),
 				Identifier = "test-tenant",
 				ConnectionString = "mongodb://localhost:27017/testdb"

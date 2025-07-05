@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Deveel AS
+﻿// Copyright 2023-2025 Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
+using MongoFramework;
 
 namespace Deveel.Data {
 	/// <summary>
-	/// Represents a repository that is capable of segregating the
-	/// data by the tenant that owns it.
+	/// A connection to a MongoDB database that is 
+	/// specific to a given <see cref="MongoDbContext"/>
 	/// </summary>
-	public interface IMultiTenantRepository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class {
-		/// <summary>
-		/// Gets the identifier of the tenant that owns the data
-		/// </summary>
-		string? TenantId { get; }
+	/// <typeparam name="TContext">
+	/// The type of the <see cref="MongoDbContext"/> that
+	/// this connection is specific to.
+	/// </typeparam>
+	/// <seealso cref="IMongoDbConnection"/>
+	public interface IMongoDbConnection<TContext> : IMongoDbConnection where TContext : class, IMongoDbContext {
 	}
 }

@@ -2,7 +2,7 @@
 
 using NetTopologySuite.Geometries;
 
-namespace Deveel.Data {
+namespace Deveel.Data.Entities {
 	public class DbPersonFaker : Faker<DbPerson> {
 		public DbPersonFaker() {
 			var relationshipFaker = new DbPersonRelationshipFaker();
@@ -12,7 +12,7 @@ namespace Deveel.Data {
 			RuleFor(x => x.DateOfBirth, f => f.Date.Past(20));
 			RuleFor(x => x.Email, f => f.Internet.Email().OrNull(f));
 			RuleFor(x => x.PhoneNumber, f => f.Phone.PhoneNumber().OrNull(f));
-			RuleFor(x => x.Location, f => (new Point(f.Random.Double(), f.Random.Double())).OrNull(f));
+			RuleFor(x => x.Location, f => new Point(f.Random.Double(), f.Random.Double()).OrNull(f));
 
 			RuleFor(x => x.Relationships, (f, p) => {
 				return f.Random.Bool() ? null : (IList<DbRelationship>)relationshipFaker.Generate(3);

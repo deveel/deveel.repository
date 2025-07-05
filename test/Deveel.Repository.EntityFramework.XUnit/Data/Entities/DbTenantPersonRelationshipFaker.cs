@@ -1,8 +1,8 @@
 ﻿using Bogus;
 
-namespace Deveel.Data {
-	public class DbPersonRelationshipFaker : Faker<DbRelationship> {
-		public DbPersonRelationshipFaker() {
+namespace Deveel.Data.Entities {
+	public class DbTenantPersonRelationshipFaker : Faker<DbTenantPersonRelationship> {
+		public DbTenantPersonRelationshipFaker() {
 			var relTypes = new string[] { "father", "mother", "brother", "sister", "partner" };
 
 			RuleFor(x => x.FullName, f => f.Name.FullName());

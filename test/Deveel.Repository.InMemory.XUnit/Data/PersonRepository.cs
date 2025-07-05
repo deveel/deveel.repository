@@ -4,8 +4,8 @@
 			: base(Enumerable.Empty<Person>()) {
 		}
 
-		internal PersonRepository(string tenantId, IList<Person>? entities = null) 
-			: base(tenantId, entities) {
+		internal PersonRepository(IList<Person>? entities = null) 
+			: base(entities) {
 		}
 	}
 }

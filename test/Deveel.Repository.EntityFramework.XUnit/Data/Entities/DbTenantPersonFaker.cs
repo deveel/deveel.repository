@@ -1,6 +1,6 @@
 ﻿using Bogus;
 
-namespace Deveel.Data {
+namespace Deveel.Data.Entities {
 	public class DbTenantPersonFaker : Faker<DbTenantPerson> {
 		public DbTenantPersonFaker(string tenantId) {
 			RuleFor(x => x.Id, f => Guid.NewGuid());

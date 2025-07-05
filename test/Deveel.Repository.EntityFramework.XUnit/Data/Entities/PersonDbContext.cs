@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Deveel.Data {
+namespace Deveel.Data.Entities {
 	public class PersonDbContext : DbContext {
 		public PersonDbContext(DbContextOptions<PersonDbContext> options) : base(options) {
 		}

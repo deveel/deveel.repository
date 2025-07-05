@@ -1,8 +1,16 @@
-﻿using Finbuckle.MultiTenant;
-
-#if NET7_0_OR_GREATER
-using Finbuckle.MultiTenant.Abstractions;
-#endif
+﻿// Copyright 2023-2025 Antonello Provenzano
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -41,28 +49,6 @@ namespace Deveel.Data
 		/// Thrown when the given <paramref name="userAccessor"/> is <c>null</c>.
 		/// </exception>
 		public EntityUserRepository(DbContext context, IUserAccessor<TUserKey> userAccessor, ILogger<EntityUserRepository<TEntity, TKey, TUserKey>>? logger = null) : base(context, logger)
-		{
-			ArgumentNullException.ThrowIfNull(userAccessor, nameof(userAccessor));
-			UserAccessor = userAccessor;
-		}
-
-		/// <summary>
-		/// Constructs the repository using the given <see cref="DbContext"/> for
-		/// the given tenant.
-		/// </summary>
-		/// <param name="context">
-		/// The <see cref="DbContext"/> used to access the data of the entities.
-		/// </param>
-		/// <param name="tenantInfo">
-		/// The information about the tenant that the repository will use to access the data.
-		/// </param>
-		/// <param name="userAccessor">
-		/// A service used to get the current user context.
-		/// </param>
-		/// <param name="logger">
-		/// A logger used to log the operations of the repository.
-		/// </param>
-		public EntityUserRepository(DbContext context, ITenantInfo? tenantInfo, IUserAccessor<TUserKey> userAccessor, ILogger<EntityUserRepository<TEntity, TKey, TUserKey>>? logger = null) : base(context, tenantInfo, logger)
 		{
 			ArgumentNullException.ThrowIfNull(userAccessor, nameof(userAccessor));
 			UserAccessor = userAccessor;

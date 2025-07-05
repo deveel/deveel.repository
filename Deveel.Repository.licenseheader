@@ -1,6 +1,6 @@
 ﻿extensions: designer.cs generated.cs
 extensions: .cs
-// Copyright %CreationYear% Deveel AS
+// Copyright 2023-%CurrentYear% Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.

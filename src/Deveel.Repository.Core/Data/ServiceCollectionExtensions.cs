@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Deveel AS
+﻿// Copyright 2023-2025 Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -89,74 +89,35 @@ namespace Deveel.Data {
 			return services;
 		}
 
-		/// <summary>
-		/// Registers a repository of the given type in the service collection.
-		/// </summary>
-		/// <typeparam name="TProvider">
-		/// The type of the repository to register.
-		/// </typeparam>
-		/// <param name="services">
-		/// The service collection to register the repository.
-		/// </param>
-		/// <param name="lifetime">
-		/// the lifetime of the repository in the service collection.
-		/// </param>
-		/// <returns>
-		/// Returns the same <see cref="IServiceCollection"/> to allow chaining.
-		/// </returns>
-		/// <exception cref="ArgumentException">
-		/// Thrown when the given <typeparamref name="TProvider"/> is not
-		/// a class or is abstract.
-		/// </exception>
-		/// <exception cref="RepositoryException">
-		/// Thrown when the given <typeparamref name="TProvider"/> is not a valid
-		/// repository type.
-		/// </exception>
-		public static IServiceCollection AddRepositoryProvider<TProvider>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-            where TProvider : class
+		public static IServiceCollection AddRepositoryProvider<TProvider>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
 			=> services.AddRepositoryProvider(typeof(TProvider), lifetime);
 
-		/// <summary>
-		/// Registers a repository provider of the given type in 
-		/// the service collection.
-		/// </summary>
-		/// <param name="services">
-		/// The service collection to register the repository provider.
-		/// </param>
-		/// <param name="providerType">
-		/// The type of the repository provider to register, that
-		/// must implement <see cref="IRepositoryProvider{TEntity}"/>.
-		/// </param>
-		/// <param name="lifetime">
-		/// The lifetime of the repository provider in the service collection.
-		/// </param>
-		/// <returns>
-		/// Returns the same <see cref="IServiceCollection"/> to allow chaining.
-		/// </returns>
-		/// <exception cref="ArgumentNullException">
-		/// Thrown when the given <paramref name="providerType"/> is <c>null</c>.
-		/// </exception>
-		/// <exception cref="ArgumentException">
-		/// Thrown when the given <paramref name="providerType"/> is not
-		/// implementing <see cref="IRepositoryProvider{TEntity}"/>.
-		/// </exception>
-		/// <exception cref="RepositoryException"></exception>
-		public static IServiceCollection AddRepositoryProvider(this IServiceCollection services, Type providerType, ServiceLifetime lifetime = ServiceLifetime.Singleton) {
+
+		public static IServiceCollection AddRepositoryProvider(this IServiceCollection services, Type providerType, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+		{
 			ArgumentNullException.ThrowIfNull(providerType, nameof(providerType));
 
-			if (!RepositoryRegistrationUtil.IsValidProviderType(providerType))
+			if (!providerType.IsClass || providerType.IsAbstract)
 				throw new ArgumentException($"The type '{providerType}' is not a valid repository provider type", nameof(providerType));
 
-			var serviceTypes = RepositoryRegistrationUtil.GetRepositoryProviderServiceTypes(providerType);
+			if (!RepositoryRegistrationUtil.IsValidRepositoryProviderType(providerType))
+				throw new ArgumentException($"The type '{providerType}' is not a valid repository provider type", nameof(providerType));
 
-			foreach (var serviceType in serviceTypes) {
-				services.TryAdd(new ServiceDescriptor(serviceType, providerType, lifetime));
+			var repositoryType = RepositoryRegistrationUtil.GetRepositoryServiceFromProviderType(providerType);
+			if (repositoryType == null)
+				throw new RepositoryException($"The provider type '{providerType}' does not provide a valid repository type");
+
+			var serviceTypes = RepositoryRegistrationUtil.GetRepositoryServiceTypes(repositoryType);
+
+			foreach (var serviceType in serviceTypes)
+			{
+				var providerServiceType = typeof(IRepositoryProvider<>).MakeGenericType(serviceType);
+				services.TryAdd(new ServiceDescriptor(providerServiceType, providerType, lifetime));
 			}
 
 			services.Add(new ServiceDescriptor(providerType, providerType, lifetime));
 
 			return services;
-
 		}
 
         public static IServiceCollection AddRepositoryController<TController>(this IServiceCollection services, Action<RepositoryControllerOptions>? configure = null)

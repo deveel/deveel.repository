@@ -12,9 +12,9 @@ namespace Deveel.Utils
 {
 	public static class ServiceCollectionExtensions
 	{
-		public static IServiceCollection AddMongoTenantContext(this IServiceCollection services, MongoTenantInfo tenantInfo)
+		public static IServiceCollection AddMongoTenantContext(this IServiceCollection services, MongoDbTenantInfo tenantInfo)
 		{
-			services.AddSingleton<IMultiTenantContextAccessor<MongoTenantInfo>>(new StaticMultiTenantContextAccessor(tenantInfo));
+			services.AddSingleton<IMultiTenantContextAccessor<MongoDbTenantInfo>>(new StaticMultiTenantContextAccessor(tenantInfo));
 			return services;
 		}
 	}

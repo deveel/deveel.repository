@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Deveel AS
+﻿// Copyright 2023-2025 Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,8 +30,7 @@ namespace Deveel.Data {
 		IRepository<TEntity>, 
 		IQueryableRepository<TEntity>, 
 		IPageableRepository<TEntity>, 
-		IFilterableRepository<TEntity>,
-		IMultiTenantRepository<TEntity>
+		IFilterableRepository<TEntity>
 		where TEntity : class {
 		/// <summary>
 		/// Constructs the repository with the given context and logger.
@@ -57,8 +56,6 @@ namespace Deveel.Data {
 		public MongoRepository(IMongoDbContext context, ILogger<MongoRepository<TEntity>>? logger = null)
 			: base(context, logger) {
 		}
-
-		string? IMultiTenantRepository<TEntity, object>.TenantId => TenantId;
 
 		IQueryable<TEntity> IQueryableRepository<TEntity, object>.AsQueryable() => DbSet.AsQueryable();
 

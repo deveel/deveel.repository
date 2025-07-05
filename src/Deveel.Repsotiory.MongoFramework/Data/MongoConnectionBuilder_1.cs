@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Deveel AS
+﻿// Copyright 2023-2025 Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,5 +32,9 @@ namespace Deveel.Data {
 
 		/// <inheritdoc/>
 		public override IMongoDbConnection Connection => new MongoDbConnection<TContext>(builder.Connection);
+
+		internal override bool IsUsingTenant => builder.IsUsingTenant;
+
+		internal override Type? TenantType => builder.TenantType;
 	}
 }

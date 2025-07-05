@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Deveel.Data
+namespace Deveel.Data.Entities
 {
 	public class BookDbContext : DbContext
 	{

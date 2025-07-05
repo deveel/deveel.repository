@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Deveel AS
+﻿// Copyright 2023-2025 Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -147,38 +147,6 @@ namespace Deveel.Data {
 		/// </summary>
 		protected virtual CancellationToken CancellationToken
 			=> Services?.GetService<IOperationCancellationSource>()?.Token ?? default;
-
-		/// <summary>
-		/// Gets a value indicating if the repository is multi-tenant
-		/// </summary>
-		/// <exception cref="ObjectDisposedException">
-		/// Throws when the service has been disposed.
-		/// </exception>
-		public virtual bool IsMultiTenant {
-			get {
-				ThrowIfDisposed();
-				return (Repository is IMultiTenantRepository<TEntity, TKey> multiTenant) &&
-					!String.IsNullOrWhiteSpace(multiTenant.TenantId);
-			}
-		}
-
-		/// <summary>
-		/// When the repository is multi-tenant, gets the identifier
-		/// of the tenant that is being managed by the service.
-		/// </summary>
-		/// <exception cref="ObjectDisposedException">
-		/// Throws when the service has been disposed.
-		/// </exception>
-		public virtual string? TenantId {
-			get {
-				ThrowIfDisposed();
-
-				if (Repository is IMultiTenantRepository<TEntity, TKey> multiTenant)
-					return multiTenant.TenantId;
-
-				return null;
-			}
-		}
 
 		/// <summary>
 		/// Gets a value indicating if the repository supports paging

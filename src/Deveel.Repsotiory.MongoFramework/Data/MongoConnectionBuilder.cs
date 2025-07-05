@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Deveel AS
+﻿// Copyright 2023-2025 Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Finbuckle.MultiTenant;
+
 using MongoDB.Driver;
 
 using MongoFramework;
@@ -24,6 +26,8 @@ namespace Deveel.Data {
 	public class MongoConnectionBuilder {
 		private MongoUrl? mongoUrl;
 		private Action<MongoClientSettings>? settings;
+		private bool? useTenant;
+		private Type? tenantType;
 
 		/// <summary>
 		/// Constructs the builder.
@@ -31,11 +35,18 @@ namespace Deveel.Data {
 		public MongoConnectionBuilder() {
 		}
 
+		internal virtual bool IsUsingTenant => useTenant == true;
+
+		internal virtual Type? TenantType => tenantType;
+
 		/// <summary>
 		/// Gets the connection instance built by this builder.
 		/// </summary>
 		public virtual IMongoDbConnection Connection {
 			get {
+				if (useTenant == true)
+					return null;
+
 				if (mongoUrl == null)
 					throw new InvalidOperationException("No connection string or URL was specified");
 
@@ -77,7 +88,9 @@ namespace Deveel.Data {
 		public MongoConnectionBuilder UseUrl(MongoUrl url) {
 			ArgumentNullException.ThrowIfNull(url);
 
+			useTenant = false;
 			mongoUrl = url;
+			settings = null;
 			return this;
 		}
 
@@ -94,6 +107,26 @@ namespace Deveel.Data {
 			ArgumentNullException.ThrowIfNull(settings);
 
 			this.settings = settings;
+			useTenant = false;
+			mongoUrl = null;
+			return this;
+		}
+
+		public MongoConnectionBuilder UseTenant(bool useTenant = true)
+			=> UseTenant<MongoDbTenantInfo>(useTenant);
+
+		public MongoConnectionBuilder UseTenant<TTenantInfo>(bool useTenant = true)
+			where TTenantInfo : MongoDbTenantInfo
+		{
+			this.useTenant = useTenant;
+			this.tenantType = typeof(TTenantInfo);
+
+			if (useTenant == true)
+			{
+				mongoUrl = null;
+				settings = null;
+			}
+
 			return this;
 		}
 	}

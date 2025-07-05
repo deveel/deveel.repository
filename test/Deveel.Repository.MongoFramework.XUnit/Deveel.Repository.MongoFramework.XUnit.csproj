@@ -6,17 +6,20 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
+    <PackageReference Include="Finbuckle.MultiTenant" Version="6.13.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Finbuckle.MultiTenant" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Finbuckle.MultiTenant" Version="8.0.0" />
   </ItemGroup>
 
 
-  <ItemGroup>
+  <ItemGroup>    
     <PackageReference Include="Testcontainers" Version="3.5.0" />
     <PackageReference Include="Testcontainers.MongoDb" Version="3.5.0" />
   </ItemGroup>

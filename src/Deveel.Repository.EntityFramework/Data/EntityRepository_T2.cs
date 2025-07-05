@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Deveel AS
+﻿// Copyright 2023-2025 Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,13 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-using Finbuckle.MultiTenant;
-using Finbuckle.MultiTenant.EntityFrameworkCore;
-
-#if NET7_0_OR_GREATER
-using Finbuckle.MultiTenant.Abstractions;
-#endif
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -62,30 +55,9 @@ namespace Deveel.Data
 		/// When the given <paramref name="context"/> implements the <see cref="IMultiTenantDbContext"/>
 		/// the repository will use the tenant information to access the data.
 		/// </remarks>
-		public EntityRepository(DbContext context, ILogger<EntityRepository<TEntity, TKey>>? logger = null)
-			: this(context, (context as IMultiTenantDbContext)?.TenantInfo, logger) {
-		}
-
-		/// <summary>
-		/// Constructs the repository using the given <see cref="DbContext"/> for
-		/// the given tenant.
-		/// </summary>
-		/// <param name="context">
-		/// The <see cref="DbContext"/> used to access the data of the entities.
-		/// </param>
-		/// <param name="tenantInfo">
-		/// The information about the tenant that the repository will use to access the data.
-		/// </param>
-		/// <param name="logger">
-		/// The logger used to log the operations of the repository.
-		/// </param>
-		public EntityRepository(DbContext context, ITenantInfo? tenantInfo, ILogger<EntityRepository<TEntity, TKey>>? logger = null)
-			: this(context, tenantInfo, (ILogger?)logger) {
-		}
-
-		internal EntityRepository(DbContext context, ITenantInfo? tenantInfo, ILogger? logger = null) {
+		public EntityRepository(DbContext context, ILogger<EntityRepository<TEntity, TKey>>? logger = null) {
 			Context = context ?? throw new ArgumentNullException(nameof(context));
-			Logger = logger ?? NullLogger.Instance;
+			Logger = logger ?? NullLogger<EntityRepository<TEntity, TKey>>.Instance;
 
 			var entityKey = Context.Model.FindEntityType(typeof(TEntity))?.FindPrimaryKey();
 
@@ -98,8 +70,6 @@ namespace Deveel.Data
 			//	throw new RepositoryException($"The primary key of the entity '{typeof(TEntity)}' is not of type '{typeof(TKey)}'");
 
 			PrimaryKey = entityKey;
-
-			TenantInfo = tenantInfo;
 		}
 
 		/// <summary>
@@ -137,16 +107,6 @@ namespace Deveel.Data
 			Context.ChangeTracker.QueryTrackingBehavior != QueryTrackingBehavior.NoTracking;
 
 		bool ITrackingRepository<TEntity, TKey>.IsTrackingChanges => IsTrackingChanges;
-
-		/// <summary>
-		/// Gets the information about the tenant that the repository is using to access the data.
-		/// </summary>
-		protected virtual ITenantInfo? TenantInfo { get; }
-
-		/// <summary>
-		/// Gets the identifier of the tenant that the repository is using to access the data.
-		/// </summary>
-		protected string? TenantId => TenantInfo?.Id;
 
 		/// <summary>
 		/// Assesses if the repository has been disposed.
@@ -234,7 +194,7 @@ namespace Deveel.Data
 
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
-			Logger.TraceCreatingEntity(typeof(TEntity), TenantId);
+			Logger.TraceCreatingEntity(typeof(TEntity));
 
 			try {
 				Entities.Add(OnAddingEntity(entity));
@@ -247,7 +207,7 @@ namespace Deveel.Data
 
 				var key = GetEntityKey(entity)!;
 
-				Logger.LogEntityCreated(typeof(TEntity), key, TenantId);
+				Logger.LogEntityCreated(typeof(TEntity), key);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unknown error while trying to add an entity to the repository", ex);
@@ -279,16 +239,16 @@ namespace Deveel.Data
 			try {
 				var entityId = GetEntityKey(entity)!;
 
-				Logger.TraceDeletingEntity(typeof(TEntity), entityId, TenantId);
+				Logger.TraceDeletingEntity(typeof(TEntity), entityId);
 
 				var entry = Context.Entry(entity);
 				if (entry == null) {
-					Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+					Logger.WarnEntityNotFound(typeof(TEntity), entityId);
 					return false;
 				} else if (entry.State == EntityState.Detached) {
 					var existing = await FindAsync(entityId, cancellationToken);
 					if (existing == null) {
-						Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+						Logger.WarnEntityNotFound(typeof(TEntity), entityId);
 						return false;
 					}
 
@@ -303,9 +263,9 @@ namespace Deveel.Data
 				var deleted = count > 0;
 
 				if (deleted) {
-					Logger.LogEntityDeleted(typeof(TEntity), entityId, TenantId);
+					Logger.LogEntityDeleted(typeof(TEntity), entityId);
 				} else {
-					Logger.WarnEntityNotDeleted(typeof(TEntity), entityId, TenantId);
+					Logger.WarnEntityNotDeleted(typeof(TEntity), entityId);
 				}
 
 				return deleted;
@@ -331,7 +291,7 @@ namespace Deveel.Data
 					if (entry.State == EntityState.Detached) {
 						var existing = await FindAsync(entityId, cancellationToken);
 						if (existing == null) {
-							Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+							Logger.WarnEntityNotFound(typeof(TEntity), entityId);
 							throw new RepositoryException($"The entity with the key '{entityId}' was not found in the repository");
 						}
 
@@ -373,14 +333,14 @@ namespace Deveel.Data
 			try {
 				var entityId = GetEntityKey(entity)!;
 
-				Logger.TraceUpdatingEntity(typeof(TEntity), entityId, TenantId);
+				Logger.TraceUpdatingEntity(typeof(TEntity), entityId);
 
 				EntityEntry<TEntity>? entry = null;
 
 				if (!IsTrackingChanges) {
 					var existing = await FindAsync(entityId, cancellationToken);
 					if (existing == null) {
-						Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+						Logger.WarnEntityNotFound(typeof(TEntity), entityId);
 						return false;
 					}
 
@@ -391,7 +351,7 @@ namespace Deveel.Data
 					if (entry.State == EntityState.Detached) {
 						var existing = await FindAsync(entityId, cancellationToken);
 						if (existing == null) {
-							Logger.WarnEntityNotFound(typeof(TEntity), entityId, TenantId);
+							Logger.WarnEntityNotFound(typeof(TEntity), entityId);
 							return false;
 						}
 
@@ -407,9 +367,9 @@ namespace Deveel.Data
 				var updated = count > 0;
 
 				if (updated) {
-					Logger.LogEntityUpdated(typeof(TEntity), entityId, TenantId);
+					Logger.LogEntityUpdated(typeof(TEntity), entityId);
 				} else {
-					Logger.WarnEntityNotUpdated(typeof(TEntity), entityId, TenantId);
+					Logger.WarnEntityNotUpdated(typeof(TEntity), entityId);
 				}
 
 				return updated;

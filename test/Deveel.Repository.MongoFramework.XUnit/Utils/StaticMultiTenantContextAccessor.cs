@@ -8,22 +8,27 @@ using Finbuckle.MultiTenant.Abstractions;
 
 namespace Deveel.Utils
 {
-	class StaticMultiTenantContextAccessor : IMultiTenantContextAccessor<MongoTenantInfo>
+	class StaticMultiTenantContextAccessor : IMultiTenantContextAccessor<MongoDbTenantInfo>, IMultiTenantContextAccessor
 	{
-		public StaticMultiTenantContextAccessor(MongoTenantInfo tenantInfo)
+		public StaticMultiTenantContextAccessor(MongoDbTenantInfo tenantInfo)
 		{
-			MultiTenantContext = new MultiTenantContext<MongoTenantInfo>
+			MultiTenantContext = new MultiTenantContext<MongoDbTenantInfo>
 			{
 				TenantInfo = tenantInfo,
 			};
 		}
 
 #if NET7_0_OR_GREATER
-		public IMultiTenantContext<MongoTenantInfo> MultiTenantContext { get; }
+		public IMultiTenantContext<MongoDbTenantInfo> MultiTenantContext { get; }
 
 		IMultiTenantContext IMultiTenantContextAccessor.MultiTenantContext => MultiTenantContext;
 #else
-		public IMultiTenantContext<MongoTenantInfo>? MultiTenantContext { get; set; }
+		public IMultiTenantContext<MongoDbTenantInfo>? MultiTenantContext { get; set; }
+		
+		IMultiTenantContext? IMultiTenantContextAccessor.MultiTenantContext { 
+			get => (IMultiTenantContext?) MultiTenantContext;
+			set => MultiTenantContext = (IMultiTenantContext<MongoDbTenantInfo>?) value;
+		}
 #endif
 	}
 }

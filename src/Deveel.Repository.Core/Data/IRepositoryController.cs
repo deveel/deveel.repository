@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Deveel AS
+﻿// Copyright 2023-2025 Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -52,46 +52,6 @@ namespace Deveel.Data {
 		Task CreateRepositoryAsync<TEntity, TKey>(CancellationToken cancellationToken = default)
 			where TEntity : class;
 
-
-		/// <summary>
-		/// Creates a repository for the given entity type and tenant
-		/// </summary>
-		/// <typeparam name="TEntity">
-		/// The type of the entity managed by the repository
-		/// </typeparam>
-		/// <param name="tenantId">
-		/// The identifier of the tenant for which the repository is created
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation
-		/// </param>
-		/// <returns>
-		/// Returns a <see cref="Task"/> that can be used to await the operation
-		/// </returns>
-		Task CreateTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class;
-
-		/// <summary>
-		/// Creates a repository for the given entity type and tenant
-		/// </summary>
-		/// <typeparam name="TEntity">
-		/// The type of the entity managed by the repository
-		/// </typeparam>
-		/// <typeparam name="TKey">
-		/// The type of the key used to identify the entity
-		/// </typeparam>
-		/// <param name="tenantId">
-		/// The identifier of the tenant for which the repository is created
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation
-		/// </param>
-		/// <returns>
-		/// Returns a <see cref="Task"/> that can be used to await the operation
-		/// </returns>
-		Task CreateTenantRepositoryAsync<TEntity, TKey>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class;
-
 		/// <summary>
 		/// Drops the repository for the given entity type
 		/// </summary>
@@ -124,45 +84,5 @@ namespace Deveel.Data {
 		/// </returns>
 		Task DropRepositoryAsync<TEntity, TKey>(CancellationToken cancellationToken = default)
 			where TEntity : class;
-
-		/// <summary>
-		/// Drops the repository for the given entity type and tenant
-		/// </summary>
-		/// <typeparam name="TEntity">
-		/// The type of the entity managed by the repository
-		/// </typeparam>
-		/// <param name="tenantId">
-		/// The identifier of the tenant for which the repository is dropped
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation
-		/// </param>
-		/// <returns>
-		/// Returns a <see cref="Task"/> that can be used to await the operation
-		/// </returns>
-		Task DropTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class;
-
-		/// <summary>
-		/// Drops the repository for the given entity type and tenant
-		/// </summary>
-		/// <typeparam name="TEntity">
-		/// The type of the entity managed by the repository
-		/// </typeparam>
-		/// <typeparam name="TKey">
-		/// The type of the key used to identify the entity
-		/// </typeparam>
-		/// <param name="tenantId">
-		/// The identifier of the tenant for which the repository is dropped
-		/// </param>
-		/// <param name="cancellationToken">
-		/// A token used to cancel the operation
-		/// </param>
-		/// <returns>
-		/// Returns a <see cref="Task"/> that can be used to await the operation
-		/// </returns>
-		Task DropTenantRepositoryAsync<TEntity, TKey>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class;
-
 	}
 }

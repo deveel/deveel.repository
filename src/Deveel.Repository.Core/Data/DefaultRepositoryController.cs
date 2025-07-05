@@ -1,4 +1,4 @@
-﻿// Copyright 2023 Deveel AS
+﻿// Copyright 2023-2025 Antonello Provenzano
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -70,47 +70,6 @@ namespace Deveel.Data {
 				logger.LogError(ex, message, args);
 		}
 
-		private async Task<IControllableRepository?> GetTenantRepositoryAsync<TEntity>(IRepositoryProvider<TEntity> provider, string tenantId)
-			where TEntity : class {
-			try {
-				LogTrace("Obtaining a new repository instance for tenant '{TenantId}'", tenantId);
-
-				var repository = await provider.GetRepositoryAsync(tenantId);
-
-				LogTrace("A new repository of type {RepositoryType} was obtained for tenant '{TenantId}'",
-					repository.GetType().Name, tenantId);
-
-				return repository as IControllableRepository;
-			} catch(RepositoryException ex) {
-				LogError(ex, "Error while trying to obtain a repository for tenant '{TenantId}'", tenantId);
-				throw;
-			} catch (Exception ex) {
-				LogError(ex, "Error while trying to obtain a repository for tenant '{TenantId}'", tenantId);
-				throw new RepositoryException("Could not obtain a repository", ex);
-			}
-		}
-
-		private async Task<IControllableRepository?> GetTenantRepositoryAsync<TEntity, TKey>(IRepositoryProvider<TEntity, TKey> provider, string tenantId)
-			where TEntity : class {
-			try {
-				LogTrace("Obtaining a new repository instance for tenant '{TenantId}'", tenantId);
-
-				var repository = await provider.GetRepositoryAsync(tenantId);
-
-				LogTrace("A new repository of type {RepositoryType} was obtained for tenant '{TenantId}'",
-					repository.GetType().Name, tenantId);
-
-				return repository as IControllableRepository;
-			} catch (RepositoryException ex) {
-				LogError(ex, "Error while trying to obtain a repository for tenant '{TenantId}'", tenantId);
-				throw;
-			} catch (Exception ex) {
-				LogError(ex, "Error while trying to obtain a repository for tenant '{TenantId}'", tenantId);
-				throw new RepositoryException("Could not obtain a repository", ex);
-			}
-		}
-
-
 		private IControllableRepository? RequireRepository<TEntity>()
 			where TEntity : class {
 
@@ -141,27 +100,6 @@ namespace Deveel.Data {
 				repository.GetType().Name, typeof(TEntity).Name);
 
 			return repository as IControllableRepository;
-		}
-
-
-		private IRepositoryProvider<TEntity> RequireRepositoryProvider<TEntity>()
-			where TEntity : class {
-			var provider = serviceProvider.GetService<IRepositoryProvider<TEntity>>();
-
-			if (provider == null)
-				throw new NotSupportedException($"Unable to resolve any repository provider for entities of type '{typeof(TEntity)}'");
-
-			return provider;
-		}
-
-		private IRepositoryProvider<TEntity, TKey> RequireRepositoryProvider<TEntity, TKey>()
-			where TEntity : class {
-			var provider = serviceProvider.GetService<IRepositoryProvider<TEntity, TKey>>();
-
-			if (provider == null)
-				throw new NotSupportedException($"Unable to resolve any repository provider for entities of type '{typeof(TEntity)}'");
-
-			return provider;
 		}
 
 
@@ -260,35 +198,6 @@ namespace Deveel.Data {
 
 
 		/// <inheritdoc/>
-		public async Task CreateTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class {
-			LogTrace("Creating the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
-
-			var provider = RequireRepositoryProvider<TEntity>();
-
-			var repository = await provider.GetRepositoryAsync(tenantId) as IControllableRepository;
-
-			await CreateRepository(repository, cancellationToken);
-
-			LogTrace("The repository handling the type '{EntityType}' for tenant '{TenantId}' was created", typeof(TEntity).Name, tenantId);
-		}
-
-		/// <inheritdoc/>
-		public async Task CreateTenantRepositoryAsync<TEntity, TKey>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class {
-			LogTrace("Creating the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
-
-			var provider = RequireRepositoryProvider<TEntity, TKey>();
-
-			var repository = await provider.GetRepositoryAsync(tenantId) as IControllableRepository;
-
-			await CreateRepository(repository, cancellationToken);
-
-			LogTrace("The repository handling the type '{EntityType}' for tenant '{TenantId}' was created", typeof(TEntity).Name, tenantId);
-		}
-
-
-		/// <inheritdoc/>
 		public virtual async Task DropRepositoryAsync<TEntity>(CancellationToken cancellationToken = default) where TEntity : class {
 			LogTrace("Dropping the repository handling the type '{EntityType}'", typeof(TEntity).Name);
 
@@ -309,35 +218,5 @@ namespace Deveel.Data {
 
 			LogTrace("The repository handling the type '{EntityType}' was dropped", typeof(TEntity).Name);
 		}
-
-
-		/// <inheritdoc/>
-		public virtual async Task DropTenantRepositoryAsync<TEntity>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class {
-			LogTrace("Dropping the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
-
-			var provider = RequireRepositoryProvider<TEntity>();
-
-			var repository = await GetTenantRepositoryAsync(provider, tenantId);
-
-			await DropRepository(repository, cancellationToken);
-
-			LogTrace("The repository handling the type '{EntityType}' for tenant '{TenantId}' was dropped", typeof(TEntity).Name, tenantId);
-		}
-
-		/// <inheritdoc/>
-		public virtual async Task DropTenantRepositoryAsync<TEntity, TKey>(string tenantId, CancellationToken cancellationToken = default)
-			where TEntity : class {
-			LogTrace("Dropping the repository handling the type '{EntityType}' for tenant '{TenantId}'", typeof(TEntity).Name, tenantId);
-
-			var provider = RequireRepositoryProvider<TEntity, TKey>();
-
-			var repository = await GetTenantRepositoryAsync(provider, tenantId);
-
-			await DropRepository(repository, cancellationToken);
-
-			LogTrace("The repository handling the type '{EntityType}' for tenant '{TenantId}' was dropped", typeof(TEntity).Name, tenantId);
-		}
-
 	}
 }
