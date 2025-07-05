@@ -23,51 +23,51 @@ namespace Deveel.Data {
         public static partial void LogUnknownError(this ILogger logger, Exception error, Type entityType);
 
         [LoggerMessage(LogEventIds.CreatingEntity, LogLevel.Trace, 
-			"Creating a new entity of type '{EntityType}' for tenant '{TenantId}'")]
-        public static partial void TraceCreatingEntity(this ILogger logger, Type entityType, string? tenantId);
+			"Creating a new entity of type '{EntityType}'")]
+        public static partial void TraceCreatingEntity(this ILogger logger, Type entityType);
 
         [LoggerMessage(LogEventIds.UpdatingEntity, LogLevel.Trace, 
-			"Updating an entity of type '{EntityType}' (ID={EntityId}) owned by tenant '{TenantId}'")]
-        public static partial void TraceUpdatingEntity(this ILogger logger, Type entityType, object entityId, string? tenantId);
+			"Updating an entity of type '{EntityType}' (ID={EntityId})")]
+        public static partial void TraceUpdatingEntity(this ILogger logger, Type entityType, object entityId);
 
         [LoggerMessage(LogEventIds.DeletingEntity, LogLevel.Trace, 
-			"Deleting an entity of type '{EntityType}' (ID={EntityId}) owned by tenant '{TenantId}'")]
-        public static partial void TraceDeletingEntity(this ILogger logger, Type entityType, object entityId, string? tenantId);
+			"Deleting an entity of type '{EntityType}' (ID={EntityId})")]
+        public static partial void TraceDeletingEntity(this ILogger logger, Type entityType, object entityId);
 
         [LoggerMessage(LogEventIds.FindingById, LogLevel.Trace, 
-			"Finding an entity of type '{EntityType}' with ID '{EntityId}' owned by tenant '{TenantId}'")]
-        public static partial void TraceFindingById(this ILogger logger, Type entityType, object entityId, string? tenantId);
+			"Finding an entity of type '{EntityType}' with ID '{EntityId}'")]
+        public static partial void TraceFindingById(this ILogger logger, Type entityType, object entityId);
 
         [LoggerMessage(EventId = LogEventIds.EntityCreated, Level = LogLevel.Information, 
-                                  Message = "Entity of type '{EntityType}' with ID '{EntityId}' was created for tenant '{TenantId}'")]
-        public static partial void LogEntityCreated(this ILogger logger, Type entityType, object entityId, string? tenantId);
+                                  Message = "Entity of type '{EntityType}' with ID '{EntityId}' was created")]
+        public static partial void LogEntityCreated(this ILogger logger, Type entityType, object entityId);
 
         [LoggerMessage(EventId = LogEventIds.EntityUpdated, Level = LogLevel.Information, 
-                                             Message = "Entity of type '{EntityType}' (ID={EntityId}) updated for tenant '{TenantId}'")]
-        public static partial void LogEntityUpdated(this ILogger logger, Type entityType, object entityId, string? tenantId);
+                                             Message = "Entity of type '{EntityType}' (ID={EntityId}) updated")]
+        public static partial void LogEntityUpdated(this ILogger logger, Type entityType, object entityId);
 
         [LoggerMessage(EventId = LogEventIds.EntityDeleted, Level = LogLevel.Information, 
-                                                        Message = "Entity of type '{EntityType}' (ID={EntityId}) deleted for tenant '{TenantId}'")]
-        public static partial void LogEntityDeleted(this ILogger logger, Type entityType, object entityId, string? tenantId);
+                                                        Message = "Entity of type '{EntityType}' (ID={EntityId}) deleted")]
+        public static partial void LogEntityDeleted(this ILogger logger, Type entityType, object entityId);
 
         [LoggerMessage(EventId = LogEventIds.EntityFoundById, Level = LogLevel.Trace, 
-                                  Message = "Entity of type '{EntityType}' found with ID '{EntityId}' for tenant '{TenantId}'")]
-        public static partial void TraceEntityFoundById(this ILogger logger, Type entityType, object entityId, string? tenantId);
+                                  Message = "Entity of type '{EntityType}' found with ID '{EntityId}'")]
+        public static partial void TraceEntityFoundById(this ILogger logger, Type entityType, object entityId);
 
         [LoggerMessage(EventId = LogEventIds.EntityNotFoundById, Level = LogLevel.Trace, 
-                                                        Message = "Entity of type '{EntityType}' not found with ID '{EntityId}' for tenant '{TenantId}'")]
-        public static partial void TraceEntityNotFoundById(this ILogger logger, Type entityType, object entityId, string? tenantId);
+                                                        Message = "Entity of type '{EntityType}' not found with ID '{EntityId}'")]
+        public static partial void TraceEntityNotFoundById(this ILogger logger, Type entityType, object entityId);
 
         [LoggerMessage(EventId = LogEventIds.EntityNotFound, Level = LogLevel.Warning, 
-            Message = "Entity of type '{EntityType}' with ID '{EntityId}' not found for tenant '{TenantId}'")]
-        public static partial void WarnEntityNotFound(this ILogger logger, Type entityType, object entityId, string? tenantId);
+            Message = "Entity of type '{EntityType}' with ID '{EntityId}' not found")]
+        public static partial void WarnEntityNotFound(this ILogger logger, Type entityType, object entityId);
 
         [LoggerMessage(EventId = LogEventIds.EntityNotDeleted, Level = LogLevel.Warning, 
-                       Message = "Entity of type '{EntityType}' with ID '{EntityId}' not deleted for tenant '{TenantId}'")]
-        public static partial void WarnEntityNotDeleted(this ILogger logger, Type entityType, object entityId, string? tenantId);
+                       Message = "Entity of type '{EntityType}' with ID '{EntityId}' not deleted")]
+        public static partial void WarnEntityNotDeleted(this ILogger logger, Type entityType, object entityId);
 
         [LoggerMessage(EventId = LogEventIds.EntityNotUpdated, Level = LogLevel.Warning, 
-                                             Message = "Entity of type '{EntityType}' with ID '{EntityId}' not updated for tenant '{TenantId}'")]
-        public static partial void WarnEntityNotUpdated(this ILogger logger, Type entityType, object entityId, string? tenantId);
+                                             Message = "Entity of type '{EntityType}' with ID '{EntityId}' not updated")]
+        public static partial void WarnEntityNotUpdated(this ILogger logger, Type entityType, object entityId);
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Bogus;
 
+using Deveel.Data.Entities;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -41,15 +43,20 @@ namespace Deveel.Data {
 		}
 
 		protected override void ConfigureServices(IServiceCollection services) {
+			AddDbContext(services);
+
+			services.AddRepository<DbPersonRepository>();
+
+			base.ConfigureServices(services);
+		}
+
+		protected virtual void AddDbContext(IServiceCollection services) {
 			services.AddDbContext<PersonDbContext>(builder => {
 				builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 				builder.UseSqlite(sql.Connection, sqlite => {
 					sqlite.UseNetTopologySuite();
 				});
-			})
-			.AddRepository<DbPersonRepository>();
-
-			base.ConfigureServices(services);
+			});
 		}
 
 		protected override async Task InitializeAsync() {

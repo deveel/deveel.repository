@@ -1,6 +1,6 @@
 ﻿using Bogus;
 
-namespace Deveel.Data
+namespace Deveel.Data.Entities
 {
 	public class DbBookFaker : Faker<DbBook>
 	{

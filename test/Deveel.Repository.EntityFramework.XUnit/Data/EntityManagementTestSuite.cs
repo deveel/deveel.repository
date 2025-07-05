@@ -1,5 +1,7 @@
 ﻿using Bogus;
 
+using Deveel.Data.Entities;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

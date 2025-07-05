@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Finbuckle.MultiTenant;
-
-#if NET7_0_OR_GREATER
-using Finbuckle.MultiTenant.Abstractions;
-#endif
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

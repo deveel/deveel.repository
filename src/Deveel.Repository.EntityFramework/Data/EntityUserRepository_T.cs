@@ -1,10 +1,4 @@
-﻿using Finbuckle.MultiTenant;
-
-#if NET7_0_OR_GREATER
-using Finbuckle.MultiTenant.Abstractions;
-#endif
-
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Deveel.Data
@@ -33,26 +27,6 @@ namespace Deveel.Data
 		/// A logger used to log the operations of the repository.
 		/// </param>
 		public EntityUserRepository(DbContext context, IUserAccessor<object> userAccessor, ILogger<EntityUserRepository<TEntity, object>>? logger = null) : base(context, userAccessor, logger)
-		{
-		}
-
-		/// <summary>
-		/// Constructs the repository using the given <see cref="DbContext"/> for
-		/// a specific tenant.
-		/// </summary>
-		/// <param name="context">
-		/// The <see cref="DbContext"/> used to access the data of the entities.
-		/// </param>
-		/// <param name="tenantInfo">
-		/// The information about the tenant that the repository will use to access the data.
-		/// </param>
-		/// <param name="userAccessor">
-		/// A service used to get the current user context.
-		/// </param>
-		/// <param name="logger">
-		/// A logger used to log the operations of the repository.
-		/// </param>
-		public EntityUserRepository(DbContext context, ITenantInfo? tenantInfo, IUserAccessor<object> userAccessor, ILogger<EntityUserRepository<TEntity, object>>? logger = null) : base(context, tenantInfo, userAccessor, logger)
 		{
 		}
 	}

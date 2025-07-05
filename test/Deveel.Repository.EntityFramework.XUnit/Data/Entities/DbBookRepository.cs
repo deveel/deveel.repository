@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Deveel.Data
+namespace Deveel.Data.Entities
 {
 	public class DbBookRepository : EntityUserRepository<DbBook, Guid, string>
 	{

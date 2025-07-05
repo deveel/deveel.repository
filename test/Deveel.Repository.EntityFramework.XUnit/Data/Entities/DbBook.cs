@@ -1,6 +1,6 @@
 ﻿#pragma warning disable CS8618
 
-namespace Deveel.Data
+namespace Deveel.Data.Entities
 {
 	public class DbBook : IBook<Guid>, IHaveOwner<string>
 	{
