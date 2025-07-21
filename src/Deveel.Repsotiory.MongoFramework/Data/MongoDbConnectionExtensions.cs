@@ -47,32 +47,32 @@ namespace Deveel.Data {
 			return urlProperty == null ? null : (MongoUrl?)urlProperty.GetValue(connection);
 		}
 
-		/// <summary>
-		/// Constructs a new <see cref="IMongoDbConnection{TContext}"/> instance
-		/// for a given context from the given connection.
-		/// </summary>
-		/// <typeparam name="TContext">
-		/// The type of the context to build the connection for.
-		/// </typeparam>
-		/// <param name="connection">
-		/// The connection to build the context for.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of <see cref="IMongoDbConnection{TContext}"/>
-		/// that is wrapping the given connection for the specified
-		/// type of context.
-		/// </returns>
-		/// <exception cref="ArgumentNullException">
-		/// Thrown when the given <paramref name="connection"/> is <c>null</c>.
-		/// </exception>
-		public static IMongoDbConnection<TContext> ForContext<TContext>(this IMongoDbConnection connection)
-            where TContext : class, IMongoDbContext {
-			ArgumentNullException.ThrowIfNull(connection, nameof(connection));
+		///// <summary>
+		///// Constructs a new <see cref="IMongoDbConnection{TContext}"/> instance
+		///// for a given context from the given connection.
+		///// </summary>
+		///// <typeparam name="TContext">
+		///// The type of the context to build the connection for.
+		///// </typeparam>
+		///// <param name="connection">
+		///// The connection to build the context for.
+		///// </param>
+		///// <returns>
+		///// Returns an instance of <see cref="IMongoDbConnection{TContext}"/>
+		///// that is wrapping the given connection for the specified
+		///// type of context.
+		///// </returns>
+		///// <exception cref="ArgumentNullException">
+		///// Thrown when the given <paramref name="connection"/> is <c>null</c>.
+		///// </exception>
+		//public static IMongoDbConnection<TContext> ForContext<TContext>(this IMongoDbConnection connection)
+  //          where TContext : class, IMongoDbContext {
+		//	ArgumentNullException.ThrowIfNull(connection, nameof(connection));
 
-            if (connection is IMongoDbConnection<TContext> mongoConnection)
-                return mongoConnection;
+  //          if (connection is IMongoDbConnection<TContext> mongoConnection)
+  //              return mongoConnection;
 
-            return new MongoDbConnection<TContext>(connection);
-        }
+  //          return new MongoDbConnection<TContext>(connection);
+  //      }
     }
 }

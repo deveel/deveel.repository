@@ -23,7 +23,7 @@ namespace Deveel.Data {
 		public static void GetUrlFromConnectionOfContext() {
 			const string connectionString = "mongodb://localhost:27017/testdb";
 
-			var connection = MongoDbConnection<MongoDbContext>.FromConnectionString(connectionString);
+			var connection = new MongoDbConnection<MongoDbContext>(connectionString);
 			Assert.NotNull(connection);
 
 			var url = connection.GetUrl();

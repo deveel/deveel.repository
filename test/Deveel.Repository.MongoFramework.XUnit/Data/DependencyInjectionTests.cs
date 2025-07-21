@@ -34,7 +34,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(dbContext);
 			Assert.NotNull(dbContext.Connection);
-			Assert.IsAssignableFrom<IMongoDbConnection<MongoDbContext>>(dbContext.Connection);
+			Assert.IsAssignableFrom<IMongoDbConnection>(dbContext.Connection);
 
 			var connection = Assert.IsType<MongoDbConnection<MongoDbContext>>(dbContext.Connection);
 
@@ -48,7 +48,7 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 
 			services.AddMongoDbContext<MongoDbContext>(builder => {
-				builder.UseTenant();
+				builder.UseTenantConnection();
 			});
 
 			services.AddMongoTenantContext(new MongoDbTenantInfo {
@@ -70,7 +70,7 @@ namespace Deveel.Data {
 			Assert.NotNull(dbContext.Connection);
 			Assert.IsAssignableFrom<IMongoDbConnection<MongoDbContext>>(dbContext.Connection);
 
-			var connection = Assert.IsType<MongoDbConnection<MongoDbContext>>(dbContext.Connection);
+			var connection = Assert.IsType<MongoDbTenantConnection<MongoDbContext>>(dbContext.Connection);
 
 			Assert.NotNull(connection);
 			Assert.NotNull(connection.Url);
@@ -82,26 +82,27 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 
 			services.AddMongoTenantContext(new MongoDbTenantInfo {
-				Id = Guid.NewGuid().ToString()
+				Id = Guid.NewGuid().ToString(),
+				Identifier = "test-tenant"
 			});
 
-			services.AddMongoDbContext<MongoDbTenantContext>(builder => {
-				builder.UseConnection("mongodb://localhost:27017/testdb");
+			services.AddMongoDbContext<MongoDbMultiTenantContext>(builder => {
+				builder.UseTenantConnection("mongodb://localhost:27017/testdb");
 			});
 
 			var provider = services.BuildServiceProvider();
 
 			Assert.NotNull(provider.GetService<IMongoDbTenantContext>());
-			Assert.NotNull(provider.GetService<MongoDbTenantContext>());
+			Assert.NotNull(provider.GetService<MongoDbMultiTenantContext>());
 
 			var dbContext = provider.GetService<IMongoDbTenantContext>();
 
-			Assert.IsType<MongoDbTenantContext>(dbContext);
+			Assert.IsType<MongoDbMultiTenantContext>(dbContext);
 
 			Assert.NotNull(dbContext);
 			Assert.NotNull(dbContext.Connection);
-			Assert.IsAssignableFrom<IMongoDbConnection<MongoDbTenantContext>>(dbContext.Connection);
-			var connection = Assert.IsType<MongoDbConnection<MongoDbTenantContext>>(dbContext.Connection);
+			Assert.IsAssignableFrom<IMongoDbConnection<MongoDbMultiTenantContext>>(dbContext.Connection);
+			var connection = Assert.IsType<MongoDbTenantConnection<MongoDbMultiTenantContext>>(dbContext.Connection);
 
 			Assert.NotNull(connection);
 			Assert.NotNull(connection.Url);

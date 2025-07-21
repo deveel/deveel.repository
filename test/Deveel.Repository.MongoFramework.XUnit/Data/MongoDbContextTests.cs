@@ -35,7 +35,7 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 
 			services.AddMongoDbContext<MongoDbContext>(builder => {
-				builder.UseTenant();
+				builder.UseTenantConnection();
 			});
 
 			services.AddMongoTenantContext(new MongoDbTenantInfo {
@@ -59,23 +59,23 @@ namespace Deveel.Data {
 				Identifier = "test-tenant"
 			});
 
-			services.AddMongoDbContext<MongoDbTenantContext>(builder => {
+			services.AddMongoDbContext<MongoDbMultiTenantContext>(builder => {
 				builder.UseConnection("mongodb://localhost:27017/testdb");
 			});
 
 			var provider = services.BuildServiceProvider();
 
 			Assert.NotNull(provider.GetService<IMongoDbContext>());
-			Assert.NotNull(provider.GetService<MongoDbTenantContext>());
-			Assert.NotNull(provider.GetService<IMongoDbConnection<MongoDbTenantContext>>());
+			Assert.NotNull(provider.GetService<MongoDbMultiTenantContext>());
+			Assert.NotNull(provider.GetService<IMongoDbConnection<MongoDbMultiTenantContext>>());
 		}
 
 		[Fact]
 		public static void AddDefaultTenantContext_TenantConnection() {
 			var services = new ServiceCollection();
 
-			services.AddMongoDbContext<MongoDbTenantContext>(builder => {
-				builder.UseTenant();
+			services.AddMongoDbContext<MongoDbMultiTenantContext>(builder => {
+				builder.UseTenantConnection();
 			});
 
 			services.AddMongoTenantContext(new MongoDbTenantInfo {
@@ -87,8 +87,8 @@ namespace Deveel.Data {
 			var provider = services.BuildServiceProvider();
 
 			Assert.NotNull(provider.GetService<IMongoDbContext>());
-			Assert.NotNull(provider.GetService<MongoDbTenantContext>());
-			Assert.NotNull(provider.GetService<IMongoDbConnection<MongoDbTenantContext>>());
+			Assert.NotNull(provider.GetService<MongoDbMultiTenantContext>());
+			Assert.NotNull(provider.GetService<IMongoDbConnection<MongoDbMultiTenantContext>>());
 		}
 
 		[Fact]
@@ -111,7 +111,7 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 
 			services.AddMongoDbContext<MyMongoContext>(builder => {
-				builder.UseTenant();
+				builder.UseTenantConnection();
 			});
 
 			services.AddMongoTenantContext(new MongoDbTenantInfo {
@@ -147,7 +147,7 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 
 			services.AddMongoDbContext<MyMongoContextWithConnection>(builder => {
-				builder.UseTenant();
+				builder.UseTenantConnection();
 			});
 
 			services.AddMongoTenantContext(new MongoDbTenantInfo {
@@ -188,7 +188,7 @@ namespace Deveel.Data {
 			var services = new ServiceCollection();
 
 			services.AddMongoDbContext<MyMongoTenantContext>(builder => {
-				builder.UseTenant();
+				builder.UseTenantConnection();
 			});
 
 			services.AddMongoTenantContext(new MongoDbTenantInfo {
@@ -209,9 +209,11 @@ namespace Deveel.Data {
 			}
 		}
 
-		class MyMongoTenantContext : MongoDbTenantContext {
-			public MyMongoTenantContext(IMongoDbConnection<MyMongoTenantContext> connection, ITenantInfo tenantInfo) 
-				: base(connection, tenantInfo.Id) {
+		class MyMongoTenantContext : MongoDbMultiTenantContext
+		{
+			public MyMongoTenantContext(IMongoDbConnection<MyMongoTenantContext> connection, IMultiTenantContextAccessor multiTenantContextAccessor) 
+				: base(connection, multiTenantContextAccessor)
+			{
 			}
 		}
 

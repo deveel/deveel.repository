@@ -18,6 +18,9 @@
     <PackageReference Include="Finbuckle.MultiTenant" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Data\MongoDbContextUtil.cs" />
+  </ItemGroup>
 
   <ItemGroup>
 		<PackageReference Include="MongoFramework" Version="0.29.0" />
