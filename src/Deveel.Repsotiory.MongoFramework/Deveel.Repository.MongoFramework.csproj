@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Description>Provides an implementation of the repository pattern that is backed by the MongoFramework library and provides multi-tenancy support through Finbuckle</Description>
+		<Description>Provides an implementation of the repository pattern that is backed by the MongoFramework library</Description>
     <PackageTags>repository;mongo;mongodb;client;nosql</PackageTags>
 	</PropertyGroup>
 

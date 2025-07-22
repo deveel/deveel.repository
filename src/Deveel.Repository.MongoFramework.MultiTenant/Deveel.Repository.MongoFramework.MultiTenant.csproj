@@ -1,4 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Extends the implementation of the repository pattern that backed by the MongoFramework library, to provide multi-tenancy support through Finbuckle.MultiTenant</Description>
+    <PackageTags>repository;mongo;mongodb;client;nosql;tenant;multitenant;finbuckle;tenancy</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Deveel.Repsotiory.MongoFramework\Deveel.Repository.MongoFramework.csproj" />
   </ItemGroup>
