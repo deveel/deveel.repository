@@ -82,6 +82,9 @@ namespace Deveel.Data
 			{
 				foreach(var property in builder.Metadata.GetDeclaredProperties())
 				{
+					if (property.PropertyInfo == null)
+						continue;
+
 					if (Attribute.IsDefined(property.PropertyInfo, typeof(DataOwnerAttribute)))
 					{
 						propertyName = property.Name;

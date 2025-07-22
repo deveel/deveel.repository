@@ -1,64 +1,62 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Runtime.CompilerServices;
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using MongoFramework;
 
-using System.Reflection;
-
 namespace Deveel.Data
 {
-	public sealed class MongoConnectionBuilder<TContext>
-		where TContext : class, IMongoDbContext
+	/// <summary>
+	/// Provides a builder for configuring MongoDB connections 
+	/// within a service collection.
+	/// </summary>
+	/// <remarks>This class is used to set up MongoDB connections by specifying the connection string and 
+	/// configuring the service lifetime. It is typically used during application startup to  register MongoDB services
+	/// with dependency injection.</remarks>
+	public sealed class MongoConnectionBuilder
 	{
-		private readonly IServiceCollection services;
-		private readonly ServiceLifetime lifetime;
-
-		internal MongoConnectionBuilder(IServiceCollection services, ServiceLifetime lifetime)
+		internal MongoConnectionBuilder(Type contextType, IServiceCollection services, ServiceLifetime lifetime)
 		{
-			this.services = services;
-			this.lifetime = lifetime;
+			ContextType = contextType ?? throw new ArgumentNullException(nameof(contextType));
+			Services = services ?? throw new ArgumentNullException(nameof(services));
+			Lifetime = lifetime;
 		}
 
-		public MongoConnectionBuilder<TContext> UseConnection(string connectionString)
+		internal Type ContextType { get; }
+
+		internal IServiceCollection Services { get; }
+
+		internal ServiceLifetime Lifetime { get; }
+
+		/// <summary>
+		/// Configures the builder to use a MongoDB connection with 
+		/// the specified connection string.
+		/// </summary>
+		/// <param name="connectionString">The connection string used to establish a 
+		/// connection to the MongoDB database.Cannot be null, empty, or consist solely of whitespace.</param>
+		/// <returns>The current instance of <see cref="MongoConnectionBuilder"/> to allow for method chaining.</returns>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="connectionString"/> is empty or consists only of whitespace.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if no suitable constructor is found for the MongoDB connection implementation.</exception>
+		public MongoConnectionBuilder UseConnection(string connectionString)
 		{
 			ArgumentNullException.ThrowIfNull(connectionString, nameof(connectionString));
 			if (string.IsNullOrWhiteSpace(connectionString))
 				throw new ArgumentException("Connection string cannot be empty.", nameof(connectionString));
 
-			var connectionType = typeof(IMongoDbConnection<>).MakeGenericType(typeof(TContext));
-			
-			services.TryAdd(ServiceDescriptor.Describe(connectionType, sp =>
+			var connectionType = typeof(IMongoDbConnection<>).MakeGenericType(ContextType);
+
+			Services.TryAdd(ServiceDescriptor.Describe(connectionType, sp =>
 			{
-				var implementationType = typeof(MongoDbConnection<>).MakeGenericType(typeof(TContext));
+				var implementationType = typeof(MongoDbConnection<>).MakeGenericType(ContextType);
 				var ctor = implementationType.GetConstructor(new[] { typeof(string) });
 				if (ctor == null)
 					throw new InvalidOperationException($"No suitable constructor found for {implementationType.FullName} that accepts IMongoDbConnection.");
 
 				return ctor.Invoke(new object[] { connectionString });
-			}, lifetime));
+			}, Lifetime));
 
-			services.TryAdd(ServiceDescriptor.Describe(typeof(IMongoDbConnection), sp => (IMongoDbConnection) sp.GetRequiredService(connectionType), lifetime));
-
-			return this;
-		}
-
-		public MongoConnectionBuilder<TContext> UseTenantConnection(string? defaultConnection = null)
-		{
-			services.AddOptions<MongoTenantConnectionOptions>()
-				.Configure(options => options.DefaultConnectionString = defaultConnection);
-
-			var connectionType = typeof(IMongoDbConnection<>).MakeGenericType(typeof(TContext));
-			services.TryAdd(ServiceDescriptor.Describe(connectionType, sp =>
-			{
-				var implementationType = typeof(MongoDbTenantConnection<>).MakeGenericType(typeof(TContext));
-				return ActivatorUtilities.CreateInstance(sp, implementationType);
-			},lifetime));
-
-			services.TryAdd(ServiceDescriptor.Describe(typeof(IMongoDbConnection), sp =>
-			{
-				var connection = sp.GetRequiredService(connectionType);
-				return (IMongoDbConnection)connection;
-			}, lifetime));
+			Services.TryAdd(ServiceDescriptor.Describe(typeof(IMongoDbConnection), sp => (IMongoDbConnection) sp.GetRequiredService(connectionType), Lifetime));
 
 			return this;
 		}

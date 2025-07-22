@@ -35,9 +35,16 @@ namespace Deveel.Data {
 		private bool disposed;
 		private IMongoClient? client;
 
+		/// <summary>
+		/// Creates a new instance of <see cref="MongoDbConnection{TContext}"/>
+		/// that connects to a MongoDB database using the specified connection string.
+		/// </summary>
+		/// <param name="connectionString">The connection string used to establish 
+		/// a connection to the MongoDB database.</param>
 		public MongoDbConnection(string connectionString)
 		{
 			var settings = MongoClientSettings.FromConnectionString(connectionString);
+			// Set the Linq provider to V2 to ensure compatibility with MongoFramework
 			settings.LinqProvider = MongoDB.Driver.Linq.LinqProvider.V2;
 			Url = MongoUrl.Create(connectionString);
 			client = new MongoClient(settings);
@@ -48,8 +55,14 @@ namespace Deveel.Data {
 				throw new ObjectDisposedException(nameof(MongoDbConnection<TContext>));
 		}
 
+		/// <summary>
+		/// Gets the MongoDB connection URL used by this connection.
+		/// </summary>
 		public MongoUrl Url { get; }
 
+		/// <summary>
+		/// Gets the MongoDB client instance used for database operations.
+		/// </summary>
 		public IMongoClient Client
 		{
 			get
@@ -59,8 +72,10 @@ namespace Deveel.Data {
 			}
 		}
 
+		/// <inheritdoc/>
 		public IDiagnosticListener DiagnosticListener { get; set; } = new NoOpDiagnosticListener();
 
+		/// <inheritdoc/>
 		public IMongoDatabase GetDatabase()
 		{
 			ThrowIfDisposed();
@@ -71,6 +86,7 @@ namespace Deveel.Data {
 			return client.GetDatabase(Url.DatabaseName);
 		}
 
+		/// <inheritdoc/>
 		public void Dispose() {
 			if (!disposed) {
 				client = null;

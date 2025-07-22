@@ -43,6 +43,14 @@ jobs:
         min-versions-to-keep: 10
         delete-only-pre-release-versions: "true"
 
+    - name: Remove the Old Deveel.Repository.MongoFramework.MultiTenant Package
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: 'Deveel.Repository.MongoFramework.MultiTenant'
+        package-type: 'nuget'
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: "true"
+
     - name: Remove the Old Deveel.Repository.EntityFramework Package
       uses: actions/delete-package-versions@v4
       with:

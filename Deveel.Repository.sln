@@ -60,6 +60,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.EntityFramework.Benchmarks", "benchmarks\Deveel.Repository.EntityFramework.Benchmarks\Deveel.Repository.EntityFramework.Benchmarks.csproj", "{24BB4426-53A2-42AA-A736-FB0A2D1FCC5F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.MongoFramework.MultiTenant", "src\Deveel.Repository.MongoFramework.MultiTenant\Deveel.Repository.MongoFramework.MultiTenant.csproj", "{18241CCB-B430-4F43-AFEC-0C0A3F5B5400}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -142,6 +144,10 @@ Global
 		{24BB4426-53A2-42AA-A736-FB0A2D1FCC5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24BB4426-53A2-42AA-A736-FB0A2D1FCC5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24BB4426-53A2-42AA-A736-FB0A2D1FCC5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18241CCB-B430-4F43-AFEC-0C0A3F5B5400}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18241CCB-B430-4F43-AFEC-0C0A3F5B5400}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18241CCB-B430-4F43-AFEC-0C0A3F5B5400}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18241CCB-B430-4F43-AFEC-0C0A3F5B5400}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -167,6 +173,7 @@ Global
 		{7DC0EA52-DAAB-49D4-8443-3409C001E27E} = {85200FA4-CC68-4758-B6E5-287E8AFA79FE}
 		{85200FA4-CC68-4758-B6E5-287E8AFA79FE} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 		{24BB4426-53A2-42AA-A736-FB0A2D1FCC5F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{18241CCB-B430-4F43-AFEC-0C0A3F5B5400} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01FD9B16-84B3-4D99-80C1-11B2F3D65B56}

@@ -49,13 +49,13 @@ namespace Deveel.Data
 		/// <returns>
 		/// Returns the service collection for chaining.
 		/// </returns>
-		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<MongoConnectionBuilder<TContext>> connectionBuilder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<MongoConnectionBuilder> connectionBuilder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TContext : class, IMongoDbContext
 		{
 
 			ArgumentNullException.ThrowIfNull(connectionBuilder, nameof(connectionBuilder));
 
-			var builder = new MongoConnectionBuilder<TContext>(services,lifetime);
+			var builder = new MongoConnectionBuilder(typeof(TContext), services,lifetime);
 			connectionBuilder(builder);
 
 			services.TryAdd(new ServiceDescriptor(typeof(TContext), typeof(TContext), lifetime));
@@ -78,9 +78,9 @@ namespace Deveel.Data
 				typeof(MongoDbTenantContext) != typeof(TContext))
 				services.TryAdd(new ServiceDescriptor(typeof(MongoDbTenantContext), provider => provider.GetRequiredService<TContext>(), lifetime));
 
-			if (typeof(MongoDbMultiTenantContext).IsAssignableFrom(typeof(TContext)) &&
-				typeof(MongoDbMultiTenantContext) != typeof(TContext))
-				services.TryAdd(new ServiceDescriptor(typeof(MongoDbMultiTenantContext), provider => provider.GetRequiredService<TContext>(), lifetime));
+			//if (typeof(MongoDbMultiTenantContext).IsAssignableFrom(typeof(TContext)) &&
+			//	typeof(MongoDbMultiTenantContext) != typeof(TContext))
+			//	services.TryAdd(new ServiceDescriptor(typeof(MongoDbMultiTenantContext), provider => provider.GetRequiredService<TContext>(), lifetime));
 
 			return services;
 		}
