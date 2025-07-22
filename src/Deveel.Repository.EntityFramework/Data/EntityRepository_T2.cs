@@ -51,10 +51,6 @@ namespace Deveel.Data
 		/// <param name="logger">
 		/// A logger used to log the operations of the repository.
 		/// </param>
-		/// <remarks>
-		/// When the given <paramref name="context"/> implements the <see cref="IMultiTenantDbContext"/>
-		/// the repository will use the tenant information to access the data.
-		/// </remarks>
 		public EntityRepository(DbContext context, ILogger<EntityRepository<TEntity, TKey>>? logger = null) {
 			Context = context ?? throw new ArgumentNullException(nameof(context));
 			Logger = logger ?? NullLogger<EntityRepository<TEntity, TKey>>.Instance;

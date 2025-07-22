@@ -12,22 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Finbuckle.MultiTenant;
-#if NET7_0_OR_GREATER
-using Finbuckle.MultiTenant.Abstractions;
-#endif
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using MongoFramework;
 
-namespace Deveel.Data {
+namespace Deveel.Data
+{
 	/// <summary>
 	/// Extends the <see cref="IServiceCollection"/> to provide methods
 	/// to register a <see cref="IMongoDbContext"/> in service collections.
 	/// </summary>
-    public static class ServiceCollectionExtensions {
+	public static class ServiceCollectionExtensions
+	{
+		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, string connectionString, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+			where TContext : class, IMongoDbContext
+		{
+			return AddMongoDbContext<TContext>(services, builder => builder.UseConnection(connectionString), lifetime);
+		}
+
 		/// <summary>
 		/// Adds a <see cref="IMongoDbContext"/> to the service collection.
 		/// </summary>
@@ -47,93 +50,37 @@ namespace Deveel.Data {
 		/// Returns the service collection for chaining.
 		/// </returns>
 		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<MongoConnectionBuilder> connectionBuilder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			where TContext : class, IMongoDbContext {
-			return services.AddMongoDbContext<TContext>((IServiceProvider provider, MongoConnectionBuilder builder) => connectionBuilder(builder), lifetime);
-		}
-		
-		private static void AddConnection<TContext>(IServiceCollection services, Action<IServiceProvider, MongoConnectionBuilder>? configure, ServiceLifetime lifetime)
-			where TContext : class, IMongoDbContext {
-			Func<IServiceProvider, MongoConnectionBuilder<TContext>> builderFactory = provider => {
-				var builder = new MongoConnectionBuilder();
-				configure?.Invoke(provider, builder);
-				return new MongoConnectionBuilder<TContext>(builder);
-			};
+			where TContext : class, IMongoDbContext
+		{
 
-			Func<IServiceProvider, IMongoDbConnection<TContext>> connectionFactory = provider => {
-				var builder = provider.GetRequiredService<MongoConnectionBuilder<TContext>>();
-				if (builder.IsUsingTenant)
-				{
-					var contextType = typeof(IMultiTenantContextAccessor<>).MakeGenericType(builder.TenantType!);
-					var tenantContextAccessor = (IMultiTenantContextAccessor) provider.GetRequiredService(contextType);
-					var tenantInfo = tenantContextAccessor.MultiTenantContext?.TenantInfo as MongoDbTenantInfo;
-					if (tenantInfo == null)
-						throw new InvalidOperationException("No tenant information was found in the service collection");
+			ArgumentNullException.ThrowIfNull(connectionBuilder, nameof(connectionBuilder));
 
-					return new MongoDbConnection<TContext>(MongoDbConnection.FromConnectionString(tenantInfo.ConnectionString));
-				}
+			var builder = new MongoConnectionBuilder(typeof(TContext), services,lifetime);
+			connectionBuilder(builder);
 
-				return new MongoDbConnection<TContext>(builder.Connection);
-			};
+			services.TryAdd(new ServiceDescriptor(typeof(TContext), typeof(TContext), lifetime));
+			services.TryAdd(new ServiceDescriptor(typeof(IMongoDbContext), typeof(TContext), lifetime));
 
-			services.TryAdd(new ServiceDescriptor(typeof(MongoConnectionBuilder<TContext>), builderFactory, lifetime));
+			if (typeof(IMongoDbTenantContext).IsAssignableFrom(typeof(TContext)))
+				services.TryAdd(new ServiceDescriptor(typeof(IMongoDbTenantContext), typeof(TContext), lifetime));
 
-			services.TryAdd(new ServiceDescriptor(typeof(IMongoDbConnection<TContext>), connectionFactory, lifetime));
-			services.TryAdd(new ServiceDescriptor(typeof(IMongoDbConnection), connectionFactory, lifetime));
-		}
+			if (typeof(MongoDbContext).IsAssignableFrom(typeof(TContext)) &&
+				typeof(MongoDbContext) != typeof(TContext))
+				services.TryAdd(new ServiceDescriptor(typeof(MongoDbContext), typeof(TContext), lifetime));
 
-		/// <summary>
-		/// Adds a <see cref="IMongoDbContext"/> to the service collection.
-		/// </summary>
-		/// <typeparam name="TContext">
-		/// The type of the context to register.
-		/// </typeparam>
-		/// <param name="services">
-		/// The service collection to add the context to.
-		/// </param>
-		/// <param name="connectionBuilder">
-		/// A delegate to a method that builds the connection string.
-		/// </param>
-		/// <param name="lifetime">
-		/// The lifetime of the context in the service collection.
-		/// </param>
-		/// <returns>
-		/// Returns the service collection for chaining.
-		/// </returns>
-		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<IServiceProvider, MongoConnectionBuilder>? connectionBuilder = null, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-			where TContext : class, IMongoDbContext {
-
-			AddConnection<TContext>(services, connectionBuilder, lifetime);
-
-			if (typeof(IMongoDbTenantContext).IsAssignableFrom(typeof(TContext))) {
-				var contextFactory = new Func<IServiceProvider, IMongoDbTenantContext>(provider => {
-					var builder = provider.GetRequiredService<MongoConnectionBuilder<TContext>>();
-					var accessor = provider.GetRequiredService<IMultiTenantContextAccessor<MongoDbTenantInfo>>();
-					var tenantInfo = accessor.MultiTenantContext?.TenantInfo!;
-
-					return (IMongoDbTenantContext) MongoDbContextUtil.CreateContext<TContext>(builder, tenantInfo);
-				});
-
-				services.TryAdd(new ServiceDescriptor(typeof(TContext), contextFactory, lifetime));
-
-				if (typeof(MongoDbTenantContext) != typeof(TContext))
-					services.TryAdd(new ServiceDescriptor(typeof(MongoDbTenantContext), provider => provider.GetRequiredService<TContext>(), lifetime));
-
-				services.TryAdd(new ServiceDescriptor(typeof(IMongoDbContext), provider => provider.GetRequiredService<TContext>(), lifetime));
-				services.TryAdd(new ServiceDescriptor(typeof(IMongoDbTenantContext), provider => provider.GetRequiredService<TContext>(), lifetime));
-			} else {
-
+			if (typeof(TContext) != typeof(MongoDbContext))
 				services.TryAdd(new ServiceDescriptor(typeof(TContext), typeof(TContext), lifetime));
-				services.TryAdd(new ServiceDescriptor(typeof(IMongoDbContext), typeof(TContext), lifetime));
 
-				if (typeof(IMongoDbTenantContext).IsAssignableFrom(typeof(TContext)))
-					services.TryAdd(new ServiceDescriptor(typeof(IMongoDbTenantContext), typeof(TContext), lifetime));
+			if (typeof(IMongoDbTenantContext).IsAssignableFrom(typeof(TContext)))
+				services.TryAdd(new ServiceDescriptor(typeof(IMongoDbTenantContext), provider => provider.GetRequiredService<TContext>(), lifetime));
 
-				if (typeof(MongoDbContext).IsAssignableFrom(typeof(TContext)))
-					services.TryAdd(new ServiceDescriptor(typeof(MongoDbContext), typeof(TContext), lifetime));
+			if (typeof(MongoDbTenantContext).IsAssignableFrom(typeof(TContext)) &&
+				typeof(MongoDbTenantContext) != typeof(TContext))
+				services.TryAdd(new ServiceDescriptor(typeof(MongoDbTenantContext), provider => provider.GetRequiredService<TContext>(), lifetime));
 
-				if (typeof(TContext) != typeof(MongoDbContext))
-					services.TryAdd(new ServiceDescriptor(typeof(TContext), typeof(TContext), lifetime));
-			}
+			//if (typeof(MongoDbMultiTenantContext).IsAssignableFrom(typeof(TContext)) &&
+			//	typeof(MongoDbMultiTenantContext) != typeof(TContext))
+			//	services.TryAdd(new ServiceDescriptor(typeof(MongoDbMultiTenantContext), provider => provider.GetRequiredService<TContext>(), lifetime));
 
 			return services;
 		}

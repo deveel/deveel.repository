@@ -29,64 +29,69 @@ namespace Deveel.Data {
 	/// This object wraps a <see cref="IMongoDbConnection"/> and it's used
 	/// to strongly type the connection to a specific context.
 	/// </remarks>
-	public sealed class MongoDbConnection<TContext> : IMongoDbConnection<TContext> 
+	public class MongoDbConnection<TContext> : IMongoDbConnection<TContext> 
 		where TContext : class, IMongoDbContext {
-		private readonly IMongoDbConnection connection;
 
-		internal MongoDbConnection(IMongoDbConnection connection) {
-			this.connection = connection;
+		private bool disposed;
+		private IMongoClient? client;
+
+		/// <summary>
+		/// Creates a new instance of <see cref="MongoDbConnection{TContext}"/>
+		/// that connects to a MongoDB database using the specified connection string.
+		/// </summary>
+		/// <param name="connectionString">The connection string used to establish 
+		/// a connection to the MongoDB database.</param>
+		public MongoDbConnection(string connectionString)
+		{
+			var settings = MongoClientSettings.FromConnectionString(connectionString);
+			// Set the Linq provider to V2 to ensure compatibility with MongoFramework
+			settings.LinqProvider = MongoDB.Driver.Linq.LinqProvider.V2;
+			Url = MongoUrl.Create(connectionString);
+			client = new MongoClient(settings);
+		}
+
+		private void ThrowIfDisposed() {
+			if (disposed)
+				throw new ObjectDisposedException(nameof(MongoDbConnection<TContext>));
+		}
+
+		/// <summary>
+		/// Gets the MongoDB connection URL used by this connection.
+		/// </summary>
+		public MongoUrl Url { get; }
+
+		/// <summary>
+		/// Gets the MongoDB client instance used for database operations.
+		/// </summary>
+		public IMongoClient Client
+		{
+			get
+			{
+				ThrowIfDisposed();
+				return client ?? throw new InvalidOperationException("MongoDB client is not initialized.");
+			}
 		}
 
 		/// <inheritdoc/>
-		public IMongoClient Client => connection.Client;
-
-		/// <summary>
-		/// Gets the URL of the connection to the MongoDB database.
-		/// </summary>
-		public MongoUrl? Url => connection.GetUrl();
+		public IDiagnosticListener DiagnosticListener { get; set; } = new NoOpDiagnosticListener();
 
 		/// <inheritdoc/>
-		public IDiagnosticListener DiagnosticListener {
-			get => connection.DiagnosticListener;
-			set => connection.DiagnosticListener = value;
+		public IMongoDatabase GetDatabase()
+		{
+			ThrowIfDisposed();
+
+			if (client == null)
+				throw new InvalidOperationException("MongoDB client is not initialized.");
+
+			return client.GetDatabase(Url.DatabaseName);
 		}
 
 		/// <inheritdoc/>
 		public void Dispose() {
-			connection?.Dispose();
+			if (!disposed) {
+				client = null;
+				disposed = true;
+			}
 		}
-
-		/// <inheritdoc/>
-		public IMongoDatabase GetDatabase() {
-			return connection.GetDatabase();
-		}
-
-		/// <summary>
-		/// Creates a new connection to the MongoDB database using the given
-		/// URL to the database.
-		/// </summary>
-		/// <param name="url">
-		/// The MongoDB URL-formatted configuration string.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of <see cref="MongoDbConnection{TContext}"/> that
-		/// is strongly typed to the given context.
-		/// </returns>
-		public static MongoDbConnection<TContext> FromUrl(MongoUrl url)
-			=> new MongoDbConnection<TContext>(MongoDbConnection.FromUrl(url));
-
-		/// <summary>
-		/// Creates a new connection to the MongoDB database using the given
-		/// connection string to the database.
-		/// </summary>
-		/// <param name="connectionString">
-		/// The MongoDB connection string.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of <see cref="MongoDbConnection{TContext}"/> that
-		/// is strongly typed to the given context.
-		/// </returns>
-		public static MongoDbConnection<TContext> FromConnectionString(string connectionString)
-			=> new MongoDbConnection<TContext>(MongoDbConnection.FromConnectionString(connectionString));
 	}
 }

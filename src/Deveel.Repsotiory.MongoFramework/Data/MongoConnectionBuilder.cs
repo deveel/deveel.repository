@@ -1,131 +1,62 @@
-﻿// Copyright 2023-2025 Antonello Provenzano
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+﻿using System.Runtime.CompilerServices;
 
-using Finbuckle.MultiTenant;
-
-using MongoDB.Driver;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using MongoFramework;
 
-namespace Deveel.Data {
+namespace Deveel.Data
+{
 	/// <summary>
-	/// An object that is used to build a <see cref="IMongoDbConnection"/>
-	/// using a fluent pattern.
+	/// Provides a builder for configuring MongoDB connections 
+	/// within a service collection.
 	/// </summary>
-	public class MongoConnectionBuilder {
-		private MongoUrl? mongoUrl;
-		private Action<MongoClientSettings>? settings;
-		private bool? useTenant;
-		private Type? tenantType;
-
-		/// <summary>
-		/// Constructs the builder.
-		/// </summary>
-		public MongoConnectionBuilder() {
-		}
-
-		internal virtual bool IsUsingTenant => useTenant == true;
-
-		internal virtual Type? TenantType => tenantType;
-
-		/// <summary>
-		/// Gets the connection instance built by this builder.
-		/// </summary>
-		public virtual IMongoDbConnection Connection {
-			get {
-				if (useTenant == true)
-					return null;
-
-				if (mongoUrl == null)
-					throw new InvalidOperationException("No connection string or URL was specified");
-
-				return MongoDbConnection.FromUrl(mongoUrl, settings);
-			}
-		}
-
-		/// <summary>
-		/// Uses the specified connection string to build the connection.
-		/// </summary>
-		/// <param name="connectionString">
-		/// The connection string to use to build the connection.
-		/// </param>
-		/// <returns>
-		/// Returns this builder to allow chaining.
-		/// </returns>
-		/// <exception cref="ArgumentNullException">
-		/// Thrown if the given <paramref name="connectionString"/> is <c>null</c>.
-		/// </exception>
-		public MongoConnectionBuilder UseConnection(string connectionString) {
-			ArgumentNullException.ThrowIfNull(connectionString);
-
-			mongoUrl = MongoUrl.Create(connectionString);
-			return this;
-		}
-
-		/// <summary>
-		/// Uses the specified encoded MongoDB URL to build the connection.
-		/// </summary>
-		/// <param name="url">
-		/// The instance of <see cref="MongoUrl"/> to use to build the connection.
-		/// </param>
-		/// <returns>
-		/// Returns this builder to allow chaining.
-		/// </returns>
-		/// <exception cref="ArgumentNullException">
-		/// Thrown if the given <paramref name="url"/> is <c>null</c>.
-		/// </exception>
-		public MongoConnectionBuilder UseUrl(MongoUrl url) {
-			ArgumentNullException.ThrowIfNull(url);
-
-			useTenant = false;
-			mongoUrl = url;
-			settings = null;
-			return this;
-		}
-
-		/// <summary>
-		/// Configures the settings of the connection.
-		/// </summary>
-		/// <param name="settings">
-		/// The action to use to configure the settings.
-		/// </param>
-		/// <returns>
-		/// Returns this builder to allow chaining.
-		/// </returns>
-		public MongoConnectionBuilder UseSettings(Action<MongoClientSettings> settings) {
-			ArgumentNullException.ThrowIfNull(settings);
-
-			this.settings = settings;
-			useTenant = false;
-			mongoUrl = null;
-			return this;
-		}
-
-		public MongoConnectionBuilder UseTenant(bool useTenant = true)
-			=> UseTenant<MongoDbTenantInfo>(useTenant);
-
-		public MongoConnectionBuilder UseTenant<TTenantInfo>(bool useTenant = true)
-			where TTenantInfo : MongoDbTenantInfo
+	/// <remarks>This class is used to set up MongoDB connections by specifying the connection string and 
+	/// configuring the service lifetime. It is typically used during application startup to  register MongoDB services
+	/// with dependency injection.</remarks>
+	public sealed class MongoConnectionBuilder
+	{
+		internal MongoConnectionBuilder(Type contextType, IServiceCollection services, ServiceLifetime lifetime)
 		{
-			this.useTenant = useTenant;
-			this.tenantType = typeof(TTenantInfo);
+			ContextType = contextType ?? throw new ArgumentNullException(nameof(contextType));
+			Services = services ?? throw new ArgumentNullException(nameof(services));
+			Lifetime = lifetime;
+		}
 
-			if (useTenant == true)
+		internal Type ContextType { get; }
+
+		internal IServiceCollection Services { get; }
+
+		internal ServiceLifetime Lifetime { get; }
+
+		/// <summary>
+		/// Configures the builder to use a MongoDB connection with 
+		/// the specified connection string.
+		/// </summary>
+		/// <param name="connectionString">The connection string used to establish a 
+		/// connection to the MongoDB database.Cannot be null, empty, or consist solely of whitespace.</param>
+		/// <returns>The current instance of <see cref="MongoConnectionBuilder"/> to allow for method chaining.</returns>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="connectionString"/> is empty or consists only of whitespace.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if no suitable constructor is found for the MongoDB connection implementation.</exception>
+		public MongoConnectionBuilder UseConnection(string connectionString)
+		{
+			ArgumentNullException.ThrowIfNull(connectionString, nameof(connectionString));
+			if (string.IsNullOrWhiteSpace(connectionString))
+				throw new ArgumentException("Connection string cannot be empty.", nameof(connectionString));
+
+			var connectionType = typeof(IMongoDbConnection<>).MakeGenericType(ContextType);
+
+			Services.TryAdd(ServiceDescriptor.Describe(connectionType, sp =>
 			{
-				mongoUrl = null;
-				settings = null;
-			}
+				var implementationType = typeof(MongoDbConnection<>).MakeGenericType(ContextType);
+				var ctor = implementationType.GetConstructor(new[] { typeof(string) });
+				if (ctor == null)
+					throw new InvalidOperationException($"No suitable constructor found for {implementationType.FullName} that accepts IMongoDbConnection.");
+
+				return ctor.Invoke(new object[] { connectionString });
+			}, Lifetime));
+
+			Services.TryAdd(ServiceDescriptor.Describe(typeof(IMongoDbConnection), sp => (IMongoDbConnection) sp.GetRequiredService(connectionType), Lifetime));
 
 			return this;
 		}
