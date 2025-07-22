@@ -60,7 +60,7 @@ jobs:
     - name: Collect to Codecov
       uses: codecov/codecov-action@v3
       with:
-        token: ${{ secrets.DEVEEL_CODECOV_TOKEN }}
+        token: ${{ secrets.CODECOV_TOKEN }}
 
   publish:
     needs: release
