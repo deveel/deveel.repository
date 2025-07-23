@@ -3,8 +3,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Deveel.Data {
 	public class SqlTestConnection : IDisposable {
-		public SqlTestConnection() {
-			Connection = new SqliteConnection("Data Source=TestDb;Mode=Memory;Cache=Shared");
+		public SqlTestConnection() : this("deveel-test") {
+		}
+
+		protected SqlTestConnection(string databaseName) {
+			Connection = new SqliteConnection($"Data Source={databaseName};Mode=Memory;Cache=Shared");
 			if (Connection.State != System.Data.ConnectionState.Open)
 				Connection.Open();
 

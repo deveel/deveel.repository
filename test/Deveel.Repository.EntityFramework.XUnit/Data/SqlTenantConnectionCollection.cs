@@ -1,5 +1,5 @@
 ﻿namespace Deveel.Data {
 	[CollectionDefinition(nameof(SqlTenantConnectionCollection))]
-	public class SqlTenantConnectionCollection : SqlConnectionCollection {
+	public class SqlTenantConnectionCollection : ICollectionFixture<SqlTenantTestConnection> {
 	}
 }

@@ -19,7 +19,7 @@ namespace Deveel.Data
 	{
 		private readonly SqlTestConnection sql;
 
-		public EntityTenantRepositoryTestSuite(SqlTestConnection sql, ITestOutputHelper? testOutput) : base(testOutput)
+		public EntityTenantRepositoryTestSuite(SqlTenantTestConnection sql, ITestOutputHelper? testOutput) : base(testOutput)
 		{
 			this.sql = sql;
 		}
