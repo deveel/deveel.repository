@@ -29,6 +29,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\src\Deveel.Repository.Core\Deveel.Repository.Core.csproj" />
+    <ProjectReference Include="..\Deveel.Repository.MultiTenantContext\Deveel.Repository.MultiTenantContext.csproj" />
     <ProjectReference Include="..\Deveel.Repository.Test.Utils\Deveel.Repository.Test.Utils.csproj" />
   </ItemGroup>
 

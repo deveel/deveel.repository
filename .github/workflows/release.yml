@@ -58,7 +58,7 @@ jobs:
       run: dotnet test --no-build --verbosity normal -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover -f ${{ env.DOTNET_FX_VERSION }}
       
     - name: Collect to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
 

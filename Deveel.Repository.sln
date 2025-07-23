@@ -62,6 +62,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.EntityFra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.MongoFramework.MultiTenant", "src\Deveel.Repository.MongoFramework.MultiTenant\Deveel.Repository.MongoFramework.MultiTenant.csproj", "{18241CCB-B430-4F43-AFEC-0C0A3F5B5400}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{6EAA2746-39E4-4C63-9D86-117248B1C2A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.MultiTenantContext", "test\Deveel.Repository.MultiTenantContext\Deveel.Repository.MultiTenantContext.csproj", "{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -148,6 +152,10 @@ Global
 		{18241CCB-B430-4F43-AFEC-0C0A3F5B5400}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18241CCB-B430-4F43-AFEC-0C0A3F5B5400}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18241CCB-B430-4F43-AFEC-0C0A3F5B5400}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -174,6 +182,8 @@ Global
 		{85200FA4-CC68-4758-B6E5-287E8AFA79FE} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 		{24BB4426-53A2-42AA-A736-FB0A2D1FCC5F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{18241CCB-B430-4F43-AFEC-0C0A3F5B5400} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
+		{6EAA2746-39E4-4C63-9D86-117248B1C2A3} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
+		{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9} = {6EAA2746-39E4-4C63-9D86-117248B1C2A3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01FD9B16-84B3-4D99-80C1-11B2F3D65B56}

@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
+    <RunSettingsFilePath>D:\deveel\deveel.repository\test\Deveel.Repository.MongoFramework.XUnit\bin\Debug\net7.0\fine-code-coverage\coverage-tool-output\Deveel.Repository.MongoFramework.XUnit %28net7.0%29-fcc-mscodecoverage-generated.runsettings</RunSettingsFilePath>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">

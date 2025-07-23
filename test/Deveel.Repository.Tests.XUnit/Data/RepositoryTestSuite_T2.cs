@@ -1,11 +1,11 @@
-﻿using System.Collections.Immutable;
-using System.Linq.Expressions;
-using System.Net.Mail;
-
-using Bogus;
+﻿using Bogus;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
+using System.Collections.Immutable;
+using System.Linq.Expressions;
+using System.Net.Mail;
 
 using Xunit.Abstractions;
 

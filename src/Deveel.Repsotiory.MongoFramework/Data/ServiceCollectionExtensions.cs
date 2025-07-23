@@ -49,7 +49,7 @@ namespace Deveel.Data
 		/// <returns>
 		/// Returns the service collection for chaining.
 		/// </returns>
-		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<MongoConnectionBuilder> connectionBuilder, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, Action<MongoConnectionBuilder> connectionBuilder, ServiceLifetime lifetime = ServiceLifetime.Scoped)
 			where TContext : class, IMongoDbContext
 		{
 
