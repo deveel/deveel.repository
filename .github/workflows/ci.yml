@@ -13,23 +13,23 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dotnet: [ '6.0.x', '7.0.x', '8.0.x' ]
+        dotnet: [ '8.0.x', '9.0.x', '10.0.x' ]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
-    - name: Emit .NET 6.0 Framework Version
-      if: matrix.dotnet == '6.0.x'
-      run: echo "DOTNET_FX_VERSION=net6.0" >> $GITHUB_ENV
-
-    - name: Emit .NET 7.0 Framework Version
-      if: matrix.dotnet == '7.0.x'
-      run: echo "DOTNET_FX_VERSION=net7.0" >> $GITHUB_ENV
-
     - name: Emit .NET 8.0 Framework Version
       if: matrix.dotnet == '8.0.x'
       run: echo "DOTNET_FX_VERSION=net8.0" >> $GITHUB_ENV
-        
+      
+    - name: Emit .NET 9.0 Framework Version
+      if: matrix.dotnet == '9.0.x'
+      run: echo "DOTNET_FX_VERSION=net9.0" >> $GITHUB_ENV
+      
+    - name: Emit .NET 10.0 Framework Version
+      if: matrix.dotnet == '10.0.x'
+      run: echo "DOTNET_FX_VERSION=net10.0" >> $GITHUB_ENV
+             
     - name: Setup .NET ${{ matrix.dotnet }} Framework
       uses: actions/setup-dotnet@v4
       with:
@@ -52,7 +52,7 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
@@ -64,10 +64,10 @@ jobs:
     - name: Determine Version
       uses: gittools/actions/gitversion/execute@v1.1.1
   
-    - name: Setup .NET 8.0 Framework
-      uses: actions/setup-dotnet@v4
+    - name: Setup .NET 10.0 Framework
+      uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
 
     - name: Build
       run: dotnet build -c Release /p:Version="${{ env.GitVersion_SemVer }}" /p:AssemblyVersion="${{ env.GitVersion_AssemblySemVer }}" /p:FileVersion="${{ env.GitVersion_AssemblySemFileVer }}"
