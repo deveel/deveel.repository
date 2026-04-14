@@ -2,8 +2,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xunit.Abstractions;
-
 namespace Deveel.Data {
 	public class InMemoryRepositoryNoKeyTests : RepositoryTestSuite<Person, PersonRelationship> {
 		public InMemoryRepositoryNoKeyTests(ITestOutputHelper outputHelper) : base(outputHelper) {

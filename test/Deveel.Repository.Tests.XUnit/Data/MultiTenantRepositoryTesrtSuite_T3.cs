@@ -1,18 +1,13 @@
-﻿using Bogus;
-
+﻿using System.Collections.Immutable;
+using System.Linq.Expressions;
+using Bogus;
 using Finbuckle.MultiTenant;
-#if NET7_0_OR_GREATER
 using Finbuckle.MultiTenant.Abstractions;
+#if !NET8_0 && !NET9_0
+using Finbuckle.MultiTenant.Extensions;
 #endif
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
-using System.Collections.Immutable;
-using System.Linq.Expressions;
-using System.Security.AccessControl;
-
-using Xunit.Abstractions;
 
 namespace Deveel.Data
 {
@@ -79,7 +74,7 @@ namespace Deveel.Data
 			scope = this.services.CreateAsyncScope();
 		}
 
-		async Task IAsyncLifetime.InitializeAsync()
+		async ValueTask IAsyncLifetime.InitializeAsync()
 		{
 			BuildServices();
 
@@ -92,7 +87,7 @@ namespace Deveel.Data
 			await InitializeAsync();
 		}
 
-		protected virtual async Task InitializeAsync()
+		protected virtual async ValueTask InitializeAsync()
 		{
 			foreach (var tenanId in TenantIds)
 			{
@@ -111,14 +106,9 @@ namespace Deveel.Data
 			(services as IDisposable)?.Dispose();
 		}
 
-		async Task IAsyncLifetime.DisposeAsync()
+		protected virtual ValueTask DisposeAsync()
 		{
-			await DisposeAsync();
-		}
-
-		protected virtual Task DisposeAsync()
-		{
-			return Task.CompletedTask;
+			return ValueTask.CompletedTask;
 		}
 
 		protected virtual Task ExecuteInTenantScopeAsync(string tenantId, Delegate action)

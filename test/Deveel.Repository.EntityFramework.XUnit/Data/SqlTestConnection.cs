@@ -7,7 +7,7 @@ namespace Deveel.Data {
 		}
 
 		protected SqlTestConnection(string databaseName) {
-			Connection = new SqliteConnection($"Data Source={databaseName};Mode=Memory;Cache=Shared");
+			Connection = new SqliteConnection($"Data Source={databaseName};Mode=Memory");
 			if (Connection.State != System.Data.ConnectionState.Open)
 				Connection.Open();
 

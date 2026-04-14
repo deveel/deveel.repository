@@ -1,11 +1,10 @@
-﻿using Bogus;
+﻿using System.Linq.Expressions;
+using Bogus;
 
 using Deveel.Data.Entities;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
-using Xunit.Abstractions;
 
 namespace Deveel.Data
 {
@@ -42,11 +41,11 @@ namespace Deveel.Data
 			base.ConfigureServices(services);
 		}
 
-		protected override async Task InitializeAsync()
+		protected override async ValueTask InitializeAsync()
 		{
 			var userAccessor = Services.GetRequiredService<IUserAccessor<string>>();
 			var options = Services.GetRequiredService<DbContextOptions<BookDbContext>>();
-			using var dbContext = new BookDbContext(options, userAccessor);
+			await using var dbContext = new BookDbContext(options, userAccessor);
 
 			await dbContext.Database.EnsureDeletedAsync();
 			await dbContext.Database.EnsureCreatedAsync();
@@ -54,11 +53,11 @@ namespace Deveel.Data
 			await base.InitializeAsync();
 		}
 
-		protected override async Task SeedAsync()
+		protected override async ValueTask SeedAsync()
 		{
 			var userAccessor = Services.GetRequiredService<IUserAccessor<string>>();
 			var options = Services.GetRequiredService<DbContextOptions<BookDbContext>>();
-			using var dbContext = new BookDbContext(options, userAccessor);
+			await using var dbContext = new BookDbContext(options, userAccessor);
 
 			if (Books != null)
 			{
@@ -67,17 +66,16 @@ namespace Deveel.Data
 			}
 		}
 
-		protected override async Task DisposeAsync()
+		protected override async ValueTask DisposeAsync()
 		{
 			var userAccessor = Services.GetRequiredService<IUserAccessor<string>>();
 			var options = Services.GetRequiredService<DbContextOptions<BookDbContext>>();
-			using var dbContext = new BookDbContext(options, userAccessor);
+			await using var dbContext = new BookDbContext(options, userAccessor);
 
 			dbContext.Books!.RemoveRange(dbContext.Books);
 			await dbContext.SaveChangesAsync(true);
 
 			await dbContext.Database.EnsureDeletedAsync();
 		}
-
-	}
+    }
 }

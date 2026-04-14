@@ -4,7 +4,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Finbuckle.MultiTenant;
-
+using Finbuckle.MultiTenant.Abstractions;
 using MongoFramework;
 
 namespace Deveel.Data {

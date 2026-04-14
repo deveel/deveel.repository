@@ -6,8 +6,6 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Immutable;
 using System.Linq.Expressions;
 
-using Xunit.Abstractions;
-
 namespace Deveel.Data
 {
 	[Trait("Feature", "OwnerFilter")]
@@ -74,7 +72,7 @@ namespace Deveel.Data
 			scope = this.services.CreateAsyncScope();
 		}
 
-		async Task IAsyncLifetime.InitializeAsync()
+		async ValueTask IAsyncLifetime.InitializeAsync()
 		{
 			BuildServices();
 
@@ -83,30 +81,27 @@ namespace Deveel.Data
 			await InitializeAsync();
 		}
 
-		protected virtual async Task InitializeAsync()
+		protected virtual async ValueTask InitializeAsync()
 		{
 			await SeedAsync();
 		}
 
 		async ValueTask IAsyncDisposable.DisposeAsync()
-		{
+        {
+            await DisposeAsync();
+            
 			Books = null;
 
 			await scope.DisposeAsync();
 			(services as IDisposable)?.Dispose();
 		}
-
-		async Task IAsyncLifetime.DisposeAsync()
+        
+		protected virtual ValueTask DisposeAsync()
 		{
-			await DisposeAsync();
+			return ValueTask.CompletedTask;
 		}
 
-		protected virtual Task DisposeAsync()
-		{
-			return Task.CompletedTask;
-		}
-
-		protected virtual async Task SeedAsync()
+		protected virtual async ValueTask SeedAsync()
 		{
 			if (Books != null)
 				await Repository.AddRangeAsync(Books);

@@ -7,8 +7,6 @@ using MongoDB.Driver;
 
 using MongoFramework;
 
-using Xunit.Abstractions;
-
 namespace Deveel.Data {
 	public class MongoRepositoryTests : MongoRepositoryTestSuite<MongoPerson> {
 
@@ -40,7 +38,7 @@ namespace Deveel.Data {
 			return await result.FirstOrDefaultAsync();
 		}
 
-		protected override async Task DisposeAsync() {
+		protected override async ValueTask DisposeAsync() {
 			var result = await MongoCollection.DeleteManyAsync(x => true);
 
 			await base.DisposeAsync();

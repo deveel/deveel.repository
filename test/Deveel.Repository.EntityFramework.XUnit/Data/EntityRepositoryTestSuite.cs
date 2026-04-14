@@ -5,8 +5,6 @@ using Deveel.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xunit.Abstractions;
-
 namespace Deveel.Data {
 	[Collection(nameof(SqlConnectionCollection))]
 	public class EntityRepositoryTestSuite : RepositoryTestSuite<DbPerson, Guid, DbRelationship> {
@@ -59,7 +57,7 @@ namespace Deveel.Data {
 			});
 		}
 
-		protected override async Task InitializeAsync() {
+		protected override async ValueTask InitializeAsync() {
 			var options = Services.GetRequiredService<DbContextOptions<PersonDbContext>>();
 			using var dbContext = new PersonDbContext(options);
 
@@ -69,7 +67,7 @@ namespace Deveel.Data {
 			await base.InitializeAsync();
 		}
 
-		protected override async Task DisposeAsync() {
+		protected override async ValueTask DisposeAsync() {
 			var options = Services.GetRequiredService<DbContextOptions<PersonDbContext>>();
 			using var dbContext = new PersonDbContext(options);
 

@@ -4,8 +4,6 @@ using Deveel.Data.Caching;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xunit.Abstractions;
-
 namespace Deveel.Data {
 	public class PersonManagerCachingTests : EntityManagerTestSuite<PersonManager, Person, string> {
 		public PersonManagerCachingTests(ITestOutputHelper testOutput) : base(testOutput) {

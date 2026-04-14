@@ -3,11 +3,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
-using MongoDB.Driver.Core.Configuration;
-
-using MongoFramework;
-
-using Xunit.Abstractions;
 
 namespace Deveel.Data
 {
@@ -51,7 +46,7 @@ namespace Deveel.Data
 			services.AddRepository<MongoRepository<MongoTenantPerson, ObjectId>>();
 		}
 
-		protected override async Task InitializeAsync()
+		protected override async ValueTask InitializeAsync()
 		{
 			foreach (var tenantId in TenantIds)
 			{
@@ -64,7 +59,7 @@ namespace Deveel.Data
 			await base.InitializeAsync();
 		}
 
-		protected override async Task DisposeAsync()
+		protected override async ValueTask DisposeAsync()
 		{
 			foreach (var tenantId in TenantIds)
 			{

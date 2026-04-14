@@ -1,7 +1,5 @@
 ﻿using Finbuckle.MultiTenant;
-#if NET7_0_OR_GREATER
 using Finbuckle.MultiTenant.Abstractions;
-#endif
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -117,19 +115,11 @@ namespace Deveel.Data
 
 		private void SetTenantInScope(IServiceProvider serviceProvider, IMultiTenantContext<TTenantInfo> context)
 		{
-			var multiTenantContextAccessor = serviceProvider.GetService<IMultiTenantContextAccessor<TTenantInfo>>();
-#if NET7_0_OR_GREATER
 			var setter = serviceProvider.GetService<IMultiTenantContextSetter>();
 			if (setter != null)
 			{
 				setter.MultiTenantContext = context;
 			}
-#else
-			if (multiTenantContextAccessor != null)
-			{
-				multiTenantContextAccessor.MultiTenantContext = context;
-			}
-#endif
 		}
 	}
 }
