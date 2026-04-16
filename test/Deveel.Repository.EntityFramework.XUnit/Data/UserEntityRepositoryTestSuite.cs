@@ -47,8 +47,8 @@ namespace Deveel.Data
 			var options = Services.GetRequiredService<DbContextOptions<BookDbContext>>();
 			await using var dbContext = new BookDbContext(options, userAccessor);
 
-			await dbContext.Database.EnsureDeletedAsync();
-			await dbContext.Database.EnsureCreatedAsync();
+			await dbContext.Database.EnsureDeletedAsync(TestContext.Current.CancellationToken);
+			await dbContext.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
 
 			await base.InitializeAsync();
 		}
@@ -60,7 +60,7 @@ namespace Deveel.Data
 			await using var dbContext = new BookDbContext(options, userAccessor);
 
 			dbContext.Books!.RemoveRange(dbContext.Books);
-			await dbContext.SaveChangesAsync(true);
+			await dbContext.SaveChangesAsync(true, TestContext.Current.CancellationToken);
 
 			await dbContext.Database.EnsureDeletedAsync();
 		}

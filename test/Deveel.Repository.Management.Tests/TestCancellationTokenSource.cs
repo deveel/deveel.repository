@@ -1,18 +1,8 @@
-﻿namespace Deveel {
-	public class TestCancellationTokenSource : IOperationCancellationSource, IDisposable {
-		private CancellationTokenSource? source;
+﻿using Xunit;
 
-		public TestCancellationTokenSource() {
-			source = new CancellationTokenSource();
-		}
-
-		public CancellationToken Token => source?.Token ?? default;
-
-		public void Dispose() {
-			if (source != null) {
-				source.Dispose();
-				source = null;
-			}
-		}
-	}
+namespace Deveel {
+	public class TestCancellationTokenSource : IOperationCancellationSource
+    {
+        public CancellationToken Token => TestContext.Current.CancellationToken;
+    }
 }

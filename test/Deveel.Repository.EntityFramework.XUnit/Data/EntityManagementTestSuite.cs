@@ -39,23 +39,21 @@ namespace Deveel.Data {
 			var options = Services.GetRequiredService<DbContextOptions<PersonDbContext>>();
 			using var dbContext = new PersonDbContext(options);
 
-			await dbContext.Database.EnsureDeletedAsync();
-			await dbContext.Database.EnsureCreatedAsync();
+			await dbContext.Database.EnsureDeletedAsync(TestContext.Current.CancellationToken);
+			await dbContext.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
 
 			await base.InitializeAsync();
 		}
 
 		public override async Task DisposeAsync() {
 			var options = Services.GetRequiredService<DbContextOptions<PersonDbContext>>();
-			using var dbContext = new PersonDbContext(options);
+			await using var dbContext = new PersonDbContext(options);
 
 			dbContext.People!.RemoveRange(dbContext.People);
-			await dbContext.SaveChangesAsync(true);
+			await dbContext.SaveChangesAsync(true, TestContext.Current.CancellationToken);
 
-			await dbContext.Database.EnsureDeletedAsync();
-
-			await dbContext.DisposeAsync();
-
+			await dbContext.Database.EnsureDeletedAsync(TestContext.Current.CancellationToken);
+            
 			// await base.DisposeAsync();
 		}
 	}

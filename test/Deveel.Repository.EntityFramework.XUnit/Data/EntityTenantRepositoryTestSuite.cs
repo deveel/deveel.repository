@@ -52,9 +52,9 @@ namespace Deveel.Data
 			{
 				await ExecuteInTenantScopeAsync(tenantId, async (IMultiTenantContextAccessor tenantContextAccessor, DbContextOptions<PersonTenantDbContext> options) =>
 				{
-					using var dbContext = new PersonTenantDbContext(tenantContextAccessor, options);
+					await using var dbContext = new PersonTenantDbContext(tenantContextAccessor, options);
 
-					await dbContext.Database.EnsureCreatedAsync();
+					await dbContext.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
 				});
 			}
 
@@ -68,9 +68,9 @@ namespace Deveel.Data
 			{
 				await ExecuteInTenantScopeAsync(tenantId, async (IMultiTenantContextAccessor tenantContextAccessor, DbContextOptions<PersonTenantDbContext> options) =>
 				{
-					using var dbContext = new PersonTenantDbContext(tenantContextAccessor, options);
+					await using var dbContext = new PersonTenantDbContext(tenantContextAccessor, options);
 					dbContext.Persons!.RemoveRange(dbContext.Persons);
-					await dbContext.SaveChangesAsync(true);
+					await dbContext.SaveChangesAsync(true, TestContext.Current.CancellationToken);
 				});
 			}
 		}

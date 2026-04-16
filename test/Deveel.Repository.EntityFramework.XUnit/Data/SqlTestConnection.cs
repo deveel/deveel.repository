@@ -10,7 +10,7 @@ namespace Deveel.Data {
 			Connection = new SqliteConnection($"Data Source={databaseName};Mode=Memory;Cache=Shared");
 			if (Connection.State != System.Data.ConnectionState.Open)
 				Connection.Open();
-
+            
 			Connection.EnableExtensions();
 			SpatialiteLoader.Load(Connection);
 		}
@@ -20,7 +20,7 @@ namespace Deveel.Data {
 		public void Dispose() {
 			if (Connection.State != System.Data.ConnectionState.Closed)
 				Connection?.Close();
-
+            
 			Connection?.Dispose();
 		}
 	}
