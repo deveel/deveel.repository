@@ -30,6 +30,8 @@ namespace Deveel.Data {
         public const int EntityNotFound = -1001;
         public const int EntityNotDeleted = -1002;
         public const int EntityNotUpdated = -1003;
+        public const int UserNotSet = -1014;
+        public const int EntityOwnerNotMatching = -1015;
         public const int UnknownError = -1000;
     }
 }

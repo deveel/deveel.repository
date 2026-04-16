@@ -1,16 +1,8 @@
 ﻿using Bogus;
-
 using Deveel.Data.Entities;
-
-using Finbuckle.MultiTenant;
-#if NET7_0_OR_GREATER
 using Finbuckle.MultiTenant.Abstractions;
-#endif
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
-using Xunit.Abstractions;
 
 namespace Deveel.Data
 {
@@ -54,7 +46,7 @@ namespace Deveel.Data
 			});
 		}
 
-		protected override async Task InitializeAsync()
+		protected override async ValueTask InitializeAsync()
 		{
 			foreach (var tenantId in TenantIds)
 			{
@@ -70,7 +62,7 @@ namespace Deveel.Data
 			await base.InitializeAsync();
 		}
 
-		protected override async Task DisposeAsync()
+		protected override async ValueTask DisposeAsync()
 		{
 			foreach (var tenantId in TenantIds)
 			{

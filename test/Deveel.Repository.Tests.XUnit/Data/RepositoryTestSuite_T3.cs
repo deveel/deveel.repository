@@ -7,8 +7,6 @@ using Bogus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using Xunit.Abstractions;
-
 namespace Deveel.Data {
 	public abstract class RepositoryTestSuite<TPerson, TKey, TRelationship> : IAsyncLifetime, IAsyncDisposable
 		where TPerson : class, IPerson<TKey>
@@ -67,7 +65,7 @@ namespace Deveel.Data {
 			scope = this.services.CreateAsyncScope();
 		}
 
-		async Task IAsyncLifetime.InitializeAsync() {
+		async ValueTask IAsyncLifetime.InitializeAsync() {
 			BuildServices();
 
 			People = GeneratePeople(EntitySetCount).ToImmutableList();
@@ -76,23 +74,22 @@ namespace Deveel.Data {
 			await InitializeAsync();
 		}
 
-		protected virtual async Task InitializeAsync() {
+		protected virtual async ValueTask InitializeAsync() {
 			await SeedAsync(Repository);
 		}
 
-		async ValueTask IAsyncDisposable.DisposeAsync() {
+		async ValueTask IAsyncDisposable.DisposeAsync()
+        {
+            await DisposeAsync();
+            
 			People = null;
 
 			await scope.DisposeAsync();
 			(services as IDisposable)?.Dispose();
 		}
-
-		async Task IAsyncLifetime.DisposeAsync() {
-			await DisposeAsync();
-		}
-
-		protected virtual Task DisposeAsync() {
-			return Task.CompletedTask;
+        
+		protected virtual ValueTask DisposeAsync() {
+			return ValueTask.CompletedTask;
 		}
 
 		protected virtual async Task SeedAsync(IRepository<TPerson, TKey> repository) {

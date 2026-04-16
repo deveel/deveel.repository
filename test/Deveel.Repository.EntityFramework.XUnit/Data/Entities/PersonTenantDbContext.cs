@@ -1,10 +1,10 @@
 ﻿using Finbuckle.MultiTenant;
-#if NET7_0_OR_GREATER
 using Finbuckle.MultiTenant.Abstractions;
-#endif
 
 using Finbuckle.MultiTenant.EntityFrameworkCore;
-
+#if !NET8_0 && !NET9_0
+using Finbuckle.MultiTenant.EntityFrameworkCore.Extensions;
+#endif
 using Microsoft.EntityFrameworkCore;
 
 namespace Deveel.Data.Entities
@@ -12,7 +12,7 @@ namespace Deveel.Data.Entities
 	public class PersonTenantDbContext : MultiTenantDbContext
 	{
 		public PersonTenantDbContext(IMultiTenantContextAccessor multiTenantContextAccessor, DbContextOptions options) 
-			: base(multiTenantContextAccessor?.MultiTenantContext?.TenantInfo!, options)
+			: base(multiTenantContextAccessor, options)
 		{
 		}
 

@@ -2,8 +2,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xunit.Abstractions;
-
 namespace Deveel.Data {
 	public class EntityManagerTestSuite : EntityManagerTestSuite<EntityManager<Person, string>, Person, string> {
 		public EntityManagerTestSuite(ITestOutputHelper testOutput) : base(testOutput) {

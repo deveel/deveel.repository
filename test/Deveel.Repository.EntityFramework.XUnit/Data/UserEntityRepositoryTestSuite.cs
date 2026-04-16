@@ -1,16 +1,15 @@
-﻿using Bogus;
+﻿using System.Linq.Expressions;
+using Bogus;
 
 using Deveel.Data.Entities;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xunit.Abstractions;
-
 namespace Deveel.Data
 {
 	[Collection(nameof(SqlUserConnectionCollection))]
-	public class UserEntityRepositoryTestSuite : UserRepositoryTestSuite<DbBook, Guid, string>
+	public class UserEntityRepositoryTestSuite : UserRepositoryTestSuite<DbBookWithOwner, Guid, string>
 	{
 		private readonly SqlTestConnection sql;
 
@@ -21,8 +20,8 @@ namespace Deveel.Data
 			BookFaker = new DbBookFaker(UserId);
 		}
 
-		protected override Faker<DbBook> BookFaker { get; }
-
+		protected override Faker<DbBookWithOwner> BookFaker { get; }
+        
 		protected override Guid GenerateBookId() => Guid.NewGuid();
 
 		protected override string GenerateUserId() => Guid.NewGuid().ToString("N");
@@ -42,42 +41,28 @@ namespace Deveel.Data
 			base.ConfigureServices(services);
 		}
 
-		protected override async Task InitializeAsync()
+		protected override async ValueTask InitializeAsync()
 		{
 			var userAccessor = Services.GetRequiredService<IUserAccessor<string>>();
 			var options = Services.GetRequiredService<DbContextOptions<BookDbContext>>();
-			using var dbContext = new BookDbContext(options, userAccessor);
+			await using var dbContext = new BookDbContext(options, userAccessor);
 
 			await dbContext.Database.EnsureDeletedAsync();
 			await dbContext.Database.EnsureCreatedAsync();
 
 			await base.InitializeAsync();
 		}
-
-		protected override async Task SeedAsync()
+        
+		protected override async ValueTask DisposeAsync()
 		{
 			var userAccessor = Services.GetRequiredService<IUserAccessor<string>>();
 			var options = Services.GetRequiredService<DbContextOptions<BookDbContext>>();
-			using var dbContext = new BookDbContext(options, userAccessor);
-
-			if (Books != null)
-			{
-				await dbContext.Books.AddRangeAsync(Books);
-				await dbContext.SaveChangesAsync(true);
-			}
-		}
-
-		protected override async Task DisposeAsync()
-		{
-			var userAccessor = Services.GetRequiredService<IUserAccessor<string>>();
-			var options = Services.GetRequiredService<DbContextOptions<BookDbContext>>();
-			using var dbContext = new BookDbContext(options, userAccessor);
+			await using var dbContext = new BookDbContext(options, userAccessor);
 
 			dbContext.Books!.RemoveRange(dbContext.Books);
 			await dbContext.SaveChangesAsync(true);
 
 			await dbContext.Database.EnsureDeletedAsync();
 		}
-
-	}
+    }
 }

@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Deveel.Data {
 	public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLifetime, IAsyncDisposable
@@ -55,7 +54,7 @@ namespace Deveel.Data {
 			services.AddEntityManager<TManager>();
 		}
 
-		public virtual async Task InitializeAsync() {
+		public virtual async ValueTask InitializeAsync() {
 			var people = PersonFaker.Generate(100);
 
 			await Repository.AddRangeAsync(people);
@@ -73,7 +72,7 @@ namespace Deveel.Data {
 		protected abstract TKey GenerateKey();
 
 		protected abstract void SetKey(TPerson person, TKey key);
-
+        
 		[Fact]
 		public async Task AddEntity() {
 			var person = PersonFaker.Generate();

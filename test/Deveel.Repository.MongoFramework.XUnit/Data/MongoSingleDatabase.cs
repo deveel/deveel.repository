@@ -27,7 +27,7 @@ namespace Deveel.Data {
 			return urlBuilder.ToString();
 		}
 
-		public async Task DisposeAsync() {
+		public async ValueTask DisposeAsync() {
 			if (!disposedValue) {
 				await container.StopAsync();
 				while (container.State != TestcontainersStates.Exited) {
@@ -39,8 +39,8 @@ namespace Deveel.Data {
 			}
 		}
 
-		public Task InitializeAsync() {
-			return container.StartAsync();
+		public async ValueTask InitializeAsync() {
+			await container.StartAsync();
 		}
 
 		public void Dispose() {

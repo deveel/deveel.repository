@@ -1,18 +1,11 @@
 ﻿using Deveel.Utils;
 
 using Finbuckle.MultiTenant;
-
-#if NET7_0_OR_GREATER
 using Finbuckle.MultiTenant.Abstractions;
-#endif
 
 using Microsoft.Extensions.DependencyInjection;
 
 using MongoFramework;
-
-#if NET7_0_OR_GREATER
-using ITenantInfo = Finbuckle.MultiTenant.TenantInfo;
-#endif
 
 namespace Deveel.Data {
 	public static class MongoDbContextTests {

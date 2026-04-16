@@ -2,8 +2,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xunit.Abstractions;
-
 namespace Deveel.Data {
 	public class InMemoryRepositoryTests : RepositoryTestSuite<Person, string, PersonRelationship> {
 		public InMemoryRepositoryTests(ITestOutputHelper outputHelper) : base(outputHelper) {

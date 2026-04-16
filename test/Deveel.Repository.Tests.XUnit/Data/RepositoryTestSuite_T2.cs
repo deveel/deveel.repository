@@ -7,8 +7,6 @@ using System.Collections.Immutable;
 using System.Linq.Expressions;
 using System.Net.Mail;
 
-using Xunit.Abstractions;
-
 namespace Deveel.Data {
 	public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifetime
 		where TPerson : class, IPerson
@@ -66,7 +64,7 @@ namespace Deveel.Data {
 			scope = this.services.CreateAsyncScope();
 		}
 
-		async Task IAsyncLifetime.InitializeAsync() {
+		async ValueTask IAsyncLifetime.InitializeAsync() {
 			BuildServices();
 
 			People = GeneratePeople(EntitySetCount).ToImmutableList();
@@ -75,11 +73,11 @@ namespace Deveel.Data {
 			await InitializeAsync();
 		}
 
-		protected virtual async Task InitializeAsync() {
+		protected virtual async ValueTask InitializeAsync() {
 			await SeedAsync(Repository);
 		}
-
-		async Task IAsyncLifetime.DisposeAsync() {
+        
+		async ValueTask IAsyncDisposable.DisposeAsync() {
 			await DisposeAsync();
 
 			People = null;
@@ -88,8 +86,8 @@ namespace Deveel.Data {
 			(services as IDisposable)?.Dispose();
 		}
 
-		protected virtual Task DisposeAsync() {
-			return Task.CompletedTask;
+		protected virtual ValueTask DisposeAsync() {
+			return ValueTask.CompletedTask;
 		}
 
 		protected virtual async Task SeedAsync(IRepository<TPerson> repository) {

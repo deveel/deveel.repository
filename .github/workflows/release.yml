@@ -20,25 +20,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dotnet: [ '6.0.x', '7.0.x', '8.0.x' ]
+        dotnet: [ '8.0.x', '9.0.x', '10.0.x' ]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
   
-    - name: Emit .NET 6.0 Framework Version
-      if: matrix.dotnet == '6.0.x'
-      run: echo "DOTNET_FX_VERSION=net6.0" >> $GITHUB_ENV
-
-    - name: Emit .NET 7.0 Framework Version
-      if: matrix.dotnet == '7.0.x'
-      run: echo "DOTNET_FX_VERSION=net7.0" >> $GITHUB_ENV
-
     - name: Emit .NET 8.0 Framework Version
       if: matrix.dotnet == '8.0.x'
       run: echo "DOTNET_FX_VERSION=net8.0" >> $GITHUB_ENV
+
+    - name: Emit .NET 9.0 Framework Version
+      if: matrix.dotnet == '9.0.x'
+      run: echo "DOTNET_FX_VERSION=net9.0" >> $GITHUB_ENV
+
+    - name: Emit .NET 10.0 Framework Version
+      if: matrix.dotnet == '10.0.x'
+      run: echo "DOTNET_FX_VERSION=net10.0" >> $GITHUB_ENV
     
     - name: Setup .NET ${{ matrix.dotnet }} Framework
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: ${{ matrix.dotnet }}
 
@@ -66,7 +66,7 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
   
     - name: Extract the Version
       run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | sed -e 's/^v//')" >> $GITHUB_ENV

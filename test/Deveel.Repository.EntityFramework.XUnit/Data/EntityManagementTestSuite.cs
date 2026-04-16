@@ -5,8 +5,6 @@ using Deveel.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xunit.Abstractions;
-
 namespace Deveel.Data {
 	[Collection(nameof(SqlConnectionCollection))]
 	public class EntityManagementTestSuite : EntityManagerTestSuite<EntityManager<DbPerson, Guid>, DbPerson, Guid> {
@@ -37,7 +35,7 @@ namespace Deveel.Data {
 			base.ConfigureServices(services);
 		}
 
-		public override async Task InitializeAsync() {
+		public override async ValueTask InitializeAsync() {
 			var options = Services.GetRequiredService<DbContextOptions<PersonDbContext>>();
 			using var dbContext = new PersonDbContext(options);
 

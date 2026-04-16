@@ -4,9 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.GeoJsonObjectModel;
-
-using Xunit.Abstractions;
 
 namespace Deveel.Data {
 	[Collection(nameof(MongoSingleDatabaseCollection))]
@@ -49,14 +46,14 @@ namespace Deveel.Data {
 			return Task.CompletedTask;
 		}
 
-		protected override async Task InitializeAsync() {
+		protected override async ValueTask InitializeAsync() {
 			var controller = Services.GetRequiredService<IRepositoryController>();
 			await controller.CreateRepositoryAsync<MongoPerson, ObjectId>();
 
 			await base.InitializeAsync();
 		}
 
-		protected override async Task DisposeAsync() {
+		protected override async ValueTask DisposeAsync() {
 			var controller = Services.GetRequiredService<IRepositoryController>();
 			await controller.DropRepositoryAsync<MongoPerson, ObjectId>();
 
