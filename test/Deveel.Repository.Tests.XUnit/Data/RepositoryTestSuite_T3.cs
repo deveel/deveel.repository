@@ -12,7 +12,7 @@ namespace Deveel.Data {
 		where TPerson : class, IPerson<TKey>
 		where TKey : notnull
 		where TRelationship : class, IRelationship {
-		private IServiceProvider? services;
+		private IServiceProvider? _services;
 		private AsyncServiceScope scope;
 
 		protected RepositoryTestSuite(ITestOutputHelper? testOutput) {
@@ -61,8 +61,8 @@ namespace Deveel.Data {
 
 			ConfigureServices(services);
 
-			this.services = services.BuildServiceProvider();
-			scope = this.services.CreateAsyncScope();
+			_services = services.BuildServiceProvider();
+			scope = _services.CreateAsyncScope();
 		}
 
 		async ValueTask IAsyncLifetime.InitializeAsync() {
@@ -85,7 +85,7 @@ namespace Deveel.Data {
 			People = null;
 
 			await scope.DisposeAsync();
-			(services as IDisposable)?.Dispose();
+			(_services as IDisposable)?.Dispose();
 		}
         
 		protected virtual ValueTask DisposeAsync() {
@@ -123,13 +123,13 @@ namespace Deveel.Data {
 		public async Task AddNewPerson() {
 			var person = GeneratePerson();
 
-			await Repository.AddAsync(person);
+			await Repository.AddAsync(person, TestContext.Current.CancellationToken);
 
 			var id = Repository.GetEntityKey(person);
 
 			Assert.NotNull(id);
 
-			var found = await Repository.FindAsync(id);
+			var found = await Repository.FindAsync(id, TestContext.Current.CancellationToken);
 			Assert.NotNull(found);
 			Assert.Equal(person.FirstName, found.FirstName);
 			Assert.Equal(person.LastName, found.LastName);
@@ -146,7 +146,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(id);
 
-			var found = await Repository.FindAsync(id);
+			var found = await Repository.FindAsync(id, TestContext.Current.CancellationToken);
 			
 			Assert.NotNull(found);
 			Assert.Equal(person.FirstName, found.FirstName);
@@ -158,13 +158,13 @@ namespace Deveel.Data {
 		public async Task AddNewPersons() {
 			var entities = GeneratePeople(10);
 
-			await Repository.AddRangeAsync(entities);
+			await Repository.AddRangeAsync(entities, TestContext.Current.CancellationToken);
 
 			foreach (var item in entities) {
 				var key = Repository.GetEntityKey(item);
 				Assert.NotNull(key);
 
-				var found = await Repository.FindAsync(key);
+				var found = await Repository.FindAsync(key, TestContext.Current.CancellationToken);
 				Assert.NotNull(found);
 			}
 		}
@@ -175,7 +175,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(person);
 
-			var result = await Repository.RemoveAsync(person);
+			var result = await Repository.RemoveAsync(person, TestContext.Current.CancellationToken);
 
 			Assert.True(result);
 		}
@@ -186,7 +186,7 @@ namespace Deveel.Data {
 
 			entity.Id = GeneratePersonId();
 
-			var result = await Repository.RemoveAsync(entity);
+			var result = await Repository.RemoveAsync(entity, TestContext.Current.CancellationToken);
 
 			Assert.False(result);
 		}
@@ -208,7 +208,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(key);
 
-			var result = await Repository.RemoveByKeyAsync(key);
+			var result = await Repository.RemoveByKeyAsync(key, TestContext.Current.CancellationToken);
 
 			Assert.True(result);
 		}
@@ -228,7 +228,7 @@ namespace Deveel.Data {
 		public async Task RemoveByKey_NotExisting() {
 			var id = GeneratePersonId();
 
-			var result = await Repository.RemoveByKeyAsync(id);
+			var result = await Repository.RemoveByKeyAsync(id, TestContext.Current.CancellationToken);
 
 			Assert.False(result);
 		}
@@ -240,7 +240,7 @@ namespace Deveel.Data {
 
 			await Repository.RemoveRangeAsync(people);
 
-			var result = await Repository.FindAllAsync();
+			var result = await Repository.FindAllAsync(TestContext.Current.CancellationToken);
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
 			Assert.Equal(peopleCount - 10, result.Count);
@@ -256,7 +256,7 @@ namespace Deveel.Data {
 
 			people.Add(entity);
 
-			await Assert.ThrowsAsync<RepositoryException>(() => Repository.RemoveRangeAsync(people));
+			await Assert.ThrowsAsync<RepositoryException>(() => Repository.RemoveRangeAsync(people, TestContext.Current.CancellationToken));
 
 			var result = await Repository.FindAllAsync();
 			Assert.NotNull(result);
@@ -266,7 +266,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task CountAll() {
-			var result = await Repository.CountAllAsync();
+			var result = await Repository.CountAllAsync(TestContext.Current.CancellationToken);
 
 			Assert.NotEqual(0, result);
 			Assert.Equal(PeopleCount, result);
@@ -286,7 +286,7 @@ namespace Deveel.Data {
 			var firstName = person.FirstName;
 			var peopleCount = People?.Count(x => x.FirstName == firstName) ?? 0;
 
-			var count = await Repository.CountAsync(p => p.FirstName == firstName);
+			var count = await Repository.CountAsync(p => p.FirstName == firstName, TestContext.Current.CancellationToken);
 
 			Assert.Equal(peopleCount, count);
 		}
@@ -307,7 +307,7 @@ namespace Deveel.Data {
 			var person = await RandomPersonAsync();
 			var id = person.Id!;
 
-			var result = await Repository.FindAsync(id);
+			var result = await Repository.FindAsync(id, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(result);
 			Assert.Equal(id, result.Id);
@@ -318,7 +318,7 @@ namespace Deveel.Data {
 			var person = await RandomPersonAsync();
 			var firstName = person.FirstName;
 
-			var result = await Repository.FindFirstAsync(x => x.FirstName == firstName);
+			var result = await Repository.FindFirstAsync(x => x.FirstName == firstName, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(result);
 			Assert.Equal(firstName, result.FirstName);
@@ -340,7 +340,7 @@ namespace Deveel.Data {
 				.OrderBy(x => x.FirstName)
 				.Query;
 
-			var result = await Repository.FindFirstAsync(query);
+			var result = await Repository.FindFirstAsync(query, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(result);
 			Assert.Equal(expected.FirstName, result.FirstName);
@@ -360,7 +360,7 @@ namespace Deveel.Data {
 			var person = await RandomPersonAsync();
 			var firstName = person.FirstName;
 
-			var result = await Repository.ExistsAsync(x => x.FirstName == firstName);
+			var result = await Repository.ExistsAsync(x => x.FirstName == firstName, TestContext.Current.CancellationToken);
 
 			Assert.True(result);
 		}
@@ -379,7 +379,7 @@ namespace Deveel.Data {
 		public async Task FindByKey_Existing() {
 			var person = await RandomPersonAsync();
 
-			var result = await Repository.FindAsync(person.Id!);
+			var result = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(result);
 			Assert.Equal(person.Id, result.Id);
@@ -413,7 +413,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(person);
 
-			var result = await Repository.FindAsync(person.Id!);
+			var result = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(result);
 			Assert.NotNull(result.Relationships);
@@ -424,7 +424,7 @@ namespace Deveel.Data {
 		public async Task FindFirst() {
 			var ordered = NaturalOrder(People!).ToList();
 
-			var result = await Repository.FindFirstAsync();
+			var result = await Repository.FindFirstAsync(TestContext.Current.CancellationToken);
 
 			Assert.NotNull(result);
 			Assert.Equal(ordered[0].FirstName, result.FirstName);
@@ -446,7 +446,7 @@ namespace Deveel.Data {
 
 		[Fact]
 		public async Task FindAll() {
-			var result = await Repository.FindAllAsync();
+			var result = await Repository.FindAllAsync(TestContext.Current.CancellationToken);
 
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
@@ -468,7 +468,8 @@ namespace Deveel.Data {
 			var firstName = person.FirstName;
 			var peopleCount = People?.Count(x => x.FirstName == firstName) ?? 0;
 
-			var result = await Repository.FindAllAsync(x => x.FirstName == firstName);
+			var result = await Repository.FindAllAsync(x => x.FirstName == firstName, 
+                TestContext.Current.CancellationToken);
 
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
@@ -490,7 +491,7 @@ namespace Deveel.Data {
 				.Where(x => x.FirstName == firstName)
 				.OrderBy(x => x.FirstName);
 
-			var result = await Repository.FindAllAsync(query);
+			var result = await Repository.FindAllAsync(query, TestContext.Current.CancellationToken);
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
 		}
@@ -501,7 +502,8 @@ namespace Deveel.Data {
 			var firstName = person.FirstName;
 
 			var result = await Assert.ThrowsAsync<RepositoryException>(
-				() => Repository.FindAllAsync(QueryFilter.Where<MailAddress>(m => m.Address == null)));
+				() => Repository.FindAllAsync(QueryFilter.Where<MailAddress>(m => m.Address == null), 
+                    TestContext.Current.CancellationToken));
 		}
 
 		[Fact]
@@ -509,7 +511,7 @@ namespace Deveel.Data {
 			var totalItems = PeopleCount;
 			var totalPages = (int)Math.Ceiling((double)totalItems / 10);
 
-			var result = await Repository.GetPageAsync(1, 10);
+			var result = await Repository.GetPageAsync(1, 10, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
@@ -524,7 +526,7 @@ namespace Deveel.Data {
 			var totalItems = PeopleCount;
 			var totalPages = (int)Math.Ceiling((double)totalItems / 10);
 
-			var result = await Repository.GetPageAsync(1, 10);
+			var result = await Repository.GetPageAsync(1, 10, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
@@ -545,7 +547,7 @@ namespace Deveel.Data {
 			var request = new PageQuery<TPerson>(1, 10)
 				.Where(x => x.FirstName == firstName);
 
-			var result = await Repository.GetPageAsync(request);
+			var result = await Repository.GetPageAsync(request, TestContext.Current.CancellationToken);
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
 			Assert.Equal(peopleCount, result.TotalItems);
@@ -567,7 +569,7 @@ namespace Deveel.Data {
 			var request = new PageQuery<TPerson>(1, 10)
 				.Where(x => x.FirstName == firstName && x.LastName == lastName);
 
-			var result = await Repository.GetPageAsync(request);
+			var result = await Repository.GetPageAsync(request, TestContext.Current.CancellationToken);
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
 			Assert.Equal(peopleCount, result.TotalItems);
@@ -594,7 +596,7 @@ namespace Deveel.Data {
 				.Where(x => x.FirstName == firstName)
 				.Where(x => x.DateOfBirth >= birthDate);
 
-			var result = await Repository.GetPageAsync(request);
+			var result = await Repository.GetPageAsync(request, TestContext.Current.CancellationToken);
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
 			Assert.Equal(peopleCount, result.TotalItems);
@@ -612,7 +614,7 @@ namespace Deveel.Data {
 			var request = new PageQuery<TPerson>(1, 10)
 				.OrderByDescending(x => x.LastName);
 
-			var result = await Repository.GetPageAsync(request);
+			var result = await Repository.GetPageAsync(request, TestContext.Current.CancellationToken);
 			Assert.NotNull(result);
 			Assert.Equal(10, result.TotalPages);
 			Assert.Equal(100, result.TotalItems);
@@ -632,7 +634,7 @@ namespace Deveel.Data {
 			var request = new PageQuery<TPerson>(1, 10)
 				.OrderBy(x => x.FirstName);
 
-			var result = await Repository.GetPageAsync(request);
+			var result = await Repository.GetPageAsync(request, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(result);
 			Assert.Equal(totalPages, result.TotalPages);
@@ -672,17 +674,17 @@ namespace Deveel.Data {
 		public async Task UpdateExisting() {
 			var person = await RandomPersonAsync(x => x.FirstName != "John");
 
-			var toUpdate = await Repository.FindAsync(person.Id!);
+			var toUpdate = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(toUpdate);
 
 			toUpdate.FirstName = "John";
 
-			var result = await Repository.UpdateAsync(toUpdate);
+			var result = await Repository.UpdateAsync(toUpdate, TestContext.Current.CancellationToken);
 
 			Assert.True(result);
 
-			var updated = await Repository.FindAsync(person.Id!);
+			var updated = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(updated);
 			Assert.Equal(toUpdate.FirstName, updated.FirstName);
@@ -695,7 +697,7 @@ namespace Deveel.Data {
 		public async Task UpdateExisting_Sync() {
 			var person = await RandomPersonAsync(x => x.FirstName != "John");
 
-			var toUpdate = await Repository.FindAsync(person.Id!);
+			var toUpdate = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(toUpdate);
 
@@ -705,7 +707,7 @@ namespace Deveel.Data {
 
 			Assert.True(result);
 
-			var updated = await Repository.FindAsync(person.Id!);
+			var updated = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(updated);
 			Assert.Equal(toUpdate.FirstName, updated.FirstName);
@@ -720,7 +722,7 @@ namespace Deveel.Data {
 
 			person.Id = GeneratePersonId();
 
-			var result = await Repository.UpdateAsync(person);
+			var result = await Repository.UpdateAsync(person, TestContext.Current.CancellationToken);
 
 			Assert.False(result);
 		}
@@ -729,13 +731,13 @@ namespace Deveel.Data {
 		public async Task UpdateExisting_NoChange() {
 			var person = await RandomPersonAsync();
 
-			var toUpdate = await Repository.FindAsync(person.Id!);
+			var toUpdate = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(toUpdate);
 
 			await Repository.UpdateAsync(toUpdate);
 
-			var updated = await Repository.FindAsync(person.Id!);
+			var updated = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 			Assert.NotNull(updated);
 			Assert.Equal(toUpdate, updated);
 		}
@@ -748,17 +750,17 @@ namespace Deveel.Data {
 
 			var relationship = GenerateRelationship();
 
-			var toUpdate = await Repository.FindAsync(person.Id!);
+			var toUpdate = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(toUpdate);
 
 			await AddRelationshipAsync(toUpdate, relationship);
 
-			var result = await Repository.UpdateAsync(toUpdate);
+			var result = await Repository.UpdateAsync(toUpdate, TestContext.Current.CancellationToken);
 
 			Assert.True(result);
 
-			var updated = await Repository.FindAsync(person.Id!);
+			var updated = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(updated);
 			Assert.NotNull(updated.Relationships);
@@ -772,7 +774,7 @@ namespace Deveel.Data {
 
 			Assert.NotNull(person);
 
-			var toUpdate = await Repository.FindAsync(person.Id!);
+			var toUpdate = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(toUpdate);
 
@@ -780,11 +782,11 @@ namespace Deveel.Data {
 
 			await RemoveRelationshipAsync(toUpdate, (TRelationship) toUpdate.Relationships!.First());
 
-			var result = await Repository.UpdateAsync(toUpdate);
+			var result = await Repository.UpdateAsync(toUpdate, TestContext.Current.CancellationToken);
 
 			Assert.True(result);
 
-			var updated = await Repository.FindAsync(person.Id!);
+			var updated = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 			Assert.NotNull(updated);
 			Assert.NotNull(updated.Relationships);
 			Assert.Equal(relCount - 1, updated.Relationships.Count());
