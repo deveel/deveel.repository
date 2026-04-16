@@ -3,11 +3,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SQLitePCL;
 
 namespace Deveel.Data {
 	public static class DependencyInjectionTests {
-		[Fact]
-		public static void AddDefaultEntityRepositoryForEntity() {
+        [Fact]
+		public static void AddDefaultEntityRepositoryForEntity()
+        {
 			var services = new ServiceCollection();
 			services.AddDbContext<DbContext, PersonDbContext>(options =>
 				options.UseSqlite("Data Source=:memory:", x => x.UseNetTopologySuite()));
