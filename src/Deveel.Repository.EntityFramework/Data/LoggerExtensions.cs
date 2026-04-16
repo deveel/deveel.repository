@@ -58,6 +58,10 @@ namespace Deveel.Data {
                                                         Message = "Entity of type '{EntityType}' not found with ID '{EntityId}'")]
         public static partial void TraceEntityNotFoundById(this ILogger logger, Type entityType, object entityId);
 
+        [LoggerMessage(EventId = LogEventIds.UserNotSet, Level = LogLevel.Warning, 
+            Message = "User context not set for the current operation")]
+        public static partial void WarnUserNotSet(this ILogger logger);
+        
         [LoggerMessage(EventId = LogEventIds.EntityNotFound, Level = LogLevel.Warning, 
             Message = "Entity of type '{EntityType}' with ID '{EntityId}' not found")]
         public static partial void WarnEntityNotFound(this ILogger logger, Type entityType, object entityId);
@@ -69,5 +73,9 @@ namespace Deveel.Data {
         [LoggerMessage(EventId = LogEventIds.EntityNotUpdated, Level = LogLevel.Warning, 
                                              Message = "Entity of type '{EntityType}' with ID '{EntityId}' not updated")]
         public static partial void WarnEntityNotUpdated(this ILogger logger, Type entityType, object entityId);
+        
+        [LoggerMessage(EventId = LogEventIds.EntityOwnerNotMatching, Level = LogLevel.Warning,
+            Message = "Entity of type '{EntityType}' with ID '{EntityId}' is owned by user '{OwnerId}' not matching repository user is '{UserId}'")]
+        public static partial void WarnOwnerNotMatchingUser(this ILogger logger, Type entityType, object entityId, object userId, object ownerId);
     }
 }

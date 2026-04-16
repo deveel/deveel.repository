@@ -2,7 +2,7 @@
 
 namespace Deveel.Data.Entities
 {
-	public class DbBookFaker : Faker<DbBook>
+	public class DbBookFaker : Faker<DbBookWithOwner>
 	{
 		public DbBookFaker(string userId)
 		{

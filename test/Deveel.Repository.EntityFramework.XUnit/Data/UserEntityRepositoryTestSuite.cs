@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Deveel.Data
 {
 	[Collection(nameof(SqlUserConnectionCollection))]
-	public class UserEntityRepositoryTestSuite : UserRepositoryTestSuite<DbBook, Guid, string>
+	public class UserEntityRepositoryTestSuite : UserRepositoryTestSuite<DbBookWithOwner, Guid, string>
 	{
 		private readonly SqlTestConnection sql;
 
@@ -20,8 +20,8 @@ namespace Deveel.Data
 			BookFaker = new DbBookFaker(UserId);
 		}
 
-		protected override Faker<DbBook> BookFaker { get; }
-
+		protected override Faker<DbBookWithOwner> BookFaker { get; }
+        
 		protected override Guid GenerateBookId() => Guid.NewGuid();
 
 		protected override string GenerateUserId() => Guid.NewGuid().ToString("N");
@@ -52,20 +52,7 @@ namespace Deveel.Data
 
 			await base.InitializeAsync();
 		}
-
-		protected override async ValueTask SeedAsync()
-		{
-			var userAccessor = Services.GetRequiredService<IUserAccessor<string>>();
-			var options = Services.GetRequiredService<DbContextOptions<BookDbContext>>();
-			await using var dbContext = new BookDbContext(options, userAccessor);
-
-			if (Books != null)
-			{
-				await dbContext.Books.AddRangeAsync(Books);
-				await dbContext.SaveChangesAsync(true);
-			}
-		}
-
+        
 		protected override async ValueTask DisposeAsync()
 		{
 			var userAccessor = Services.GetRequiredService<IUserAccessor<string>>();

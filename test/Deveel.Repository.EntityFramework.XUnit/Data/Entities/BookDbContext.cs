@@ -13,15 +13,15 @@ namespace Deveel.Data.Entities
 
 		private readonly IUserAccessor<string> userAccessor;
 
-		public DbSet<DbBook> Books { get; set; }
+		public DbSet<DbBookWithOwner> Books { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			modelBuilder.Entity<DbBook>()
+			modelBuilder.Entity<DbBookWithOwner>()
 				.HasKey(x => x.Id);
 
-			modelBuilder.Entity<DbBook>()
-				.HasOwnerFilter(nameof(DbBook.UserId), userAccessor);
+			modelBuilder.Entity<DbBookWithOwner>()
+				.HasOwnerFilter(nameof(DbBookWithOwner.UserId), userAccessor);
 		}
 	}
 }

@@ -78,7 +78,10 @@ namespace Deveel.Data {
 			await SeedAsync(Repository);
 		}
 
-		async ValueTask IAsyncDisposable.DisposeAsync() {
+		async ValueTask IAsyncDisposable.DisposeAsync()
+        {
+            await DisposeAsync();
+            
 			People = null;
 
 			await scope.DisposeAsync();

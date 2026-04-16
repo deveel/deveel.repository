@@ -69,20 +69,46 @@ namespace Deveel.Data
 		/// <inheritdoc/>
 		public override async Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default)
 		{
-			var result = await base.FindAsync(key, cancellationToken);
+            var userId = UserId;
 
-			if (result == null || !Equals(UserId, result.Owner))
-				return null;
-			return result;
+            if (Equals(default(TUserKey), UserId))
+            {
+                Logger.WarnUserNotSet();
+                return null;
+            }
+
+			var result = await base.FindAsync(key, cancellationToken);
+            
+            if (result == null)
+            {
+                Logger.WarnEntityNotFound(typeof(TEntity), key);
+                return null;
+            }
+
+
+            if (!Equals(userId, result.Owner))
+            {
+                Logger.WarnOwnerNotMatchingUser(typeof(TEntity), key, userId, result.Owner);
+                return null;
+            }
+
+            return result;
 		}
 
 		/// <inheritdoc/>
 		protected override TEntity OnAddingEntity(TEntity entity)
 		{
 			var userId = UserId;
-			if (!Equals(default(TUserKey), UserId) 
-				&& !Equals(entity.Owner, userId))
-				entity.SetOwner(userId!);
+            if (Equals(default(TUserKey), UserId))
+            {
+                Logger.WarnUserNotSet();
+            } else if  (Equals(default(TEntity), entity)) {
+                Logger.WarnEntityNotFound(typeof(TEntity), default(TKey));
+            }
+            else
+            {
+                entity.SetOwner(userId!);
+            }
 
 			return entity;
 		}

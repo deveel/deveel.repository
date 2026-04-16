@@ -2,7 +2,7 @@
 
 namespace Deveel.Data.Entities
 {
-	public class DbBook : IBook<Guid>, IHaveOwner<string>
+	public class DbBookWithOwner : IBook<Guid>, IHaveOwner<string>
 	{
 		public Guid Id { get; set; }
 

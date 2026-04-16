@@ -59,7 +59,7 @@ namespace Deveel.Data {
 
 		protected override async ValueTask InitializeAsync() {
 			var options = Services.GetRequiredService<DbContextOptions<PersonDbContext>>();
-			using var dbContext = new PersonDbContext(options);
+			await using var dbContext = new PersonDbContext(options);
 
 			await dbContext.Database.EnsureDeletedAsync();
 			await dbContext.Database.EnsureCreatedAsync();
@@ -69,7 +69,7 @@ namespace Deveel.Data {
 
 		protected override async ValueTask DisposeAsync() {
 			var options = Services.GetRequiredService<DbContextOptions<PersonDbContext>>();
-			using var dbContext = new PersonDbContext(options);
+			await using var dbContext = new PersonDbContext(options);
 
 			dbContext.People!.RemoveRange(dbContext.People);
 			await dbContext.SaveChangesAsync(true);
