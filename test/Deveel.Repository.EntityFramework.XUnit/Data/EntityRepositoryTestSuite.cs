@@ -61,9 +61,9 @@ namespace Deveel.Data {
 			var options = Services.GetRequiredService<DbContextOptions<PersonDbContext>>();
 			await using var dbContext = new PersonDbContext(options);
 
-			await dbContext.Database.EnsureDeletedAsync();
-			await dbContext.Database.EnsureCreatedAsync();
-
+			await dbContext.Database.EnsureDeletedAsync(TestContext.Current.CancellationToken);
+			await dbContext.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
+            
 			await base.InitializeAsync();
 		}
 
@@ -72,9 +72,9 @@ namespace Deveel.Data {
 			await using var dbContext = new PersonDbContext(options);
 
 			dbContext.People!.RemoveRange(dbContext.People);
-			await dbContext.SaveChangesAsync(true);
+			await dbContext.SaveChangesAsync(true, TestContext.Current.CancellationToken);
 
-			await dbContext.Database.EnsureDeletedAsync();
+			await dbContext.Database.EnsureDeletedAsync(TestContext.Current.CancellationToken);
 		}
 
 		protected override IEnumerable<DbPerson> NaturalOrder(IEnumerable<DbPerson> source) => source.OrderBy(x => x.Id);
@@ -83,7 +83,7 @@ namespace Deveel.Data {
 		public async Task FindByKey_WithRelationships() {
 			var person = await RandomPersonAsync(x => x.Relationships != null);
 
-			var found = await Repository.FindAsync(person.Id!);
+			var found = await Repository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(found);
 			Assert.NotNull(found.Relationships);
@@ -95,12 +95,12 @@ namespace Deveel.Data {
 			var newEmail = new Faker().Internet.Email();
 			var person = await RandomPersonAsync(x => x.Email != newEmail);
 
-			var toUpdate = await PersonRepository.FindAsync(person.Id!);
+			var toUpdate = await PersonRepository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
-			await PersonRepository.SetEmailAsync(toUpdate!, newEmail);
-			Assert.True(await PersonRepository.UpdateAsync(toUpdate!));
+			await PersonRepository.SetEmailAsync(toUpdate!, newEmail, TestContext.Current.CancellationToken);
+			Assert.True(await PersonRepository.UpdateAsync(toUpdate!, TestContext.Current.CancellationToken));
 
-			var updated = await PersonRepository.FindAsync(person.Id!);
+			var updated = await PersonRepository.FindAsync(person.Id!, TestContext.Current.CancellationToken);
 
 			Assert.NotNull(updated);
 			Assert.Equal(newEmail, updated.Email);
@@ -110,7 +110,9 @@ namespace Deveel.Data {
 		public async Task FindByLocationWithinDistance() {
 			var person = await RandomPersonAsync(x => x.Location != null);
 
-			var found = await PersonRepository.FindAllAsync(x => x.Location!.Distance(person.Location) <= 1000);
+			var found = await PersonRepository.FindAllAsync(x => 
+                x.Location!.Distance(person.Location) <= 1000, 
+                cancellationToken: TestContext.Current.CancellationToken);
 			Assert.NotNull(found);
 			Assert.NotEmpty(found);
 			Assert.Contains(found, x => x.Id == person.Id);

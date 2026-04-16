@@ -8,4 +8,8 @@
     <ProjectReference Include="..\..\src\Deveel.Repository.DynamicLinq\Deveel.Repository.DynamicLinq.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.4.0" />
+  </ItemGroup>
+
 </Project>
