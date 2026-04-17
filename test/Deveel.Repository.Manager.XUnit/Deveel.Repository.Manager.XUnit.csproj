@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Deveel.Repository.InMemory\Deveel.Repository.InMemory.csproj" />
+    <ProjectReference Include="..\..\src\Deveel.Repository.Manager.AspNetCore\Deveel.Repository.Manager.AspNetCore.csproj" />
     <ProjectReference Include="..\Deveel.Repository.Management.Tests\Deveel.Repository.Management.Tests.csproj" />
     <ProjectReference Include="..\Deveel.Repository.Test.Utils\Deveel.Repository.Test.Utils.csproj" />
   </ItemGroup>

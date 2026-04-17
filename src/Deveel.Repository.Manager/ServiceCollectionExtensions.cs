@@ -16,7 +16,6 @@ using System.ComponentModel.DataAnnotations;
 
 using Deveel.Data;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -104,28 +103,7 @@ namespace Deveel {
 
 			return services;
 		}
-
-		/// <summary>
-		/// Registers a singleton instance of the <see cref="HttpRequestCancellationSource"/> 
-		/// in the collection of services.
-		/// </summary>
-		/// <param name="services">
-		/// The collection of services to register the source.
-		/// </param>
-		/// <remarks>
-		/// This method also tries to register the <see cref="IHttpContextAccessor"/>
-		/// into the collection of services, if not already registered.
-		/// </remarks>
-		/// <returns>
-		/// Returns the given collection of services for chaining calls.
-		/// </returns>
-		public static IServiceCollection AddHttpRequestTokenSource(this IServiceCollection services) {
-			services.AddHttpContextAccessor();
-			services.AddOperationTokenSource<HttpRequestCancellationSource>(ServiceLifetime.Singleton);
-
-			return services;
-		}
-
+        
 		class OperationErrorFactoryDecorator<TEntity> : IOperationErrorFactory<TEntity> where TEntity : class {
 			private readonly OperationErrorFactory errorFactory;
 
