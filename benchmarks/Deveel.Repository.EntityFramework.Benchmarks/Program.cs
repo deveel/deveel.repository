@@ -33,9 +33,9 @@ public class PersonContext : DbContext
 }
 
 [MemoryDiagnoser]
-//[SimpleJob(RuntimeMoniker.Net60, baseline: true)]
-//[SimpleJob(RuntimeMoniker.Net70)]
-//[SimpleJob(RuntimeMoniker.Net80)]
+[SimpleJob(RuntimeMoniker.Net80, baseline: true)]
+[SimpleJob(RuntimeMoniker.Net90)]
+[SimpleJob(RuntimeMoniker.Net10_0)]
 public class EfRepositoryBenchmarks
 {
     private MySqlContainer? _container;
