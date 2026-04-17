@@ -66,6 +66,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{6EAA2746
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.MultiTenantContext", "test\Deveel.Repository.MultiTenantContext\Deveel.Repository.MultiTenantContext.csproj", "{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Manager.AspNetCore", "src\Deveel.Repository.Manager.AspNetCore\Deveel.Repository.Manager.AspNetCore.csproj", "{89676AD8-AE22-40CC-9982-4E6A11E1228B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -156,6 +158,10 @@ Global
 		{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89676AD8-AE22-40CC-9982-4E6A11E1228B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89676AD8-AE22-40CC-9982-4E6A11E1228B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89676AD8-AE22-40CC-9982-4E6A11E1228B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89676AD8-AE22-40CC-9982-4E6A11E1228B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -184,6 +190,7 @@ Global
 		{18241CCB-B430-4F43-AFEC-0C0A3F5B5400} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 		{6EAA2746-39E4-4C63-9D86-117248B1C2A3} = {50434E05-0F21-4871-AFB3-A483CEE4A300}
 		{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9} = {6EAA2746-39E4-4C63-9D86-117248B1C2A3}
+		{89676AD8-AE22-40CC-9982-4E6A11E1228B} = {2860FD4D-510F-43C8-870E-5559B90D0CAD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01FD9B16-84B3-4D99-80C1-11B2F3D65B56}

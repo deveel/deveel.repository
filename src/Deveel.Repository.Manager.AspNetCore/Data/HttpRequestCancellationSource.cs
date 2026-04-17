@@ -14,7 +14,7 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Deveel {
+namespace Deveel.Data {
 	/// <summary>
 	/// An implementation of <see cref="IOperationCancellationSource"/> that
 	/// uses the <see cref="HttpContext.RequestAborted"/> token.
