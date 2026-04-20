@@ -71,12 +71,12 @@ jobs:
         run: dotnet build ${{ inputs.solution-path }} --no-restore -c Release -f ${{ matrix.target-framework }}
 
       - name: Test
-        if: ${{ !(inputs.generate-coverage && matrix.target-framework == 'net10.0') }}
-        run: dotnet test ${{ inputs.solution-path }} --no-build --no-restore -c Release -f ${{ matrix.target-framework }} -- --coverage --coverage-output-format cobertura
+        if: ${{ !(inputs.generate-coverage) }}
+        run: dotnet test --no-build --no-restore -c Release -f ${{ matrix.target-framework }}
 
       - name: Test with coverage
         if: ${{ inputs.generate-coverage }}
-        run: dotnet test ${{ inputs.solution-path }} --no-build --no-restore -c Release -f ${{ matrix.target-framework }} -- --coverage --coverlet-output-format cobertura
+        run: dotnet test --no-build --no-restore -c Release -f ${{ matrix.target-framework }} -- --coverage --coverage-output-format cobertura
 
       - name: Upload coverage to Codecov
         if: ${{ inputs.upload-codecov && inputs.generate-coverage }}
