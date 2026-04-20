@@ -10,4 +10,7 @@ permissions:
 jobs:
   build:
     uses: ./.github/workflows/reusable-pipeline.yml
+    with:
+      generate-coverage: false
+      upload-codecov: false
 

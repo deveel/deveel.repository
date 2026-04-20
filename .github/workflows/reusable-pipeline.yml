@@ -71,11 +71,11 @@ jobs:
         run: dotnet build ${{ inputs.solution-path }} --no-restore -c Release -f ${{ matrix.target-framework }}
 
       - name: Test
-        if: ${{ !(inputs.generate-coverage) }}
+        if: ${{ inputs.generate-coverage == false }}
         run: dotnet test --no-build --no-restore -c Release -f ${{ matrix.target-framework }}
 
-      - name: Test with coverage
-        if: ${{ inputs.generate-coverage }}
+      - name: Test (with coverage)
+        if: ${{ inputs.generate-coverage == true }}
         run: dotnet test --no-build --no-restore -c Release -f ${{ matrix.target-framework }} -- --coverage --coverage-output-format cobertura
 
       - name: Upload coverage to Codecov
