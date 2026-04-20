@@ -9,76 +9,15 @@ on:
     branches: [ "main" ]
 
 jobs:
-  validate:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet: [ '8.0.x', '9.0.x', '10.0.x' ]
-
-    steps:
-    - uses: actions/checkout@v5
-    
-    - name: Emit .NET 8.0 Framework Version
-      if: matrix.dotnet == '8.0.x'
-      run: echo "DOTNET_FX_VERSION=net8.0" >> $GITHUB_ENV
-      
-    - name: Emit .NET 9.0 Framework Version
-      if: matrix.dotnet == '9.0.x'
-      run: echo "DOTNET_FX_VERSION=net9.0" >> $GITHUB_ENV
-      
-    - name: Emit .NET 10.0 Framework Version
-      if: matrix.dotnet == '10.0.x'
-      run: echo "DOTNET_FX_VERSION=net10.0" >> $GITHUB_ENV
-             
-    - name: Setup .NET ${{ matrix.dotnet }} Framework
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: ${{ matrix.dotnet }}
-     
-    - name: Install SQLite Spatial
-      run: sudo apt-get install -y libsqlite3-mod-spatialite
-      
-    - name: Restore dependencies
-      run: dotnet restore -p:TargetFrameworks=${{ env.DOTNET_FX_VERSION }}
-      
-    - name: Build
-      run: dotnet build --no-restore -c Release -f ${{ env.DOTNET_FX_VERSION }}
-      
-    - name: Test
-      run: dotnet test --no-build --verbosity normal -c Release -f ${{ env.DOTNET_FX_VERSION }}
-      
-  build:
-    name: "Build and Push Artifacts"
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-
-    - name: Setup GitFlow
-      uses: gittools/actions/gitversion/setup@v1.1.1
-      with:
-         versionSpec: '5.x'
-            
-    - name: Determine Version
-      uses: gittools/actions/gitversion/execute@v1.1.1
-  
-    - name: Setup .NET 10.0 Framework
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: 10.0.x
-
-    - name: Build
-      run: dotnet build -c Release /p:Version="${{ env.GitVersion_SemVer }}" /p:AssemblyVersion="${{ env.GitVersion_AssemblySemVer }}" /p:FileVersion="${{ env.GitVersion_AssemblySemFileVer }}"
-
-    - name: Pack the Nuget Packages
-      run: dotnet pack -c Release --no-build --no-restore --include-symbols --include-source --output nupkgs /p:PackageVersion="${{ env.GitVersion_NuGetVersionV2 }}" 
-
-    - name: Publish the Nuget Packages to the GitHub Package Registry
-      run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/deveel/index.json"
+  pipeline:
+    uses: ./.github/workflows/reusable-pipeline.yml
+    with:
+      generate-coverage: true
+      upload-codecov: true
+      publish-github-packages: true
+    secrets: inherit
 
   clean:
     name: "Clean Old Packages"
-    needs: build
+    needs: pipeline
     uses: ./.github/workflows/clean-packages.yml

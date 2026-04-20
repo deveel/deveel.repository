@@ -9,78 +9,16 @@ on:
     types: [published]
   workflow_dispatch:
     inputs:
-       version:
-         type: string
-         required: true
-         description: The version to be published
+      publish-to-nuget-org:
+        type: boolean
+        required: false
+        default: false
+        description: Publish the generated packages to NuGet.org
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        dotnet: [ '8.0.x', '9.0.x', '10.0.x' ]
-
-    steps:
-    - uses: actions/checkout@v5
-  
-    - name: Emit .NET 8.0 Framework Version
-      if: matrix.dotnet == '8.0.x'
-      run: echo "DOTNET_FX_VERSION=net8.0" >> $GITHUB_ENV
-
-    - name: Emit .NET 9.0 Framework Version
-      if: matrix.dotnet == '9.0.x'
-      run: echo "DOTNET_FX_VERSION=net9.0" >> $GITHUB_ENV
-
-    - name: Emit .NET 10.0 Framework Version
-      if: matrix.dotnet == '10.0.x'
-      run: echo "DOTNET_FX_VERSION=net10.0" >> $GITHUB_ENV
-    
-    - name: Setup .NET ${{ matrix.dotnet }} Framework
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: ${{ matrix.dotnet }}
-
-    - name: Install SQLite Spatial
-      run: sudo apt-get install -y libsqlite3-mod-spatialite
-        
-    # - name: Add Deveel GitHub NuGet Source
-    #   run: dotnet nuget add source "https://nuget.pkg.github.com/deveel/index.json" -n "Deveel GitHub" -u ${{ secrets.DEVEEL_NUGET_USER }} -p ${{ secrets.DEVEEL_NUGET_TOKEN }} --store-password-in-clear-text
-      
-    - name: Restore dependencies
-      run: dotnet restore -p:TargetFrameworks=${{ env.DOTNET_FX_VERSION }}
-      
-    - name: Build
-      run: dotnet build --no-restore -c Release -f ${{ env.DOTNET_FX_VERSION }}
-      
-    - name: Test
-      run: dotnet test --no-build --verbosity normal -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover -f ${{ env.DOTNET_FX_VERSION }}
-      
-    - name: Collect to Codecov
-      uses: codecov/codecov-action@v5
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-
-  publish:
-    needs: release
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v5
-  
-    - name: Extract the Version
-      run: echo "VERSION=$(echo ${{ github.event.release.tag_name }} | sed -e 's/^v//')" >> $GITHUB_ENV
-      if: github.event.release.tag_name != null
-
-    - name: Set the Version from Input
-      run: echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
-      if: github.event.release.tag_name == null
-
-    - name: Pack NuGet
-      run: dotnet pack -p:PackageVersion=${{ env.VERSION }} -c Release -o ./nuget -p:Version=${{ env.VERSION }}
-      
-    - name: Push Github Nuget
-      run: dotnet nuget push ./nuget/*.nupkg -s "https://nuget.pkg.github.com/deveel/index.json" --skip-duplicate --api-key ${{secrets.GITHUB_TOKEN}}
-
-    - name: Push to Github.org
-      run: dotnet nuget push ./nuget/**/*.nupkg --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+  pipeline:
+    uses: ./.github/workflows/reusable-pipeline.yml
+    with:
+      publish-github-packages: true
+      publish-nuget-org: ${{ github.event_name == 'release' || inputs.publish-to-nuget-org }}
+    secrets: inherit

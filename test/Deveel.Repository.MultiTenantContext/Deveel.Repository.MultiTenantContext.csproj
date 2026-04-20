@@ -3,6 +3,7 @@
   <PropertyGroup>
     <IsTestProject>false</IsTestProject>
     <TestProject>false</TestProject>
+      <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">

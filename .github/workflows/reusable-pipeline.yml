@@ -1,0 +1,134 @@
+﻿name: Reusable .NET Pipeline
+
+permissions:
+  contents: read
+  packages: write
+
+on:
+  workflow_call:
+    inputs:
+      generate-coverage:
+        description: Generate Cobertura coverage reports during tests
+        required: false
+        default: false
+        type: boolean
+      upload-codecov:
+        description: Upload generated Cobertura coverage reports to Codecov
+        required: false
+        default: false
+        type: boolean
+      publish-github-packages:
+        description: Publish generated NuGet packages to GitHub Packages
+        required: false
+        default: false
+        type: boolean
+      publish-nuget-org:
+        description: Publish generated NuGet packages to NuGet.org
+        required: false
+        default: false
+        type: boolean
+      solution-path:
+        description: Solution file to build, test and pack
+        required: false
+        default: Deveel.Repository.sln
+        type: string
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+      NUGET_API_KEY:
+        required: false
+
+jobs:
+  build-test:
+    name: Build and test (${{ matrix.target-framework }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dotnet-version: '8.0.x'
+            target-framework: net8.0
+          - dotnet-version: '9.0.x'
+            target-framework: net9.0
+          - dotnet-version: '10.0.x'
+            target-framework: net10.0
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Install SQLite Spatial
+        run: sudo apt-get update && sudo apt-get install -y libsqlite3-mod-spatialite
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ inputs.solution-path }} -p:TargetFrameworks=${{ matrix.target-framework }}
+
+      - name: Build
+        run: dotnet build ${{ inputs.solution-path }} --no-restore -c Release -f ${{ matrix.target-framework }}
+
+      - name: Test
+        if: ${{ !(inputs.generate-coverage && matrix.target-framework == 'net10.0') }}
+        run: dotnet test ${{ inputs.solution-path }} --no-build --no-restore -c Release -f ${{ matrix.target-framework }} -- --coverage --coverage-output-format cobertura
+
+      - name: Test with coverage
+        if: ${{ inputs.generate-coverage }}
+        run: dotnet test ${{ inputs.solution-path }} --no-build --no-restore -c Release -f ${{ matrix.target-framework }} -- --coverage --coverlet-output-format cobertura
+
+      - name: Upload coverage to Codecov
+        if: ${{ inputs.upload-codecov && inputs.generate-coverage }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: "**/*.cobertura.xml"
+          fail_ci_if_error: false
+
+  pack-publish:
+    name: Pack and publish
+    if: ${{ inputs.publish-github-packages || inputs.publish-nuget-org }}
+    needs: build-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 10.0.x
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Setup GitVersion
+        uses: gittools/actions/gitversion/setup@v4
+        with:
+          versionSpec: '5.x'
+
+      - name: Determine version from GitVersion
+        uses: gittools/actions/gitversion/execute@v4
+
+      - name: Pack NuGet packages
+        run: >-
+          dotnet pack ${{ inputs.solution-path }}
+          -c Release
+          --output ./nupkgs
+          --include-symbols
+          --include-source
+          /p:PackageVersion=${{ env.GitVersion_NuGetVersionV2 }}
+          /p:Version=${{ env.GitVersion_SemVer }}
+          /p:AssemblyVersion=${{ env.GitVersion_AssemblySemVer }}
+          /p:FileVersion=${{ env.GitVersion_AssemblySemFileVer }}
+
+      - name: Publish packages to GitHub Packages
+        if: ${{ inputs.publish-github-packages }}
+        run: dotnet nuget push ./nupkgs/*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/deveel/index.json
+
+      - name: Publish packages to NuGet.org
+        if: ${{ inputs.publish-nuget-org }}
+        run: dotnet nuget push ./nupkgs/*.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+
+

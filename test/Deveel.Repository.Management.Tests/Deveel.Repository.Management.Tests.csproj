@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsTestProject>false</IsTestProject>
+      <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
