@@ -9,21 +9,11 @@
     <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
         <OutputType>Exe</OutputType>
         <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
         <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
         <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
     </PropertyGroup>
 
-    <!--
-        TestingPlatformDotnetTestSupport controls the MTP 1.x VSTest bridge.
-        xUnit v3 (MTP 1.x): needs the bridge so `dotnet test` routes through it.
-        TUnit      (MTP 2.0): must NOT use the bridge; it imports its own new runner.
-    -->
-    <PropertyGroup Condition="'$(IsTestProject)' == 'true' and '$(UseXUnit)' != 'false'">
-        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(IsTestProject)' == 'true' and '$(UseXUnit)' == 'false'">
-        <TestingPlatformDotnetTestSupport>false</TestingPlatformDotnetTestSupport>
-    </PropertyGroup>
 
     <!-- Shared support libraries: plain class libraries, no test runner -->
     <PropertyGroup Condition="'$(IsTestProject)' != 'true'">

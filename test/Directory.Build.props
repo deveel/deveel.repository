@@ -65,12 +65,6 @@
     <!-- xUnit v3 packages — skipped for TUnit projects -->
     <ItemGroup Condition="'$(IsTestProject)' == 'true' and '$(UseXUnit)' == 'true'">
         <PackageReference Include="xunit.v3" Version="3.*" />
-        <!--
-            xunit.runner.visualstudio 3.* provides the VSTest adapter that Rider's
-            built-in xUnit plugin uses to discover and run xUnit v3 tests in the IDE.
-            Without it Rider falls back to MTP-only mode which requires the separate
-            "Microsoft Testing Platform support" plugin.
-        -->
         <PackageReference Include="MartinCostello.Logging.XUnit.v3" Version="0.7.*" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.*" />
     </ItemGroup>
