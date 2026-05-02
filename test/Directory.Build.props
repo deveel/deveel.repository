@@ -13,18 +13,7 @@
         <IsTestProject Condition="'$(IsTestProject)' == ''">true</IsTestProject>
         <!-- Suppress nullable warnings from assertion chains — xUnit Assert guarantees non-null -->
         <NoWarn>$(NoWarn);CS8602;CS8604</NoWarn>
-        <!--
-            TestingPlatformDotnetTestSupport must be set in .props (before SDK targets)
-            so that `dotnet test` activates MTP bridge mode instead of the VSTest testhost.
-            Setting it here unconditionally is safe: support libraries are OutputType=Library
-            so `dotnet test` never dispatches to them.
-        -->
         <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-        <!--
-            TestingPlatformCaptureOutput=false is required for Rider's MTP test-runner
-            integration (both xUnit v3 and TUnit). When true (the default), MTP swallows
-            stdout/stderr, which prevents Rider from receiving test-lifecycle events.
-        -->
         <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
     </PropertyGroup>
 

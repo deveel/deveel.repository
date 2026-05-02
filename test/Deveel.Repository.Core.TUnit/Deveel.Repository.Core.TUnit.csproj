@@ -2,13 +2,11 @@
 
   <PropertyGroup>
     <NoWarn>$(NoWarn);CS8602;CS8604;CS8618</NoWarn>
-    <!--
-      Opt out of the xUnit packages injected by Directory.Build.props
-      so this project uses TUnit exclusively.  Directory.Build.targets uses
-      this flag to conditionally set TestingPlatformDotnetTestSupport=false
-      and to wire up the _MTPBeforeVSTest / VSTest overrides for MTP 2.0.
-    -->
     <UseXUnit>false</UseXUnit>
+      <OutputType>Exe</OutputType>
+      <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+      <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+      <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
   </PropertyGroup>
 
   <ItemGroup>
