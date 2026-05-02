@@ -4,22 +4,11 @@
     <NoWarn>$(NoWarn);CS8602;CS8604;CS8618</NoWarn>
     <!--
       Opt out of the xUnit packages injected by Directory.Build.props
-      so this project uses TUnit exclusively.
+      so this project uses TUnit exclusively.  Directory.Build.targets uses
+      this flag to conditionally set TestingPlatformDotnetTestSupport=false
+      and to wire up the _MTPBeforeVSTest / VSTest overrides for MTP 2.0.
     -->
     <UseXUnit>false</UseXUnit>
-    <!--
-      Activate the .NET 10 SDK "new test experience":
-        • UseMSBuildTestInfrastructure=true  — tells the .NET 10 SDK to invoke the
-          MSBuild `Test` target instead of `VSTest`, bypassing the legacy VSTest pipeline
-          that MTP 2.0 (used by TUnit) no longer supports on .NET 10 SDK.
-          The MTP package hooks into `Test` via AfterTargets="Test", so `dotnet test`
-          works without the old bridge.
-        • TestingPlatformDotnetTestSupport must be FALSE for TUnit (MTP 2.0): the old
-          bridge targets are incompatible with the new runner.  Directory.Build.props
-          sets it TRUE globally for the legacy xUnit bridge; we override it here.
-    -->
-    <UseMSBuildTestInfrastructure>true</UseMSBuildTestInfrastructure>
-    <TestingPlatformDotnetTestSupport>false</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>

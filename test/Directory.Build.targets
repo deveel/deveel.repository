@@ -1,24 +1,28 @@
 <Project>
 
     <!--
-        This file is imported AFTER the project file, so $(IsTestProject) already
-        has its final resolved value (either the project-level override or the
-        default set in Directory.Build.props).
-
-        All PropertyGroup conditions that depend on IsTestProject live here —
-        NOT in Directory.Build.props — to avoid the MSBuild evaluation-order
-        problem where Directory.Build.props PropertyGroups see the default value
-        of IsTestProject (true) before individual .csproj files have had a chance
-        to override it to false.
+        This file is imported AFTER the project file, so $(IsTestProject) and $(UseXUnit)
+        already have their final resolved values.
     -->
 
     <!-- Executable test projects: Exe + full Microsoft Testing Platform runner -->
     <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
         <OutputType>Exe</OutputType>
         <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
-        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
         <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
         <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
+    </PropertyGroup>
+
+    <!--
+        TestingPlatformDotnetTestSupport controls the MTP 1.x VSTest bridge.
+        xUnit v3 (MTP 1.x): needs the bridge so `dotnet test` routes through it.
+        TUnit      (MTP 2.0): must NOT use the bridge; it imports its own new runner.
+    -->
+    <PropertyGroup Condition="'$(IsTestProject)' == 'true' and '$(UseXUnit)' != 'false'">
+        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(IsTestProject)' == 'true' and '$(UseXUnit)' == 'false'">
+        <TestingPlatformDotnetTestSupport>false</TestingPlatformDotnetTestSupport>
     </PropertyGroup>
 
     <!-- Shared support libraries: plain class libraries, no test runner -->

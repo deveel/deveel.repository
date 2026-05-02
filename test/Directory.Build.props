@@ -71,7 +71,6 @@
             Without it Rider falls back to MTP-only mode which requires the separate
             "Microsoft Testing Platform support" plugin.
         -->
-        <PackageReference Include="xunit.runner.visualstudio" Version="3.*" />
         <PackageReference Include="MartinCostello.Logging.XUnit.v3" Version="0.7.*" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.*" />
     </ItemGroup>
