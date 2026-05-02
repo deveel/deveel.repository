@@ -59,7 +59,7 @@ public class InMemoryRepositoryConcurrencyTests
 
         await Task.WhenAll(writeTasks.Concat(readTasks));
 
-        await Assert.That(exceptions).IsEmpty();
+        await Assert.That(exceptions.Count).IsEqualTo(0);
         var total = await repository.CountAsync(QueryFilter.Empty, cancellationToken);
         await Assert.That(total >= 50).IsTrue();
     }
@@ -113,7 +113,7 @@ public class InMemoryRepositoryConcurrencyTests
 
         await Task.WhenAll(tasks);
 
-        await Assert.That(exceptions).IsEmpty();
+        await Assert.That(exceptions.Count).IsEqualTo(0);
     }
 
     #endregion
@@ -206,7 +206,7 @@ public class InMemoryRepositoryConcurrencyTests
 
         await Task.WhenAll(writers.Concat(readers).Concat(updaters));
 
-        await Assert.That(exceptions).IsEmpty();
+        await Assert.That(exceptions.Count).IsEqualTo(0);
         var finalCount = await repository.CountAsync(QueryFilter.Empty, cancellationToken);
         await Assert.That(finalCount >= 50).IsTrue();
     }

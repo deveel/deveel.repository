@@ -64,7 +64,7 @@ public class FilterExpressionTests
         var func = (Func<Person, bool>)result;
         await Assert.That(cache.TryGet("p.FirstName == \"John\"", out var cachedFunc)).IsTrue();
         await Assert.That(cachedFunc).IsNotNull();
-        await Assert.That(func).IsEqualTo(cachedFunc);
+        await Assert.That(func).IsSameReferenceAs(cachedFunc);
     }
 
     [Test]
@@ -76,7 +76,7 @@ public class FilterExpressionTests
         // Assert
         await Assert.That(result).IsNotNull();
         await Assert.That(result).IsTypeOf<Func<Person, bool>>();
-        var func = (Func<Person, bool>)result;
+        var func = result;
         await Assert.That(func.Method).IsNotNull();
         await Assert.That(func.Method.ReturnType).IsEqualTo(typeof(bool));
     }

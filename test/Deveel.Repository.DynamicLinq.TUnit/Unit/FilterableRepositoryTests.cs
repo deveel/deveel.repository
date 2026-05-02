@@ -131,7 +131,7 @@ public class FilterableRepositoryTests
 
         var result = await _repository.FindAllAsync("p", $"p.FirstName == \"{person.FirstName}\"", cancellationToken);
 
-        await Assert.That(result).IsEqualTo(expected);
+        await Assert.That(result).IsEquivalentTo(expected);
     }
 
     [Test]
@@ -142,7 +142,7 @@ public class FilterableRepositoryTests
 
         var result = await _repository.FindAllAsync($"x.FirstName == \"{person.FirstName}\"", cancellationToken);
 
-        await Assert.That(result).IsEqualTo(expected);
+        await Assert.That(result).IsEquivalentTo(expected);
     }
 
     [Test]
@@ -171,7 +171,7 @@ public class FilterableRepositoryTests
         await Assert.That(result.TotalPages).IsEqualTo(totalPages);
         await Assert.That(result.TotalItems).IsEqualTo(list.Count);
         await Assert.That(result.Items).IsNotNull();
-        await Assert.That(result.Items).IsNotEmpty();
+        await Assert.That(result.Items.Count).IsGreaterThan(0);
     }
 
     [Test]
@@ -189,7 +189,7 @@ public class FilterableRepositoryTests
         await Assert.That(result.TotalPages).IsEqualTo(totalPages);
         await Assert.That(result.TotalItems).IsEqualTo(list.Count);
         await Assert.That(result.Items).IsNotNull();
-        await Assert.That(result.Items).IsNotEmpty();
+        await Assert.That(result.Items.Count).IsGreaterThan(0);
     }
 
     #endregion

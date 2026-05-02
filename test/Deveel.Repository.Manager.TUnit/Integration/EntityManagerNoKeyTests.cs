@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Deveel.Data;
 
 [Category("Integration")]
+[InheritsTests]
 public class EntityManagerNoKeyTests : EntityManagerTestSuite<EntityManager<Person>, Person>
 {
     protected override Faker<Person> PersonFaker { get; } = new PersonFaker();

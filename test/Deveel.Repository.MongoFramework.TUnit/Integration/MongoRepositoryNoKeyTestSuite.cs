@@ -5,6 +5,7 @@ using MongoFramework;
 
 namespace Deveel.Data {
     [Category("Integration")]
+    [InheritsTests]
     public abstract class MongoRepositoryNoKeyTestSuite<TPerson> : RepositoryTestSuite<TPerson, MongoPersonRelationship>, IAsyncInitializer, IAsyncDisposable
         where TPerson : MongoPerson {
         private MongoSingleDatabase _mongo = default!;
@@ -58,8 +59,8 @@ namespace Deveel.Data {
             await controller.DropRepositoryAsync<MongoPerson>();
         }
 
-        // Explicitly implement IAsyncDisposable to stop MongoDB after base disposes the scope
-        async ValueTask IAsyncDisposable.DisposeAsync() {
+        // Override DisposeAsync to stop MongoDB after base disposes the scope
+        public override async ValueTask DisposeAsync() {
             await base.DisposeAsync();
             await _mongo.DisposeAsync();
         }

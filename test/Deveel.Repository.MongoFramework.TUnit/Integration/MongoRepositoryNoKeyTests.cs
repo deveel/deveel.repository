@@ -6,6 +6,7 @@ using MongoFramework;
 namespace Deveel.Data;
 
 [Category("Integration")]
+[InheritsTests]
 public class MongoRepositoryNoKeyTests : MongoRepositoryNoKeyTestSuite<MongoPerson> {
     protected override Faker<MongoPerson> PersonFaker { get; } = new MongoPersonFaker();
 

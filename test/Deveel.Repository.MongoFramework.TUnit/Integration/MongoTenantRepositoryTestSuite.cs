@@ -3,7 +3,8 @@ using MongoDB.Bson;
 namespace Deveel.Data;
 
 [Category("Integration")]
-public class MongoTenantRepositoryTestSuite : MultiTenantRepositoryTestSuite<MongoDbTenantInfo, MongoTenantPerson, ObjectId>, IAsyncInitializer, IAsyncDisposable
+[InheritsTests]
+public class MongoTenantRepositoryTestSuite : MultiTenantRepositoryTestSuite<MongoDbTenantInfo, MongoTenantPerson, ObjectId>
 {
     private MongoSingleDatabase _mongo = default!;
 
@@ -35,8 +36,8 @@ public class MongoTenantRepositoryTestSuite : MultiTenantRepositoryTestSuite<Mon
         services.AddRepository<MongoRepository<MongoTenantPerson, ObjectId>>();
     }
 
-    // Explicitly implement IAsyncInitializer to start MongoDB before base initialization
-    async Task IAsyncInitializer.InitializeAsync() {
+    // Override InitializeAsync to start MongoDB before base initialization
+    public override async Task InitializeAsync() {
         _mongo = new MongoSingleDatabase();
         await _mongo.StartAsync();
 
@@ -67,8 +68,8 @@ public class MongoTenantRepositoryTestSuite : MultiTenantRepositoryTestSuite<Mon
         }
     }
 
-    // Explicitly implement IAsyncDisposable to stop MongoDB after base disposes the scope
-    async ValueTask IAsyncDisposable.DisposeAsync() {
+    // Override DisposeAsync to stop MongoDB after base disposes the scope
+    public override async ValueTask DisposeAsync() {
         await base.DisposeAsync();
         await _mongo.DisposeAsync();
     }

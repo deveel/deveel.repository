@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Deveel.Data;
 
 [Category("Integration")]
+[InheritsTests]
 public class InMemoryRepositoryTests : RepositoryTestSuite<Person, string, PersonRelationship>
 {
     protected override Faker<Person> PersonFaker { get; } = new PersonFaker();

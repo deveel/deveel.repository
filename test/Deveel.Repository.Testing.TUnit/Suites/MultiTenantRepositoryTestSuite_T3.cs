@@ -61,7 +61,7 @@ public abstract class MultiTenantRepositoryTestSuite<TTenantInfo, TPerson, TKey>
         scope = services.CreateAsyncScope();
     }
 
-    public async Task InitializeAsync()
+    public virtual async Task InitializeAsync()
     {
         BuildServices();
 
@@ -81,7 +81,7 @@ public abstract class MultiTenantRepositoryTestSuite<TTenantInfo, TPerson, TKey>
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public virtual async ValueTask DisposeAsync()
     {
         await CleanupAsync();
         People = null;
@@ -217,6 +217,8 @@ public abstract class MultiTenantRepositoryTestSuite<TTenantInfo, TPerson, TKey>
         });
     }
 }
+
+
 
 
 

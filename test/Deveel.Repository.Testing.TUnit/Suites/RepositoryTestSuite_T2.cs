@@ -68,7 +68,7 @@ public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncInitia
 		await SeedAsync(repository);
 	}
 
-	public async ValueTask DisposeAsync()
+	public virtual async ValueTask DisposeAsync()
 	{
 		await CleanupAsync();
 
