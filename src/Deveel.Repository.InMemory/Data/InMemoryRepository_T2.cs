@@ -15,7 +15,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.Serialization;
 
 namespace Deveel.Data {
 	/// <summary>
@@ -28,6 +27,25 @@ namespace Deveel.Data {
 	/// <typeparam name="TKey">
 	/// The type of the key of the entity managed by the repository.
 	/// </typeparam>
+	/// <remarks>
+	/// <para>
+	/// <strong>Thread safety:</strong> This class is safe for concurrent use by
+	/// multiple threads.  All read operations (
+	/// <see cref="FindAsync"/>, <see cref="FindFirstAsync"/>,
+	/// <see cref="FindAllAsync"/>, <see cref="ExistsAsync"/>,
+	/// <see cref="CountAsync"/>, <see cref="GetPageAsync"/>,
+	/// <see cref="Entities"/>) acquire a shared read lock so that they can
+	/// execute in parallel.  All write operations (
+	/// <see cref="AddAsync"/>, <see cref="AddRangeAsync"/>,
+	/// <see cref="UpdateAsync"/>, <see cref="RemoveAsync"/>,
+	/// <see cref="RemoveRangeAsync"/>) acquire an exclusive write lock.
+	/// </para>
+	/// <para>
+	/// The reflection-based key-member discovery is performed exactly once per
+	/// generic instantiation via a <see cref="Lazy{T}"/> guard, so it is safe
+	/// regardless of how many threads call it simultaneously.
+	/// </para>
+	/// </remarks>
 	public class InMemoryRepository<TEntity, TKey> :
 		IRepository<TEntity, TKey>,
 		IQueryableRepository<TEntity, TKey>,
@@ -37,9 +55,28 @@ namespace Deveel.Data {
 		IDisposable
 		where TEntity : class 
 		where TKey : notnull {
+
 		private SortedList<TKey, Entry> entities;
 		private bool disposedValue;
-		private MemberInfo? idMember;
+		/// <summary>
+		/// Guards <see cref="entities"/> for concurrent access.
+		/// Multiple readers are allowed to run simultaneously;
+		/// any writer holds exclusive access.
+		/// </summary>
+		private readonly ReaderWriterLockSlim _lock =
+			new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+
+		/// <summary>
+		/// Thread-safe, lazily-initialised cache of the <see cref="MemberInfo"/>
+		/// decorated with <see cref="KeyAttribute"/> on <typeparamref name="TEntity"/>.
+		/// </summary>
+		private readonly Lazy<MemberInfo?> _idMember =
+			new Lazy<MemberInfo?>(() =>
+                    typeof(TEntity)
+                        .GetMembers()
+                        .FirstOrDefault(x => Attribute.IsDefined(x, typeof(KeyAttribute))),
+				LazyThreadSafetyMode.ExecutionAndPublication);
+
 		private readonly IFieldMapper<TEntity>? fieldMapper;
 
 		/// <summary>
@@ -72,10 +109,23 @@ namespace Deveel.Data {
 		bool ITrackingRepository<TEntity, TKey>.IsTrackingChanges => true;
 
 		/// <summary>
-		/// Gets the read-only list of entities in the repository.
+		/// Gets a point-in-time snapshot of all entities in the repository.
 		/// </summary>
-		public virtual IReadOnlyList<TEntity> Entities => entities.Values.Select(x => x.Entity)
-			.ToList().AsReadOnly();
+		/// <remarks>
+		/// The snapshot is taken under a shared read lock; it is safe to call
+		/// concurrently with any number of readers or with ongoing writes
+		/// (readers will not see a partially-written state).
+		/// </remarks>
+		public virtual IReadOnlyList<TEntity> Entities {
+			get {
+				_lock.EnterReadLock();
+				try {
+					return entities.Values.Select(x => x.Entity).ToList().AsReadOnly();
+				} finally {
+					_lock.ExitReadLock();
+				}
+			}
+		}
 
 		private SortedList<TKey, Entry> CopyList(IEnumerable<TEntity> source) {
 			var result = new SortedList<TKey, Entry>();
@@ -97,15 +147,7 @@ namespace Deveel.Data {
 			return GetEntityId(entity);
 		}
 
-		private MemberInfo? DiscoverIdMember() {
-			if (idMember == null) {
-				idMember = typeof(TEntity)
-					.GetMembers()
-					.Where(x => Attribute.IsDefined(x, typeof(KeyAttribute))).FirstOrDefault();
-			}
-
-			return idMember;
-		}
+		private MemberInfo? DiscoverIdMember() => _idMember.Value;
 
 		private static TKey? GetIdValue(MemberInfo memberInfo, TEntity entity) {
 			if (memberInfo is PropertyInfo propertyInfo)
@@ -157,13 +199,25 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var result = Entities.AsQueryable().LongCount(filter);
-				return Task.FromResult(result);
-			} catch (Exception ex) {
+				_lock.EnterReadLock();
+				try {
+					var result = entities.Values.Select(x => x.Entity).AsQueryable().LongCount(filter);
+					return Task.FromResult(result);
+				} finally {
+					_lock.ExitReadLock();
+				}
+			} catch (Exception ex) when (ex is not RepositoryException) {
 				throw new RepositoryException("Could not count the entities", ex);
 			}
 		}
 
+		/// <summary>
+		/// Adds a single entity to the repository.
+		/// </summary>
+		/// <remarks>
+		/// This method acquires an exclusive write lock before mutating the
+		/// internal store, so it is safe to call concurrently from multiple threads.
+		/// </remarks>
 		/// <inheritdoc/>
 		public Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
@@ -178,18 +232,29 @@ namespace Deveel.Data {
 					SetEntityId(entity, key);
 				}
 
-				if (!entities.TryAdd(key, new Entry(entity)))
-					throw new RepositoryException("An entity with the same ID already exists in the repository");
+				_lock.EnterWriteLock();
+				try {
+					if (!entities.TryAdd(key, new Entry(entity)))
+						throw new RepositoryException("An entity with the same ID already exists in the repository");
+				} finally {
+					_lock.ExitWriteLock();
+				}
 
 				return Task.CompletedTask;
 			} catch (RepositoryException) {
-
 				throw;
 			} catch (Exception ex) {
 				throw new RepositoryException("Could not create the entity", ex);
 			}
 		}
 
+		/// <summary>
+		/// Adds a range of entities to the repository.
+		/// </summary>
+		/// <remarks>
+		/// This method acquires an exclusive write lock before mutating the
+		/// internal store, so it is safe to call concurrently from multiple threads.
+		/// </remarks>
 		/// <inheritdoc/>
 		public Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(entities, nameof(entities));
@@ -197,22 +262,37 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				foreach (var item in entities) {
+				// Assign keys outside the lock so key generation doesn't block readers
+				var items = entities.Select(item => {
 					var key = GenerateNewKey();
 					SetEntityId(item, key);
+					return (key, item);
+				}).ToList();
 
-					this.entities.Add(key, new Entry(item));
+				_lock.EnterWriteLock();
+				try {
+					foreach (var (key, item) in items) {
+						this.entities.Add(key, new Entry(item));
+					}
+				} finally {
+					_lock.ExitWriteLock();
 				}
 
 				return Task.CompletedTask;
 			} catch (RepositoryException) {
-
 				throw;
 			} catch (Exception ex) {
 				throw new RepositoryException("Could not add the entities to the repository", ex);
 			}
 		}
 
+		/// <summary>
+		/// Removes a single entity from the repository.
+		/// </summary>
+		/// <remarks>
+		/// This method acquires an exclusive write lock before mutating the
+		/// internal store, so it is safe to call concurrently from multiple threads.
+		/// </remarks>
 		/// <inheritdoc/>
 		public Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
@@ -224,15 +304,26 @@ namespace Deveel.Data {
 				if (entityId == null)
 					return Task.FromResult(false);
 
-				return Task.FromResult(entities.Remove(entityId));
+				_lock.EnterWriteLock();
+				try {
+					return Task.FromResult(this.entities.Remove(entityId));
+				} finally {
+					_lock.ExitWriteLock();
+				}
 			} catch (RepositoryException) {
-
 				throw;
 			} catch (Exception ex) {
 				throw new RepositoryException("Could not delete the entity", ex);
 			}
 		}
 
+		/// <summary>
+		/// Removes a range of entities from the repository.
+		/// </summary>
+		/// <remarks>
+		/// This method acquires an exclusive write lock before mutating the
+		/// internal store, so it is safe to call concurrently from multiple threads.
+		/// </remarks>
 		/// <inheritdoc/>
 		public Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
@@ -242,28 +333,32 @@ namespace Deveel.Data {
 			try {
 				var toRemove = entities.ToList();
 
-				// if any of the entities is not in the list, we throw an exception
-				foreach (var entity in toRemove) {
+				// Resolve all IDs before acquiring the lock
+				var ids = toRemove.Select(entity => {
 					var id = GetEntityId(entity);
 					if (id == null)
 						throw new RepositoryException("The entity does not have an ID");
+					return id;
+				}).ToList();
 
-					if (!this.entities.TryGetValue(id, out var existing))
-						throw new RepositoryException("The entity is not in the repository");
-				}
+				_lock.EnterWriteLock();
+				try {
+					// verify all entities exist before removing any
+					foreach (var id in ids) {
+						if (!this.entities.ContainsKey(id))
+							throw new RepositoryException("The entity is not in the repository");
+					}
 
-				foreach (var entity in toRemove) {
-					var id = GetEntityId(entity);
-					if (id == null)
-						throw new RepositoryException("The entity does not have an ID");
-
-					if (!this.entities.Remove(id))
-						throw new RepositoryException("The entity was not removed from the repository");
+					foreach (var id in ids) {
+						if (!this.entities.Remove(id))
+							throw new RepositoryException("The entity was not removed from the repository");
+					}
+				} finally {
+					_lock.ExitWriteLock();
 				}
 
 				return Task.CompletedTask;
 			} catch (RepositoryException) {
-
 				throw;
 			} catch (Exception ex) {
 				throw new RepositoryException("Could not delete the entities", ex);
@@ -275,9 +370,14 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var result = Entities.AsQueryable().Any(filter);
-				return Task.FromResult(result);
-			} catch (Exception ex) {
+				_lock.EnterReadLock();
+				try {
+					var result = entities.Values.Select(x => x.Entity).AsQueryable().Any(filter);
+					return Task.FromResult(result);
+				} finally {
+					_lock.ExitReadLock();
+				}
+			} catch (Exception ex) when (ex is not RepositoryException) {
 				throw new RepositoryException("Could not check if any entities exist in the repository", ex);
 			}
 		}
@@ -288,11 +388,14 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var result = query.Apply(Entities.AsQueryable()).ToList();
-
-				return Task.FromResult<IList<TEntity>>(result);
-			} catch (Exception ex) {
-
+				_lock.EnterReadLock();
+				try {
+					var result = query.Apply(entities.Values.Select(x => x.Entity).AsQueryable()).ToList();
+					return Task.FromResult<IList<TEntity>>(result);
+				} finally {
+					_lock.ExitReadLock();
+				}
+			} catch (Exception ex) when (ex is not RepositoryException) {
 				throw new RepositoryException("Error while trying to find all the entities in the repository matching the filter", ex);
 			}
 		}
@@ -302,9 +405,14 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var result = query.Apply(Entities.AsQueryable()).FirstOrDefault();
-				return Task.FromResult(result);
-			} catch (Exception ex) {
+				_lock.EnterReadLock();
+				try {
+					var result = query.Apply(entities.Values.Select(x => x.Entity).AsQueryable()).FirstOrDefault();
+					return Task.FromResult(result);
+				} finally {
+					_lock.ExitReadLock();
+				}
+			} catch (Exception ex) when (ex is not RepositoryException) {
 				throw new RepositoryException("Error while searching for any entities in the repository matching the filter", ex);
 			}
 		}
@@ -315,11 +423,16 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				if (!entities.TryGetValue(key, out var entry))
-					return Task.FromResult<TEntity?>(null);
+				_lock.EnterReadLock();
+				try {
+					if (!entities.TryGetValue(key, out var entry))
+						return Task.FromResult<TEntity?>(null);
 
-				return Task.FromResult<TEntity?>(entry.Original);
-			} catch (Exception ex) {
+					return Task.FromResult<TEntity?>(entry.Original);
+				} finally {
+					_lock.ExitReadLock();
+				}
+			} catch (Exception ex) when (ex is not RepositoryException) {
 				throw new RepositoryException("Error while searching any entities with the given ID", ex);
 			}
 		}
@@ -331,11 +444,16 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				if (!entities.TryGetValue(key, out var entity))
-					return Task.FromResult<TEntity?>(null);
+				_lock.EnterReadLock();
+				try {
+					if (!entities.TryGetValue(key, out var entity))
+						return Task.FromResult<TEntity?>(null);
 
-				return Task.FromResult<TEntity?>(entity.Entity);
-			} catch (Exception ex) {
+					return Task.FromResult<TEntity?>(entity.Entity);
+				} finally {
+					_lock.ExitReadLock();
+				}
+			} catch (Exception ex) when (ex is not RepositoryException) {
 				throw new RepositoryException("Error while searching any entities with the given ID", ex);
 			}
 		}
@@ -365,21 +483,32 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				var entitySet = request.ApplyQuery(Entities.AsQueryable());
+				_lock.EnterReadLock();
+				try {
+					var entitySet = request.ApplyQuery(entities.Values.Select(x => x.Entity).AsQueryable());
+					var itemCount = entitySet.Count();
+					var items = entitySet
+						.Skip(request.Offset)
+						.Take(request.Size)
+						.ToList();
 
-				var itemCount = entitySet.Count();
-				var items = entitySet
-					.Skip(request.Offset)
-					.Take(request.Size)
-					.ToList();
-
-				var result = new PageResult<TEntity>(request, itemCount, items);
-				return Task.FromResult(result);
-			} catch (Exception ex) {
+					var result = new PageResult<TEntity>(request, itemCount, items);
+					return Task.FromResult(result);
+				} finally {
+					_lock.ExitReadLock();
+				}
+			} catch (Exception ex) when (ex is not RepositoryException) {
 				throw new RepositoryException("Unable to retrieve the page", ex);
 			}
 		}
 
+		/// <summary>
+		/// Updates an existing entity in the repository.
+		/// </summary>
+		/// <remarks>
+		/// This method acquires an exclusive write lock before mutating the
+		/// internal store, so it is safe to call concurrently from multiple threads.
+		/// </remarks>
 		/// <inheritdoc/>
 		public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
@@ -391,18 +520,23 @@ namespace Deveel.Data {
 				if (entityId == null)
 					return Task.FromResult(false);
 
-				if (!entities.TryGetValue(entityId, out var entry))
-					return Task.FromResult(false);
+				_lock.EnterWriteLock();
+				try {
+					if (!entities.TryGetValue(entityId, out var entry))
+						return Task.FromResult(false);
 
-				entry.Update(entity);
-				return Task.FromResult(true);
-			} catch (Exception ex) {
+					entry.Update(entity);
+					return Task.FromResult(true);
+				} finally {
+					_lock.ExitWriteLock();
+				}
+			} catch (Exception ex) when (ex is not RepositoryException) {
 				throw new RepositoryException("Unable to update the entity", ex);
 			}
 		}
 
 		/// <summary>
-		/// Disposes the repository and releases all the resources
+		/// Disposes the repository and releases all the resources.
 		/// </summary>
 		/// <param name="disposing">
 		/// The flag indicating if the repository is disposing.
@@ -410,7 +544,13 @@ namespace Deveel.Data {
 		protected virtual void Dispose(bool disposing) {
 			if (!disposedValue) {
 				if (disposing) {
-					entities.Clear();
+					_lock.EnterWriteLock();
+					try {
+						entities.Clear();
+					} finally {
+						_lock.ExitWriteLock();
+					}
+					_lock.Dispose();
 				}
 
 				entities = null!;
