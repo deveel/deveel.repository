@@ -58,6 +58,7 @@ public class BenchPerson {
 [SimpleJob(RuntimeMoniker.Net10_0)]
 [PlainExporter]
 [MarkdownExporterAttribute.GitHub]
+[HideColumns("Baseline", "RatioSD", "RatioSDMean", "RatioSDMedian")]
 public class InMemoryRepositoryBenchmarks {
     // -----------------------------------------------------------------------
     // Parameters
@@ -84,6 +85,10 @@ public class InMemoryRepositoryBenchmarks {
         .RuleFor(x => x.FirstName, f => f.Name.FirstName())
         .RuleFor(x => x.LastName, f => f.Name.LastName())
         .RuleFor(x => x.Email, f => f.Internet.Email());
+
+    // Shared Faker instance used for generating individual values during benchmarks.
+    // Creating a new Faker() per entity is extremely expensive and dominates timings.
+    private static readonly Faker _faker = new Faker();
 
     // A pre-seeded, shared repository that is rebuilt before every iteration so
     // each benchmark starts from a clean, known state.
@@ -147,7 +152,7 @@ public class InMemoryRepositoryBenchmarks {
     [Benchmark]
     public async Task SingleThread_UpdateSequential() {
         foreach (var p in _seeded) {
-            p.Email = new Faker().Internet.Email();
+            p.Email = _faker.Internet.Email();
             await _repository.UpdateAsync(p);
         }
     }
@@ -163,10 +168,9 @@ public class InMemoryRepositoryBenchmarks {
     [Benchmark]
     public async Task MultiThread_AddConcurrent() {
         using var repo = new InMemoryRepository<BenchPerson, string>();
-        var people = PersonFaker.Generate(EntityCount);
 
         var semaphore = new SemaphoreSlim(Parallelism);
-        var tasks = people.Select(async p => {
+        var tasks = _toAdd.Select(async p => {
             await semaphore.WaitAsync();
             try {
                 await repo.AddAsync(p);
@@ -206,7 +210,6 @@ public class InMemoryRepositoryBenchmarks {
     [Benchmark]
     public async Task MultiThread_MixedReadWrite() {
         var semaphore = new SemaphoreSlim(Parallelism);
-        var faker = new Faker();
 
         var writeTasks = _toAdd.Select(async p => {
             await semaphore.WaitAsync();

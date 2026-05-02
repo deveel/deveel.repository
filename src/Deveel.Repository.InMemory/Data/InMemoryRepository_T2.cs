@@ -42,8 +42,9 @@ namespace Deveel.Data {
 	/// </para>
 	/// <para>
 	/// The reflection-based key-member discovery is performed exactly once per
-	/// generic instantiation via a <see cref="Lazy{T}"/> guard, so it is safe
-	/// regardless of how many threads call it simultaneously.
+	/// generic instantiation via static <see cref="Lazy{T}"/> guards, so it is
+	/// safe regardless of how many threads call it simultaneously and the
+	/// compiled delegates require no further reflection at runtime.
 	/// </para>
 	/// </remarks>
 	public class InMemoryRepository<TEntity, TKey> :
@@ -58,6 +59,7 @@ namespace Deveel.Data {
 
 		private SortedList<TKey, Entry> entities;
 		private bool disposedValue;
+
 		/// <summary>
 		/// Guards <see cref="entities"/> for concurrent access.
 		/// Multiple readers are allowed to run simultaneously;
@@ -66,16 +68,85 @@ namespace Deveel.Data {
 		private readonly ReaderWriterLockSlim _lock =
 			new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
+		// ------------------------------------------------------------------
+		// Generation-based snapshot cache for the Entities property.
+		//
+		// _version is incremented inside the write lock after every successful
+		// mutation.  The Entities getter checks the cached version under the
+		// read lock; when it matches it returns the cached list without any
+		// additional allocation.  Because object-reference writes are atomic
+		// on .NET, multiple concurrent readers may each build their own
+		// SnapshotCache and race to publish it — the last writer wins, but
+		// all candidates are semantically identical (same version, same data).
+		// ------------------------------------------------------------------
+
+		/// <summary>
+		/// Incremented inside the write lock after each successful mutation.
+		/// Read inside the read lock from <see cref="Entities"/>.
+		/// </summary>
+		private int _version = 0;
+
+		/// <summary>
+		/// Latest materialised snapshot.  Written and read as a single atomic
+		/// object reference (volatile) so readers never observe a partially
+		/// written value.
+		/// </summary>
+		private volatile SnapshotCache? _snapshotCache;
+
+		// ------------------------------------------------------------------
+		// Static, per-generic-instantiation reflection cache.
+		// Each field is initialised exactly once, on first access, regardless
+		// of the number of concurrent callers.
+		// ------------------------------------------------------------------
+
 		/// <summary>
 		/// Thread-safe, lazily-initialised cache of the <see cref="MemberInfo"/>
 		/// decorated with <see cref="KeyAttribute"/> on <typeparamref name="TEntity"/>.
+		/// Static so the reflection walk happens at most once per closed generic type.
 		/// </summary>
-		private readonly Lazy<MemberInfo?> _idMember =
+		private static readonly Lazy<MemberInfo?> _idMember =
 			new Lazy<MemberInfo?>(() =>
                     typeof(TEntity)
                         .GetMembers()
                         .FirstOrDefault(x => Attribute.IsDefined(x, typeof(KeyAttribute))),
 				LazyThreadSafetyMode.ExecutionAndPublication);
+
+		/// <summary>
+		/// Compiled delegate that reads the key property/field without reflection
+		/// overhead at call time.
+		/// </summary>
+		private static readonly Lazy<Func<TEntity, TKey?>?> _keyGetter =
+			new Lazy<Func<TEntity, TKey?>?>(() => BuildKeyGetter(_idMember.Value),
+				LazyThreadSafetyMode.ExecutionAndPublication);
+
+		/// <summary>
+		/// Compiled delegate that writes the key property/field without reflection
+		/// overhead at call time.
+		/// </summary>
+		private static readonly Lazy<Action<TEntity, TKey>?> _keySetter =
+			new Lazy<Action<TEntity, TKey>?>(() => BuildKeySetter(_idMember.Value),
+				LazyThreadSafetyMode.ExecutionAndPublication);
+
+		private static Func<TEntity, TKey?>? BuildKeyGetter(MemberInfo? member) {
+			if (member == null) return null;
+			var param = Expression.Parameter(typeof(TEntity), "e");
+			Expression access = member is PropertyInfo pi
+				? Expression.Property(param, pi)
+				: Expression.Field(param, (FieldInfo)member);
+			var convert = Expression.Convert(access, typeof(TKey?));
+			return Expression.Lambda<Func<TEntity, TKey?>>(convert, param).Compile();
+		}
+
+		private static Action<TEntity, TKey>? BuildKeySetter(MemberInfo? member) {
+			if (member == null) return null;
+			var entityParam = Expression.Parameter(typeof(TEntity), "e");
+			var valueParam  = Expression.Parameter(typeof(TKey), "v");
+			Expression access = member is PropertyInfo pi
+				? Expression.Property(entityParam, pi)
+				: Expression.Field(entityParam, (FieldInfo)member);
+			var assign = Expression.Assign(access, valueParam);
+			return Expression.Lambda<Action<TEntity, TKey>>(assign, entityParam, valueParam).Compile();
+		}
 
 		private readonly IFieldMapper<TEntity>? fieldMapper;
 
@@ -112,20 +183,50 @@ namespace Deveel.Data {
 		/// Gets a point-in-time snapshot of all entities in the repository.
 		/// </summary>
 		/// <remarks>
+		/// <para>
 		/// The snapshot is taken under a shared read lock; it is safe to call
 		/// concurrently with any number of readers or with ongoing writes
 		/// (readers will not see a partially-written state).
+		/// </para>
+		/// <para>
+		/// The result is <em>cached</em> per write generation: as long as no
+		/// mutation has occurred since the last call the same list instance is
+		/// returned without any additional heap allocation.
+		/// </para>
 		/// </remarks>
 		public virtual IReadOnlyList<TEntity> Entities {
 			get {
 				_lock.EnterReadLock();
 				try {
-					return entities.Values.Select(x => x.Entity).ToList().AsReadOnly();
+					// Fast path: if the snapshot was built for the current version,
+					// return it directly — zero additional allocation.
+					var cached = _snapshotCache;
+					if (cached != null && cached.Version == _version)
+						return cached.Snapshot;
+
+					// Slow path: materialise a fresh snapshot and publish it.
+					// List<T> already implements IReadOnlyList<T>; avoid the extra
+					// ReadOnlyCollection<T> wrapper allocation from AsReadOnly().
+					var values = entities.Values;
+					var list = new List<TEntity>(values.Count);
+					foreach (var entry in values)
+						list.Add(entry.Entity);
+
+					// The volatile write is atomic on all .NET platforms, so
+					// concurrent readers racing here are safe — last writer wins
+					// but all candidates are identical for the same _version.
+					_snapshotCache = new SnapshotCache(_version, list);
+					return list;
 				} finally {
 					_lock.ExitReadLock();
 				}
 			}
 		}
+
+		// Returns a queryable view of the entity collection.
+		// Must be called while the read (or write) lock is held.
+		private IQueryable<TEntity> GetEntityQueryable() =>
+			entities.Values.Select(x => x.Entity).AsQueryable();
 
 		private SortedList<TKey, Entry> CopyList(IEnumerable<TEntity> source) {
 			var result = new SortedList<TKey, Entry>();
@@ -147,41 +248,16 @@ namespace Deveel.Data {
 			return GetEntityId(entity);
 		}
 
-		private MemberInfo? DiscoverIdMember() => _idMember.Value;
-
-		private static TKey? GetIdValue(MemberInfo memberInfo, TEntity entity) {
-			if (memberInfo is PropertyInfo propertyInfo)
-				return (TKey?) propertyInfo.GetValue(entity);
-			if (memberInfo is FieldInfo fieldInfo)
-				return (TKey?)fieldInfo.GetValue(entity);
-
-			throw new NotSupportedException($"The member {memberInfo} is not supported");
-		}
-
-		private static void SetIdValue(MemberInfo memberInfo, TEntity entity, TKey value) {
-			if (memberInfo is PropertyInfo propertyInfo) {
-				propertyInfo.SetValue(entity, value);
-			} else if (memberInfo is FieldInfo fieldInfo) {
-				fieldInfo.SetValue(entity, value);
-			} else {
-				throw new NotSupportedException($"The member {memberInfo} is not supported");
-			}
-		}
-
 		private void SetEntityId(TEntity entity, TKey value) {
-			var member = DiscoverIdMember();
-			if (member == null)
+			var setter = _keySetter.Value;
+			if (setter == null)
 				throw new RepositoryException("The entity does not have an ID");
-
-			SetIdValue(member, entity, value);
+			setter(entity, value);
 		}
 
 		private TKey? GetEntityId(TEntity entity) {
-			var member = DiscoverIdMember();
-			if (member == null)
-				return default;
-
-			return GetIdValue(member, entity);
+			var getter = _keyGetter.Value;
+			return getter == null ? default : getter(entity);
 		}
 
 		private TKey GenerateNewKey() {
@@ -201,7 +277,7 @@ namespace Deveel.Data {
 			try {
 				_lock.EnterReadLock();
 				try {
-					var result = entities.Values.Select(x => x.Entity).AsQueryable().LongCount(filter);
+					var result = GetEntityQueryable().LongCount(filter);
 					return Task.FromResult(result);
 				} finally {
 					_lock.ExitReadLock();
@@ -236,6 +312,7 @@ namespace Deveel.Data {
 				try {
 					if (!entities.TryAdd(key, new Entry(entity)))
 						throw new RepositoryException("An entity with the same ID already exists in the repository");
+					_version++;
 				} finally {
 					_lock.ExitWriteLock();
 				}
@@ -262,10 +339,14 @@ namespace Deveel.Data {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
-				// Assign keys outside the lock so key generation doesn't block readers
+				// Assign keys outside the lock so key generation doesn't block readers.
+				// Consistent with AddAsync: only generate a key when the entity has none.
 				var items = entities.Select(item => {
-					var key = GenerateNewKey();
-					SetEntityId(item, key);
+					var key = GetEntityId(item);
+					if (key == null) {
+						key = GenerateNewKey();
+						SetEntityId(item, key);
+					}
 					return (key, item);
 				}).ToList();
 
@@ -274,6 +355,7 @@ namespace Deveel.Data {
 					foreach (var (key, item) in items) {
 						this.entities.Add(key, new Entry(item));
 					}
+					_version++;
 				} finally {
 					_lock.ExitWriteLock();
 				}
@@ -306,7 +388,9 @@ namespace Deveel.Data {
 
 				_lock.EnterWriteLock();
 				try {
-					return Task.FromResult(this.entities.Remove(entityId));
+					var removed = this.entities.Remove(entityId);
+					if (removed) _version++;
+					return Task.FromResult(removed);
 				} finally {
 					_lock.ExitWriteLock();
 				}
@@ -353,6 +437,7 @@ namespace Deveel.Data {
 						if (!this.entities.Remove(id))
 							throw new RepositoryException("The entity was not removed from the repository");
 					}
+					_version++;
 				} finally {
 					_lock.ExitWriteLock();
 				}
@@ -372,7 +457,7 @@ namespace Deveel.Data {
 			try {
 				_lock.EnterReadLock();
 				try {
-					var result = entities.Values.Select(x => x.Entity).AsQueryable().Any(filter);
+					var result = GetEntityQueryable().Any(filter);
 					return Task.FromResult(result);
 				} finally {
 					_lock.ExitReadLock();
@@ -390,7 +475,7 @@ namespace Deveel.Data {
 			try {
 				_lock.EnterReadLock();
 				try {
-					var result = query.Apply(entities.Values.Select(x => x.Entity).AsQueryable()).ToList();
+					var result = query.Apply(GetEntityQueryable()).ToList();
 					return Task.FromResult<IList<TEntity>>(result);
 				} finally {
 					_lock.ExitReadLock();
@@ -407,7 +492,7 @@ namespace Deveel.Data {
 			try {
 				_lock.EnterReadLock();
 				try {
-					var result = query.Apply(entities.Values.Select(x => x.Entity).AsQueryable()).FirstOrDefault();
+					var result = query.Apply(GetEntityQueryable()).FirstOrDefault();
 					return Task.FromResult(result);
 				} finally {
 					_lock.ExitReadLock();
@@ -485,7 +570,7 @@ namespace Deveel.Data {
 			try {
 				_lock.EnterReadLock();
 				try {
-					var entitySet = request.ApplyQuery(entities.Values.Select(x => x.Entity).AsQueryable());
+					var entitySet = request.ApplyQuery(GetEntityQueryable());
 					var itemCount = entitySet.Count();
 					var items = entitySet
 						.Skip(request.Offset)
@@ -526,6 +611,7 @@ namespace Deveel.Data {
 						return Task.FromResult(false);
 
 					entry.Update(entity);
+					_version++;
 					return Task.FromResult(true);
 				} finally {
 					_lock.ExitWriteLock();
@@ -547,9 +633,11 @@ namespace Deveel.Data {
 					_lock.EnterWriteLock();
 					try {
 						entities.Clear();
+						_version++;
 					} finally {
 						_lock.ExitWriteLock();
 					}
+					_snapshotCache = null;
 					_lock.Dispose();
 				}
 
@@ -564,10 +652,41 @@ namespace Deveel.Data {
 			GC.SuppressFinalize(this);
 		}
 
+		/// <summary>
+		/// Immutable snapshot holder published atomically via a volatile reference.
+		/// Multiple concurrent readers may each build a candidate with the same
+		/// <see cref="Version"/> and <see cref="Snapshot"/>; the last volatile
+		/// store wins, but all candidates are semantically equivalent.
+		/// </summary>
+		private sealed class SnapshotCache {
+			public readonly int Version;
+			public readonly IReadOnlyList<TEntity> Snapshot;
+			public SnapshotCache(int version, IReadOnlyList<TEntity> snapshot) {
+				Version  = version;
+				Snapshot = snapshot;
+			}
+		}
+
 		class Entry {
+			/// <summary>
+			/// Compiled shallow-clone delegate built once per closed generic type.
+			/// Avoids the per-call overhead of <c>GetMethod</c> + <c>Invoke</c> +
+			/// <c>new object[0]</c> that the pure-reflection version incurred.
+			/// </summary>
+			private static readonly Func<TEntity, TEntity> _cloner = BuildCloner();
+
+			private static Func<TEntity, TEntity> BuildCloner() {
+				var method = typeof(TEntity).GetMethod(
+					"MemberwiseClone",
+					BindingFlags.Instance | BindingFlags.NonPublic)!;
+				var param = Expression.Parameter(typeof(TEntity), "e");
+				var call  = Expression.Convert(Expression.Call(param, method), typeof(TEntity));
+				return Expression.Lambda<Func<TEntity, TEntity>>(call, param).Compile();
+			}
+
 			public Entry(TEntity entity) {
-				Entity = entity;
-				Original = Clone(entity);
+				Entity   = entity;
+				Original = _cloner(entity);
 			}
 
 			public TEntity Original { get; private set; }
@@ -575,15 +694,8 @@ namespace Deveel.Data {
 			public TEntity Entity { get; private set; }
 
 			public void Update(TEntity entity) {
-				Original = Clone(entity);
-				Entity = entity;
-			}
-
-			private static TEntity Clone(TEntity entity) {
-				var cloneMethod = typeof(TEntity)
-					.GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic);
-
-				return (TEntity)cloneMethod!.Invoke(entity, new object[0])!;
+				Original = _cloner(entity);
+				Entity   = entity;
 			}
 		}
 	}
