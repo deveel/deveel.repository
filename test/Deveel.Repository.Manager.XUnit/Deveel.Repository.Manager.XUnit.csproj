@@ -1,23 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <IsTestProject>true</IsTestProject>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Data\EntityManagerTestSuite_1.cs" />
-    <Compile Remove="Data\PersonValidator.cs" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Deveel.Repository.InMemory\Deveel.Repository.InMemory.csproj" />
     <ProjectReference Include="..\..\src\Deveel.Repository.Manager.AspNetCore\Deveel.Repository.Manager.AspNetCore.csproj" />
-    <ProjectReference Include="..\Deveel.Repository.Management.Tests\Deveel.Repository.Management.Tests.csproj" />
-    <ProjectReference Include="..\Deveel.Repository.Test.Utils\Deveel.Repository.Test.Utils.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.4.0" />
+    <ProjectReference Include="..\Deveel.Repository.Management.Testing\Deveel.Repository.Management.Testing.csproj" />
+    <ProjectReference Include="..\Deveel.Repository.Testing.Utils\Deveel.Repository.Testing.Utils.csproj" />
   </ItemGroup>
 
 </Project>

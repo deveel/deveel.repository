@@ -1,0 +1,24 @@
+<Project>
+
+    <!--
+        This file is imported AFTER the project file, so $(IsTestProject) and $(UseXUnit)
+        already have their final resolved values.
+    -->
+
+    <!-- Executable test projects: Exe + full Microsoft Testing Platform runner -->
+    <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+        <OutputType>Exe</OutputType>
+        <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+        <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+        <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
+    </PropertyGroup>
+
+
+    <!-- Shared support libraries: plain class libraries, no test runner -->
+    <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+        <OutputType>Library</OutputType>
+    </PropertyGroup>
+
+</Project>
+
