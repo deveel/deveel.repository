@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.MongoFram
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.DynamicLinq", "src\Deveel.Repository.DynamicLinq\Deveel.Repository.DynamicLinq.csproj", "{8B09EBB3-F8D5-483D-AFD6-FCCC5F186324}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Test.Utils", "test\Deveel.Repository.Test.Utils\Deveel.Repository.Test.Utils.csproj", "{2EABF754-C498-4532-BB5C-A5F101E51013}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Testing.Utils", "test\Deveel.Repository.Testing.Utils\Deveel.Repository.Testing.Utils.csproj", "{2EABF754-C498-4532-BB5C-A5F101E51013}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.DynamicLinq.XUnit", "test\Deveel.Repository.DynamicLinq.XUnit\Deveel.Repository.DynamicLinq.XUnit.csproj", "{C1F3CFF0-50EC-4204-A987-7F950878AEFB}"
 EndProject
@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.EntityFra
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.EntityFramework.XUnit", "test\Deveel.Repository.EntityFramework.XUnit\Deveel.Repository.EntityFramework.XUnit.csproj", "{FAD909B7-94A9-4ECA-AA63-DF6C95188566}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Tests.XUnit", "test\Deveel.Repository.Tests.XUnit\Deveel.Repository.Tests.XUnit.csproj", "{201917F4-0557-46AE-B532-A4CC801AF5A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Testing", "test\Deveel.Repository.Testing\Deveel.Repository.Testing.csproj", "{201917F4-0557-46AE-B532-A4CC801AF5A7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E0CFA12B-8021-431C-8961-CC0E4AD8D664}"
 	ProjectSection(SolutionItems) = preProject
@@ -50,7 +50,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager.E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Manager.EasyCaching.XUnit", "test\Deveel.Repository.Manager.EasyCaching.XUnit\Deveel.Repository.Manager.EasyCaching.XUnit.csproj", "{F47C196B-758D-4C05-8918-FB63C61649EB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Management.Tests", "test\Deveel.Repository.Management.Tests\Deveel.Repository.Management.Tests.csproj", "{7DC0EA52-DAAB-49D4-8443-3409C001E27E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.Management.Testing", "test\Deveel.Repository.Management.Testing\Deveel.Repository.Management.Testing.csproj", "{7DC0EA52-DAAB-49D4-8443-3409C001E27E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "management", "management", "{85200FA4-CC68-4758-B6E5-287E8AFA79FE}"
 EndProject
@@ -62,7 +62,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.MongoFram
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{6EAA2746-39E4-4C63-9D86-117248B1C2A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.MultiTenantContext", "test\Deveel.Repository.MultiTenantContext\Deveel.Repository.MultiTenantContext.csproj", "{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deveel.Repository.MultiTenant.Testing", "test\Deveel.Repository.MultiTenant.Testing\Deveel.Repository.MultiTenant.Testing.csproj", "{C2D6E959-F9A8-4F6B-BF0B-56C8CE3E3FF9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deveel.Repository.Manager.AspNetCore", "src\Deveel.Repository.Manager.AspNetCore\Deveel.Repository.Manager.AspNetCore.csproj", "{89676AD8-AE22-40CC-9982-4E6A11E1228B}"
 EndProject

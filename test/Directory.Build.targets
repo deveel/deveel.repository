@@ -1,0 +1,30 @@
+<Project>
+
+    <!--
+        This file is imported AFTER the project file, so $(IsTestProject) already
+        has its final resolved value (either the project-level override or the
+        default set in Directory.Build.props).
+
+        All PropertyGroup conditions that depend on IsTestProject live here —
+        NOT in Directory.Build.props — to avoid the MSBuild evaluation-order
+        problem where Directory.Build.props PropertyGroups see the default value
+        of IsTestProject (true) before individual .csproj files have had a chance
+        to override it to false.
+    -->
+
+    <!-- Executable test projects: Exe + full Microsoft Testing Platform runner -->
+    <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+        <OutputType>Exe</OutputType>
+        <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+        <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+        <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
+    </PropertyGroup>
+
+    <!-- Shared support libraries: plain class libraries, no test runner -->
+    <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+        <OutputType>Library</OutputType>
+    </PropertyGroup>
+
+</Project>
+

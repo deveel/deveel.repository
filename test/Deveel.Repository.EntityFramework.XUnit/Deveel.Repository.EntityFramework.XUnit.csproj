@@ -1,15 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<IsTestProject>true</IsTestProject>
-	</PropertyGroup>
-    
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.26" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="8.0.26" />
-    <PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="8.0.0" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.4.0" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.26" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="8.0.26" />
+        <PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="8.0.0" />
+    </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="9.0.15" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="9.0.15" />
@@ -20,7 +15,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="10.0.5" />
         <PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="10.0.4" />
     </ItemGroup>
-    
+
     <ItemGroup>
         <!--
           SQLitePCLRaw bundle selection — each platform needs a different bundle:
@@ -44,11 +39,10 @@
             Condition="!$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))" />
     </ItemGroup>
 
-
     <ItemGroup>
-		<ProjectReference Include="..\..\src\Deveel.Repository.EntityFramework\Deveel.Repository.EntityFramework.csproj" />
-		<ProjectReference Include="..\Deveel.Repository.Management.Tests\Deveel.Repository.Management.Tests.csproj" />
-		<ProjectReference Include="..\Deveel.Repository.Tests.XUnit\Deveel.Repository.Tests.XUnit.csproj" />
-	</ItemGroup>
+        <ProjectReference Include="..\..\src\Deveel.Repository.EntityFramework\Deveel.Repository.EntityFramework.csproj" />
+        <ProjectReference Include="..\Deveel.Repository.Management.Testing\Deveel.Repository.Management.Testing.csproj" />
+        <ProjectReference Include="..\Deveel.Repository.Testing\Deveel.Repository.Testing.csproj" />
+    </ItemGroup>
 
 </Project>

@@ -1,12 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <IsTestProject>true</IsTestProject>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="EasyCaching.InMemory" Version="1.9.2" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.4.0" />
   </ItemGroup>
 
   <ItemGroup>
