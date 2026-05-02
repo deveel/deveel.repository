@@ -20,6 +20,12 @@
             so `dotnet test` never dispatches to them.
         -->
         <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+        <!--
+            TestingPlatformCaptureOutput=false is required for Rider's MTP test-runner
+            integration (both xUnit v3 and TUnit). When true (the default), MTP swallows
+            stdout/stderr, which prevents Rider from receiving test-lifecycle events.
+        -->
+        <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
     </PropertyGroup>
 
     <!-- ============================================================
@@ -50,11 +56,30 @@
          (IsTestProject resolves correctly here — items evaluated after
           all PropertyGroups including the project file's own PropertyGroups)
     ============================================================ -->
-    <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+
+    <!-- UseXUnit defaults to true; TUnit projects opt out by setting it to false -->
+    <PropertyGroup>
+        <UseXUnit Condition="'$(UseXUnit)' == ''">true</UseXUnit>
+    </PropertyGroup>
+
+    <!-- xUnit v3 packages — skipped for TUnit projects -->
+    <ItemGroup Condition="'$(IsTestProject)' == 'true' and '$(UseXUnit)' == 'true'">
         <PackageReference Include="xunit.v3" Version="3.*" />
+        <!--
+            xunit.runner.visualstudio 3.* provides the VSTest adapter that Rider's
+            built-in xUnit plugin uses to discover and run xUnit v3 tests in the IDE.
+            Without it Rider falls back to MTP-only mode which requires the separate
+            "Microsoft Testing Platform support" plugin.
+        -->
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.*" />
         <PackageReference Include="MartinCostello.Logging.XUnit.v3" Version="0.7.*" />
         <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.*" />
     </ItemGroup>
+
+    <!--
+      TUnit projects: CodeCoverage is brought in transitively by TUnit itself
+      at the correct version, so no explicit injection is needed here.
+    -->
 
     <!-- Exclude test assemblies from code coverage -->
     <ItemGroup>
