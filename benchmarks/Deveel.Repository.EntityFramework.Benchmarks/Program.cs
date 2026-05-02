@@ -36,6 +36,8 @@ public class PersonContext : DbContext
 [SimpleJob(RuntimeMoniker.Net80, baseline: true)]
 [SimpleJob(RuntimeMoniker.Net90)]
 [SimpleJob(RuntimeMoniker.Net10_0)]
+[MarkdownExporterAttribute.GitHub]
+[HideColumns("Baseline", "RatioSD", "RatioSDMean")]
 public class EfRepositoryBenchmarks
 {
     private MySqlContainer? _container;
