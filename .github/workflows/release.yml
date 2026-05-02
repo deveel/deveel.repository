@@ -22,3 +22,6 @@ jobs:
       publish-github-packages: true
       publish-nuget-org: ${{ github.event_name == 'release' || inputs.publish-to-nuget-org }}
     secrets: inherit
+    permissions:
+      packages: write
+      contents: read

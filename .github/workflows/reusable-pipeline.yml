@@ -1,9 +1,5 @@
 ﻿name: Reusable .NET Pipeline
 
-permissions:
-  contents: read
-  packages: write
-
 on:
   workflow_call:
     inputs:

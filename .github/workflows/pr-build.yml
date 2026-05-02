@@ -13,4 +13,7 @@ jobs:
     with:
       generate-coverage: false
       upload-codecov: false
+    secrets: inherit
+    permissions:
+        contents: read
 
