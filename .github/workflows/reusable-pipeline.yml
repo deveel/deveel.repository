@@ -1,9 +1,5 @@
 ﻿name: Reusable .NET Pipeline
 
-permissions:
-  contents: read
-  packages: write
-
 on:
   workflow_call:
     inputs:
@@ -61,8 +57,11 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
-      - name: Install SQLite Spatial
-        run: sudo apt-get update && sudo apt-get install -y libsqlite3-mod-spatialite
+      - name: Install SQLite Spatial (mod_spatialite)
+        # Required by the EntityFramework test project to run spatial SQL tests.
+        # Uses the system SQLite (bundle_sqlite3) on Linux, so the extension must be
+        # ABI-compatible with that same libsqlite3.so — installing from apt guarantees this.
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libsqlite3-mod-spatialite
 
       - name: Restore dependencies
         run: dotnet restore ${{ inputs.solution-path }} -p:TargetFrameworks=${{ matrix.target-framework }}

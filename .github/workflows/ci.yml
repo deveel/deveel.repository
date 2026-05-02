@@ -16,6 +16,9 @@ jobs:
       upload-codecov: true
       publish-github-packages: true
     secrets: inherit
+    permissions:
+      packages: write
+      contents: read
 
   clean:
     name: "Clean Old Packages"

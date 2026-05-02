@@ -2,6 +2,7 @@
 using Deveel.Data.Entities;
 using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Deveel.Data
@@ -41,8 +42,14 @@ namespace Deveel.Data
 			services.AddDbContext<PersonTenantDbContext>(builder => {
 				builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 				builder.UseSqlite(sql.Connection, sqlite => {
-					sqlite.UseNetTopologySuite();
+					if (sql.SpatialiteAvailable)
+						sqlite.UseNetTopologySuite();
 				});
+				// PersonTenantDbContext.OnModelCreating references DbRelationship which
+				// navigates back to DbPerson (with a Point? Location).  When SpatiaLite is
+				// not available we must strip those geometry properties via the customizer.
+				if (!sql.SpatialiteAvailable)
+					builder.ReplaceService<IModelCustomizer, NonSpatialModelCustomizer>();
 			});
 		}
 

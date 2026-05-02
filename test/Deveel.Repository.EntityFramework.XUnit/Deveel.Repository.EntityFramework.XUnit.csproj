@@ -22,9 +22,26 @@
     </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="SQLitePCLRaw.provider.sqlite3" Version="2.1.11" />
-        <PackageReference Include="SQLitePCLRaw.bundle_sqlite3" Version="2.1.11" Condition="'$(OS)' != 'Windows_NT'" />
-        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.11" Condition="'$(OS)' == 'Windows_NT'" />
+        <!--
+          SQLitePCLRaw bundle selection — each platform needs a different bundle:
+
+          • Linux   → bundle_sqlite3  uses the OS-provided libsqlite3.so.
+                      The apt package libsqlite3-mod-spatialite is compiled against that
+                      same library, so extension loading is ABI-compatible.
+                      The Ubuntu system SQLite is built with SQLITE_ENABLE_LOAD_EXTENSION,
+                      so EnableExtensions() works correctly.
+
+          • macOS   → bundle_e_sqlite3  the macOS system libsqlite3.dylib does NOT export
+                      sqlite3_enable_load_extension, so we must use the bundled SQLite
+                      that has the symbol.  SpatiaLite may or may not be installed locally;
+                      our SqlTestConnection handles that gracefully.
+
+          • Windows → bundle_e_sqlite3  no system SQLite; the bundled version is always used.
+        -->
+        <PackageReference Include="SQLitePCLRaw.bundle_sqlite3"   Version="2.1.11"
+            Condition="$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))" />
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.11"
+            Condition="!$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))" />
     </ItemGroup>
 
 

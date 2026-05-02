@@ -33,7 +33,8 @@ namespace Deveel.Data
 			services.AddDbContext<DbContext, BookDbContext>(builder => {
 				builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 				builder.UseSqlite(sql.Connection, sqlite => {
-					sqlite.UseNetTopologySuite();
+					if (sql.SpatialiteAvailable)
+						sqlite.UseNetTopologySuite();
 				});
 			})
 			.AddRepository<DbBookRepository>();
