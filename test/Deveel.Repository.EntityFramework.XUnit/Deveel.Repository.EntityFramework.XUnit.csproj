@@ -22,9 +22,9 @@
     </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="SQLitePCLRaw.provider.sqlite3" Version="2.1.11" />
-        <PackageReference Include="SQLitePCLRaw.bundle_sqlite3" Version="2.1.11" Condition="'$(OS)' != 'Windows_NT'" />
-        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.11" Condition="'$(OS)' == 'Windows_NT'" />
+        <!-- Use bundle_e_sqlite3 on all platforms: it bundles its own SQLite compiled with
+             sqlite3_enable_load_extension support, which the macOS system SQLite lacks. -->
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.11" />
     </ItemGroup>
 
 

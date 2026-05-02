@@ -3,6 +3,7 @@
 using Deveel.Data.Entities;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Deveel.Data {
@@ -52,8 +53,13 @@ namespace Deveel.Data {
 			services.AddDbContext<PersonDbContext>(builder => {
 				builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 				builder.UseSqlite(sql.Connection, sqlite => {
-					sqlite.UseNetTopologySuite();
+					if (sql.SpatialiteAvailable)
+						sqlite.UseNetTopologySuite();
 				});
+				// When SpatiaLite is not available we cannot use the NTS type mappings,
+				// so we replace the model customizer to ignore geometry-typed properties.
+				if (!sql.SpatialiteAvailable)
+					builder.ReplaceService<IModelCustomizer, NonSpatialModelCustomizer>();
 			});
 		}
 
@@ -106,16 +112,22 @@ namespace Deveel.Data {
 			Assert.Equal(newEmail, updated.Email);
 		}
 
-		[Fact]
-		public async Task FindByLocationWithinDistance() {
-			var person = await RandomPersonAsync(x => x.Location != null);
+	[Fact]
+	public async Task FindByLocationWithinDistance() {
+		// Spatial SQL functions require SpatiaLite to be loaded at the native level.
+		// On platforms where the library is not installed (e.g. macOS without libspatialite)
+		// this test is skipped to avoid a misleading failure.
+		if (!sql.SpatialiteAvailable)
+			Assert.Skip("SpatiaLite is not available on this platform – skipping spatial query test.");
 
-			var found = await PersonRepository.FindAllAsync(x => 
+		var person = await RandomPersonAsync(x => x.Location != null);
+
+		var found = await PersonRepository.FindAllAsync(x => 
                 x.Location!.Distance(person.Location) <= 1000, 
                 cancellationToken: TestContext.Current.CancellationToken);
-			Assert.NotNull(found);
-			Assert.NotEmpty(found);
-			Assert.Contains(found, x => x.Id == person.Id);
-		}
+		Assert.NotNull(found);
+		Assert.NotEmpty(found);
+		Assert.Contains(found, x => x.Id == person.Id);
+	}
 	}
 }

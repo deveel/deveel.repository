@@ -3,6 +3,7 @@
 using Deveel.Data.Entities;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Deveel.Data {
@@ -26,8 +27,11 @@ namespace Deveel.Data {
 			services.AddDbContext<DbContext, PersonDbContext>(builder => {
 				builder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 				builder.UseSqlite(sql.Connection, sqlite => {
-					sqlite.UseNetTopologySuite();
+					if (sql.SpatialiteAvailable)
+						sqlite.UseNetTopologySuite();
 				});
+				if (!sql.SpatialiteAvailable)
+					builder.ReplaceService<IModelCustomizer, NonSpatialModelCustomizer>();
 				builder.EnableSensitiveDataLogging();
 			})
 			.AddRepository<DbPersonRepository>();

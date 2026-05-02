@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Deveel.Repsotiory.MongoFramework\Deveel.Repository.MongoFramework.csproj" />
+    <ProjectReference Include="..\Deveel.Repository.MongoFramework\Deveel.Repository.MongoFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
