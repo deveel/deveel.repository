@@ -722,6 +722,42 @@ namespace Deveel.Data {
 
 		/// <summary>
 		/// Counts the number of entities in the repository
+		/// that match the given query filter.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to count the entities.
+		/// </param>
+		/// <param name="filter">
+		/// The filter used to count the matching entities.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the number of entities in the repository that match
+		/// the given filter.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support querying or filtering.
+		/// </exception>
+		public static Task<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
+			where TEntity : class {
+			if (repository.IsFilterable())
+				return repository.AsFilterable().CountAsync(filter, cancellationToken);
+			if (repository.IsQueryable())
+				return Task.FromResult(repository.AsQueryable().AsQueryable().LongCount(filter.AsLambda<TEntity>()));
+
+			throw new NotSupportedException("The repository does not support querying");
+		}
+
+		/// <summary>
+		/// Counts the number of entities in the repository
 		/// </summary>
 		/// <typeparam name="TEntity">
         /// The type of entity handled by the repository.
@@ -776,6 +812,69 @@ namespace Deveel.Data {
 		public static long Count<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter)
             where TEntity : class
             => repository.CountAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Synchronously counts the number of entities in the repository
+		/// that match the given query filter.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to count the entities.
+		/// </param>
+		/// <param name="filter">
+		/// The filter used to count the matching entities.
+		/// </param>
+		/// <returns>
+		/// Returns the number of entities in the repository that match
+		/// the given filter.
+		/// </returns>
+		/// <remarks>
+		/// <para>
+		/// <strong>Warning:</strong> This is a blocking synchronous call that wraps an
+		/// asynchronous operation using <c>ConfigureAwait(false).GetAwaiter().GetResult()</c>.
+		/// Prefer <see cref="CountAsync{TEntity, TKey}(IRepository{TEntity, TKey}, IQueryFilter, CancellationToken)"/>
+		/// in async contexts to avoid potential deadlocks.
+		/// </para>
+		/// </remarks>
+		/// <seealso cref="CountAsync{TEntity, TKey}(IRepository{TEntity, TKey}, IQueryFilter, CancellationToken)"/>
+		public static long Count<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter)
+			where TEntity : class
+			=> repository.CountAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Synchronously counts the number of entities in the repository
+		/// that match the given query filter.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The instance of the repository to use to count the entities.
+		/// </param>
+		/// <param name="filter">
+		/// The filter used to count the matching entities.
+		/// </param>
+		/// <returns>
+		/// Returns the number of entities in the repository that match
+		/// the given filter.
+		/// </returns>
+		/// <remarks>
+		/// <para>
+		/// <strong>Warning:</strong> This is a blocking synchronous call that wraps an
+		/// asynchronous operation using <c>ConfigureAwait(false).GetAwaiter().GetResult()</c>.
+		/// Prefer <see cref="CountAsync{TEntity, TKey}(IRepository{TEntity, TKey}, IQueryFilter, CancellationToken)"/>
+		/// in async contexts to avoid potential deadlocks.
+		/// </para>
+		/// </remarks>
+		/// <seealso cref="CountAsync{TEntity, TKey}(IRepository{TEntity, TKey}, IQueryFilter, CancellationToken)"/>
+		public static long Count<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
+			where TEntity : class
+			=> repository.CountAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		/// <summary>
 		/// Counts the number of entities in the repository
@@ -981,6 +1080,38 @@ namespace Deveel.Data {
             => repository.FindFirstAsync(new Query(filter)).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		/// <summary>
+		/// Synchronously finds the first entity in the repository that matches
+		/// the given query filter.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entity.
+		/// </param>
+		/// <param name="filter">
+		/// The filter used to find the entity.
+		/// </param>
+		/// <returns>
+		/// Returns an instance of <typeparamref name="TEntity"/> that
+		/// matched the given filter, or <c>null</c> if no entity matches.
+		/// </returns>
+		/// <remarks>
+		/// <para>
+		/// <strong>Warning:</strong> This is a blocking synchronous call that wraps an
+		/// asynchronous operation using <c>ConfigureAwait(false).GetAwaiter().GetResult()</c>.
+		/// Prefer <see cref="FindFirstAsync{TEntity, TKey}(IRepository{TEntity, TKey}, IQueryFilter, CancellationToken)"/>
+		/// in async contexts to avoid potential deadlocks.
+		/// </para>
+		/// </remarks>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support filtering.
+		/// </exception>
+		public static TEntity? FindFirst<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
+			where TEntity : class
+			=> repository.FindFirstAsync(new Query(filter)).ConfigureAwait(false).GetAwaiter().GetResult();
+
+		/// <summary>
 		/// Finds the first entity in the repository, naturally ordered.
 		/// </summary>
 		/// <typeparam name="TEntity">
@@ -1148,6 +1279,35 @@ namespace Deveel.Data {
 		public static IList<TEntity> FindAll<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter)
             where TEntity : class
             => repository.FindAllAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Synchronously finds all the entities in the repository that match
+		/// the given query filter.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entities.
+		/// </param>
+		/// <param name="filter">
+		/// The filter used to find the entities.
+		/// </param>
+		/// <returns>
+		/// Returns a list of <typeparamref name="TEntity"/> from
+		/// the repository that match the given filter.
+		/// </returns>
+		/// <remarks>
+		/// <para>
+		/// <strong>Warning:</strong> This is a blocking synchronous call that wraps an
+		/// asynchronous operation using <c>ConfigureAwait(false).GetAwaiter().GetResult()</c>.
+		/// Prefer <see cref="FindAllAsync{TEntity, TKey}(IRepository{TEntity, TKey}, IQueryFilter, CancellationToken)"/>
+		/// in async contexts to avoid potential deadlocks.
+		/// </para>
+		/// </remarks>
+		public static IList<TEntity> FindAll<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter)
+			where TEntity : class
+			=> repository.FindAllAsync(filter).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		/// <summary>
 		/// Finds all the entities in the repository, naturally ordered.
