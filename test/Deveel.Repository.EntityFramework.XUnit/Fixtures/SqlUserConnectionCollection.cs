@@ -1,6 +1,6 @@
 ﻿namespace Deveel.Data
 {
-	[CollectionDefinition(nameof(SqlUserConnectionCollection), DisableParallelization = true)]
+	[CollectionDefinition(nameof(SqlUserConnectionCollection))]
 	public class SqlUserConnectionCollection : SqlConnectionCollection
 	{
 	}

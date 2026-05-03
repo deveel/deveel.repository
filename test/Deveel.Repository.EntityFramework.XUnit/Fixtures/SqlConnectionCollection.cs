@@ -1,5 +1,5 @@
 ﻿namespace Deveel.Data {
-	[CollectionDefinition(nameof(SqlConnectionCollection), DisableParallelization = true)]
+	[CollectionDefinition(nameof(SqlConnectionCollection))]
 	public class SqlConnectionCollection : ICollectionFixture<SqlTestConnection> {
 	}
 }
