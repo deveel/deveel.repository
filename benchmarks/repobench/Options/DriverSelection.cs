@@ -79,7 +79,20 @@ internal sealed record DriverSelection(
 			benchmarkArgs.Add(argument);
 		}
 
-		return new DriverSelection(driver, benchmarkArgs.ToArray(), exportFormats, outputPath, showUsage);
+		var normalizedExports = NormalizeExportFormats(exportFormats);
+
+		if (!String.IsNullOrWhiteSpace(outputPath)) {
+			if (normalizedExports.Count == 0)
+				normalizedExports.Add(InferExportFormatFromFileName(outputPath));
+
+			if (normalizedExports.Count != 1)
+				throw new ArgumentException("When output is specified, exactly one export format must be selected.");
+
+			if (driver == BenchmarkDriver.All)
+				throw new ArgumentException("When output is specified, select a single driver instead of 'all'.");
+		}
+
+		return new DriverSelection(driver, benchmarkArgs.ToArray(), normalizedExports, outputPath, showUsage);
 	}
 
 	public static void WriteUsage(TextWriter? writer = null) {
@@ -93,17 +106,42 @@ internal sealed record DriverSelection(
 		writer.WriteLine("  --driver all");
 		writer.WriteLine("  /driver:in-memory");
 		writer.WriteLine("  --export markdown,csv,html,plain");
-		writer.WriteLine("  --output docs/benchmarks");
+		writer.WriteLine("  --output docs/benchmarks/in-memory.md");
 		writer.WriteLine();
 		writer.WriteLine("If no driver is specified, the default is 'in-memory'.");
 		writer.WriteLine("If no export is specified, the runner generates plain text and GitHub-flavored markdown reports.");
+		writer.WriteLine("When output is specified, it must be a single result file path and only one export format is allowed.");
 		writer.WriteLine("Entity Framework and Mongo benchmarks require Docker because they bootstrap containers via Testcontainers.");
 		writer.WriteLine();
 		writer.WriteLine("Examples:");
 		writer.WriteLine("  dotnet run -c Release --framework net8.0 --project benchmarks/repobench/repobench.csproj -- --driver in-memory");
 		writer.WriteLine("  dotnet run -c Release --framework net8.0 --project benchmarks/repobench/repobench.csproj -- --driver ef --filter '*FindAsync_ByKey*'");
 		writer.WriteLine("  dotnet run -c Release --framework net8.0 --project benchmarks/repobench/repobench.csproj -- /driver:mongo --list flat");
-		writer.WriteLine("  dotnet run -c Release --framework net8.0 --project benchmarks/repobench/repobench.csproj -- --driver in-memory --export markdown --output docs/benchmarks");
+		writer.WriteLine("  dotnet run -c Release --framework net8.0 --project benchmarks/repobench/repobench.csproj -- --driver in-memory --output docs/benchmarks/in-memory.md");
+	}
+
+	private static List<BenchmarkExportFormat> NormalizeExportFormats(IEnumerable<BenchmarkExportFormat> exportFormats) {
+		var normalized = new List<BenchmarkExportFormat>();
+		var seen = new HashSet<BenchmarkExportFormat>();
+
+		foreach (var exportFormat in exportFormats) {
+			if (seen.Add(exportFormat))
+				normalized.Add(exportFormat);
+		}
+
+		return normalized;
+	}
+
+	private static BenchmarkExportFormat InferExportFormatFromFileName(string outputPath) {
+		var extension = Path.GetExtension(outputPath);
+
+		return extension.ToLowerInvariant() switch {
+			".md" or ".markdown" => BenchmarkExportFormat.Markdown,
+			".csv" => BenchmarkExportFormat.Csv,
+			".html" or ".htm" => BenchmarkExportFormat.Html,
+			".txt" => BenchmarkExportFormat.Plain,
+			_ => throw new ArgumentException("When output is specified without --export, the file extension must be one of: .md, .csv, .html, .txt.")
+		};
 	}
 
 	private static bool TryReadOption(string argument, string optionName, out string? value, out bool consumesNextArgument) {

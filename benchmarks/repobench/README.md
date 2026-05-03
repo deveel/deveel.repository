@@ -27,21 +27,25 @@ If no export is specified, the runner generates plain text and GitHub-flavored m
 ## Usage
 
 ```bash
-dotnet run -c Release --framework net8.0 --project benchmarks/Deveel.Repository.Benchmarks/Deveel.Repository.Benchmarks.csproj -- --driver in-memory
+dotnet run -c Release --framework net8.0 --project benchmarks/repobench/repobench.csproj -- --driver in-memory
 
-dotnet run -c Release --framework net8.0 --project benchmarks/Deveel.Repository.Benchmarks/Deveel.Repository.Benchmarks.csproj -- --driver ef --filter '*FindAsync_ByKey*'
+dotnet run -c Release --framework net8.0 --project benchmarks/repobench/repobench.csproj -- --driver ef --filter '*FindAsync_ByKey*'
 
-dotnet run -c Release --framework net8.0 --project benchmarks/Deveel.Repository.Benchmarks/Deveel.Repository.Benchmarks.csproj -- /driver:mongo --list flat
+dotnet run -c Release --framework net8.0 --project benchmarks/repobench/repobench.csproj -- /driver:mongo --list flat
 
-dotnet run -c Release --framework net8.0 --project benchmarks/Deveel.Repository.Benchmarks/Deveel.Repository.Benchmarks.csproj -- --driver all
+dotnet run -c Release --framework net8.0 --project benchmarks/repobench/repobench.csproj -- --driver all
 
-dotnet run -c Release --framework net8.0 --project benchmarks/Deveel.Repository.Benchmarks/Deveel.Repository.Benchmarks.csproj -- --driver in-memory --export markdown --output docs/benchmarks
+dotnet run -c Release --framework net8.0 --project benchmarks/repobench/repobench.csproj -- --driver in-memory --output docs/benchmarks/in-memory.md
 
-dotnet run -c Release --framework net8.0 --project benchmarks/Deveel.Repository.Benchmarks/Deveel.Repository.Benchmarks.csproj -- --driver in-memory --export markdown,csv --output docs/benchmarks
+dotnet run -c Release --framework net8.0 --project benchmarks/repobench/repobench.csproj -- --driver ef --export csv --output docs/benchmarks/ef.csv
 ```
 
 Any additional arguments are forwarded to BenchmarkDotNet.
 
-The `--output` option sets the BenchmarkDotNet artifacts directory, so exported files will be written under that folder, typically in its `results/` subdirectory.
+The `--output` option now targets a single exported result file.
+
+- If `--export` is omitted, the format is inferred from the output file extension (`.md`, `.csv`, `.html`, `.txt`).
+- If `--output` is specified, exactly one export format must be selected.
+- If `--output` is specified, `--driver all` is rejected because it would produce multiple benchmark reports.
 
 

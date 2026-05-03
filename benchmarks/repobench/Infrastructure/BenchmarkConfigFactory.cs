@@ -9,21 +9,24 @@ internal static class BenchmarkConfigFactory {
 		BenchmarkExportFormat.Markdown
 	];
 
-	public static IConfig Create(DriverSelection selection) {
+	public static BenchmarkRunPlan Create(DriverSelection selection) {
 		var config = ManualConfig.CreateMinimumViable();
-		var outputPath = selection.OutputPath;
+		var exportFormats = selection.ExportFormats.Count == 0
+			? DefaultExportFormats
+			: selection.ExportFormats.ToArray();
+		string? artifactsPath = null;
 
-		if (!String.IsNullOrWhiteSpace(outputPath)) {
-			var fullPath = Path.GetFullPath(outputPath);
-			Directory.CreateDirectory(fullPath);
-			config.ArtifactsPath = fullPath;
+		if (!String.IsNullOrWhiteSpace(selection.OutputPath)) {
+			artifactsPath = Path.Combine(Path.GetTempPath(), "repobench", Guid.NewGuid().ToString("N"));
+			Directory.CreateDirectory(artifactsPath);
+			config.ArtifactsPath = artifactsPath;
 		}
 
-		foreach (var exporter in CreateExporters(selection.ExportFormats)) {
+		foreach (var exporter in CreateExporters(exportFormats)) {
 			config.AddExporter(exporter);
 		}
 
-		return config;
+		return new BenchmarkRunPlan(config, exportFormats, artifactsPath);
 	}
 
 	private static IEnumerable<IExporter> CreateExporters(IReadOnlyCollection<BenchmarkExportFormat> exportFormats) {
@@ -46,6 +49,7 @@ internal static class BenchmarkConfigFactory {
 		}
 	}
 }
+
 
 
 
