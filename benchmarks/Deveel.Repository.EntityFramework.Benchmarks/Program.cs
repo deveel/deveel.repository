@@ -14,7 +14,10 @@ public class DbPerson
 {
     [Key]
     public int Id { get; set; }
+
     public string Name { get; set; } = default!;
+
+    public int Group { get; set; }
 }
 
 public class PersonContext : DbContext
@@ -36,19 +39,31 @@ public class PersonContext : DbContext
 [SimpleJob(RuntimeMoniker.Net80, baseline: true)]
 [SimpleJob(RuntimeMoniker.Net90)]
 [SimpleJob(RuntimeMoniker.Net10_0)]
+[PlainExporter]
 [MarkdownExporterAttribute.GitHub]
 [HideColumns("Baseline", "RatioSD", "RatioSDMean")]
-public class EfRepositoryBenchmarks
+public class EfRepositoryCoreBenchmarks
 {
-    private MySqlContainer? _container;
-    private string? _connectionString;
-    private PersonContext? _context;
-	private IRepository<DbPerson, int> repository;
-    private int? _personId;
+    [Params(100, 1_000)]
+    public int EntityCount { get; set; }
 
-	[GlobalSetup]
-    public void GlobalSetup()
-    {
+    [Params(25, 100)]
+    public int BatchSize { get; set; }
+
+    private MySqlContainer _container = default!;
+    private string _connectionString = string.Empty;
+    private PersonContext _context = default!;
+    private IRepository<DbPerson, int> _repository = default!;
+    private List<DbPerson> _seedTemplate = default!;
+    private List<DbPerson> _addRangeTemplate = default!;
+    private DbPerson _singleToAdd = default!;
+    private List<DbPerson> _batchToAdd = default!;
+    private int _targetId;
+    private DbPerson _targetForUpdate = default!;
+    private DbPerson _targetForRemove = default!;
+
+    [GlobalSetup]
+    public void GlobalSetup() {
         _container = new MySqlBuilder()
             .WithDatabase("testdb")
             .WithUsername("test")
@@ -58,98 +73,125 @@ public class EfRepositoryBenchmarks
         _container.StartAsync().GetAwaiter().GetResult();
         _connectionString = _container.GetConnectionString();
 
-		var context = new PersonContext(_connectionString!);
-		context.Database.EnsureCreated();
-		context.Database.Migrate();
+        using var context = new PersonContext(_connectionString);
+        context.Database.EnsureCreated();
 
-        var entry = context.People.Add(new DbPerson { Name = "Initial Person" });
-        context.SaveChanges();
+        _seedTemplate = Enumerable.Range(0, EntityCount)
+            .Select(i => new DbPerson {
+                Name = $"seed-{(i % 2 == 0 ? "even" : "odd")}-{i}",
+                Group = i % 2
+            })
+            .ToList();
 
-        _context = context;
+        var rangeSize = Math.Max(EntityCount, BatchSize);
+        _addRangeTemplate = Enumerable.Range(0, rangeSize)
+            .Select(i => new DbPerson { Name = $"batch-{i}", Group = i % 2 })
+            .ToList();
+    }
 
-        _personId = entry.Entity.Id;
+    [IterationSetup(Target = nameof(AddAsync_One))]
+    public void SetupForAddOne() {
+        ResetContext(seedData: false);
+        _singleToAdd = new DbPerson { Name = "insert-one", Group = 0 };
+    }
 
-		repository = new EntityRepository<DbPerson, int>(context);
-	}
+    [IterationSetup(Target = nameof(AddRangeAsync_Batch))]
+    public void SetupForAddRange() {
+        ResetContext(seedData: false);
+        _batchToAdd = _addRangeTemplate
+            .Take(BatchSize)
+            .Select(item => new DbPerson { Name = item.Name, Group = item.Group })
+            .ToList();
+    }
 
-	[GlobalCleanup]
-    public void GlobalCleanup()
-    {
-		_context = new PersonContext(_connectionString!);
-		foreach (var person in _context.People)
-		{
-			_context.Remove(person);
-		}
-		_context.SaveChanges();
-		_context.Database.EnsureDeleted();
-        _context.Dispose();
-
-		(repository as IDisposable)?.Dispose();
-
-		if (_container != null)
-            _container.DisposeAsync().GetAwaiter().GetResult();
+    [IterationSetup(
+        Targets =
+        [
+            nameof(FindAsync_ByKey),
+            nameof(UpdateAsync_Entity),
+            nameof(RemoveAsync_Entity),
+            nameof(CountAsync_Filtered),
+            nameof(ExistsAsync_Filtered)
+        ])]
+    public void SetupForSeededOperations() {
+        ResetContext(seedData: true);
     }
 
     [Benchmark]
-    public async Task Repository_InsertPerson()
-    {
-        await repository.AddAsync(new DbPerson { Name = "John Doe" });
+    public Task AddAsync_One() {
+        return _repository.AddAsync(_singleToAdd);
     }
 
     [Benchmark]
-	public async Task Repository_InsertMultiplePeople()
-    {
-        var people = new List<DbPerson>();
-        for (int i = 0; i < 100; i++)
-        {
-            people.Add(new DbPerson { Name = $"Person {i}" });
+    public Task AddRangeAsync_Batch() {
+        return _repository.AddRangeAsync(_batchToAdd);
+    }
+
+    [Benchmark]
+    public Task<DbPerson?> FindAsync_ByKey() => _repository.FindAsync(_targetId);
+
+    [Benchmark]
+    public Task<bool> UpdateAsync_Entity() => _repository.UpdateAsync(_targetForUpdate);
+
+    [Benchmark]
+    public Task<bool> RemoveAsync_Entity() => _repository.RemoveAsync(_targetForRemove);
+
+    [Benchmark]
+    public Task<long> CountAsync_Filtered() => _repository.CountAsync(x => x.Name.StartsWith("seed-even-"));
+
+    [Benchmark]
+    public Task<bool> ExistsAsync_Filtered() => _repository.ExistsAsync(x => x.Name.StartsWith("seed-odd-"));
+
+    [GlobalCleanup]
+    public void GlobalCleanup() {
+        DisposeContextAndRepository();
+
+        if (!string.IsNullOrEmpty(_connectionString)) {
+            using var context = new PersonContext(_connectionString);
+            context.Database.EnsureDeleted();
         }
 
-        await repository.AddRangeAsync(people);
-	}
-
-	[Benchmark]
-    public async Task Repository_FindPersonById()
-    {
-        var person = await repository.FindAsync(_personId!.Value);
-
-        if (person == null)
-            throw new Exception("Person not found");
+        _container.DisposeAsync().GetAwaiter().GetResult();
     }
 
-    [Benchmark]
-    public async Task DbContext_InsertPerson()
-    {
-        _context!.People.Add(new DbPerson { Name = "Jane Doe" });
-        await _context.SaveChangesAsync();
-	}
+    private void ResetContext(bool seedData) {
+        DisposeContextAndRepository();
 
-    [Benchmark]
-    public async Task DbContext_InsertMultiplePeople()
-    {
-        var people = new List<DbPerson>();
-        for (int i = 0; i < 100; i++)
-        {
-            people.Add(new DbPerson { Name = $"Person {i}" });
+        _context = new PersonContext(_connectionString);
+        _context.Database.EnsureCreated();
+
+        _context.People.RemoveRange(_context.People.ToList());
+        _context.SaveChanges();
+
+        if (seedData) {
+            var seeded = _seedTemplate
+                .Select(item => new DbPerson { Name = item.Name, Group = item.Group })
+                .ToList();
+            _context.People.AddRange(seeded);
+            _context.SaveChanges();
+
+            var middle = seeded[seeded.Count / 2];
+            _targetId = middle.Id;
+
+            _targetForUpdate = middle;
+            _targetForUpdate.Name = $"updated-{middle.Id}";
+
+            _targetForRemove = seeded[^1];
         }
-        _context!.People.AddRange(people);
-        await _context.SaveChangesAsync();
+
+        _repository = new EntityRepository<DbPerson, int>(_context);
     }
 
-    [Benchmark]
-    public async Task DbContext_FindPersonById()
-    {
-        var person = await _context!.People.FindAsync(_personId);
-
-        if (person == null)
-            throw new Exception("Person not found");
-	}
+    private void DisposeContextAndRepository() {
+        (_repository as IDisposable)?.Dispose();
+        _context?.Dispose();
+    }
 }
 
 public class Program
 {
     public static void Main(string[] args)
     {
-        BenchmarkRunner.Run<EfRepositoryBenchmarks>();
+        BenchmarkRunner.Run<EfRepositoryCoreBenchmarks>(null, args);
     }
 }
