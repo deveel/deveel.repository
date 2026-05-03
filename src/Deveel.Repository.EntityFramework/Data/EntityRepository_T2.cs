@@ -238,17 +238,8 @@ namespace Deveel.Data
 				Logger.TraceDeletingEntity(typeof(TEntity), entityId);
 
 				var entry = Context.Entry(entity);
-				if (entry == null) {
-					Logger.WarnEntityNotFound(typeof(TEntity), entityId);
-					return false;
-				} else if (entry.State == EntityState.Detached) {
-					var existing = await FindAsync(entityId, cancellationToken);
-					if (existing == null) {
-						Logger.WarnEntityNotFound(typeof(TEntity), entityId);
-						return false;
-					}
-
-					entry = Context.Entry(existing);
+				if (entry.State == EntityState.Detached) {
+					entry = ResolveEntryForEntityKey(entity, entityId);
 				}
 
 				entry.State = EntityState.Deleted;
@@ -265,8 +256,9 @@ namespace Deveel.Data
 				}
 
 				return deleted;
-			} catch (DbUpdateConcurrencyException ex) {
-				throw new RepositoryException("Concurrency problem while deleting the entity", ex);
+			} catch (DbUpdateConcurrencyException) {
+				Logger.WarnEntityNotFound(typeof(TEntity), GetEntityKey(entity)!);
+				return false;
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unable to delete the entity", ex);
@@ -285,21 +277,15 @@ namespace Deveel.Data
 
 					var entry = Context.Entry(item);
 					if (entry.State == EntityState.Detached) {
-						var existing = await FindAsync(entityId, cancellationToken);
-						if (existing == null) {
-							Logger.WarnEntityNotFound(typeof(TEntity), entityId);
-							throw new RepositoryException($"The entity with the key '{entityId}' was not found in the repository");
-						}
-
-						entry = Context.Entry(existing);
+						entry = ResolveEntryForEntityKey(item, entityId);
 					}
 
 					entry.State = EntityState.Deleted;
 				}
 
-				//Entities.RemoveRange(entities);
-
 				await Context.SaveChangesAsync(true, cancellationToken);
+			} catch (DbUpdateConcurrencyException ex) {
+				throw new RepositoryException("One or more entities were not found in the repository", ex);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unknown error while trying to remove a range of entities from the repository", ex);
@@ -331,31 +317,15 @@ namespace Deveel.Data
 
 				Logger.TraceUpdatingEntity(typeof(TEntity), entityId);
 
-				EntityEntry<TEntity>? entry = null;
-
-				if (!IsTrackingChanges) {
-					var existing = await FindAsync(entityId, cancellationToken);
-					if (existing == null) {
-						Logger.WarnEntityNotFound(typeof(TEntity), entityId);
-						return false;
-					}
-
-					entry = Context.Entry(existing);
-				} else {
-					entry = Context.Entry(entity);
-
-					if (entry.State == EntityState.Detached) {
-						var existing = await FindAsync(entityId, cancellationToken);
-						if (existing == null) {
-							Logger.WarnEntityNotFound(typeof(TEntity), entityId);
-							return false;
-						}
-
-						entry = Context.Entry(existing);
-					}
+				var entry = Context.Entry(entity);
+				if (entry.State == EntityState.Detached) {
+					entry = ResolveEntryForEntityKey(entity, entityId);
 				}
 
+			if (!ReferenceEquals(entry.Entity, entity)) {
 				entry.CurrentValues.SetValues(entity);
+				}
+
 				entry.State = EntityState.Modified;
 
 				var count = await Context.SaveChangesAsync(cancellationToken);
@@ -369,6 +339,9 @@ namespace Deveel.Data
 				}
 
 				return updated;
+			} catch (DbUpdateConcurrencyException) {
+				Logger.WarnEntityNotFound(typeof(TEntity), GetEntityKey(entity)!);
+				return false;
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
 				throw new RepositoryException("Unable to update the entity because of an error", ex);
@@ -392,11 +365,11 @@ namespace Deveel.Data
 		/// </returns>
 		/// <exception cref="RepositoryException"></exception>
 		public virtual async Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+			ThrowIfDisposed();
+
 			try {
-				var query = AsQueryable();
-				if (filter != null) {
-					query = filter.Apply(query);
-				}
+				var query = AsQueryable().AsNoTracking();
+				query = ApplyFilter(query, filter);
 
 				return await query.AnyAsync(cancellationToken);
 			} catch (Exception ex) {
@@ -417,11 +390,11 @@ namespace Deveel.Data
 		/// </param>
 		/// <returns></returns>
 		public virtual async Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+			ThrowIfDisposed();
+
 			try {
-				var query = AsQueryable();
-				if (filter != null) {
-					query = filter.Apply(query);
-				}
+				var query = AsQueryable().AsNoTracking();
+				query = ApplyFilter(query, filter);
 
 				return await query.LongCountAsync(cancellationToken);
 			} catch (Exception ex) {
@@ -433,7 +406,7 @@ namespace Deveel.Data
 		/// <inheritdoc/>
 		public virtual async Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
-				var result = query.Apply(AsQueryable());
+				var result = EfQueryNormalizer.Normalize(query.Apply(AsQueryable()));
 
 				return await result.FirstOrDefaultAsync(cancellationToken);
 			} catch (Exception ex) {
@@ -484,7 +457,7 @@ namespace Deveel.Data
 		/// <inheritdoc/>
 		public virtual async Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
-				var result = query.Apply(AsQueryable());
+				var result = EfQueryNormalizer.Normalize(query.Apply(AsQueryable()));
 				return await result.ToListAsync(cancellationToken);
 			} catch (Exception ex) {
 				Logger.LogUnknownError(ex, typeof(TEntity));
@@ -494,6 +467,22 @@ namespace Deveel.Data
 
 		/// <inheritdoc/>
 		public virtual IQueryable<TEntity> AsQueryable() => Entities.AsQueryable();
+
+		private static IQueryable<TEntity> ApplyFilter(IQueryable<TEntity> query, IQueryFilter? filter) {
+			if (filter == null || filter.IsEmpty())
+				return query;
+
+			return EfQueryNormalizer.Normalize(filter.Apply(query));
+		}
+
+		private EntityEntry<TEntity> ResolveEntryForEntityKey(TEntity entity, TKey entityId) {
+			var tracked = Entities.Local.FirstOrDefault(x => EqualityComparer<TKey>.Default.Equals(GetEntityKey(x)!, entityId));
+			if (tracked != null)
+				return Context.Entry(tracked);
+
+			Entities.Attach(entity);
+			return Context.Entry(entity);
+		}
 
 		/// <summary>
 		/// Disposes the repository and frees all the resources used by it.
@@ -519,7 +508,7 @@ namespace Deveel.Data
 			ThrowIfDisposed();
 
 			try {
-				var querySet = request.ApplyQuery(AsQueryable());
+				var querySet = EfQueryNormalizer.Normalize(request.ApplyQuery(AsQueryable()));
 				var total = await querySet.CountAsync(cancellationToken);
 
 				var items = await querySet

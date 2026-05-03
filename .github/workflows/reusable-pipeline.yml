@@ -28,6 +28,8 @@ on:
         required: false
       NUGET_API_KEY:
         required: false
+      GITHUB_API_TOKEN:
+        required: false
 
 jobs:
   build-test:
@@ -118,7 +120,7 @@ jobs:
 
       - name: Publish packages to GitHub Packages
         if: ${{ inputs.publish-github-packages }}
-        run: dotnet nuget push ./nupkgs/*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/deveel/index.json
+        run: dotnet nuget push ./nupkgs/*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_API_TOKEN }} --source https://nuget.pkg.github.com/deveel/index.json
 
       - name: Publish packages to NuGet.org
         if: ${{ inputs.publish-nuget-org }}
