@@ -138,6 +138,56 @@ Full documentation is also available on [GitBook](https://deveel.gitbook.io/repo
 
 ---
 
+## Roadmap
+
+We are actively building Deveel Repository toward a comprehensive, production-ready framework. See the [complete roadmap](ROADMAP.md) for detailed feature descriptions, timelines, and architectural decisions.
+
+### Release Timeline
+
+- [ ] **v1.5.0** — "Solid Ground"
+  - [x] 1.5.1 — Package Namespace Correction
+  - [x] 1.5.2 — Thread-Safe In-Memory Repository
+  - [ ] 1.5.3 — Expression Compilation Cache
+  - [ ] 1.5.4 — Full .NET 10 Compatibility and Benchmark Baseline
+  - [ ] 1.5.5 — XML Documentation Completeness
+  - [ ] 1.5.6 — Conversion to ValueTask Results for Asynchronous Methods
+  - [ ] 1.5.7 — General Performance Optimizations
+
+- [ ] **v1.6.0** — "Developer Flow"
+  - [ ] 1.6.1 — Unified Repository Setup Builder
+  - [ ] 1.6.2 — QueryBuilder Execution Extensions
+  - [ ] 1.6.3 — Pluggable Cache Provider Abstraction
+  - [ ] 1.6.4 — Automatic Timestamp and Ownership Management
+  - [ ] 1.6.5 — Repository Health Checks
+  - [ ] 1.6.6 — Repository Controller Lifecycle Redesign
+
+- [ ] **v1.7.0** — "Entity Lifecycle"
+  - [ ] 1.7.1 — Soft Delete Support
+  - [ ] 1.7.2 — Entity State Machine
+  - [ ] 1.7.3 — Domain Event Emission from EntityManager
+
+- [ ] **v1.8.0** — "Scale & Throughput"
+  - [ ] 1.8.1 — Batch Operations in EntityManager
+  - [ ] 1.8.2 — Async Streaming Queries
+  - [ ] 1.8.3 — Read/Write Repository Split
+
+- [ ] **v1.9.0** — "Observability & Governance"
+  - [ ] 1.9.1 — OpenTelemetry Integration
+  - [ ] 1.9.2 — Audit Trail Support
+  - [ ] 1.9.3 — EF Core Multi-Tenancy Parity
+
+- [ ] **v2.0.0** — "Unified Platform"
+  - [ ] 2.0.1 — Minimum .NET 9 Baseline
+  - [ ] 2.0.2 — Simplified Repository Interface Hierarchy
+  - [ ] 2.0.3 — PostgreSQL Native Driver
+  - [ ] 2.0.4 — Azure Cosmos DB Driver
+  - [ ] 2.0.5 — Repository Source Generators
+  - [ ] 2.0.6 — Service-Based Repository Driver
+
+For more details on features, design rationale, and success criteria, see the [ROADMAP](ROADMAP.md).
+
+---
+
 ## License
 
 The project is licensed under the terms of the [Apache Public License v2](LICENSE), which allows unrestricted use in any project — open-source or commercial — without restriction.
