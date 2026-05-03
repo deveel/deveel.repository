@@ -1,60 +1,72 @@
 # User Entities
 
-The repository pattern library provides a way to define user entities. These are entities that are specific to the user of the application, and that are not shared between different users.
+The framework provides first-class support for _user-scoped_ entities — entities that belong to a specific user within the application, such as per-user preferences, configurations, or private records.
 
-Within the scope of a tenant, there might be several users, and each user might have its own set of entities (eg. configurations, preferences, etc.).
+Within a tenant (or a single-tenant application), multiple users may exist, and each user may own their own set of entities.
 
 ## Defining User Entities
 
-The data model of an entity is free to be defined by the developer, and it can be any class, but to be used as a user entity, it should implement the `IHaveOwner<TKey>` contract.
+Any entity class can be used as a user entity. To make one user-scoped, implement the `IHaveOwner<TKey>` interface, where `TKey` is the type of the user identifier:
 
-Anyway, entities that are intended to be user-specific should provide a field that identifies the user that owns the entity.
+```csharp
+public interface IHaveOwner<TKey>
+{
+    // The identifier of the owner
+    TKey Owner { get; }
 
-For instance, a user entity might look like this:
+    // Assigns (or re-assigns) an owner
+    void SetOwner(TKey owner);
+}
+```
+
+Example entity:
 
 ```csharp
 public class UserConfiguration : IHaveOwner<string>
 {
     public string Id { get; set; }
 
+    // The UserId field stores the owner identifier
     public string UserId { get; set; }
 
-    string IHaveOwner<string>.OwnerKey => UserId;
+    // Explicit implementation
+    string IHaveOwner<string>.Owner => UserId;
+
+    void IHaveOwner<string>.SetOwner(string owner) => UserId = owner;
 
     public string ConfigurationKey { get; set; }
-
     public string ConfigurationValue { get; set; }
 }
 ```
 
-In this case, the `UserId` field is used to identify the user that owns the configuration, and the `ConfigurationKey` and `ConfigurationValue` fields are used to store the configuration data.
+> **Note:** You can implement `IHaveOwner<TKey>` explicitly (as above) or as public members — both styles work equally well.
 
-**Note**: _The above example uses the `IHaveOwner<TKey>` explicit implementation to provide the owner key of the entity. If you prefer, you can implement the `IHaveOwner<TKey>` interface directly on the entity class, and provide the `OwnerKey` property as a public property._
+## The User Repository Interface
 
-## Using User Entities Repository
-
-The Deveel Repository framework provides a way to define a repository for user entities, that is specific to the user that is accessing the data.
-
-The repository for user entities is defined by the `IUserRepository<TEntity, TKey, TOwnerKey>` interface, that extends the `IRepository<TEntity>` interface.
-
-In this specific model, the `TEntity` is the type of the entity, `TKey` is the type of the key of the entity, and `TOwnerKey` is the type of the key of the owner of the entity.
-
-With reference to the previous example, the repository for the `UserConfiguration` entity might look like this:
+The framework provides `IUserRepository<TEntity, TKey, TOwnerKey>` to represent a repository scoped to the current user:
 
 ```csharp
-public interface IUserConfigurationRepository : IUserRepository<UserConfiguration, string, string>
+public interface IUserRepository<TEntity, TKey, TOwnerKey>
+    : IRepository<TEntity, TKey>
+    where TEntity : class, IHaveOwner<TOwnerKey>
+```
+
+You can extend this interface to add domain-specific operations:
+
+```csharp
+public interface IUserConfigurationRepository
+    : IUserRepository<UserConfiguration, string, string>
 {
-    Task<UserConfiguration> FindByUserAsync(string userId, string configurationKey, CancellationToken cancellationToken = default);
+    Task<UserConfiguration?> FindByKeyAsync(
+        string userId, string configurationKey,
+        CancellationToken cancellationToken = default);
 }
 ```
 
-In this case, the `IUserConfigurationRepository` interface extends the `IUserRepository<UserConfiguration, string, string>` interface, and provides an additional method to find a configuration by the user and the configuration key.
+## Accessing the Current User at Runtime
 
-### Accessing the Current User at Runtime
+The user repository implementations rely on an `IUserAccessor<TKey>` service to resolve the current user's identity at runtime:
 
-The `IUserRepository` interface requires the implementation of a `IUserAccessor` service, that provides the current user identifier at runtime.
-
-The `IUserAccessor` service is defined as follows:
 ```csharp
 public interface IUserAccessor<TKey>
 {
@@ -62,14 +74,49 @@ public interface IUserAccessor<TKey>
 }
 ```
 
-The `GetUserId` method should return the identifier of the current user, or `null` if the user is not authenticated.
+Register your own implementation of `IUserAccessor<TKey>` in the DI container. For example, in an ASP.NET Core application you might read the user identity from `IHttpContextAccessor`:
 
-The `IUserAccessor` service should be registered in the dependency injection container of the application, and it should be provided to the repository implementation.
+```csharp
+public class HttpUserAccessor : IUserAccessor<string>
+{
+    private readonly IHttpContextAccessor _httpContext;
 
-## Entity Framework Core User Entities Repository
+    public HttpUserAccessor(IHttpContextAccessor httpContext)
+        => _httpContext = httpContext;
 
-The framework provides a specific implementation of the user entities repository for Entity Framework Core, that allows to store user-specific entities in a relational database.
+    public string? GetUserId()
+        => _httpContext.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+}
 
-The `EntityUserRepository<TEntity, TKey, TOwnerKey>` class is the base implementation of the user entities repository for Entity Framework Core, that implements the `IUserRepository<TEntity, TKey, TOwnerKey>` interface.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IUserAccessor<string>, HttpUserAccessor>();
+```
 
-The logic behind the implementation of the user entities repository is to filter the entities by the owner key, that is provided by the `IUserAccessor` service.
+## Entity Framework Core User Repository
+
+For EF Core, the package `Deveel.Repository.EntityFramework` provides `EntityUserRepository<TEntity, TKey, TOwnerKey>` as a base class for user-scoped repositories:
+
+```csharp
+public class UserConfigurationRepository
+    : EntityUserRepository<UserConfiguration, string, string>,
+      IUserConfigurationRepository
+{
+    public UserConfigurationRepository(
+        MyDbContext context,
+        IUserAccessor<string> userAccessor,
+        ILogger<UserConfigurationRepository>? logger = null)
+        : base(context, userAccessor, logger) { }
+
+    public async Task<UserConfiguration?> FindByKeyAsync(
+        string userId, string configurationKey,
+        CancellationToken cancellationToken = default)
+    {
+        return await AsQueryable()
+            .FirstOrDefaultAsync(
+                x => x.UserId == userId && x.ConfigurationKey == configurationKey,
+                cancellationToken);
+    }
+}
+```
+
+The base class automatically filters all queries by the owner key returned by `IUserAccessor<TKey>`.

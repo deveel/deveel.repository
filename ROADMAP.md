@@ -158,6 +158,58 @@ The framework lists .NET 10 as a target framework but has not been thoroughly va
 
 ---
 
+### Feature 1.5.6 — Conversion to ValueTask Results for Asynchronous Methods
+
+**Title:** Replace `Task<T>` with `ValueTask<T>` Where Applicable to Reduce Allocations
+
+**Intent**  
+> "Eliminate unnecessary heap allocations from synchronous code paths by returning `ValueTask<T>` instead of `Task<T>`, so high-throughput applications spend less time in the garbage collector."
+
+**The Problem Today**  
+Repository methods that complete synchronously (e.g., In-Memory finds that hit an immediate cache) still allocate a `Task<T>` object unnecessarily. In high-throughput scenarios with thousands of requests per second, these allocations accumulate and trigger frequent GC pauses that add p95 and p99 latency spikes.
+
+**What We Are Building**  
+- Systematic conversion of all async repository methods to return `ValueTask<T>` instead of `Task<T>`
+- Synchronous driver paths (In-Memory, cached results) complete without allocation
+- Async driver paths (database, I/O) continue to work without extra overhead
+- Benchmarking that quantifies the allocation reduction and GC pause improvements
+- Documentation on when `ValueTask<T>` is preferable and API compatibility considerations
+- A breaking-change note in the v1.5 migration guide for consumers who have overridden or wrapped repository methods
+
+**Benefits**
+- Measurably lower GC pressure and heap allocations in high-throughput applications
+- Faster request completion for cache-hit scenarios without any behavioral change
+- Industry best-practice alignment — `ValueTask<T>` is now the standard for hot-path async methods
+- No change to consumer code — the conversion is purely implementation-level
+
+---
+
+### Feature 1.5.7 — General Performance Optimizations
+
+**Title:** Systematic Analysis and Optimization of Hot Paths
+
+**Intent**  
+> "Profile the framework in realistic workloads and systematically eliminate unnecessary allocations, boxing, and inefficiencies so Deveel Repository never becomes a performance bottleneck."
+
+**The Problem Today**  
+The framework has not undergone systematic performance profiling under realistic load. Opportunities for optimization may exist in filter expression parsing, property mapping, and query translation that we have not yet measured or addressed. Teams adopting the framework need confidence that it will not become a scaling bottleneck.
+
+**What We Are Building**  
+- End-to-end profiling of common query patterns (find-by-key, filtered page, bulk update) across all drivers using BenchmarkDotNet
+- Identification and elimination of boxing, unnecessary allocations, and redundant work in hot paths
+- Expression compilation optimization via caching and pooling of compiled delegates
+- Property mapping optimization using generated IL instead of reflection where performance-sensitive
+- Memory pool allocation strategies for filter parsing and query building
+- A published performance report quantifying improvements and setting baselines for regression detection
+
+**Benefits**
+- The framework never becomes a performance liability as applications scale
+- Teams adopting Deveel Repository can do so without performance anxiety
+- Regression-detection baselines prevent future changes from eroding throughput
+- Open-source community gains visibility into the framework's performance characteristics and can contribute optimizations
+
+---
+
 ## Milestone 2: v1.6.0 — "Developer Flow"
 
 **Release Target:** Q3 2026  
@@ -178,9 +230,11 @@ Today, wiring up Deveel Repository requires knowing the specific setup pattern f
 Each driver ships its own `AddRepository*` extension overloads with driver-specific parameters. A project using MongoDB as its primary store and In-Memory for test overrides must know two completely different setup APIs, keep them in sync, and mentally map how options flow through each. This discourages multi-driver setups and makes onboarding expensive.
 
 **What We Are Building**  
-- A top-level `AddRepositoryContext()` entry point on `IServiceCollection` that returns a fluent `RepositoryContextBuilder`
-- Driver-specific `.UseMongoDB(...)`, `.UseEntityFramework(...)`, `.UseInMemory(...)` extensions that chain off that builder
-- Cross-cutting configuration — caching, validation, multi-tenancy, logging — registered once on the context builder and automatically applied to all repositories
+- A top-level `AddRepositoryContext()` entry point on `IServiceCollection` that returns a fluent core `RepositoryContextBuilder`
+- Entity-focused registration on the core builder with `.WithRepository<TRepository>(...)` methods to declare repository bindings explicitly
+- Driver-specific `.UseMongoDB(...)`, `.UseEntityFramework(...)`, `.UseInMemory(...)` extensions that chain off the same core builder
+- Cross-cutting configuration — caching, validation, multi-tenancy, logging — registered once on the core builder and automatically applied to all repositories
+- Compatibility support for existing `AddRepository<TRepository>()` registrations, with a documented migration path to the builder API
 - Assembly-scanning auto-discovery of repository implementations, removing the need to list each concrete type manually
 
 **Benefits**
@@ -202,7 +256,7 @@ Each driver ships its own `AddRepository*` extension overloads with driver-speci
 `QueryBuilder<TEntity>` provides fluent filter and ordering composition but stops short of execution: calling code must unwrap the built `IQuery`, pass it to `IFilterableRepository.FindAsync` or `IPageableRepository.GetPageAsync`, and handle the types separately. This imposes a two-API mental model — build here, run over there — and forces consumers to write boilerplate connecting the two sides.
 
 **What We Are Building**  
-- Execution extension methods on `QueryBuilder<TEntity>` accepting a repository parameter and returning the appropriate result type (`Task<TEntity?>`, `IAsyncEnumerable<TEntity>`, `Task<PageResult<TEntity>>`)
+- Execution extension methods on `QueryBuilder<TEntity>` accepting a repository parameter and returning the appropriate result type (`ValueTask<TEntity?>`, `IAsyncEnumerable<TEntity>`, `ValueTask<PageResult<TEntity>>`)
 - Factory extensions directly on `IFilterableRepository` and `IPageableRepository` for starting a bound fluent chain: `repository.Query().Where(...).OrderBy(...).GetPage(1, 20)`
 - Backward-compatible with all existing `IQuery` and `PageQuery<TEntity>` usages — no existing code needs to change
 
@@ -261,6 +315,57 @@ Each driver ships its own `AddRepository*` extension overloads with driver-speci
 - Server-authoritative timestamps that do not trust client-submitted clock values
 - `ISystemTime` injection keeps timestamps deterministic and testable in unit tests
 - Reduces the number of cross-cutting concerns teams must wire up manually per entity type
+
+---
+
+### Feature 1.6.5 — Repository Health Checks
+
+**Title:** Built-In Health Checks for Repository Connectivity and Readiness
+
+**Intent**  
+> "Give operations teams a first-class way to verify repository availability at startup and runtime, without writing custom probes for every driver."
+
+**The Problem Today**  
+Teams deploying repository-backed services usually need liveness and readiness checks, but today each application must hand-roll its own checks for each driver. This causes duplicated code, inconsistent diagnostics, and delayed detection of connectivity or configuration failures.
+
+**What We Are Building**  
+- A `AddRepositoryHealthChecks()` integration that registers repository probes with ASP.NET Core Health Checks
+- Driver-specific readiness checks for EF Core, MongoDB, In-Memory, and DynamicLinq-backed repositories
+- Configurable probe behavior (timeouts, failure status, tags, and per-repository opt-in/out)
+- Startup validation mode to fail fast when mandatory repositories are unreachable
+- Standardized diagnostic payloads exposing driver type, repository type, and failure reason
+
+**Benefits**
+- Faster incident detection for data-access outages and configuration regressions
+- Reduced boilerplate in consumer applications
+- Consistent health semantics across all supported drivers
+- Better Kubernetes/container orchestration behavior through reliable readiness signaling
+
+---
+
+### Feature 1.6.6 — Repository Controller Lifecycle Redesign
+
+**Title:** Driver-Specific Repository Lifecycle Controller for Create, Drop, and Seed
+
+**Intent**  
+> "Replace the generic lifecycle controller model with a clearer, driver-oriented abstraction that reliably handles repository creation, destruction, and deterministic seeding."
+
+**The Problem Today**  
+`IRepositoryController` and `DefaultRepositoryController` centralize lifecycle operations but are too generic for driver-specific behavior and offer limited seeding semantics. In practice, teams need different create/drop/seed behaviors per driver and per environment, and the current model is hard to extend without custom wiring.
+
+**What We Are Building**  
+- A redesigned lifecycle contract focused on explicit create/drop/seed operations with driver-specific implementations
+- A core orchestration layer that resolves the right lifecycle handler per repository and driver
+- Deterministic seeding support with idempotent execution and environment profiles (dev/test/production)
+- Improved options model for lifecycle behavior (delete-if-exists, seed strategy, fail-fast rules, and logging)
+- Backward-compatible adapter support for existing `IRepositoryController` usages during migration
+- Updated DI registration guidance to use the new lifecycle model as the primary path
+
+**Benefits**
+- Clear separation of lifecycle logic between drivers without fragile conditionals
+- Safer and more repeatable repository bootstrapping in tests and deployment pipelines
+- Less custom infrastructure code for consumer applications
+- A clean migration path from the current controller implementation to a more maintainable model
 
 ---
 
@@ -652,6 +757,33 @@ Creating a custom repository — even a trivial one adding two domain-specific q
 - All generated repositories are idiomatic and consistent — copy-paste drift across a codebase is eliminated
 - The `dotnet new` template gives new team members a correct, working starting point in one command
 - Generated code is fully auditable, debuggable, and ejectable — developers always remain in control
+
+---
+
+### Feature 2.0.6 — Service-Based Repository Driver
+
+**Title:** `Deveel.Repository.Services` — RESTful and gRPC Service-Backed Repository Implementation
+
+**Intent**  
+> "Allow distributed architectures where repositories delegate to remote services — enabling event-driven microservices, federation scenarios, and API aggregation patterns without abandoning type-safe repository abstractions."
+
+**The Problem Today**  
+Microservice architectures often require aggregating data from multiple remote services — an API gateway, a data service, a business logic service. Teams today reach for the HTTP client directly or custom REST wrappers, losing the repository abstraction and the consistency it provides. There is no natural way to express "this repository's data lives on a remote gRPC endpoint" within the framework.
+
+**What We Are Building**  
+- A `Deveel.Repository.Services` package providing base implementations for remote repositories
+- A RESTful channel builder and HTTP-based repository backend — maps `IRepository<TEntity>` CRUD and query operations to HTTP endpoints following REST conventions
+- A gRPC channel builder and gRPC-based repository backend — maps repository operations to typed gRPC service calls
+- Pluggable serialization and deserialization so teams can use their preferred serializer
+- Distributed transaction coordination via transaction identifiers and two-phase commit patterns when both sides support it
+- Automatically typed proxy generation from repository interfaces using source generators
+
+**Benefits**
+- Microservices architectures use the same repository abstraction as local data access
+- API aggregation and data federation become first-class concerns in the repository layer, not lost in boilerplate HTTP plumbing
+- Teams can switch between local and remote implementations with a single DI configuration change
+- Event-driven workflows maintain transactional boundaries across service calls where supported
+- gRPC performance benefits for service-to-service communication without adding a new abstraction layer
 
 ---
 

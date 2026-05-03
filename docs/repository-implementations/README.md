@@ -1,146 +1,87 @@
 # Repository Implementations
 
-The _Deveel Repository_ framework comes with some implementations of the Repository pattern.
+The _Deveel Repository_ framework ships with a set of ready-to-use repository implementations for the most common data sources.
 
-<table data-full-width="true"><thead><tr><th>Data Source</th><th>Library</th></tr></thead><tbody><tr><td><a href="in-memory.md">In-Memory</a></td><td><img src="https://img.shields.io/nuget/v/Deveel.Repository.InMemory?logo=nuget&#x26;label=Deveel.Repository.InMemory" alt="Nuget" data-size="original"></td></tr><tr><td><a href="ef-core.md">Entity Framework</a></td><td><img src="https://img.shields.io/nuget/v/Deveel.Repository.EntityFramework?logo=nuget&#x26;label=Deveel.Repository.EntityFramework" alt="Nuget" data-size="original"></td></tr><tr><td><a href="mongodb.md">MongoDB</a></td><td><img src="https://img.shields.io/nuget/v/Deveel.Repository.MongoFramework?logo=nuget&#x26;label=Deveel.Repository.MongoFramework" alt="Nuget" data-size="original"></td></tr></tbody></table>
+| Data Source | Package | Version |
+| ----------- | ------- | ------- |
+| [In-Memory](in-memory.md) | `Deveel.Repository.InMemory` | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.InMemory.svg)](https://www.nuget.org/packages/Deveel.Repository.InMemory/) |
+| [Entity Framework Core](ef-core.md) | `Deveel.Repository.EntityFramework` | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.EntityFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.EntityFramework/) |
+| [MongoDB](mongodb.md) | `Deveel.Repository.MongoFramework` | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.MongoFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.MongoFramework/) |
 
+## Capability Matrix
 
+| Capability | In-Memory | EF Core | MongoDB |
+| ---------- | :-------: | :-----: | :-----: |
+| Base Repository (`IRepository`) | ✅ | ✅ | ✅ |
+| Filterable (`IFilterableRepository`) | ✅ | ✅ | ✅ |
+| Queryable (`IQueryableRepository`) | ✅ | ✅ | ✅ |
+| Pageable (`IPageableRepository`) | ✅ | ✅ | ✅ |
+| Tracking (`ITrackingRepository`) | ❌ | ✅ | ✅ |
+| Multi-tenant | ❌ | ✅ | ✅ |
+| User-scoped (`IUserRepository`) | ❌ | ✅ | ❌ |
 
-### Abstraction Patterns
+## Dynamic LINQ Support
 
-One of the benefits of using a Repository pattern is the abstraction of the data access mechanism, which allows the implementation of a single paradigm for the management of the data, porting it to the various data storage sources, following the Liskov substitution principle.
+The `Deveel.Repository.DynamicLinq` package adds filter and sort support via [System.Linq.Dynamic.Core](https://github.com/zzzprojects/System.Linq.Dynamic.Core). This allows you to build queries using string-based expressions, which is useful for dynamic query builders, search APIs, and other scenarios where the filter predicate is not known at compile time.
 
-For example. the [`EntityManager<TEntity>`](../entity-manager/) class uses this approach, implementing a superset of functions on top of the `IRepository<TEntity>` abstraction.
+```bash
+dotnet add package Deveel.Repository.DynamicLinq
+```
 
-This allows to switch between implementations of `IRepository<TEntity>`, without affecting the behavior of the consuming class.
+Once installed, filterable and queryable repositories automatically accept string-based filter expressions in addition to the usual lambda-based ones.
 
-#### Business Data Logic
+## Design Pattern: Separation of Data Logic
 
-A design pattern that I recommend is the separation of the overall data logic from the concrete implementation, especially in scenarios of reuse (eg. NuGet libraries).
+One of the most valuable aspects of using a Repository pattern is that it allows you to express data access requirements at the **domain level** and swap the underlying implementation without changing any application code.
 
-For example:
-
-`Foo.Service.dll`
+For example, consider a service library (`Foo.Service.dll`) that defines a domain interface:
 
 ```csharp
-using System;
-using Deveel.Data;
-
-namespace Foo {
-    public interface IData {
-        string? Id { get; }
-        byte[] Content { get; }
-        string ContentType { get; }
-    }
-    
-    public interface IDataRepository<TData> : IRepository<TData> where TData : class, IData {
-        Task<string> GetContentTypeAsync(TData data, CancellationToken cancellationToken = default);
-        Task<byte[]> GetContentAsync(TData data, CancellationToken cancellationToken = default);
-        Task SetContentAsync(TData data, string contentType, byte[] content, CancellationTyoken cancellationToken = default);
-    }
-    
-    public class DataManager<TData> : EntityManager<TData> where TData : class, IData {
-        public DataManager(IDataRepository<TData> repository, IEntityValidator<TData>? validator = null, IServiceProvider? services = null. ILoggerFactory? loggerFactory = null)
-            : base(repository, validator, null, null, services, loggerFactory) {
-        }
-        
-        protected IDataRepository<TData> DataRepository => (IDataRepository<TData>)base.Repository;
-        
-        public Task<OperationResult> SetContentAsync(TData data, string contentType, byte[] content, CancellationToken? cancellationToken = null) {
-            ThrowIfDisposed();
-            
-            try {
-                var existingContentType = await DataRepository.GetContentTypeAsync(data, GetCancellationToken(cancellationToken));
-                var existingContent = await DataRepository.GetContentAsync(data, GetCancellationToken(cancellationToken));
-                if ((existingContentType != null && existingContentType == contentType) &&
-                    (existingContent != null && existingContent == content)) {
-                    return OperationResult.NotModified;
-                }
-                
-                await DataRepository.SetContentAsync(data, contentType, content, GetCancellationToken(cancellationToken);
-                
-                // this will invoke the validation before invoking the 
-                // Update method of the repository
-                return await UpdateAsync(data);
-            } catch (Exception ex) {
-                Logger.LogError(ex, "Could not set the content");
-                return Fail("DATA_ERROR");
-            }
-        }
-    }
+// Foo.Service.dll
+public interface IDataRepository<TData> : IRepository<TData>
+    where TData : class, IData
+{
+    Task<string> GetContentTypeAsync(TData data, CancellationToken ct = default);
+    Task<byte[]> GetContentAsync(TData data, CancellationToken ct = default);
+    Task SetContentAsync(TData data, string contentType, byte[] content, CancellationToken ct = default);
 }
 ```
 
-While in the `Foo.Service.MongoDb.dll` you can implement a MongoDB-specific access logic
+A MongoDB-specific assembly (`Foo.Service.MongoDb.dll`) implements this contract:
 
 ```csharp
-using System;
-using Deveel.Data;
+public class MongoData : IData { /* ... */ }
 
-namespace Foo {
-    public class MongoData : IData {
-        public ObjectId? Id { get; }
-        string? IData.Id => Id?.ToString();
-        public string ContentType { get; set; }
-        public byte[] Content { get; set; }
+public class MongoDataRepository : MongoRepository<MongoData>, IDataRepository<MongoData>
+{
+    public MongoDataRepository(IMongoDbContext context) : base(context) { }
+
+    public Task SetContentAsync(MongoData data, string contentType, byte[] content, CancellationToken ct = default)
+    {
+        data.ContentType = contentType;
+        data.Content = content;
+        return Task.CompletedTask;
     }
-    
-    public class MongoDataRepository : MongoRepository<MongoData>, IDataRepository<MongoData> {
-        public MongoDataRepository(IMongoDbContext context)
-            : base(context) {
-        }
-        
-        public Task SetContenAsync(MongoData data, string contentType, byte[] content, CancellationToken cancellationToken = default) {
-            data.ContentType = contentType;
-            data.Content = content;
-            return Task.CompletedTask;
-        }
-        
-        public Task<byte[]> GetContentAsync(MongoData data, CancellationToken cancellationToken = default) {
-            return Task.FromResult(data.Content);
-        }
-        
-         public Task<string> GetContentTypeAsync(MongoData data, CancellationToken cancellationToken = default) {
-            return Task.FromResult(data.ContentType);
-        }
-    }
+
+    public Task<byte[]> GetContentAsync(MongoData data, CancellationToken ct = default)
+        => Task.FromResult(data.Content);
+
+    public Task<string> GetContentTypeAsync(MongoData data, CancellationToken ct = default)
+        => Task.FromResult(data.ContentType);
 }
 ```
 
-... and in Foo.Service.EF implement the same logic using EntityFramework Core
+And an EF Core assembly (`Foo.Service.EF.dll`) provides the relational equivalent:
 
 ```csharp
-using System;
-using Deveel.Data;
+public class DbData : IData { /* ... */ }
 
-namespace Foo {
-    public class DbData : IData {
-        public Guid? Id { get; }
-        string? IData.Id => Id?.ToString();
-        public string ContentType { get; set; }
-        public string Content { get; set; }
-        byte[] IData.Content => Convert.FromBase64String(Content);
-    }
-    
-    public class EntityDataRepository : EntityRepository<MongoData>, IDataRepository<MongoData> {
-        public EntityDataRepository(DataDbContext context)
-            : base(context) {
-        }
-        
-        public Task SetContenAsync(DbData data, string contentType, byte[] content, CancellationToken cancellationToken = default) {
-            data.ContentType = contentType;
-            data.Content = Convert.ToBase64(Encoding.UTF8.GetString(content));
-            return Task.CompletedTask;
-        }
-        
-        public Task<byte[]> GetContentAsync(DbData data, CancellationToken cancellationToken = default) {
-            return Task.FromResult(Convert.FromBase64(Encoding.UTF8.GetBytes(data.Content));
-        }
-        
-         public Task<string> GetContentTypeAsync(MongoData data, CancellationToken cancellationToken = default) {
-            return Task.FromResult(data.ContentType);
-        }
-    }
+public class EntityDataRepository : EntityRepository<DbData>, IDataRepository<DbData>
+{
+    public EntityDataRepository(DataDbContext context) : base(context) { }
+
+    // ... same interface, different storage logic
 }
 ```
 
+The consuming application code depends only on `IDataRepository<TData>` — the storage engine is a deployment concern, not a domain concern.
