@@ -82,10 +82,12 @@ This is useful for tying operation lifetime to an HTTP request:
 ```csharp
 // Register the ASP.NET Core HTTP cancellation source
 // (provided by Deveel.Repository.Manager.AspNetCore)
-builder.Services.AddHttpCancellationSource();
+builder.Services.AddHttpRequestTokenSource();
 ```
 
 With this in place, when the HTTP request is aborted, all in-flight repository operations are cancelled without any additional code in your manager.
+
+See [HTTP Request Cancellation](http-request-cancellation.md) for full details.
 
 ## Caching
 
