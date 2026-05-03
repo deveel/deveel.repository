@@ -1,63 +1,101 @@
-## Entity Framework Core Repositories
+# Entity Framework Core Repository
 
-| Feature | Status | Notes
-| --- | --- |--- |
-| Base Repository | :white_check_mark: | |
-| Filterable | :white_check_mark: |  |
-| Queryable | :white_check_mark: | _Native EF Core queryable extensions_ |
-| Pageable | :white_check_mark: | |
-| Multi-tenant | :white_check_mark: | _Uses Finbuckle Multi-Tenant_ |
+| Feature | Status | Notes |
+| ------- | :----: | ----- |
+| Base Repository | ✅ | |
+| Filterable | ✅ | |
+| Queryable | ✅ | Native EF Core `IQueryable` |
+| Pageable | ✅ | |
+| Tracking | ✅ | EF Core change tracking |
+| Multi-tenant | ✅ | Via [Finbuckle.MultiTenant](https://www.finbuckle.com/MultiTenant) |
 
-The _Deveel Repository_ framework provides an implementation of the repository pattern that uses the [Entity Framework Core](https://github.com/dotnet/efcore), and allows to access a wide range of relational databases.
+The _Deveel Repository_ `Deveel.Repository.EntityFramework` package provides an implementation of the repository pattern that uses [Entity Framework Core](https://github.com/dotnet/efcore), enabling access to any relational database that EF Core supports (SQL Server, PostgreSQL, SQLite, MySQL, and others).
 
-The `EntityRepository<TEntity>` class is an implementation of the repository pattern that wraps around an instance of `DbContext` and provides the basic operations to query and manipulate the data.
+The `EntityRepository<TEntity>` class wraps a `DbContext` and exposes the full `IRepository<TEntity>` interface, including filterable, queryable, pageable, and tracking capabilities.
 
-To start using instances of the `EntityRepository<TEntity>` class, you need first to register a `DbContext` instance in the dependency injection container, that will be used to access the database, using one of the extensions methods of the `IServiceCollection` interface: you don't receive any special provisioning from the library, and you can use the standard methods provided by the Entity Framework Core itself.
+## Installation
 
-The registration of the repository in the dependency injection container is the same provided by the kernel library, and is the following:
-
-```csharp
-services.AddRepository<EntityRepository<MyEntity>>();
-services.AddRepository<MyEntityRepository>();
+```bash
+dotnet add package Deveel.Repository.EntityFramework
 ```
 
-or using the shortcut method, that will register the default implementation of the repository:
+## Registration
+
+You need to register a `DbContext` yourself (using the standard EF Core methods), and then register the repository on top of it. The library does not manage the `DbContext` registration.
 
 ```csharp
-services.AddEntityRepository<MyEntity>();
+// Program.cs
+builder.Services.AddDbContext<MyDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+
+// Generic form — registers EntityRepository<MyEntity> and all its interface projections
+builder.Services.AddRepository<EntityRepository<MyEntity>>();
+
+// Shortcut form provided by this package
+builder.Services.AddEntityRepository<MyEntity>();
 ```
 
-Remember that you still need to register the `DbContext` in the dependency injection container, and that the `EntityRepository<TEntity>` class requires a constructor that accepts an instance of `DbContext` as parameter.
-
-The simplest use case for this is the following set of calls:
+For a custom repository that derives from `EntityRepository<TEntity>`:
 
 ```csharp
-services.AddDbContext<MyDbContext>(options => options.UseSqlServer("<connection_string>"));
-services.AddRepository<EntityRepository<MyEntity>>();
+builder.Services.AddRepository<MyEntityRepository>();
 ```
 
-The library provides a shortcut method to register the DbContext in multi-tenant applications, using the ITenantInfo interface provided by the [Finbuckle.MultiTenant](https://www.finbuckle.com/MultiTenant) framework.
+## Multi-tenant Support
 
-For example:
+Starting from version 1.4, multi-tenancy in EF Core repositories is handled externally via [Finbuckle.MultiTenant](https://www.finbuckle.com/MultiTenant). The library does not provide its own tenant-isolation logic for EF Core; instead, configure the `DbContext` to use tenant information from the `ITenantInfo` interface:
 
 ```csharp
-services.AddDbContextForTenant<MyDbContext, TenantInfo>((tenant, options) => options.UseSqlServer(tenant.ConnectionString));
+builder.Services.AddMultiTenant<TenantInfo>()
+    .WithConfigurationStore()
+    .WithRouteStrategy();
 ```
 
-**Note**: Please, refer to the official documentation by Microsoft for more information on how to configure the DbContext in your application, and the documentation of the [Finbuckle.MultiTenant](https://www.finbuckle.com/MultiTenant) framework for more information on how to configure the multi-tenant support and its support for [Entity Framework Core](https://www.finbuckle.com/MultiTenant/EFCore).
-
-#### Filtering Data
-
-The `EntityRepository<TEntity>` implements both the `IQueryableRepository<TEntity>` and the `IFilterableRepository<TEntity>` interfaces, and allows to query the data only through the `ExpressionFilter<TEntity>` class or through lambda expressions of type `Expression<Func<TEntity, bool>>`.
-
-For example, to retrieve all the entities of type `MyEntity` that have a property `Name` equal to `"John"`:
+Then wire the tenant connection string into your `DbContext`:
 
 ```csharp
-var entities = await repository.FindAllAsync(new ExpressionFilter<MyEntity>(x => x.Name == "John"));
+public class MyDbContext : DbContext
+{
+    private readonly IMultiTenantContext<TenantInfo> _tenantContext;
+
+    public MyDbContext(
+        DbContextOptions<MyDbContext> options,
+        IMultiTenantContext<TenantInfo> tenantContext) : base(options)
+    {
+        _tenantContext = tenantContext;
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlServer(_tenantContext.TenantInfo!.ConnectionString);
+    }
+}
 ```
 
-or event simpler, using the lambda expression:
+After that, inject and use `IRepository<MyEntity>` normally — tenant isolation is handled transparently by the `DbContext`.
+
+## Querying
+
+`EntityRepository<TEntity>` implements both `IQueryableRepository<TEntity>` and `IFilterableRepository<TEntity>`.
+
+**With lambda expressions (shorthand):**
 
 ```csharp
 var entities = await repository.FindAllAsync(x => x.Name == "John");
 ```
+
+**With `ExpressionQueryFilter<TEntity>`:**
+
+```csharp
+var filter = new ExpressionQueryFilter<MyEntity>(x => x.Name == "John");
+var query   = new Query(filter);
+var entities = await repository.FindAllAsync(query);
+```
+
+> The EF Core driver only supports `ExpressionQueryFilter<TEntity>` for filtering. Passing any other filter type will throw `NotSupportedException`.
+
+## Notes
+
+- Register your `DbContext` using the standard EF Core `AddDbContext` extension — the repository package does not wrap or replace that registration.
+- Refer to the [Entity Framework Core documentation](https://learn.microsoft.com/en-us/ef/core/) for migration and schema configuration details.
+- Refer to the [Finbuckle.MultiTenant documentation](https://www.finbuckle.com/MultiTenant) for multi-tenant EF Core configuration.

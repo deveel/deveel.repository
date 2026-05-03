@@ -1,38 +1,93 @@
 # Caching Entities
 
-The `EntityManager<TEntity>` class provides a way to cache the entities retrieved from the repository, and to use the cached entities instead of querying the repository, through the `IEntityCache<TEntity>` service optionally available in the dependency injection container.
+The `EntityManager<TEntity>` supports an optional second-level cache via the `IEntityCache<TEntity>` service. When registered, the manager transparently caches entities on write and serves them from the cache on subsequent reads, reducing the number of calls to the underlying repository.
 
-To enable the caching feature in the application, you can register an instance of the entity cache-specific provider.
+## Installation
 
-For example, to use the [EasyCaching](https://easycaching.readthedocs.io/en/latest/) library, you can use the following code:
+Install the EasyCaching integration package:
 
-```csharp
-public void ConfigureServices(IServiceCollection services) {
-	services.AddEasyCaching(options => {
-		options.UseInMemory("default");
-	});
-	
-	services.AddEntityEasyCacheFor<MyEntity>();
-}
+```bash
+dotnet add package Deveel.Repository.Manager.EasyCaching
 ```
 
-The above code will register an instance of `IEntityCache<MyEntity>` in the dependency injection container, that will be used by the `EntityManager<TEntity>` class to cache the entities of type `MyEntity`.
+## Registration
 
-The `EntityManager<TEntity>` class will interface the instance of `IEntityCache<TEntity>` with the following methods:
+Register EasyCaching and the entity cache in the DI container:
 
-| Method             | Cache Operation | Description                                                                                                                                                                                   |
-| ------------------ | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `FindByKeyAsync`   | `GetOrSetAsync` | Retrieves an entity from the cache, using a key generated from the given primary key, and if not found it will invoke a the Repository method to retrieve the entity, and cache it (if found) |
-| `AddAsync`         | `SetAsync`      | Adds an entity to the cache, using a set of keys generated from the entity added.                                                                                                             |
-| `AddRangeAsync`    | `SetAsync`      | Adds a set of entities to the cache, using a set of keys generated from the entities added.                                                                                                   |
-| `UpdateAsync`      | `SetAsync`      | Updates an entity in the cache, using a set of keys generated from the entity updated.                                                                                                        |
-| `RemoveAsync`      | `RemoveAsync`   | Removes an entity from the cache, using a set of keys generated from the entity removed.                                                                                                      |
-| `RemoveRangeAsync` | `RemoveAsync`   | Removes a set of entities from the cache, using a set of keys generated from the entities removed.                                                                                            |
+```csharp
+// Program.cs
+builder.Services.AddEasyCaching(options =>
+{
+    options.UseInMemory("default");
+});
 
-By default, the `EntityManager<TEntity>` class will use the primary key of the entity to generate the keys used to store the entity in the cache: this behavior can be overridden by implementing the `IEntityCacheKeyGenerator<TEntity>` interface and registering an instance of the generator in the dependency injection container.
+// Register the default EntityEasyCache<MyEntity>
+builder.Services.AddEntityEasyCacheFor<MyEntity>();
 
-Implementations of the `EntityManager<TEntity>` have the option to override the default behavior for generating keys for the entities.
+// Then register the manager (which picks up the cache automatically)
+builder.Services.AddManagerFor<MyEntity>();
+```
 
-**Cache Serialization**
+You can configure cache options inline or from configuration:
 
-In some scenarios, the entities retrieved from the repository need to be converted to another version of the entity, that is capable of being serialized before being stored in the cache, and deserialized when retrieved from the cache.
+```csharp
+// Inline configuration
+builder.Services.AddEntityEasyCacheFor<MyEntity>(options =>
+{
+    options.Expiration = TimeSpan.FromMinutes(5);
+});
+
+// From appsettings.json
+builder.Services.AddEntityEasyCacheFor<MyEntity>("Caching:MyEntity");
+```
+
+## How the Cache Interacts with Manager Operations
+
+The `EntityManager<TEntity>` intercepts the following operations to read from or write to the cache:
+
+| Manager Method | Cache Operation | Description |
+| -------------- | --------------- | ----------- |
+| `FindAsync(key)` | `GetOrSetAsync` | Returns the cached entity if present; otherwise calls the repository and caches the result. |
+| `AddAsync` | `SetAsync` | Stores the newly added entity in the cache. |
+| `AddRangeAsync` | `SetAsync` (batch) | Stores all added entities in the cache. |
+| `UpdateAsync` | `SetAsync` | Updates the cached entry after a successful repository update. |
+| `RemoveAsync` | `RemoveAsync` | Evicts the entity from the cache after removal. |
+| `RemoveRangeAsync` | `RemoveAsync` (batch) | Evicts all removed entities from the cache. |
+
+## Cache Keys
+
+By default, the primary key of the entity is used to derive the cache key. To customize key generation, implement `IEntityCacheKeyGenerator<TEntity>` and register it:
+
+```csharp
+public class MyEntityCacheKeyGenerator : IEntityCacheKeyGenerator<MyEntity>
+{
+    public IEnumerable<string> GetKeys(MyEntity entity)
+    {
+        yield return $"myentity:{entity.Id}";
+        yield return $"myentity:by-name:{entity.Name}";
+    }
+}
+
+builder.Services.AddEntityCacheKeyGenerator<MyEntityCacheKeyGenerator>();
+```
+
+## Cache Serialization
+
+In some scenarios, entities must be converted to a serializable form before being stored in the cache (e.g., when the cache provider serializes objects to JSON or binary). To handle this, derive from `EntityEasyCache<TEntity, TCached>` and implement `IEntityEasyCacheConverter<TEntity, TCached>`:
+
+```csharp
+public class MyEntityCacheConverter
+    : IEntityEasyCacheConverter<MyEntity, MyEntityCacheModel>
+{
+    public MyEntityCacheModel ToCache(MyEntity entity) => new MyEntityCacheModel { /* ... */ };
+    public MyEntity FromCache(MyEntityCacheModel cached) => new MyEntity { /* ... */ };
+}
+
+builder.Services.AddEntityEasyCacheConverter<MyEntityCacheConverter>();
+```
+
+Then register a typed `EntityEasyCache<MyEntity, MyEntityCacheModel>`:
+
+```csharp
+builder.Services.AddEntityEasyCache<EntityEasyCache<MyEntity, MyEntityCacheModel>>();
+```

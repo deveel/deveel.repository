@@ -1,21 +1,43 @@
-# Why Another Repository Pattern Library?
+# Why Deveel Repository?
 
-## Drivers and Motivation
+## Motivation and Drivers
 
-The repository pattern is a well-known pattern in the domain-driven design, that allows to abstract of the data access layer from the domain model, providing a clean separation of concerns.
+The [_Repository Pattern_](https://martinfowler.com/eaaCatalog/repository.html) is a well-established building block of [_Domain-Driven Design (DDD)_](https://en.wikipedia.org/wiki/Domain-driven_design). In DDD, a repository is not simply a data-access helper — it is the **boundary between the domain model and the infrastructure layer**. It speaks the language of the domain (entities, aggregates, identities) while hiding every detail of how data is fetched or persisted.
 
-The repository pattern is often used in conjunction with the _unit of work_ pattern, which allows to grouping of a set of operations in a single transaction.
+While building several projects, both internal and open-source, requiring some degree of data persistence, I found myself implementing the same pattern over and over again, with minor variations depending on the underlying data source. Existing libraries were either unreliable, too opinionated, or simply not providing the features I needed for multi-source scenarios.
 
-While implementing several projects for my own needs, and while creating some Open-Source projects requiring a certain degree of data persistence, I've found myself implementing the same pattern over and over again, with some minor differences, depending on the data source I was using.
+This library was created to provide a simple, reliable, and framework-agnostic implementation of the pattern that can be used across projects without repeating the same boilerplate.
 
-I tried to look for existing solutions that could help me in this task, but I found that most of the existing libraries were either unreliable, either too opinionated or simply not providing the features I was looking for.
+Although the Repository Pattern is not universally applicable (for example, in purely event-driven architectures), it remains one of the most practical tools for keeping domain logic clean and portable.
 
-Although this pattern is not applicable to all scenarios (for instance in the case of _event-driven_ applications), I found that it is still a good pattern to use in many cases, and I decided to create this library to provide a simple and reliable implementation of the pattern, that can be used in different scenarios.
+### This Is Not an ORM
 
-### Why Not Just Use Entity Framework Core?
+> **It was never the intention of this project to build another ORM.**
 
-A great advantage of the usage of _Entity Framework Core_ is that it provides a set of abstractions that allows one to access different data sources and use the same LINQ syntax to query the data.
+Object-Relational Mappers (and document-mapper equivalents) such as [Entity Framework Core](https://github.com/dotnet/efcore), [Dapper](https://github.com/DapperLib/Dapper), or [MongoFramework](https://github.com/TurnerSoftware/MongoFramework) are excellent tools for mapping .NET objects to database tables or documents. They solve a real and complex problem at the infrastructure level.
 
-Anyway, design-wise the Entity Framework is closer to an ORM than to a repository pattern, and it doesn't provide a way to abstract the data access layer from the domain model.
+Deveel Repository does not try to replace them. Instead, it provides a domain-oriented abstraction **on top of** them.
 
-Furthermore, the project was started to address the need to access different data sources, and not only relational databases (for example, MongoDB, or in-memory data sources).
+### How ORMs and Deveel Repository Coexist
+
+| Concern | ORM (EF Core, Dapper, …) | Deveel Repository |
+|---|---|---|
+| **Responsibility** | Map objects ↔ storage (tables, documents) | Provide a domain-oriented access interface |
+| **Speaks the language of** | Database schema, SQL, drivers | Domain model (entities, aggregates) |
+| **Knows about** | Tables, columns, change tracking, joins | Collections of entities and their identities |
+| **Lives in layer** | Infrastructure | Domain / Application boundary |
+| **Used by** | Repository implementations | Application services, domain services |
+
+In concrete terms: you build a repository _on top of_ an ORM. The ORM handles the low-level persistence mechanics; Deveel Repository defines the stable contract your application code depends on. When the database engine changes, or when you upgrade EF Core, only the repository implementation changes — your domain and application layers remain untouched.
+
+The drivers shipped with this library (`Deveel.Repository.EntityFramework`, `Deveel.Repository.MongoFramework`) are precisely this: thin adapters that wrap an ORM behind the `IRepository<TEntity>` interface.
+
+### Why Not Just Use Entity Framework Core Directly?
+
+Entity Framework Core is a great tool, and this library actively uses it as one of its drivers. But EF Core is architecturally closer to an ORM than to a repository pattern:
+
+- It exposes `DbSet<T>` and `IQueryable<T>` — infrastructure concerns — directly to consumers.
+- It couples your application code to a specific persistence technology.
+- It does not provide a uniform contract that allows you to swap storage backends (e.g., for testing or for supporting multiple databases).
+
+By placing the `IRepository<TEntity>` abstraction between your domain and EF Core, you gain a stable, mockable, and swappable data-access layer — without giving up any of the power EF Core provides underneath.

@@ -1,67 +1,116 @@
-# MongoDB
+# MongoDB Repository
 
-| Feature | Status | Notes
-| --- | --- |--- |
-| Base Repository | :white_check_mark: | |
-| Filterable | :white_check_mark: |  |
-| Queryable | :white_check_mark: | _Native EF Core queryable extensions_ |
-| Pageable | :white_check_mark: | |
-| Multi-tenant | :white_check_mark: | _Uses Finbuckle Multi-Tenant_ |
+| Feature | Status | Notes |
+| ------- | :----: | ----- |
+| Base Repository | ✅ | |
+| Filterable | ✅ | |
+| Queryable | ✅ | Via MongoFramework `IQueryable` |
+| Pageable | ✅ | |
+| Tracking | ✅ | MongoFramework change tracking |
+| Multi-tenant | ✅ | Via [Finbuckle.MultiTenant](https://github.com/Finbuckle/Finbuckle.MultiTenant) |
 
+The `MongoRepository<TEntity>` class is an implementation of the repository pattern that stores entities in a [MongoDB](https://www.mongodb.com) database, built on top of [MongoFramework](https://github.com/TurnerSoftware/MongoFramework).
 
-The `MongoDbRepository<TEntity>` class is an implementation of the repository pattern that stores the data in a MongoDB database, using the [MongoFramework](https://github.com/TurnerSoftware/MongoFramework)
+MongoFramework is a lightweight library that maps .NET objects to MongoDB documents using a design similar to Entity Framework Core.
 
-MongoFramework is a lightweight .NET Standard library that allows to map .NET objects to MongoDB documents, and provides a set of APIs to query and manipulate the data, using a design that is very similar to the _Entity Framework Core_.
+## Installation
 
-To start using instances of the `MongoRepository<TEntity>` class, you need first to register a `IMongoDbContext` instance in the dependency injection container, that will be used to access the database, using one of the extensions methods of the `IServiceCollection` interface.
-
-The simplest use case for this is the following set of calls:
-
-```csharp
-services.AddMongoContext("mongodb://localhost:27017/my_database");
-services.AddMongoRepository<MyEntity>();
+```bash
+dotnet add package Deveel.Repository.MongoFramework
 ```
 
-The first call registers an instance of `IMongoDbContext` in the dependency injection container, that will be used by the repository to access the database.
+## Registration
 
-**Note**: By default the _MongoFramework_ library doesn't provide any way to inject the database context in the service collection: this is an extension provided by this implementation of the repository pattern.
+The package provides `AddMongoDbContext<TContext>` to register the MongoDB context, followed by the standard `AddRepository<T>` to register the repository:
 
-The following methods are available to register a MongoDB context in the dependency injection container:
+```csharp
+// Program.cs
+
+// 1. Register the MongoDB context
+builder.Services.AddMongoDbContext<MongoDbContext>(
+    "mongodb://localhost:27017/my_database");
+
+// 2. Register the repository
+builder.Services.AddRepository<MongoRepository<MyEntity>>();
+```
+
+You can also use a builder delegate to configure the connection:
+
+```csharp
+builder.Services.AddMongoDbContext<MongoDbContext>(builder =>
+    builder.UseConnection("mongodb://localhost:27017/my_database"));
+```
+
+The following context registration methods are available:
 
 | Method | Description |
 | ------ | ----------- |
-| `AddMongoContext<TContext>(string, ServiceLifetime)` | Registers a MongoDB context in the dependency injection container, using the connection string provided as argument. |
-| `AddMongoContext<TContext>(Action<MongoConnectionBuilder>, ServiceLifetime)` | Registers a MongoDB context of the given type, using the connection configured. |
-| `AddMongoContext<TContext>(Action<ITenantInfo, MongoConnectionBuilder>, ServiceLifetime)` | Registers a MongoDB context of the given type, using the connection configured for the given tenant. |
+| `AddMongoDbContext<TContext>(string, ServiceLifetime)` | Registers a context using a connection string. |
+| `AddMongoDbContext<TContext>(Action<MongoConnectionBuilder>, ServiceLifetime)` | Registers a context using a connection builder delegate. |
 
+### Custom Context Type
 
-The call to register the repository in the dependency injection container is the same provided by the kernel library, and is the following:
+If you derive from `MongoDbContext` (or `MongoDbTenantContext` for multi-tenant scenarios), register your concrete type:
 
 ```csharp
-services.AddRepository<MongoRepository<MyEntity>>();
+builder.Services.AddMongoDbContext<MyMongoDbContext>("mongodb://...");
+builder.Services.AddRepository<MongoRepository<MyEntity>>();
 ```
 
-Additionally, the package provides a shortcut method to register the default implementation of the repository:
+## Multi-tenant Support
+
+Multi-tenant support uses [Finbuckle.MultiTenant](https://github.com/Finbuckle/Finbuckle.MultiTenant). First, configure Finbuckle:
 
 ```csharp
-services.AddMongoRepository<MyEntity>();
-```
-
-#### Multi-Tenant Support
-**Note**: The multi-tenant support is provided by the [Finbuckle.MultiTenant](https://github.com/Finbuckle/Finbuckle.MultiTenant) framework, and you need to first register the `TenantInfo` class in the dependency injection container.
-
-For example, using the following call:
-
-```csharp
-services.AddMultiTenant<TenantInfo>()
+builder.Services.AddMultiTenant<MongoDbTenantInfo>()
     .WithConfigurationStore()
     .WithRouteStrategy("tenant");
 ```
 
-#### Filtering Data
+Then register a tenant-aware MongoDB context (derived from `MongoDbTenantContext`) and the repository:
 
-The `MongoDbRepository<TEntity>` implements both the `IQueryableRepository<TEntity>` and the `IFilterableRepository<TEntity>` interfaces, and allows to query the data using the LINQ syntax, or using instances of the `IQueryFilter` interface.
+```csharp
+builder.Services.AddMongoDbContext<MyMongoTenantContext>(connectionBuilder =>
+    connectionBuilder.UseConnection("mongodb://..."));
 
-The library provides a `MongoFilter` class that is backed by a MongoDB filter expression, and can be used to query the data, and that is convertible to a MongoDB filter expression.
+builder.Services.AddRepository<MongoRepository<MyEntity>>();
+```
 
-It is also possible to filter by using lambda expressions of type `Expression<Func<TEntity, bool>>` or by using the `ExpressionFilter<TEntity>` class.
+The tenant context resolves the correct database connection for each tenant automatically.
+
+## Querying
+
+`MongoRepository<TEntity>` implements `IQueryableRepository<TEntity>`, `IFilterableRepository<TEntity>`, and `IPageableRepository<TEntity>`.
+
+**With LINQ:**
+
+```csharp
+var items = repository.AsQueryable()
+    .Where(x => x.IsActive)
+    .OrderBy(x => x.Name)
+    .ToList();
+```
+
+**With filter types:**
+
+```csharp
+// Lambda shorthand (extension method)
+var items = await repository.FindAllAsync(x => x.IsActive);
+
+// ExpressionQueryFilter
+var filter = new ExpressionQueryFilter<MyEntity>(x => x.IsActive);
+var items  = await repository.FindAllAsync(new Query(filter));
+
+// MongoDB-specific geo-distance filter
+var geoFilter = new MongoGeoDistanceFilter(
+    fieldName: "Location",
+    center: new GeoPoint(lat, lon),
+    maxDistanceKm: 10);
+var items = await repository.FindAllAsync(new Query(geoFilter));
+```
+
+## Notes
+
+- MongoFramework does not natively expose DI integration; the `AddMongoDbContext` extensions provided by this package fill that gap.
+- Refer to the [MongoFramework documentation](https://github.com/TurnerSoftware/MongoFramework) for entity mapping and index configuration.
+- Refer to the [Finbuckle.MultiTenant documentation](https://www.finbuckle.com/MultiTenant) for multi-tenant configuration.
