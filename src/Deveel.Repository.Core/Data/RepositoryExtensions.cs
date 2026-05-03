@@ -1396,6 +1396,34 @@ namespace Deveel.Data {
 		/// <param name="filter">
 		/// The filter expression used to find the entity.
 		/// </param>
+		/// <returns>
+		/// Returns an instance of <typeparamref name="TEntity"/> that
+		/// can be identified by the given filter, or <c>null</c> if no
+		/// entity matches the given filter.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support filtering.
+		/// </exception>
+		public static TEntity? FindFirst<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter)
+            where TEntity : class
+            => repository.FindFirstAsync(new Query(filter)).ConfigureAwait(false).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Finds the first entity in the repository that matches
+		/// the given filter expression
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entity.
+		/// </param>
+		/// <param name="filter">
+		/// The filter expression used to find the entity.
+		/// </param>
 		/// <param name="cancellationToken">
 		/// A token used to cancel the operation.
 		/// </param>
@@ -1434,34 +1462,6 @@ namespace Deveel.Data {
 		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.AsFilterable().FindFirstAsync(Query.Empty, cancellationToken);
-
-		/// <summary>
-		/// Finds the first entity in the repository that matches
-		/// the given filter expression
-		/// </summary>
-		/// <typeparam name="TEntity">
-		/// The type of entity handled by the repository.
-		/// </typeparam>
-		/// <typeparam name="TKey">
-		/// The type of the key that uniquely identifies the entity.
-		/// </typeparam>
-		/// <param name="repository">
-		/// The repository instance to use to find the entity.
-		/// </param>
-		/// <param name="filter">
-		/// The filter expression used to find the entity.
-		/// </param>
-		/// <returns>
-		/// Returns an instance of <typeparamref name="TEntity"/> that
-		/// can be identified by the given filter, or <c>null</c> if no
-		/// entity matches the given filter.
-		/// </returns>
-		/// <exception cref="NotSupportedException">
-		/// Thrown when the repository does not support filtering.
-		/// </exception>
-		public static TEntity? FindFirst<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter)
-            where TEntity : class
-            => repository.FindFirstAsync(new Query(filter)).ConfigureAwait(false).GetAwaiter().GetResult();
 
 		/// <summary>
 		/// Synchronously finds the first entity in the repository that matches
@@ -1870,6 +1870,29 @@ namespace Deveel.Data {
             => repository.FindAllAsync(Query.Empty, cancellationToken);
 
 		/// <summary>
+		/// Finds all the entities in the repository, naturally ordered.
+		/// </summary>
+		/// <typeparam name="TEntity">
+		/// The type of entity handled by the repository.
+		/// </typeparam>
+		/// <typeparam name="TKey">
+		/// The type of the key that uniquely identifies the entity.
+		/// </typeparam>
+		/// <param name="repository">
+		/// The repository instance to use to find the entities.
+		/// </param>
+		/// <returns>
+		/// Returns a list of <typeparamref name="TEntity"/> from
+		/// the repository, naturally ordered.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support querying or filtering.
+		/// </exception>
+		public static IList<TEntity> FindAll<TEntity, TKey>(this IRepository<TEntity, TKey> repository)
+            where TEntity : class
+            => repository.FindAll(QueryFilter.Empty);
+
+		/// <summary>
 		/// Finds all the entities in the repository that match
 		/// the given filter.
 		/// </summary>
@@ -2172,28 +2195,6 @@ namespace Deveel.Data {
 			where TEntity : class
 			=> repository.FindAllAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
-		/// <summary>
-		/// Finds all the entities in the repository, naturally ordered.
-		/// </summary>
-		/// <typeparam name="TEntity">
-		/// The type of entity handled by the repository.
-		/// </typeparam>
-		/// <typeparam name="TKey">
-		/// The type of the key that uniquely identifies the entity.
-		/// </typeparam>
-		/// <param name="repository">
-		/// The repository instance to use to find the entities.
-		/// </param>
-		/// <returns>
-		/// Returns a list of <typeparamref name="TEntity"/> from
-		/// the repository, naturally ordered.
-		/// </returns>
-		/// <exception cref="NotSupportedException">
-		/// Thrown when the repository does not support querying or filtering.
-		/// </exception>
-		public static IList<TEntity> FindAll<TEntity, TKey>(this IRepository<TEntity, TKey> repository)
-            where TEntity : class
-            => repository.FindAll(QueryFilter.Empty);
 
         #endregion
     }
