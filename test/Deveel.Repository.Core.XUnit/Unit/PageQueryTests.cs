@@ -7,6 +7,8 @@ namespace Deveel.Data;
 [Trait("Feature", "PageQuery")]
 public class PageQueryTests
 {
+    private readonly PersonFaker _faker = new PersonFaker();
+
     #region PageQuery creation
 
     [Fact]
@@ -41,7 +43,7 @@ public class PageQueryTests
     public void Should_HaveExpressionFilter_When_WhereClauseIsApplied()
     {
         // Arrange
-        var person = PersonFixture.PersonFaker.Generate();
+        var person = _faker.Generate();
 
         // Act
         var query = new PageQuery<Person>(1, 10).Where(x => x.FirstName == person.FirstName);
@@ -57,7 +59,7 @@ public class PageQueryTests
     public void Should_HaveCombinedFilter_When_MultipleWhereClausesAreApplied()
     {
         // Arrange
-        var person = PersonFixture.PersonFaker.Generate();
+        var person = _faker.Generate();
 
         // Act
         var query = new PageQuery<Person>(1, 10)

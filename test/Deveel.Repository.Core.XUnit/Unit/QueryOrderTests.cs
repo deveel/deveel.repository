@@ -5,6 +5,8 @@
 [Trait("Feature", "QueryOrder")]
 public class QueryOrderTests
 {
+    private readonly PersonFaker _faker = new PersonFaker();
+
     #region QueryOrder.Combine
 
     [Fact]
@@ -58,7 +60,7 @@ public class QueryOrderTests
     public void Should_ReturnSortedQueryable_When_ApplyingCombinedSort()
     {
         // Arrange
-        var people = PersonFixture.PersonFaker.Generate(4);
+        var people = _faker.Generate(4);
         var queryable = people.AsQueryable();
         var sort1 = QueryOrder.OrderBy<Person>(x => x.FirstName);
         var sort2 = QueryOrder.OrderByDescending<Person>(x => x.LastName);
@@ -76,7 +78,7 @@ public class QueryOrderTests
     public void Should_SortByProperty_When_ApplyingFieldNameSortWithNoMapper()
     {
         // Arrange
-        var people = PersonFixture.PersonFaker.Generate(4);
+        var people = _faker.Generate(4);
         var queryable = people.AsQueryable();
         var sort = QueryOrder.OrderBy("FirstName");
 
@@ -92,7 +94,7 @@ public class QueryOrderTests
     public void Should_SortByMappedField_When_ApplyingFieldNameSortWithDelegatedMapper()
     {
         // Arrange
-        var people = PersonFixture.PersonFaker.Generate(4);
+        var people = _faker.Generate(4);
         var queryable = people.AsQueryable();
         var sort = QueryOrder.OrderBy("first_name");
 

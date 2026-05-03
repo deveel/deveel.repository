@@ -5,7 +5,6 @@
 [Trait("Feature", "QueryFilter")]
 public class CombinedFilterTests
 {
-    private static readonly Bogus.Faker<Person> PersonFaker = PersonFixture.PersonFaker;
 
     #region QueryFilter.Combine
 

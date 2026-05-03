@@ -5,6 +5,8 @@
 [Trait("Feature", "PageResult")]
 public class PageResultTests
 {
+    private readonly PersonFaker _faker = new PersonFaker();
+
     #region PageResult construction
 
     [Fact]
@@ -12,7 +14,7 @@ public class PageResultTests
     {
         // Arrange
         var query = new PageQuery<Person>(1, 10);
-        var items = PersonFixture.PersonFaker.Generate(10);
+        var items = _faker.Generate(10);
 
         // Act
         var result = new PageResult<Person>(query, 100, items);
@@ -36,7 +38,7 @@ public class PageResultTests
     {
         // Arrange
         var query = new PageQuery<Person>(10, 10);
-        var items = PersonFixture.PersonFaker.Generate(8);
+        var items = _faker.Generate(8);
 
         // Act
         var result = new PageResult<Person>(query, 100, items);

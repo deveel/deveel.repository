@@ -5,6 +5,7 @@
 [Trait("Feature", "QueryFilter")]
 public class QueryFilterTests
 {
+    private readonly PersonFaker _faker = new PersonFaker();
     private class Company
     {
         public string Name { get; set; } = string.Empty;
@@ -97,7 +98,7 @@ public class QueryFilterTests
     public void Should_ReturnMatchingEntity_When_CallingFirstOrDefaultWithFilter()
     {
         // Arrange
-        var people = PersonFixture.PersonFaker.Generate(10);
+        var people = _faker.Generate(10);
         var target = people[Random.Shared.Next(0, people.Count - 1)];
         var filter = new ExpressionQueryFilter<Person>(x => x.FirstName == target.FirstName);
 
@@ -113,7 +114,7 @@ public class QueryFilterTests
     public void Should_ReturnMatchingList_When_CallingToListWithFilter()
     {
         // Arrange
-        var people = PersonFixture.PersonFaker.Generate(100);
+        var people = _faker.Generate(100);
         var target = people[Random.Shared.Next(0, people.Count - 1)];
         var expected = people.Where(x => x.FirstName == target.FirstName).ToList();
         var filter = new ExpressionQueryFilter<Person>(x => x.FirstName == target.FirstName);
@@ -130,7 +131,7 @@ public class QueryFilterTests
     public void Should_ReturnTrue_When_AnyMatchesFilter()
     {
         // Arrange
-        var people = PersonFixture.PersonFaker.Generate(100);
+        var people = _faker.Generate(100);
         var target = people[Random.Shared.Next(0, people.Count - 1)];
         var filter = new ExpressionQueryFilter<Person>(x => x.FirstName == target.FirstName);
 

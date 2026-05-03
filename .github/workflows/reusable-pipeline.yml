@@ -23,11 +23,6 @@ on:
         required: false
         default: false
         type: boolean
-      solution-path:
-        description: Solution file to build, test and pack
-        required: false
-        default: Deveel.Repository.sln
-        type: string
     secrets:
       CODECOV_TOKEN:
         required: false
@@ -64,10 +59,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libsqlite3-mod-spatialite
 
       - name: Restore dependencies
-        run: dotnet restore ${{ inputs.solution-path }} -p:TargetFrameworks=${{ matrix.target-framework }}
+        run: dotnet restore -p:TargetFrameworks=${{ matrix.target-framework }}
 
       - name: Build
-        run: dotnet build ${{ inputs.solution-path }} --no-restore -c Release -f ${{ matrix.target-framework }}
+        run: dotnet build --no-restore -c Release -f ${{ matrix.target-framework }}
 
       - name: Test
         if: ${{ inputs.generate-coverage == false }}
@@ -111,7 +106,7 @@ jobs:
 
       - name: Pack NuGet packages
         run: >-
-          dotnet pack ${{ inputs.solution-path }}
+          dotnet pack
           -c Release
           --output ./nupkgs
           --include-symbols

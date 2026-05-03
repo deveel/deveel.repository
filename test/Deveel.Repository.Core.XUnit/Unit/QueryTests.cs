@@ -5,13 +5,15 @@
 [Trait("Feature", "Query")]
 public class QueryTests
 {
+    private readonly PersonFaker _faker = new PersonFaker();
+
     #region Query construction
 
     [Fact]
     public void Should_HaveFilterAndNoOrder_When_QueryHasFilterOnly()
     {
         // Arrange
-        var person = PersonFixture.PersonFaker.Generate();
+        var person = _faker.Generate();
 
         // Act
         var query = new Query(QueryFilter.Where<Person>(p => p.FirstName == person.FirstName));
@@ -26,7 +28,7 @@ public class QueryTests
     public void Should_HaveExpressionFilter_When_BuiltWithWhereFactory()
     {
         // Arrange
-        var person = PersonFixture.PersonFaker.Generate();
+        var person = _faker.Generate();
 
         // Act
         var query = Query.Where<Person>(p => p.FirstName == person.FirstName);
@@ -41,7 +43,7 @@ public class QueryTests
     public void Should_HaveCombinedFilter_When_TwoWhereClausesAreChained()
     {
         // Arrange
-        var person = PersonFixture.PersonFaker.Generate();
+        var person = _faker.Generate();
 
         // Act
         var query = new QueryBuilder<Person>()
@@ -62,7 +64,7 @@ public class QueryTests
     public void Should_HaveFilterAndExpressionSort_When_WhereAndOrderByExpressionAreChained()
     {
         // Arrange
-        var person = PersonFixture.PersonFaker.Generate();
+        var person = _faker.Generate();
 
         // Act
         var query = new QueryBuilder<Person>()
@@ -79,7 +81,7 @@ public class QueryTests
     public void Should_HaveFilterAndFieldSort_When_WhereAndOrderByFieldNameAreChained()
     {
         // Arrange
-        var person = PersonFixture.PersonFaker.Generate();
+        var person = _faker.Generate();
 
         // Act
         var query = new QueryBuilder<Person>()
@@ -96,7 +98,7 @@ public class QueryTests
     public void Should_HaveDescendingFieldSort_When_WhereAndOrderByDescendingFieldNameAreChained()
     {
         // Arrange
-        var person = PersonFixture.PersonFaker.Generate();
+        var person = _faker.Generate();
 
         // Act
         var query = new QueryBuilder<Person>()
@@ -114,7 +116,7 @@ public class QueryTests
     public void Should_HaveDescendingExpressionSort_When_WhereAndOrderByDescendingExpressionAreChained()
     {
         // Arrange
-        var person = PersonFixture.PersonFaker.Generate();
+        var person = _faker.Generate();
 
         // Act
         var query = new QueryBuilder<Person>()
@@ -136,7 +138,7 @@ public class QueryTests
     public void Should_FilterQueryable_When_ApplyingQueryWithWhereOnly()
     {
         // Arrange
-        var people = PersonFixture.PersonFaker.Generate(10);
+        var people = _faker.Generate(10);
         var matches = people.Take(3).ToList();
         var sharedName = Guid.NewGuid().ToString("N")[..8]; // unique surname to avoid collision
         foreach (var p in matches)
@@ -155,7 +157,7 @@ public class QueryTests
     public void Should_FilterAndSortQueryable_When_ApplyingQueryWithWhereAndOrderBy()
     {
         // Arrange
-        var people = PersonFixture.PersonFaker.Generate(10);
+        var people = _faker.Generate(10);
         var matches = people.Take(3).ToList();
         var sharedName = Guid.NewGuid().ToString("N")[..8];
         foreach (var p in matches)
