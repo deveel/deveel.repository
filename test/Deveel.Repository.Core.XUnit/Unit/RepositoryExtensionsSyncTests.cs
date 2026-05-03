@@ -9,11 +9,13 @@ namespace Deveel.Data;
 [Trait("Feature", "RepositoryExtensions")]
 public class RepositoryExtensionsSyncTests : IClassFixture<PersonFixture>
 {
+    private readonly PersonFixture _fixture;
     private readonly List<Person> _people;
     private readonly IRepository<Person> _repository;
 
     public RepositoryExtensionsSyncTests(PersonFixture fixture)
     {
+        _fixture = fixture;
         _people = fixture.BuildPeople(50).ToList();
         _repository = _people.AsRepository();
     }
@@ -30,7 +32,7 @@ public class RepositoryExtensionsSyncTests : IClassFixture<PersonFixture>
     public void Should_IncrementCount_When_AddRangeCalledOnSingleTypeParamRepository()
     {
         // Arrange
-        var newPeople = PersonFixture.PersonFaker.Generate(5);
+        var newPeople = _fixture.PersonFaker.Generate(5);
         var initialCount = _people.Count;
 
         // Act
@@ -45,7 +47,7 @@ public class RepositoryExtensionsSyncTests : IClassFixture<PersonFixture>
     {
         // Arrange
         IRepository<Person, object> typedRepo = _repository;
-        var newPeople = PersonFixture.PersonFaker.Generate(3);
+        var newPeople = _fixture.PersonFaker.Generate(3);
         var initialCount = _people.Count;
 
         // Act

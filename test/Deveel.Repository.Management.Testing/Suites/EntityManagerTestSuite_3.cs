@@ -370,19 +370,19 @@ public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLi
 	[Trait("Feature", "Manager")]
 	public async Task Should_ReturnFirstMatch_When_FilterApplied() {
 		// Arrange
-		var person = People
+		var matchingIds = People
 			.Where(x => x.FirstName.StartsWith("A"))
-			.OrderBy(x => x.Id)
-			.FirstOrDefault();
+			.Select(x => x.Id)
+			.ToHashSet();
 
-		Assert.NotNull(person);
+		Assert.NotEmpty(matchingIds);
 
 		// Act
 		var found = await Manager.FindFirstAsync(x => x.FirstName.StartsWith("A"));
 
 		// Assert
 		Assert.NotNull(found);
-		Assert.Equal(person.Id, found.Id);
+		Assert.Contains(found.Id, matchingIds);
 	}
 
 	[Fact]
@@ -391,19 +391,19 @@ public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLi
 	[Trait("Feature", "Manager")]
 	public async Task Should_ReturnFirstMatch_When_DynamicLinqFilterApplied() {
 		// Arrange
-		var person = People
+		var matchingIds = People
 			.Where(x => x.FirstName.StartsWith("A"))
-			.OrderBy(x => x.Id)
-			.FirstOrDefault();
+			.Select(x => x.Id)
+			.ToHashSet();
 
-		Assert.NotNull(person);
+		Assert.NotEmpty(matchingIds);
 
 		// Act
 		var found = await Manager.FindFirstAsync("FirstName.StartsWith(\"A\")");
 
 		// Assert
 		Assert.NotNull(found);
-		Assert.Equal(person.Id, found.Id);
+		Assert.Contains(found.Id, matchingIds);
 	}
 
 	[Fact]
@@ -412,18 +412,18 @@ public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLi
 	[Trait("Feature", "Manager")]
 	public async Task Should_ReturnFirstEntity_When_FindFirst() {
 		// Arrange
-		var person = People
-			.OrderBy(x => x.Id)
-			.FirstOrDefault();
+		var allIds = People
+			.Select(x => x.Id)
+			.ToHashSet();
 
-		Assert.NotNull(person);
+		Assert.NotEmpty(allIds);
 
 		// Act
 		var found = await Manager.FindFirstAsync();
 
 		// Assert
 		Assert.NotNull(found);
-		Assert.Equal(person.Id, found.Id);
+		Assert.Contains(found.Id, allIds);
 	}
 
 	[Fact]

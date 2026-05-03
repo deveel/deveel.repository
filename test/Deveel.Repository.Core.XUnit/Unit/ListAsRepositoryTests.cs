@@ -5,11 +5,13 @@
 [Trait("Feature", "Repository")]
 public class ListAsRepositoryTests : IClassFixture<PersonFixture>
 {
+    private readonly PersonFixture _fixture;
     private readonly List<Person> _people;
     private readonly IRepository<Person> _repository;
 
     public ListAsRepositoryTests(PersonFixture fixture)
     {
+        _fixture = fixture;
         _people = fixture.BuildPeople(100).ToList();
         _repository = _people.AsRepository();
     }
@@ -24,7 +26,7 @@ public class ListAsRepositoryTests : IClassFixture<PersonFixture>
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         var readOnly = _people.AsReadOnly().AsRepository();
-        var newPerson = PersonFixture.PersonFaker.Generate();
+        var newPerson = _fixture.PersonFaker.Generate();
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(() => readOnly.AddAsync(newPerson, cancellationToken));
@@ -36,7 +38,7 @@ public class ListAsRepositoryTests : IClassFixture<PersonFixture>
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         var initialCount = _people.Count;
-        var newPerson = PersonFixture.PersonFaker.Generate();
+        var newPerson = _fixture.PersonFaker.Generate();
 
         // Act
         await _repository.AddAsync(newPerson, cancellationToken);
@@ -52,7 +54,7 @@ public class ListAsRepositoryTests : IClassFixture<PersonFixture>
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         var initialCount = _people.Count;
-        var person = PersonFixture.PersonFaker.Generate();
+        var person = _fixture.PersonFaker.Generate();
         var originalId = person.Id;
 
         // Act
@@ -69,7 +71,7 @@ public class ListAsRepositoryTests : IClassFixture<PersonFixture>
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         var initialCount = _people.Count;
-        var newPeople = PersonFixture.PersonFaker.Generate(10);
+        var newPeople = _fixture.PersonFaker.Generate(10);
 
         // Act
         await _repository.AddRangeAsync(newPeople, cancellationToken);
@@ -85,7 +87,7 @@ public class ListAsRepositoryTests : IClassFixture<PersonFixture>
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         var readOnly = _people.AsReadOnly().AsRepository();
-        var newPeople = PersonFixture.PersonFaker.Generate(10);
+        var newPeople = _fixture.PersonFaker.Generate(10);
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(() => readOnly.AddRangeAsync(newPeople, cancellationToken));
@@ -408,7 +410,7 @@ public class ListAsRepositoryTests : IClassFixture<PersonFixture>
         var cancellationToken = TestContext.Current.CancellationToken;
         var target = RandomPerson();
         var originalId = target.Id;
-        var newFirstName = PersonFixture.PersonFaker.Generate().FirstName;
+        var newFirstName = _fixture.PersonFaker.Generate().FirstName;
         target.FirstName = newFirstName;
 
         // Act
@@ -425,7 +427,7 @@ public class ListAsRepositoryTests : IClassFixture<PersonFixture>
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var nonExistent = PersonFixture.PersonFaker.Generate();
+        var nonExistent = _fixture.PersonFaker.Generate();
 
         // Act
         var result = await _repository.UpdateAsync(nonExistent, cancellationToken);

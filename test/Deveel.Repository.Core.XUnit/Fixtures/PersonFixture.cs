@@ -11,9 +11,14 @@ namespace Deveel.Data;
 public class PersonFixture
 {
     /// <summary>
-    /// Centralized Faker for <see cref="Person"/> — defined once, reused across all builder methods.
+    /// Per-instance <see cref="Faker{T}"/> for <see cref="Person"/> entities.
+    /// Intentionally <em>not</em> <c>static</c>: xUnit parallelises test collections, so a
+    /// shared static Faker would be accessed from multiple threads simultaneously, violating
+    /// Bogus's single-threaded contract and producing non-deterministic data.
+    /// Each <see cref="PersonFixture"/> instance (one per test class) therefore owns its own
+    /// Faker with independent random state.
     /// </summary>
-    public static readonly Faker<Person> PersonFaker = new Faker<Person>("en")
+    public readonly Faker<Person> PersonFaker = new Faker<Person>("en")
         .RuleFor(p => p.Id, f => f.Random.Guid().ToString())
         .RuleFor(p => p.FirstName, f => f.Name.FirstName())
         .RuleFor(p => p.LastName, f => f.Name.LastName())
