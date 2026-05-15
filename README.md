@@ -145,44 +145,47 @@ We are actively building Deveel Repository toward a comprehensive, production-re
 ### Release Timeline
 
 - [ ] **v1.5.0** — "Solid Ground"
-  - [x] 1.5.1 — Package Namespace Correction
-  - [x] 1.5.2 — Thread-Safe In-Memory Repository
-  - [ ] 1.5.3 — Expression Compilation Cache
-  - [ ] 1.5.4 — Full .NET 10 Compatibility and Benchmark Baseline
-  - [ ] 1.5.5 — XML Documentation Completeness
-  - [ ] 1.5.6 — Conversion to ValueTask Results for Asynchronous Methods
-  - [ ] 1.5.7 — General Performance Optimizations
+  - [x] Package Namespace Correction
+  - [x] Thread-Safe In-Memory Repository
+  - [ ] Expression Compilation Cache
+  - [ ] Full .NET 10 Compatibility and Benchmark Baseline
+  - [ ] XML Documentation Completeness
+  - [ ] Conversion to ValueTask Results for Asynchronous Methods
+  - [ ] General Performance Optimizations
 
 - [ ] **v1.6.0** — "Developer Flow"
-  - [ ] 1.6.1 — Unified Repository Setup Builder
-  - [ ] 1.6.2 — QueryBuilder Execution Extensions
-  - [ ] 1.6.3 — Pluggable Cache Provider Abstraction
-  - [ ] 1.6.4 — Automatic Timestamp and Ownership Management
-  - [ ] 1.6.5 — Repository Health Checks
-  - [ ] 1.6.6 — Repository Controller Lifecycle Redesign
+  - [ ] Unified Repository Setup Builder
+  - [ ] QueryBuilder Execution Extensions
+  - [ ] Pluggable Cache Provider Abstraction
+  - [ ] Automatic Timestamp and Ownership Management
+  - [ ] Repository Health Checks
+  - [ ] Repository Controller Lifecycle Redesign
 
 - [ ] **v1.7.0** — "Entity Lifecycle"
-  - [ ] 1.7.1 — Soft Delete Support
-  - [ ] 1.7.2 — Entity State Machine
-  - [ ] 1.7.3 — Domain Event Emission from EntityManager
+  - [ ] Soft Delete Support
+  - [ ] Entity State Machine
+  - [ ] Domain Event Emission from EntityManager
 
 - [ ] **v1.8.0** — "Scale & Throughput"
-  - [ ] 1.8.1 — Batch Operations in EntityManager
-  - [ ] 1.8.2 — Async Streaming Queries
-  - [ ] 1.8.3 — Read/Write Repository Split
+  - [ ] Batch Operations in EntityManager
+  - [ ] Async Streaming Queries
+  - [ ] Read/Write Repository Split
 
 - [ ] **v1.9.0** — "Observability & Governance"
-  - [ ] 1.9.1 — OpenTelemetry Integration
-  - [ ] 1.9.2 — Audit Trail Support
-  - [ ] 1.9.3 — EF Core Multi-Tenancy Parity
+  - [ ] OpenTelemetry Integration
+  - [ ] Audit Trail Support
+  - [ ] EF Core Multi-Tenancy Parity
 
-- [ ] **v2.0.0** — "Unified Platform"
-  - [ ] 2.0.1 — Minimum .NET 9 Baseline
-  - [ ] 2.0.2 — Simplified Repository Interface Hierarchy
-  - [ ] 2.0.3 — PostgreSQL Native Driver
-  - [ ] 2.0.4 — Azure Cosmos DB Driver
-  - [ ] 2.0.5 — Repository Source Generators
-  - [ ] 2.0.6 — Service-Based Repository Driver
+- [ ] **v2.0.0** — "Platform Modernization"
+  - [ ] Minimum .NET 9 Baseline
+  - [ ] Simplified Repository Interface Hierarchy
+  - [ ] Repository Source Generators
+
+- [ ] **v2.1.0** — "New Database Drivers"
+  - [ ] PostgreSQL Native Driver
+  - [ ] Azure Cosmos DB Driver
+  - [ ] Dapper Repository Driver
+  - [ ] Service-Based Repository Driver
 
 For more details on features, design rationale, and success criteria, see the [ROADMAP](ROADMAP.md).
 

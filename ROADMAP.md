@@ -1,14 +1,5 @@
 # Deveel Repository — Product Roadmap
 
-**Current Version:** 1.4.3  
-**Roadmap Horizon:** v1.5.0 → v2.1.0  
-**Target Runtimes:** .NET 8.0, 9.0, 10.0  
-**Last Updated:** May 15, 2026
-
----
-
-## Overview
-
 The Deveel Repository framework provides a pragmatic, DDD-aligned abstraction for multi-source data access in .NET. At v1.4.3 the framework delivers solid CRUD interfaces, a composable `QueryBuilder`, multi-driver support (EF Core, MongoDB, In-Memory, DynamicLinq), and an `EntityManager` that layers validation and caching on top.
 
 The roadmap below takes the framework from *useful primitives* to a *complete developer toolkit*: sharper setup ergonomics, richer entity lifecycle management, first-class observability, and new database drivers — all while preserving the pragmatic, low-ambition philosophy of the project.
@@ -24,8 +15,8 @@ The roadmap below takes the framework from *useful primitives* to a *complete de
 | [**1.7.0**](#milestone-3-v170--entity-lifecycle) | Entity Lifecycle | Q4 2026 (early) | Soft delete, state machine, autonomous timestamps |
 | [**1.8.0**](#milestone-4-v180--scale--throughput) | Scale & Throughput | Q4 2026 (late) | Bulk operations, streaming, read/write split |
 | [**1.9.0**](#milestone-5-v190--observability--governance) | Observability & Governance | Q1 2027 (early) | OpenTelemetry, audit trail, EF Core multi-tenancy |
-| [**2.0.0**](#milestone-6-v200--unified-platform) | Unified Platform | Q1 2027 (late) | Breaking changes, new database drivers |
-| [**2.1.0**](#milestone-7-v210--developer-velocity--platform-extensions) | Developer Velocity & Platform Extensions | Q2 2027 | Source generators, service-backed repositories |
+| [**2.0.0**](#milestone-6-v200--platform-modernization) | Platform Modernization | Q1 2027 (late) | API modernization, source generators, strategic breaking changes |
+| [**2.1.0**](#milestone-7-v210--new-database-drivers) | New Database Drivers | Q2 2027 | PostgreSQL, Cosmos DB, Dapper drivers |
 
 ---
 
@@ -38,7 +29,7 @@ The framework is in production use, but carries visible rough edges: a misspelle
 
 ---
 
-### Feature 1.5.1 — Package Namespace Correction
+### Feature — Package Namespace Correction
 
 **Title:** Rename `Deveel.Repsotiory.MongoFramework` to `Deveel.Repository.MongoFramework`
 
@@ -62,7 +53,7 @@ The MongoDB driver package lives in a source folder spelled `Deveel.Repsotiory.M
 
 ---
 
-### Feature 1.5.2 — Thread-Safe In-Memory Repository
+### Feature — Thread-Safe In-Memory Repository
 
 **Title:** Concurrent-Access Safety for In-Memory Storage
 
@@ -86,7 +77,7 @@ The MongoDB driver package lives in a source folder spelled `Deveel.Repsotiory.M
 
 ---
 
-### Feature 1.5.3 — Expression Compilation Cache
+### Feature — Expression Compilation Cache
 
 **Title:** Cached Compilation of Filter Expressions in the DynamicLinq Driver
 
@@ -111,7 +102,7 @@ The DynamicLinq driver recompiles filter expressions on every query invocation. 
 
 ---
 
-### Feature 1.5.4 — Full .NET 10 Compatibility and Benchmark Baseline
+### Feature — Full .NET 10 Compatibility and Benchmark Baseline
 
 **Title:** .NET 10 Runtime Validation with Per-Target Performance Baselines
 
@@ -135,7 +126,7 @@ The framework lists .NET 10 as a target framework but has not been thoroughly va
 
 ---
 
-### Feature 1.5.5 — XML Documentation Completeness
+### Feature — XML Documentation Completeness
 
 **Title:** Full IntelliSense Coverage for Every Public API
 
@@ -159,7 +150,7 @@ The framework lists .NET 10 as a target framework but has not been thoroughly va
 
 ---
 
-### Feature 1.5.6 — Conversion to ValueTask Results for Asynchronous Methods
+### Feature — Conversion to ValueTask Results for Asynchronous Methods
 
 **Title:** Replace `Task<T>` with `ValueTask<T>` Where Applicable to Reduce Allocations
 
@@ -185,7 +176,7 @@ Repository methods that complete synchronously (e.g., In-Memory finds that hit a
 
 ---
 
-### Feature 1.5.7 — General Performance Optimizations
+### Feature — General Performance Optimizations
 
 **Title:** Systematic Analysis and Optimization of Hot Paths
 
@@ -220,7 +211,7 @@ Today, wiring up Deveel Repository requires knowing the specific setup pattern f
 
 ---
 
-### Feature 1.6.1 — Unified Repository Setup Builder
+### Feature — Unified Repository Setup Builder
 
 **Title:** Fluent, Driver-Agnostic Repository Registration for `IServiceCollection`
 
@@ -246,7 +237,7 @@ Each driver ships its own `AddRepository*` extension overloads with driver-speci
 
 ---
 
-### Feature 1.6.2 — QueryBuilder Execution Extensions
+### Feature — QueryBuilder Execution Extensions
 
 **Title:** Repository-Bound Execution Methods on `QueryBuilder<TEntity>`
 
@@ -269,7 +260,7 @@ Each driver ships its own `AddRepository*` extension overloads with driver-speci
 
 ---
 
-### Feature 1.6.3 — Pluggable Cache Provider Abstraction
+### Feature — Pluggable Cache Provider Abstraction
 
 **Title:** Decouple Entity Caching from the EasyCaching Library
 
@@ -294,7 +285,7 @@ Each driver ships its own `AddRepository*` extension overloads with driver-speci
 
 ---
 
-### Feature 1.6.4 — Automatic Timestamp and Ownership Management
+### Feature — Automatic Timestamp and Ownership Management
 
 **Title:** Auto-Populate `IHaveTimeStamp` and `IHaveOwner` Properties on Create and Update
 
@@ -319,7 +310,7 @@ Each driver ships its own `AddRepository*` extension overloads with driver-speci
 
 ---
 
-### Feature 1.6.5 — Repository Health Checks
+### Feature — Repository Health Checks
 
 **Title:** Built-In Health Checks for Repository Connectivity and Readiness
 
@@ -344,7 +335,7 @@ Teams deploying repository-backed services usually need liveness and readiness c
 
 ---
 
-### Feature 1.6.6 — Repository Controller Lifecycle Redesign
+### Feature — Repository Controller Lifecycle Redesign
 
 **Title:** Driver-Specific Repository Lifecycle Controller for Create, Drop, and Seed
 
@@ -379,7 +370,7 @@ Applications are not just about storing data — they care deeply about what *ha
 
 ---
 
-### Feature 1.7.1 — Soft Delete Support
+### Feature — Soft Delete Support
 
 **Title:** Transparent Soft-Delete Filtering Across All Drivers
 
@@ -405,7 +396,7 @@ Regulatory, operational, and undo requirements push many teams toward logical de
 
 ---
 
-### Feature 1.7.2 — Entity State Machine
+### Feature — Entity State Machine
 
 **Title:** First-Class State Transition Management via `States.Core`
 
@@ -430,7 +421,7 @@ Regulatory, operational, and undo requirements push many teams toward logical de
 
 ---
 
-### Feature 1.7.3 — Domain Event Emission from EntityManager
+### Feature — Domain Event Emission from EntityManager
 
 **Title:** Observable CRUD and State-Change Events from the Manager Layer
 
@@ -464,7 +455,7 @@ Single-entity CRUD is not sufficient for serious workloads. Importing a product 
 
 ---
 
-### Feature 1.8.1 — Batch Operations in EntityManager
+### Feature — Batch Operations in EntityManager
 
 **Title:** Validated Bulk Add, Update, and Remove with Partial-Failure Control
 
@@ -490,7 +481,7 @@ Single-entity CRUD is not sufficient for serious workloads. Importing a product 
 
 ---
 
-### Feature 1.8.2 — Async Streaming Queries
+### Feature — Async Streaming Queries
 
 **Title:** `IAsyncEnumerable<TEntity>` Streaming for Large Dataset Traversal
 
@@ -515,7 +506,7 @@ All current query paths materialize results as `IReadOnlyList<TEntity>` or `Page
 
 ---
 
-### Feature 1.8.3 — Read/Write Repository Split
+### Feature — Read/Write Repository Split
 
 **Title:** Separate `IReadRepository` and `IWriteRepository` Capability Interfaces
 
@@ -549,7 +540,7 @@ Enterprise deployments need to *see* what data is doing: who changed it, which t
 
 ---
 
-### Feature 1.9.1 — OpenTelemetry Integration
+### Feature — OpenTelemetry Integration
 
 **Title:** Distributed Tracing and Metrics for Every Repository Operation
 
@@ -574,7 +565,7 @@ Repository operations are completely invisible to distributed tracing systems to
 
 ---
 
-### Feature 1.9.2 — Audit Trail Support
+### Feature — Audit Trail Support
 
 **Title:** Automatic Change Attribution and Queryable Entity History
 
@@ -600,7 +591,7 @@ Repository operations are completely invisible to distributed tracing systems to
 
 ---
 
-### Feature 1.9.3 — EF Core Multi-Tenancy Parity
+### Feature — EF Core Multi-Tenancy Parity
 
 **Title:** Tenant-Isolated EF Core Repositories on Par with MongoDB Multi-Tenancy
 
@@ -625,16 +616,16 @@ Repository operations are completely invisible to distributed tracing systems to
 
 ---
 
-## Milestone 6: v2.0.0 — "Unified Platform"
+## Milestone 6: v2.0.0 — "Platform Modernization"
 
 **Release Target:** Q1 2027 (late)  
-**Theme:** API modernization, new drivers, strategic breaking changes
+**Theme:** API modernization, source generators, strategic breaking changes
 
-v1.5–v1.9 delivered capabilities incrementally and carefully. v2.0 takes the structural actions that backward compatibility prevented earlier: a simplified interface hierarchy, a .NET 9 minimum baseline, and new first-party drivers for PostgreSQL, Azure Cosmos DB, and Dapper.
+v1.5–v1.9 delivered capabilities incrementally and carefully. v2.0 takes the structural actions that backward compatibility prevented earlier: a simplified interface hierarchy, a .NET 9 minimum baseline, and introduces Roslyn source generators and a service-backed repository driver for distributed architectures.
 
 ---
 
-### Feature 2.0.1 — Minimum .NET 9 Baseline
+### Feature — Minimum .NET 9 Baseline
 
 **Title:** Drop .NET 8 Support and Adopt .NET 9+ Features Throughout the Codebase
 
@@ -659,7 +650,7 @@ v1.5–v1.9 delivered capabilities incrementally and carefully. v2.0 takes the s
 
 ---
 
-### Feature 2.0.2 — Simplified Repository Interface Hierarchy
+### Feature — Simplified Repository Interface Hierarchy
 
 **Title:** Flatten the Dual-Generic Interface Model into a Single, Composable Set
 
@@ -684,7 +675,39 @@ The current design maintains a parallel universe of interfaces — `IRepository<
 
 ---
 
-### Feature 2.0.3 — PostgreSQL Native Driver
+### Feature — Repository Source Generators
+
+**Title:** Compile-Time Repository Scaffolding via Roslyn Source Generators
+
+**Intent**  
+> "Generate the plumbing code for custom repository classes at compile time, so teams spend zero effort on boilerplate and can focus exclusively on the domain operations unique to their business."
+
+**The Problem Today**  
+Creating a custom repository — even a trivial one adding two domain-specific query methods — requires: implementing the right interface combination, wiring DI registration, propagating `CancellationToken` correctly, adding exception wrapping, and threading logging through the constructor. Teams copy-paste patterns from documentation or from each other, and the copies drift over time.
+
+**What We Are Building**  
+- A `[Repository]` attribute and Roslyn incremental source generator that emits full repository boilerplate for any class marked with it
+- Generated code covers: interface implementation, constructor DI injection, `ILogger` plumbing, `CancellationToken` propagation, and standard `RepositoryException` wrapping
+- Opt-in generation of a matching `EntityManager` subclass binding to the generated repository
+- A `dotnet new deveel-repository` project template that scaffolds a full domain aggregate (entity, repository, manager, DI wiring) in one command
+- Generated code is transparent, visible in IDE navigation, and fully overridable — no hidden magic
+
+**Benefits**
+- Custom repositories created in seconds with zero risk of forgetting cancellation, logging, or exception handling
+- All generated repositories are idiomatic and consistent — copy-paste drift across a codebase is eliminated
+- The `dotnet new` template gives new team members a correct, working starting point in one command
+- Generated code is fully auditable, debuggable, and ejectable — developers always remain in control
+
+## Milestone 7: v2.1.0 — "New Database Drivers"
+
+**Release Target:** Q2 2027  
+**Theme:** PostgreSQL, Azure Cosmos DB, Dapper, and service-based repositories
+
+v2.0 laid the architectural foundation with interface simplification and source generators. v2.1.0 delivers new first-party database drivers for PostgreSQL, Azure Cosmos DB, and Dapper, plus a service-based repository driver for distributed architectures — letting teams use the repository abstraction with any data store or remote service without writing custom adapter code.
+
+---
+
+### Feature — PostgreSQL Native Driver
 
 **Title:** `Deveel.Repository.PostgreSQL` — A JSONB-Backed Repository Driver
 
@@ -710,7 +733,7 @@ PostgreSQL is the dominant open-source relational database, and many .NET teams 
 
 ---
 
-### Feature 2.0.4 — Azure Cosmos DB Driver
+### Feature — Azure Cosmos DB Driver
 
 **Title:** `Deveel.Repository.CosmosDB` — Cloud-Native Driver for Azure Cosmos DB
 
@@ -736,7 +759,7 @@ Azure Cosmos DB is the leading serverless, globally-distributed document databas
 
 ---
 
-### Feature 2.0.5 — Dapper Repository Driver
+### Feature — Dapper Repository Driver
 
 **Title:** `Deveel.Repository.Dapper` — Lightweight Dapper-Backed Repository Implementation
 
@@ -760,41 +783,9 @@ Dapper is the most widely adopted micro-ORM in the .NET ecosystem: lightweight, 
 - The driver works against any ADO.NET provider: SQL Server, PostgreSQL, MySQL, SQLite — a single abstraction across heterogeneous databases
 - A smooth migration path from hand-rolled Dapper repositories to a consistent, observable, and cache-aware pattern
 
-## Milestone 7: v2.1.0 — "Developer Velocity & Platform Extensions"
-
-**Release Target:** Q2 2027  
-**Theme:** Boilerplate elimination, service-backed repositories
-
-v2.0 laid the architectural foundation with interface simplification and new database drivers. v2.1.0 shifts focus outward: Roslyn source generators eliminate the last pockets of manual repository plumbing, while the service-backed driver lets teams extend the repository abstraction beyond the process boundary — turning any RESTful or gRPC endpoint into a type-safe repository without custom adapter code.
-
 ---
 
-### Feature 2.1.1 — Repository Source Generators
-
-**Title:** Compile-Time Repository Scaffolding via Roslyn Source Generators
-
-**Intent**  
-> "Generate the plumbing code for custom repository classes at compile time, so teams spend zero effort on boilerplate and can focus exclusively on the domain operations unique to their business."
-
-**The Problem Today**  
-Creating a custom repository — even a trivial one adding two domain-specific query methods — requires: implementing the right interface combination, wiring DI registration, propagating `CancellationToken` correctly, adding exception wrapping, and threading logging through the constructor. Teams copy-paste patterns from documentation or from each other, and the copies drift over time.
-
-**What We Are Building**  
-- A `[Repository]` attribute and Roslyn incremental source generator that emits full repository boilerplate for any class marked with it
-- Generated code covers: interface implementation, constructor DI injection, `ILogger` plumbing, `CancellationToken` propagation, and standard `RepositoryException` wrapping
-- Opt-in generation of a matching `EntityManager` subclass binding to the generated repository
-- A `dotnet new deveel-repository` project template that scaffolds a full domain aggregate (entity, repository, manager, DI wiring) in one command
-- Generated code is transparent, visible in IDE navigation, and fully overridable — no hidden magic
-
-**Benefits**
-- Custom repositories created in seconds with zero risk of forgetting cancellation, logging, or exception handling
-- All generated repositories are idiomatic and consistent — copy-paste drift across a codebase is eliminated
-- The `dotnet new` template gives new team members a correct, working starting point in one command
-- Generated code is fully auditable, debuggable, and ejectable — developers always remain in control
-
----
-
-### Feature 2.1.2 — Service-Based Repository Driver
+### Feature — Service-Based Repository Driver
 
 **Title:** `Deveel.Repository.Services` — RESTful and gRPC Service-Backed Repository Implementation
 
