@@ -15,8 +15,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-using CommunityToolkit.Diagnostics;
-
 namespace Deveel.Data {
 	/// <summary>
 	/// Describes the request to obtain a page of a given size
@@ -40,8 +38,8 @@ namespace Deveel.Data {
 		/// If either the page number or the page size are smaller than 1.
 		/// </exception>
 		public PageQuery(int page, int size) {
-			Guard.IsGreaterThanOrEqualTo(page, 1, nameof(page));
-			Guard.IsGreaterThanOrEqualTo(size, 1, nameof(size));
+            ArgumentOutOfRangeException.ThrowIfLessThan(page, 1);
+            ArgumentOutOfRangeException.ThrowIfLessThan(size, 1);
 
 			Page = page;
 			Size = size;
@@ -90,7 +88,7 @@ namespace Deveel.Data {
 		/// Thrown if the <paramref name="expression"/> is <c>null</c>.
 		/// </exception>
 		public PageQuery<TEntity> Where(Expression<Func<TEntity, bool>> expression) {
-			Guard.IsNotNull(expression, nameof(expression));
+            ArgumentNullException.ThrowIfNull(expression);
 
 			queryBuilder.Where(expression);
 
@@ -108,7 +106,7 @@ namespace Deveel.Data {
 		/// appended sort rule.
 		/// </returns>
 		public PageQuery<TEntity> OrderBy(Expression<Func<TEntity, object?>> field) {
-			Guard.IsNotNull(field, nameof(field));
+            ArgumentNullException.ThrowIfNull(field);
 
 			return OrderBy(new ExpressionSort<TEntity>(field));
 		}
@@ -124,7 +122,7 @@ namespace Deveel.Data {
 		/// appended sort rule.
 		/// </returns>
 		public PageQuery<TEntity> OrderByDescending(Expression<Func<TEntity, object?>> field) {
-			Guard.IsNotNull(field, nameof(field));
+            ArgumentNullException.ThrowIfNull(field);
 
 			return OrderBy(new ExpressionSort<TEntity>(field, SortDirection.Descending));
 		}
@@ -137,7 +135,7 @@ namespace Deveel.Data {
 		/// </param>
 		/// <returns></returns>
 		public PageQuery<TEntity> OrderBy(IQueryOrder order) {
-			Guard.IsNotNull(order, nameof(order));
+            ArgumentNullException.ThrowIfNull(order);
 
 			queryBuilder.OrderBy(order);
 
@@ -158,7 +156,7 @@ namespace Deveel.Data {
 		/// appended sort rule.
 		/// </returns>
 		public PageQuery<TEntity> OrderBy(string fieldName, SortDirection direction = SortDirection.Ascending) {
-			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
+			ArgumentException.ThrowIfNullOrWhiteSpace(fieldName);
 
 			return OrderBy(new FieldOrder(fieldName, direction));
 		}
@@ -174,7 +172,7 @@ namespace Deveel.Data {
 		/// appended sort rule.
 		/// </returns>
 		public PageQuery<TEntity> OrderByDescending(string fieldName) {
-			Guard.IsNotNullOrEmpty(fieldName, nameof(fieldName));
+            ArgumentException.ThrowIfNullOrWhiteSpace(fieldName);
 
 			return OrderBy(fieldName, SortDirection.Descending);
 		}

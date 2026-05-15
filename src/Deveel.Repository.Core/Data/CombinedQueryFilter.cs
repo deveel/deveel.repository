@@ -15,8 +15,6 @@
 using System.Collections;
 using System.Linq.Expressions;
 
-using CommunityToolkit.Diagnostics;
-
 namespace Deveel.Data {
 	/// <summary>
 	/// An object that combines multiple <see cref="IQueryFilter"/> objects
@@ -38,9 +36,9 @@ namespace Deveel.Data {
 		/// Thrown if the given list of filters is empty.
 		/// </exception>
 		public CombinedQueryFilter(ICollection<IQueryFilter> filters) {
-			Guard.IsNotNull(filters, nameof(filters));
-			Guard.IsNotEmpty(filters, nameof(filters));
-
+            ArgumentNullException.ThrowIfNull(filters);
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(filters.Count, 0, nameof(filters));
+            
 			this.filters = filters.ToList().AsReadOnly();
 		}
 
@@ -63,7 +61,7 @@ namespace Deveel.Data {
 		/// Thrown if the given filter is <c>null</c>.
 		/// </exception>
 		public CombinedQueryFilter Combine(IQueryFilter filter) {
-			Guard.IsNotNull(filter, nameof(filter));
+            ArgumentNullException.ThrowIfNull(filter);
 
 			var filters = new List<IQueryFilter>(this.filters);
 			if (filter is CombinedQueryFilter combined) {
