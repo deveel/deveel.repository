@@ -4,6 +4,10 @@ using Deveel.Data;
 
 using System.Linq.Expressions;
 
+using Deveel.Repository.Benchmarks.Abstractions;
+
+namespace Deveel.Repository.Benchmarks;
+
 public abstract class RepositoryCoreBenchmarksBase<TEntity, TKey>
 	where TEntity : class {
 	[Params(10, 100, 1_000)]

@@ -1,5 +1,7 @@
 using Deveel.Data;
 
+namespace Deveel.Repository.Benchmarks.Abstractions;
+
 public interface IRepositoryBenchmarkDriver<TEntity, TKey> : IDisposable
 	where TEntity : class {
 	IRepository<TEntity, TKey> Repository { get; }

@@ -1,4 +1,8 @@
 using Deveel.Data;
+using Deveel.Repository.Benchmarks.Abstractions;
+using Deveel.Repository.Benchmarks.Models;
+
+namespace Deveel.Repository.Benchmarks.Drivers;
 
 internal sealed class InMemoryBenchmarkDriver : IRepositoryBenchmarkDriver<InMemoryBenchPerson, string> {
 	private InMemoryRepository<InMemoryBenchPerson, string>? _repository;

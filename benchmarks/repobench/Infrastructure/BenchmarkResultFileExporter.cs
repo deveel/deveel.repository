@@ -1,5 +1,9 @@
 using BenchmarkDotNet.Reports;
 
+using Deveel.Repository.Options;
+
+namespace Deveel.Repository.Benchmarks.Infrastructure;
+
 internal static class BenchmarkResultFileExporter {
 	public static void WriteSingleOutputFileIfRequested(
 		DriverSelection selection,

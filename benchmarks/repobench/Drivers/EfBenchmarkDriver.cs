@@ -1,6 +1,11 @@
 using Deveel.Data;
+using Deveel.Repository.Benchmarks.Abstractions;
+using Deveel.Repository.Benchmarks.Infrastructure;
+using Deveel.Repository.Benchmarks.Models;
 
 using Testcontainers.MySql;
+
+namespace Deveel.Repository.Benchmarks.Drivers;
 
 internal sealed class EfBenchmarkDriver : IRepositoryBenchmarkDriver<EfBenchPerson, int> {
 	private MySqlContainer? _container;

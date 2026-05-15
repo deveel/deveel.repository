@@ -2,6 +2,10 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Exporters.Csv;
 
+using Deveel.Repository.Options;
+
+namespace Deveel.Repository.Benchmarks.Infrastructure;
+
 internal static class BenchmarkConfigFactory {
 	private static readonly BenchmarkExportFormat[] DefaultExportFormats =
 	[

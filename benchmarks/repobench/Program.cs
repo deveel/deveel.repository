@@ -1,5 +1,8 @@
 using BenchmarkDotNet.Running;
 
+using Deveel.Repository.Benchmarks.Infrastructure;
+using Deveel.Repository.Options;
+
 BenchmarkRunPlan? runPlan = null;
 
 try {

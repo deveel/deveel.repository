@@ -1,3 +1,7 @@
+using Deveel.Repository.Benchmarks;
+
+namespace Deveel.Repository.Options;
+
 internal sealed record DriverSelection(
 	BenchmarkDriver Driver,
 	string[] BenchmarkArgs,
