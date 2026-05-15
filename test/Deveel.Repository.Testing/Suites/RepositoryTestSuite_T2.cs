@@ -188,7 +188,7 @@ public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifeti
 	[Trait("Feature", "Repository")]
 	public async Task Should_ThrowArgumentNullException_When_AddNullPerson() {
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.AddAsync(null!, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await Repository.AddAsync(null!, TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -197,7 +197,7 @@ public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifeti
 	[Trait("Feature", "Repository")]
 	public async Task Should_ThrowArgumentNullException_When_AddRangeNullList() {
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.AddRangeAsync(null!, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await Repository.AddRangeAsync(null!, TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -206,7 +206,7 @@ public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifeti
 	[Trait("Feature", "Repository")]
 	public async Task Should_ThrowArgumentNullException_When_RemoveNullPerson() {
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.RemoveAsync(null!, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await Repository.RemoveAsync(null!, TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -215,7 +215,7 @@ public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifeti
 	[Trait("Feature", "Repository")]
 	public async Task Should_ThrowArgumentNullException_When_RemoveRangeNullList() {
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.RemoveRangeAsync(null!, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await Repository.RemoveRangeAsync(null!, TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -224,7 +224,7 @@ public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifeti
 	[Trait("Feature", "Repository")]
 	public async Task Should_ThrowArgumentNullException_When_FindWithNullKey() {
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.FindAsync(default!, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await Repository.FindAsync(default!, TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -237,7 +237,7 @@ public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifeti
 		await Repository.AddAsync(person, TestContext.Current.CancellationToken);
 
 		// Act & Assert
-		await Assert.ThrowsAsync<RepositoryException>(() => Repository.AddAsync(person, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<RepositoryException>(async () => await Repository.AddAsync(person, TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -368,7 +368,7 @@ public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifeti
 		people.Add(entity);
 
 		// Act & Assert
-		await Assert.ThrowsAsync<RepositoryException>(() => Repository.RemoveRangeAsync(people, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<RepositoryException>(async () => await Repository.RemoveRangeAsync(people, TestContext.Current.CancellationToken));
 
 		var result = await Repository.FindAllAsync(TestContext.Current.CancellationToken);
 		Assert.NotNull(result);
@@ -728,7 +728,7 @@ public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifeti
 
 		// Act & Assert
 		await Assert.ThrowsAsync<RepositoryException>(
-			() => Repository.FindAllAsync(QueryFilter.Where<MailAddress>(m => m.Address == null), TestContext.Current.CancellationToken));
+			async () => await Repository.FindAllAsync(QueryFilter.Where<MailAddress>(m => m.Address == null), TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -1023,7 +1023,7 @@ public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifeti
 	[Trait("Feature", "Repository")]
 	public async Task Should_ThrowArgumentNullException_When_UpdateNullPerson() {
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(() => Repository.UpdateAsync(null!, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await Repository.UpdateAsync(null!, TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -1037,7 +1037,7 @@ public abstract class RepositoryTestSuite<TPerson, TRelationship> : IAsyncLifeti
 		cts.Cancel();
 
 		// Act & Assert
-		await Assert.ThrowsAsync<OperationCanceledException>(() => Repository.UpdateAsync(person, cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await Repository.UpdateAsync(person, cts.Token));
 	}
 
 	[Fact]

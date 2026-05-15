@@ -311,7 +311,7 @@ public abstract class RepositoryTestSuite<TPerson, TKey, TRelationship> : IAsync
 		people.Add(entity);
 
 		// Act & Assert
-		await Assert.ThrowsAsync<RepositoryException>(() => Repository.RemoveRangeAsync(people, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<RepositoryException>(async () => await Repository.RemoveRangeAsync(people, TestContext.Current.CancellationToken));
 
 		var result = await Repository.FindAllAsync();
 		Assert.NotNull(result);
@@ -674,7 +674,7 @@ public abstract class RepositoryTestSuite<TPerson, TKey, TRelationship> : IAsync
 
 		// Act & Assert
 		await Assert.ThrowsAsync<RepositoryException>(
-			() => Repository.FindAllAsync(QueryFilter.Where<MailAddress>(m => m.Address == null), 
+			async () => await Repository.FindAllAsync(QueryFilter.Where<MailAddress>(m => m.Address == null), 
 				TestContext.Current.CancellationToken));
 	}
 

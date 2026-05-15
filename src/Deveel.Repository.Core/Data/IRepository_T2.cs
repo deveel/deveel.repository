@@ -53,7 +53,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the provided <paramref name="entity"/> is <c>null</c>
 		/// </exception>
-		Task AddAsync(TEntity entity, CancellationToken cancellationToken = default);
+		ValueTask AddAsync(TEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Adds a list of entities in the repository in one single operation
@@ -77,7 +77,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the provided list of <paramref name="entities"/> is <c>null</c>
 		/// </exception>
-		Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+		ValueTask AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
 
 		/// <summary>
@@ -95,7 +95,7 @@ namespace Deveel.Data {
 		/// <exception cref="RepositoryException">
 		/// Thrown if it an error occurred while updating the entity
 		/// </exception>
-		Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
+		ValueTask<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Removes an entity from the repository
@@ -112,7 +112,7 @@ namespace Deveel.Data {
 		/// <exception cref="RepositoryException">
 		/// Thrown if it an error occurred while removing the entity
 		/// </exception>
-		Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default);
+		ValueTask<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Removes a list of entities from the repository in one 
@@ -130,7 +130,7 @@ namespace Deveel.Data {
 		/// <exception cref="RepositoryException">
 		/// Thrown if it an error occurred while removing one or more entities
 		/// </exception>
-		Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+		ValueTask RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Attempts to find in the repository an entity with the 
@@ -145,6 +145,6 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if the provided <paramref name="key"/> is <c>null</c>
 		/// </exception>
-		Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default);
+		ValueTask<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default);
 	}
 }

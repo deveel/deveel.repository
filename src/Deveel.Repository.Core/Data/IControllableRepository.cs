@@ -28,7 +28,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns <c>true</c> if the repository exists, or <c>false</c>
 		/// </returns>
-		Task<bool> ExistsAsync(CancellationToken cancellationToken = default);
+		ValueTask<bool> ExistsAsync(CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Creates the repository in the underlying storage
@@ -40,7 +40,7 @@ namespace Deveel.Data {
 		/// Returns a <see cref="Task"/> that completes when the repository
 		/// is created in the underlying storage
 		/// </returns>
-		Task CreateAsync(CancellationToken cancellationToken = default);
+		ValueTask CreateAsync(CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Drops the repository from the underlying storage
@@ -52,6 +52,6 @@ namespace Deveel.Data {
 		/// Returns a <see cref="Task"/> that completes when the repository
 		/// is dropped from the underlying storage
 		/// </returns>
-		Task DropAsync(CancellationToken cancellationToken = default);
+		ValueTask DropAsync(CancellationToken cancellationToken = default);
 	}
 }

@@ -271,14 +271,14 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public ValueTask<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
 				_lock.EnterReadLock();
 				try {
 					var result = GetEntityQueryable().LongCount(filter);
-					return Task.FromResult(result);
+					return new ValueTask<long>(result);
 				} finally {
 					_lock.ExitReadLock();
 				}
@@ -295,7 +295,7 @@ namespace Deveel.Data {
 		/// internal store, so it is safe to call concurrently from multiple threads.
 		/// </remarks>
 		/// <inheritdoc/>
-		public Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public ValueTask AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			cancellationToken.ThrowIfCancellationRequested();
@@ -317,7 +317,7 @@ namespace Deveel.Data {
 					_lock.ExitWriteLock();
 				}
 
-				return Task.CompletedTask;
+				return ValueTask.CompletedTask;
 			} catch (RepositoryException) {
 				throw;
 			} catch (Exception ex) {
@@ -333,7 +333,7 @@ namespace Deveel.Data {
 		/// internal store, so it is safe to call concurrently from multiple threads.
 		/// </remarks>
 		/// <inheritdoc/>
-		public Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public ValueTask AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(entities, nameof(entities));
 
 			cancellationToken.ThrowIfCancellationRequested();
@@ -360,7 +360,7 @@ namespace Deveel.Data {
 					_lock.ExitWriteLock();
 				}
 
-				return Task.CompletedTask;
+				return ValueTask.CompletedTask;
 			} catch (RepositoryException) {
 				throw;
 			} catch (Exception ex) {
@@ -376,7 +376,7 @@ namespace Deveel.Data {
 		/// internal store, so it is safe to call concurrently from multiple threads.
 		/// </remarks>
 		/// <inheritdoc/>
-		public Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public ValueTask<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			cancellationToken.ThrowIfCancellationRequested();
@@ -384,13 +384,13 @@ namespace Deveel.Data {
 			try {
 				var entityId = GetEntityId(entity);
 				if (entityId == null)
-					return Task.FromResult(false);
+					return new ValueTask<bool>(false);
 
 				_lock.EnterWriteLock();
 				try {
 					var removed = this.entities.Remove(entityId);
 					if (removed) _version++;
-					return Task.FromResult(removed);
+					return new ValueTask<bool>(removed);
 				} finally {
 					_lock.ExitWriteLock();
 				}
@@ -409,7 +409,7 @@ namespace Deveel.Data {
 		/// internal store, so it is safe to call concurrently from multiple threads.
 		/// </remarks>
 		/// <inheritdoc/>
-		public Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public ValueTask RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			ArgumentNullException.ThrowIfNull(entities, nameof(entities));
@@ -442,7 +442,7 @@ namespace Deveel.Data {
 					_lock.ExitWriteLock();
 				}
 
-				return Task.CompletedTask;
+				return ValueTask.CompletedTask;
 			} catch (RepositoryException) {
 				throw;
 			} catch (Exception ex) {
@@ -451,14 +451,14 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public ValueTask<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
 				_lock.EnterReadLock();
 				try {
 					var result = GetEntityQueryable().Any(filter);
-					return Task.FromResult(result);
+					return new ValueTask<bool>(result);
 				} finally {
 					_lock.ExitReadLock();
 				}
@@ -469,14 +469,14 @@ namespace Deveel.Data {
 
 
 		/// <inheritdoc/>
-		public Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public ValueTask<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
 				_lock.EnterReadLock();
 				try {
 					var result = query.Apply(GetEntityQueryable()).ToList();
-					return Task.FromResult<IList<TEntity>>(result);
+					return new ValueTask<IList<TEntity>>(result);
 				} finally {
 					_lock.ExitReadLock();
 				}
@@ -486,14 +486,14 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public ValueTask<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
 				_lock.EnterReadLock();
 				try {
 					var result = query.Apply(GetEntityQueryable()).FirstOrDefault();
-					return Task.FromResult(result);
+					return new ValueTask<TEntity?>(result);
 				} finally {
 					_lock.ExitReadLock();
 				}
@@ -503,7 +503,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken = default) {
+		public ValueTask<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(key, nameof(key));
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -511,9 +511,9 @@ namespace Deveel.Data {
 				_lock.EnterReadLock();
 				try {
 					if (!entities.TryGetValue(key, out var entry))
-						return Task.FromResult<TEntity?>(null);
+						return new ValueTask<TEntity?>((TEntity?)null);
 
-					return Task.FromResult<TEntity?>(entry.Original);
+					return new ValueTask<TEntity?>(entry.Original);
 				} finally {
 					_lock.ExitReadLock();
 				}
@@ -523,7 +523,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default) {
+		public ValueTask<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(key, nameof(key));
 
 			cancellationToken.ThrowIfCancellationRequested();
@@ -532,9 +532,9 @@ namespace Deveel.Data {
 				_lock.EnterReadLock();
 				try {
 					if (!entities.TryGetValue(key, out var entity))
-						return Task.FromResult<TEntity?>(null);
+						return new ValueTask<TEntity?>((TEntity?)null);
 
-					return Task.FromResult<TEntity?>(entity.Entity);
+					return new ValueTask<TEntity?>(entity.Entity);
 				} finally {
 					_lock.ExitReadLock();
 				}
@@ -564,7 +564,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
+		public ValueTask<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			try {
@@ -578,7 +578,7 @@ namespace Deveel.Data {
 						.ToList();
 
 					var result = new PageResult<TEntity>(request, itemCount, items);
-					return Task.FromResult(result);
+					return new ValueTask<PageResult<TEntity>>(result);
 				} finally {
 					_lock.ExitReadLock();
 				}
@@ -595,7 +595,7 @@ namespace Deveel.Data {
 		/// internal store, so it is safe to call concurrently from multiple threads.
 		/// </remarks>
 		/// <inheritdoc/>
-		public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public ValueTask<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
@@ -603,16 +603,16 @@ namespace Deveel.Data {
 			try {
 				var entityId = GetEntityId(entity);
 				if (entityId == null)
-					return Task.FromResult(false);
+					return new ValueTask<bool>(false);
 
 				_lock.EnterWriteLock();
 				try {
 					if (!entities.TryGetValue(entityId, out var entry))
-						return Task.FromResult(false);
+						return new ValueTask<bool>(false);
 
 					entry.Update(entity);
 					_version++;
-					return Task.FromResult(true);
+					return new ValueTask<bool>(true);
 				} finally {
 					_lock.ExitWriteLock();
 				}

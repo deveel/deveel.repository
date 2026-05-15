@@ -57,7 +57,7 @@ namespace Deveel.Data {
 			return GetEntityKey(entity);
 		}
 
-		Task<TEntity?> IRepository<TEntity, object>.FindAsync(object key, CancellationToken cancellationToken) {
+		ValueTask<TEntity?> IRepository<TEntity, object>.FindAsync(object key, CancellationToken cancellationToken) {
 			return FindAsync(NormalizeKey(key), cancellationToken);
 		}
 

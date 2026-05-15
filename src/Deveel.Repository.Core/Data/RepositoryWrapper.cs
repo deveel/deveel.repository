@@ -80,14 +80,14 @@ namespace Deveel.Data {
 			}
 		}
 
-		public Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public ValueTask AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			AssertMutable();
 
 			var id = SetId(entity);
 
 			AddEntity(entity);
 
-			return Task.CompletedTask;
+			return ValueTask.CompletedTask;
 		}
 
 		private string SetId(TEntity entity) {
@@ -105,7 +105,7 @@ namespace Deveel.Data {
 			return entityId;
 		}
 
-		public Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public ValueTask AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			AssertMutable();
 
 			foreach (var entity in entities) {
@@ -113,24 +113,24 @@ namespace Deveel.Data {
 				AddEntity(entity);
 			}
 
-			return Task.CompletedTask;
+			return ValueTask.CompletedTask;
 		}
 
-		public Task<TEntity?> FindAsync(object key, CancellationToken cancellationToken = default) {
+		public ValueTask<TEntity?> FindAsync(object key, CancellationToken cancellationToken = default) {
 			var entity = entities.FirstOrDefault(x => GetEntityKey(x) == key);
-			return Task.FromResult<TEntity?>(entity);
+			return new ValueTask<TEntity?>(entity);
 		}
 
-		public Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public ValueTask<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			AssertMutable();
 
 			var key = GetEntityKey(entity);
 			if (key == null)
-				return Task.FromResult(false);
+				return new ValueTask<bool>(false);
 
 			var found = entities.FirstOrDefault(x => GetEntityKey(x) == key);
 			if (found == null)
-				return Task.FromResult(false);
+				return new ValueTask<bool>(false);
 
 			if (entities is IList<TEntity> list) {
 				list.Remove(found);
@@ -140,10 +140,10 @@ namespace Deveel.Data {
 				throw new NotSupportedException("The repository is readonly");
 			}
 
-			return Task.FromResult(true);
+			return new ValueTask<bool>(true);
 		}
 
-		public Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public ValueTask RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			AssertMutable();
 
 			foreach (var entity in entities) {
@@ -164,19 +164,19 @@ namespace Deveel.Data {
 				}
 			}
 
-			return Task.CompletedTask;
+			return ValueTask.CompletedTask;
 		}
 
-		public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public ValueTask<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			AssertMutable();
 
 			var key = GetEntityKey(entity);
 			if (key == null)
-				return Task.FromResult(false);
+				return new ValueTask<bool>(false);
 
 			var found = entities.FirstOrDefault(x => GetEntityKey(x) == key);
 			if (found == null)
-				return Task.FromResult(false);
+				return new ValueTask<bool>(false);
 
 			if (entities is IList<TEntity> list) {
 				var index = list.IndexOf(found);
@@ -188,10 +188,10 @@ namespace Deveel.Data {
 				throw new NotSupportedException("The repository is readonly");
 			}
 
-			return Task.FromResult(true);
+			return new ValueTask<bool>(true);
 		}
 
-		public Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public ValueTask<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
 			TEntity? result;
 
 			if (entities is IQueryable<TEntity> queryable) {
@@ -204,10 +204,10 @@ namespace Deveel.Data {
 				}
 			}
 
-			return Task.FromResult(result);
+			return new ValueTask<TEntity?>(result);
 		}
 
-		public Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public ValueTask<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			IEnumerable<TEntity> result;
 
 			if (entities is IQueryable<TEntity> queryable) {
@@ -224,10 +224,10 @@ namespace Deveel.Data {
 				}
 			}
 
-			return Task.FromResult<IList<TEntity>>(result.ToList());
+			return new ValueTask<IList<TEntity>>(result.ToList());
 		}
 
-		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public ValueTask<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			bool result;
 
 			if (entities is IQueryable<TEntity> queryable) {
@@ -236,10 +236,10 @@ namespace Deveel.Data {
 				result = entities.Any(filter.AsLambda<TEntity>().Compile());
 			}
 
-			return Task.FromResult(result);
+			return new ValueTask<bool>(result);
 		}
 
-		public Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public ValueTask<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			long result;
 
 			if (entities is IQueryable<TEntity> queryable) {
@@ -248,7 +248,7 @@ namespace Deveel.Data {
 				result = entities.LongCount(filter.AsLambda<TEntity>().Compile());
 			}
 
-			return Task.FromResult(result);
+			return new ValueTask<long>(result);
 		}
 	}
 }

@@ -185,7 +185,7 @@ namespace Deveel.Data
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
@@ -211,7 +211,7 @@ namespace Deveel.Data
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			try {
@@ -227,7 +227,7 @@ namespace Deveel.Data
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
@@ -266,7 +266,7 @@ namespace Deveel.Data
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			try {
@@ -302,12 +302,12 @@ namespace Deveel.Data
 		/// <param name="entity"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		protected virtual Task<TEntity> OnEntityFoundByKeyAsync(TKey key, TEntity entity, CancellationToken cancellationToken = default) {
-			return Task.FromResult(entity);
+		protected virtual ValueTask<TEntity> OnEntityFoundByKeyAsync(TKey key, TEntity entity, CancellationToken cancellationToken = default) {
+			return new ValueTask<TEntity>(entity);
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
@@ -364,7 +364,7 @@ namespace Deveel.Data
 		/// that matches the given filter, otherwise <c>false</c>.
 		/// </returns>
 		/// <exception cref="RepositoryException"></exception>
-		public virtual async Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			try {
@@ -389,7 +389,7 @@ namespace Deveel.Data
 		/// A token used to cancel the operation.
 		/// </param>
 		/// <returns></returns>
-		public virtual async Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			try {
@@ -404,7 +404,7 @@ namespace Deveel.Data
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
 				var result = EfQueryNormalizer.Normalize(query.Apply(AsQueryable()));
 
@@ -416,7 +416,7 @@ namespace Deveel.Data
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			try {
@@ -434,7 +434,7 @@ namespace Deveel.Data
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			try {
@@ -455,7 +455,7 @@ namespace Deveel.Data
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
 				var result = EfQueryNormalizer.Normalize(query.Apply(AsQueryable()));
 				return await result.ToListAsync(cancellationToken);
@@ -504,7 +504,7 @@ namespace Deveel.Data
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 
 			try {

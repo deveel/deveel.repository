@@ -45,6 +45,6 @@ namespace Deveel.Data {
 		/// implementation of the repository
 		/// </exception>
 		/// <seealso cref="PageResult{TEntity}"/>
-		Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default);
+		ValueTask<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> request, CancellationToken cancellationToken = default);
 	}
 }

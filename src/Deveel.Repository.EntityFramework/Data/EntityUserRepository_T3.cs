@@ -67,7 +67,7 @@ namespace Deveel.Data
 		protected TUserKey? UserId => UserAccessor.GetUserId();
 
 		/// <inheritdoc/>
-		public override async Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default)
+		public override async ValueTask<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default)
 		{
             var userId = UserAccessor.GetUserId();
 

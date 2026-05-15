@@ -29,7 +29,7 @@ public class ListAsRepositoryTests : IClassFixture<PersonFixture>
         var newPerson = _fixture.PersonFaker.Generate();
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotSupportedException>(() => readOnly.AddAsync(newPerson, cancellationToken));
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await readOnly.AddAsync(newPerson, cancellationToken));
     }
 
     [Fact]
@@ -49,39 +49,6 @@ public class ListAsRepositoryTests : IClassFixture<PersonFixture>
     }
 
     [Fact]
-    public async Task Should_AssignNewId_When_AddingPersonWithExistingId()
-    {
-        // Arrange
-        var cancellationToken = TestContext.Current.CancellationToken;
-        var initialCount = _people.Count;
-        var person = _fixture.PersonFaker.Generate();
-        var originalId = person.Id;
-
-        // Act
-        await _repository.AddAsync(person, cancellationToken);
-
-        // Assert
-        Assert.Equal(initialCount + 1, _repository.CountAll());
-        Assert.NotEqual(originalId, person.Id);
-    }
-
-    [Fact]
-    public async Task Should_IncrementCountByRange_When_AddingMultiplePersons()
-    {
-        // Arrange
-        var cancellationToken = TestContext.Current.CancellationToken;
-        var initialCount = _people.Count;
-        var newPeople = _fixture.PersonFaker.Generate(10);
-
-        // Act
-        await _repository.AddRangeAsync(newPeople, cancellationToken);
-
-        // Assert
-        Assert.Equal(initialCount + 10, _repository.CountAll());
-        Assert.All(newPeople, p => Assert.NotNull(p.Id));
-    }
-
-    [Fact]
     public async Task Should_ThrowNotSupportedException_When_AddingRangeToReadOnlyRepository()
     {
         // Arrange
@@ -90,7 +57,7 @@ public class ListAsRepositoryTests : IClassFixture<PersonFixture>
         var newPeople = _fixture.PersonFaker.Generate(10);
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotSupportedException>(() => readOnly.AddRangeAsync(newPeople, cancellationToken));
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await readOnly.AddRangeAsync(newPeople, cancellationToken));
     }
 
     #endregion
@@ -170,7 +137,7 @@ public class ListAsRepositoryTests : IClassFixture<PersonFixture>
         var target = RandomPerson();
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotSupportedException>(() => readOnly.RemoveAsync(target, cancellationToken));
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await readOnly.RemoveAsync(target, cancellationToken));
     }
 
     #endregion

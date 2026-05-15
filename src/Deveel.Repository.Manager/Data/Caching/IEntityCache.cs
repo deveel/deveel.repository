@@ -53,7 +53,7 @@ namespace Deveel.Data.Caching {
 		/// <c>null</c> if the entity was not found in the cache
 		/// and the factory was not able to create it.
 		/// </returns>
-		Task<TEntity?> GetOrSetAsync(string cacheKey, Func<Task<TEntity?>> valueFactory, CancellationToken cancellationToken = default);
+		ValueTask<TEntity?> GetOrSetAsync(string cacheKey, Func<ValueTask<TEntity?>> valueFactory, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Sets the given entity in the cache with the given key.
@@ -71,7 +71,7 @@ namespace Deveel.Data.Caching {
 		/// Returns a task that when completed will set the entity
 		/// in the cache.
 		/// </returns>
-		Task SetAsync(string[] cacheKeys, TEntity entity, CancellationToken cancellationToken = default);
+		ValueTask SetAsync(string[] cacheKeys, TEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Removes a given entity from the cache with the given key.
@@ -86,6 +86,6 @@ namespace Deveel.Data.Caching {
 		/// Returns a task that when completed will remove the entity
 		/// from the cache.
 		/// </returns>
-		Task RemoveAsync(string[] cacheKeys, CancellationToken cancellationToken = default);
+		ValueTask RemoveAsync(string[] cacheKeys, CancellationToken cancellationToken = default);
 	}
 }
