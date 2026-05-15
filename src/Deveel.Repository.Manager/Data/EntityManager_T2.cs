@@ -1097,26 +1097,32 @@ namespace Deveel.Data {
 		/// Thrown when the given filter is <c>null</c>.
 		/// </exception>
 		/// <seealso cref="IFilterableRepository{TEntity,TKey}.FindFirstAsync(IQuery, CancellationToken)"/>
-		// TODO: Is there any use case for using OperationResult<TEntity> here
-		//       instead of returning the entity?
-		public virtual async ValueTask<TEntity?> FindFirstAsync(IQuery query, CancellationToken? cancellationToken = null) {
+		public virtual async ValueTask<OperationResult<TEntity>> FindFirstAsync(IQuery query, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			if (!SupportsFilters)
-				throw new NotSupportedException("The repository does not support filters");
+				return OperationResult<TEntity>.Fail(OperationError(EntityErrorCodes.NotSupported, "The repository does not support filters"));
 
 			try {
 				Logger.LogFindingFirstEntityByQuery(typeof(TEntity));
 
-				return await FilterableRepository.FindFirstAsync(query, GetCancellationToken(cancellationToken));
+				var result = await FilterableRepository.FindFirstAsync(query, GetCancellationToken(cancellationToken));
+
+				if (result == null) {
+					Logger.LogEntityNotFound(typeof(TEntity), query);
+					return OperationResult<TEntity>.Fail(OperationError(EntityErrorCodes.NotFound, "Entity was not found"));
+				}
+
+				Logger.LogEntityFoundByQuery(typeof(TEntity), query);
+				return OperationResult<TEntity>.Success(result);
 			} catch (Exception ex) {
 				LogUnknownError(ex);
-				throw new OperationException(EntityErrorCodes.UnknownError, Domain, "Could not look for the entity", ex);
+				return OperationResult<TEntity>.Fail(OperationError(EntityErrorCodes.UnknownError, "Could not look for the entity"));
 			}
 		}
 
 		/// <summary>
-		/// Finds the first entity in the repository that matches the 
+		/// Finds the first entity in the repository that matches the
 		/// given filter expression.
 		/// </summary>
 		/// <param name="filter">
@@ -1126,11 +1132,12 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation.
 		/// </param>
 		/// <returns>
-		/// Returns the first instance of <typeparamref name="TEntity"/> that
-		/// mathces the given filter, or <c>null</c> if no entity was found.
+		/// Returns an instance of <see cref="OperationResult{TEntity}"/> that
+		/// contains the first entity matching the given filter, or a failure
+		/// result if no entity was found or an error occurred.
 		/// </returns>
 		/// <seealso cref="FindFirstAsync(IQuery, CancellationToken?)"/>
-		public ValueTask<TEntity?> FindFirstAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
+		public ValueTask<OperationResult<TEntity>> FindFirstAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
 			=> FindFirstAsync(filter == null ? Query.Empty : new QueryBuilder<TEntity>().Where(filter), cancellationToken);
 
 		/// <summary>
@@ -1152,8 +1159,6 @@ namespace Deveel.Data {
 		/// <exception cref="OperationException">
 		/// Thrown when an unknown error occurs while looking for the entities.
 		/// </exception>
-		// TODO: Is there any use case for using OperationResult<IList<TEntity>> here
-		//       instead of returning a list of entities?
 		public virtual async ValueTask<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 

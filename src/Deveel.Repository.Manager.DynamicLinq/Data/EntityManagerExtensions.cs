@@ -36,10 +36,11 @@ namespace Deveel.Data {
 		/// A token to cancel the operation.
 		/// </param>
 		/// <returns>
-		/// Returns the first entity that matches the given expression, or
-		/// <c>null</c> if no entity was found.
+		/// Returns an instance of <see cref="OperationResult{TEntity}"/>
+		/// containing the first entity that matches the given expression,
+		/// or a failure result if no entity was found or an error occurred.
 		/// </returns>
-		public static ValueTask<TEntity?> FindFirstAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
+		public static ValueTask<OperationResult<TEntity>> FindFirstAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
 			where TEntity : class
 			=> manager.FindFirstAsync(new Query(new DynamicLinqFilter(expression)), cancellationToken);
 
@@ -63,10 +64,11 @@ namespace Deveel.Data {
 		/// A token to cancel the operation.
 		/// </param>
 		/// <returns>
-		/// Returns the first entity that matches the given expression, or
-		/// <c>null</c> if no entity was found.
+		/// Returns an instance of <see cref="OperationResult{TEntity}"/>
+		/// containing the first entity that matches the given expression,
+		/// or a failure result if no entity was found or an error occurred.
 		/// </returns>
-		public static ValueTask<TEntity?> FindFirstAsync<TEntity, TKey>(this EntityManager<TEntity, TKey> manager, string expression, CancellationToken? cancellationToken = null)
+		public static ValueTask<OperationResult<TEntity>> FindFirstAsync<TEntity, TKey>(this EntityManager<TEntity, TKey> manager, string expression, CancellationToken? cancellationToken = null)
 			where TEntity : class
 			where TKey : notnull
 			=> manager.FindFirstAsync(new Query(new DynamicLinqFilter(expression)), cancellationToken);

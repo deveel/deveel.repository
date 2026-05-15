@@ -275,8 +275,8 @@ public abstract class EntityManagerTestSuite<TManager, TPerson> : IAsyncInitiali
 
 		var found = await Manager.FindFirstAsync(x => x.FirstName.StartsWith("A"));
 
-		await Assert.That(found).IsNotNull();
-		await Assert.That(found!.Id).IsEqualTo(person!.Id);
+		await Assert.That(found.IsSuccess()).IsTrue();
+		await Assert.That(found.Value!.Id).IsEqualTo(person!.Id);
 	}
 
 	[Test]

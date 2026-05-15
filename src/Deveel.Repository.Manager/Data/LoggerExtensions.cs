@@ -76,6 +76,9 @@ namespace Deveel.Data {
 		[LoggerMessage(EntityManagerEventIds.EntityFoundByKey, LogLevel.Debug, "An entity of type {EntityType} identified by {EntityKey} has been found repository")]
 		public static partial void LogEntityFoundByKey(this ILogger logger, Type entityType, object? entityKey);
 
+		[LoggerMessage(EntityManagerEventIds.EntityFoundByQuery, LogLevel.Debug, "A first entity of type {EntityType} matching the query {Query} has been found in the repository")]
+		public static partial void LogEntityFoundByQuery(this ILogger logger, Type entityType, object? query);
+
         // Information
 
 		[LoggerMessage(EntityManagerEventIds.EntityAdded, LogLevel.Information, "The entity {EntityId} was added to the repository.")]

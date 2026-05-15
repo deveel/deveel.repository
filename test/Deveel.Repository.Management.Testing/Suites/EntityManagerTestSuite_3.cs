@@ -383,8 +383,8 @@ public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLi
 		var found = await Manager.FindFirstAsync(x => x.FirstName.StartsWith("A"));
 
 		// Assert
-		Assert.NotNull(found);
-		Assert.Contains(found.Id, matchingIds);
+		Assert.True(found.IsSuccess());
+		Assert.Contains(found.Value!.Id, matchingIds);
 	}
 
 	[Fact]
@@ -404,8 +404,8 @@ public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLi
 		var found = await Manager.FindFirstAsync("FirstName.StartsWith(\"A\")");
 
 		// Assert
-		Assert.NotNull(found);
-		Assert.Contains(found.Id, matchingIds);
+		Assert.True(found.IsSuccess());
+		Assert.Contains(found.Value!.Id, matchingIds);
 	}
 
 	[Fact]
@@ -424,8 +424,8 @@ public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLi
 		var found = await Manager.FindFirstAsync();
 
 		// Assert
-		Assert.NotNull(found);
-		Assert.Contains(found.Id, allIds);
+		Assert.True(found.IsSuccess());
+		Assert.Contains(found.Value!.Id, allIds);
 	}
 
 	[Fact]
