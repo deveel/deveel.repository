@@ -9,7 +9,7 @@ namespace Deveel.Data.Entities {
 
 		public override IQueryable<DbPerson> AsQueryable() => base.Entities.Include(x => x.Relationships);
 
-		protected override async Task<DbPerson> OnEntityFoundByKeyAsync(Guid key, DbPerson entity, CancellationToken cancellationToken = default) {
+		protected override async ValueTask<DbPerson> OnEntityFoundByKeyAsync(Guid key, DbPerson entity, CancellationToken cancellationToken = default) {
 			await Context.Entry(entity).Collection(x => x.Relationships).LoadAsync(cancellationToken);
 
 			return entity;

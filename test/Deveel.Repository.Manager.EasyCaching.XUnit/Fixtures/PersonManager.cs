@@ -17,7 +17,10 @@ namespace Deveel.Data {
 		public async Task<Person?> FindByEmailAsync(string email, CancellationToken? cancellationToken = null) {
 			var token = GetCancellationToken(cancellationToken);
 
-			return await GetOrSetAsync($"person:{email}", () => FindFirstAsync(x => x.Email == email, token), token);
+			return await GetOrSetAsync($"person:{email}", async () => {
+				var result = await FindFirstAsync(x => x.Email == email, token);
+				return result.IsSuccess() ? result.Value : null;
+			}, token);
 		}
 	}
 }

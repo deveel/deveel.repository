@@ -243,7 +243,7 @@ namespace Deveel.Data {
 
 		#region Controllable
 
-		Task<bool> IControllableRepository.ExistsAsync(CancellationToken cancellationToken)
+		ValueTask<bool> IControllableRepository.ExistsAsync(CancellationToken cancellationToken)
 			=> CollectionExistsAsync(cancellationToken);
 
 		/// <summary>
@@ -260,7 +260,7 @@ namespace Deveel.Data {
 		/// Thrown when an error occurs while verifying the existence of the
 		/// collection in the underlying database.
 		/// </exception>
-		public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default) {
+		public async ValueTask<bool> CollectionExistsAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
@@ -278,7 +278,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		async Task IControllableRepository.CreateAsync(CancellationToken cancellationToken) {
+		async ValueTask IControllableRepository.CreateAsync(CancellationToken cancellationToken) {
 			await CreateCollectionAsync(cancellationToken);
 			await CreateIndicesAsync(cancellationToken);
 		}
@@ -297,7 +297,7 @@ namespace Deveel.Data {
 		/// Thrown when an error occurs while creating the collection in the
 		/// database or if the collection already exists.
 		/// </exception>
-		public async Task CreateCollectionAsync(CancellationToken cancellationToken = default) {
+		public async ValueTask CreateCollectionAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
@@ -322,7 +322,7 @@ namespace Deveel.Data {
 		/// of the repository.
 		/// </returns>
 		/// <exception cref="RepositoryException"></exception>
-		public async Task CreateIndicesAsync(CancellationToken cancellationToken = default) {
+		public async ValueTask CreateIndicesAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
@@ -361,7 +361,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		async Task IControllableRepository.DropAsync(CancellationToken cancellationToken) {
+		async ValueTask IControllableRepository.DropAsync(CancellationToken cancellationToken) {
 			await DropIndicesAsync(cancellationToken);
 			await DropCollectionAsync(cancellationToken);
 		}
@@ -380,7 +380,7 @@ namespace Deveel.Data {
 		/// <exception cref="RepositoryException">
 		/// Thrown when an error occurs while dropping the indices.
 		/// </exception>
-		public async Task DropIndicesAsync(CancellationToken cancellationToken = default) {
+		public async ValueTask DropIndicesAsync(CancellationToken cancellationToken = default) {
 			try {
 				await Collection.Indexes.DropAllAsync(cancellationToken);
 			} catch (Exception ex) {
@@ -400,7 +400,7 @@ namespace Deveel.Data {
 		/// Returns a task that, when completed, has dropped the collection.
 		/// </returns>
 		/// <exception cref="RepositoryException"></exception>
-		public async Task DropCollectionAsync(CancellationToken cancellationToken = default) {
+		public async ValueTask DropCollectionAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
 
@@ -442,7 +442,7 @@ namespace Deveel.Data {
 		/// Thrown when an error occurs while creating the entity in the
 		/// underlying database.
 		/// </exception>
-		public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask AddAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			ThrowIfDisposed();
@@ -466,7 +466,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public async ValueTask AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(entities, nameof(entities));
 
 			ThrowIfDisposed();
@@ -499,7 +499,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			ThrowIfDisposed();
@@ -538,7 +538,7 @@ namespace Deveel.Data {
 		#endregion
 
 		/// <inheritdoc/>
-		public virtual async Task<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
+		public virtual async ValueTask<bool> RemoveAsync(TEntity entity, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(entity, nameof(entity));
 
 			ThrowIfDisposed();
@@ -569,7 +569,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
+		public async ValueTask RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(entities, nameof(entities));
 
 			ThrowIfDisposed();
@@ -589,7 +589,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default) {
+		public async ValueTask<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default) {
 			ArgumentNullException.ThrowIfNull(key, nameof(key));
 
 			ThrowIfDisposed();
@@ -619,7 +619,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public async ValueTask<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
 				var entities = query.Apply(DbSet.AsQueryable());
 				return await entities.FirstOrDefaultAsync(cancellationToken);
@@ -629,7 +629,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
+		public async ValueTask<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default) {
 			try {
 				var entities = query.Apply(DbSet.AsQueryable());
 				return await entities.ToListAsync(cancellationToken);
@@ -640,7 +640,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> query, CancellationToken cancellationToken = default) {
+		public async ValueTask<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> query, CancellationToken cancellationToken = default) {
 			try {
 				var entitySet = query.ApplyQuery(DbSet.AsQueryable());
 
@@ -657,14 +657,14 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public ValueTask<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
 				var query = DbSet.AsQueryable();
 				if (filter != null) {
 					query = filter.Apply(query);
 				}
 
-				return query.AnyAsync(cancellationToken);
+				return new ValueTask<bool>(query.AnyAsync(cancellationToken));
 			} catch (Exception ex) {
 
 				throw new RepositoryException("Unable to execute the query", ex);
@@ -672,7 +672,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public async Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
+		public async ValueTask<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			try {
 				var query = DbSet.AsQueryable();
 				if (filter != null) {

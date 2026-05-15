@@ -534,7 +534,7 @@ namespace Deveel.Data {
 		/// Returns a list of <see cref="ValidationResult"/> that
 		/// describe the validation errors.
 		/// </returns>
-		protected virtual async Task<IReadOnlyList<ValidationResult>> ValidateAsync(TEntity entity, CancellationToken cancellationToken) {
+		protected virtual async ValueTask<IReadOnlyList<ValidationResult>> ValidateAsync(TEntity entity, CancellationToken cancellationToken) {
 			if (EntityValidator == null)
 				return new List<ValidationResult>();
 
@@ -583,11 +583,11 @@ namespace Deveel.Data {
 		/// Returns the entity that is being added, after
 		/// any modification done by the callback.
 		/// </returns>
-		protected virtual Task<TEntity> OnAddingEntityAsync(TEntity entity) {
+		protected virtual ValueTask<TEntity> OnAddingEntityAsync(TEntity entity) {
 			if (entity is IHaveTimeStamp haveTimeStamp && Time != null)
 				haveTimeStamp.CreatedAtUtc = Time.UtcNow;
 
-			return Task.FromResult(entity);
+			return new ValueTask<TEntity>(entity);
 		}
 
 		/// <summary>
@@ -614,7 +614,7 @@ namespace Deveel.Data {
 			return EntityCache.GenerateKeys(entity);
 		}
 
-		private async Task SetToCacheAsync(TEntity entity, CancellationToken cancellationToken) {
+		private async ValueTask SetToCacheAsync(TEntity entity, CancellationToken cancellationToken) {
 			if (EntityCache == null)
 				return;
 
@@ -627,7 +627,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		private async Task EvictAsync(TEntity entity, CancellationToken cancellationToken) {
+		private async ValueTask EvictAsync(TEntity entity, CancellationToken cancellationToken) {
 			if (EntityCache == null)
 				return;
 
@@ -665,7 +665,7 @@ namespace Deveel.Data {
 		/// it returns <c>null</c> if the entity was not found
 		/// in the cache and the factory was not able to create it.
 		/// </returns>
-		protected async Task<TEntity?> GetOrSetByKeyAsync(TKey key, Func<Task<TEntity?>> valueFactory, CancellationToken cancellationToken) {
+		protected async ValueTask<TEntity?> GetOrSetByKeyAsync(TKey key, Func<ValueTask<TEntity?>> valueFactory, CancellationToken cancellationToken) {
 			return await GetOrSetAsync(GenerateCacheKey(key), valueFactory, cancellationToken);
 		}
 
@@ -691,7 +691,7 @@ namespace Deveel.Data {
 		/// </remarks>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		protected async Task<TEntity?> GetOrSetAsync(string cacheKey, Func<Task<TEntity?>> valueFactory, CancellationToken cancellationToken) {
+		protected async ValueTask<TEntity?> GetOrSetAsync(string cacheKey, Func<ValueTask<TEntity?>> valueFactory, CancellationToken cancellationToken) {
 			if (EntityCache == null)
 				return await valueFactory();
 
@@ -716,7 +716,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="OperationResult"/> that
 		/// describes the result of the operation.
 		/// </returns>
-		public virtual async Task<OperationResult> AddAsync(TEntity entity, CancellationToken? cancellationToken = null) {
+		public virtual async ValueTask<OperationResult> AddAsync(TEntity entity, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			try {
@@ -765,7 +765,7 @@ namespace Deveel.Data {
 		/// operation.
 		/// </returns>
 		/// <seealso cref="IRepository{TEntity,TKey}.AddRangeAsync(IEnumerable{TEntity}, CancellationToken)"/>
-		public virtual async Task<OperationResult> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken? cancellationToken = null) {
+		public virtual async ValueTask<OperationResult> AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken? cancellationToken = null) {
 			try {
 				Logger.LogAddingEntityRange(typeof(TEntity));
 
@@ -807,11 +807,11 @@ namespace Deveel.Data {
 		/// Returns the entity that is being updated, after
 		/// the callback has modified it.
 		/// </returns>
-		protected virtual Task<TEntity> OnUpdatingEntityAsync(TEntity entity) {
+		protected virtual ValueTask<TEntity> OnUpdatingEntityAsync(TEntity entity) {
 			if (entity is IHaveTimeStamp haveTimeStamp && Time != null)
 				haveTimeStamp.UpdatedAtUtc = Time.UtcNow;
 
-			return Task.FromResult(entity);
+			return new ValueTask<TEntity>(entity);
 		}
 
 		/// <summary>
@@ -853,11 +853,12 @@ namespace Deveel.Data {
 			return EntityComparer.Equals(existing, other);
 		}
 
-		private Task<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken) {
+		private async ValueTask<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken) {
 			if (SupportsTracking && IsTrackingChanges)
-				return TrackingRepository.FindOriginalAsync(key, cancellationToken);
+				return await TrackingRepository.FindOriginalAsync(key, cancellationToken);
 
-			return FindAsync(key, cancellationToken);
+			var result = await FindAsync(key, cancellationToken);
+			return result.IsSuccess() ? result.Value : null;
 		}
 
 		/// <summary>
@@ -890,7 +891,7 @@ namespace Deveel.Data {
 		/// Returns a result object that describes the result of the
 		/// update operation.
 		/// </returns>
-		public virtual async Task<OperationResult> UpdateAsync(TEntity entity, CancellationToken? cancellationToken = null) {
+		public virtual async ValueTask<OperationResult> UpdateAsync(TEntity entity, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			var entityKey = GetEntityKey(entity);
@@ -964,7 +965,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="OperationResult"/> that
 		/// describes the result of the operation.
 		/// </returns>
-		public virtual async Task<OperationResult> RemoveAsync(TEntity entity, CancellationToken? cancellationToken = null) {
+		public virtual async ValueTask<OperationResult> RemoveAsync(TEntity entity, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			var entityKey = GetEntityKey(entity);
@@ -977,13 +978,13 @@ namespace Deveel.Data {
 
 				Logger.LogRemovingEntity(typeof(TEntity), entityKey);
 
-				var found = await FindAsync(entityKey, token);
-				if (found == null) {
+				var foundResult = await FindAsync(entityKey, token);
+				if (!foundResult.IsSuccess()) {
 					LogEntityNotFound(entityKey);
 					return Fail(EntityErrorCodes.NotFound);
 				}
 
-				if (!await Repository.RemoveAsync(found, token)) {
+				if (!await Repository.RemoveAsync(foundResult.Value!, token)) {
 					Logger.LogEntityNotRemoved(typeof(TEntity), entityKey);
 					return NotChanged();
 				}
@@ -1010,7 +1011,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <see cref="OperationResult"/> that
 		/// describes the result of the operation.
 		/// </returns>
-		public virtual async Task<OperationResult> RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken? cancellationToken = null) {
+		public virtual async ValueTask<OperationResult> RemoveRangeAsync(IEnumerable<TEntity> entities, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			try {
@@ -1036,7 +1037,7 @@ namespace Deveel.Data {
 		}
 
 		/// <summary>
-		/// Finds an entity in the repository with the given key.
+		/// Attempts to find an entity in the repository by its key.
 		/// </summary>
 		/// <param name="key">
 		/// The key of the entity to be found.
@@ -1045,16 +1046,11 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation.
 		/// </param>
 		/// <returns>
-		/// Returns an instance of <typeparamref name="TEntity"/> that
-		/// is identified by the given key, or <c>null</c> if no entity
-		/// was found for the given key.
+		/// Returns an instance of <see cref="OperationResult{TEntity}"/> that
+		/// contains the entity identified by the given key, or a failure
+		/// result if no entity was found or an error occurred.
 		/// </returns>
-		/// <exception cref="OperationException">
-		/// Thrown when an unknown error occurs while looking for the entity.
-		/// </exception>
-		// TODO: Is there any use case for using OperationResult<TEntity> here
-		//       instead of returning an entity?
-		public virtual async Task<TEntity?> FindAsync(TKey key, CancellationToken? cancellationToken = null) {
+		public virtual async ValueTask<OperationResult<TEntity>> FindAsync(TKey key, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			ArgumentNullException.ThrowIfNull(key, nameof(key));
@@ -1067,14 +1063,14 @@ namespace Deveel.Data {
 
 				if (result == null) {
 					Logger.LogEntityNotFound(typeof(TEntity), key);
-				} else {
-					Logger.LogEntityFoundByKey(typeof(TEntity), key);
+					return OperationResult<TEntity>.Fail(OperationError(EntityErrorCodes.NotFound, "Entity was not found"));
 				}
 
-				return result;
+				Logger.LogEntityFoundByKey(typeof(TEntity), key);
+				return OperationResult<TEntity>.Success(result);
 			} catch (Exception ex) {
 				LogEntityUnknownError(key, ex);
-				throw new OperationException(EntityErrorCodes.UnknownError, Domain, "Could not look for the entity", ex);
+				return OperationResult<TEntity>.Fail(OperationError(EntityErrorCodes.UnknownError, "Could not look for the entity"));
 			}
 		}
 
@@ -1101,26 +1097,32 @@ namespace Deveel.Data {
 		/// Thrown when the given filter is <c>null</c>.
 		/// </exception>
 		/// <seealso cref="IFilterableRepository{TEntity,TKey}.FindFirstAsync(IQuery, CancellationToken)"/>
-		// TODO: Is there any use case for using OperationResult<TEntity> here
-		//       instead of returning the entity?
-		public virtual async Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken? cancellationToken = null) {
+		public virtual async ValueTask<OperationResult<TEntity>> FindFirstAsync(IQuery query, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			if (!SupportsFilters)
-				throw new NotSupportedException("The repository does not support filters");
+				return OperationResult<TEntity>.Fail(OperationError(EntityErrorCodes.NotSupported, "The repository does not support filters"));
 
 			try {
 				Logger.LogFindingFirstEntityByQuery(typeof(TEntity));
 
-				return await FilterableRepository.FindFirstAsync(query, GetCancellationToken(cancellationToken));
+				var result = await FilterableRepository.FindFirstAsync(query, GetCancellationToken(cancellationToken));
+
+				if (result == null) {
+					Logger.LogEntityNotFound(typeof(TEntity), query);
+					return OperationResult<TEntity>.Fail(OperationError(EntityErrorCodes.NotFound, "Entity was not found"));
+				}
+
+				Logger.LogEntityFoundByQuery(typeof(TEntity), query);
+				return OperationResult<TEntity>.Success(result);
 			} catch (Exception ex) {
 				LogUnknownError(ex);
-				throw new OperationException(EntityErrorCodes.UnknownError, Domain, "Could not look for the entity", ex);
+				return OperationResult<TEntity>.Fail(OperationError(EntityErrorCodes.UnknownError, "Could not look for the entity"));
 			}
 		}
 
 		/// <summary>
-		/// Finds the first entity in the repository that matches the 
+		/// Finds the first entity in the repository that matches the
 		/// given filter expression.
 		/// </summary>
 		/// <param name="filter">
@@ -1130,11 +1132,12 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation.
 		/// </param>
 		/// <returns>
-		/// Returns the first instance of <typeparamref name="TEntity"/> that
-		/// mathces the given filter, or <c>null</c> if no entity was found.
+		/// Returns an instance of <see cref="OperationResult{TEntity}"/> that
+		/// contains the first entity matching the given filter, or a failure
+		/// result if no entity was found or an error occurred.
 		/// </returns>
 		/// <seealso cref="FindFirstAsync(IQuery, CancellationToken?)"/>
-		public Task<TEntity?> FindFirstAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
+		public ValueTask<OperationResult<TEntity>> FindFirstAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
 			=> FindFirstAsync(filter == null ? Query.Empty : new QueryBuilder<TEntity>().Where(filter), cancellationToken);
 
 		/// <summary>
@@ -1156,9 +1159,7 @@ namespace Deveel.Data {
 		/// <exception cref="OperationException">
 		/// Thrown when an unknown error occurs while looking for the entities.
 		/// </exception>
-		// TODO: Is there any use case for using OperationResult<IList<TEntity>> here
-		//       instead of returning a list of entities?
-		public virtual async Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken? cancellationToken = null) {
+		public virtual async ValueTask<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			if (!SupportsFilters)
@@ -1198,7 +1199,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support filters.
 		/// </exception>
-		public Task<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
+		public ValueTask<IList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
 			=> FindAllAsync(Query.Where(filter), cancellationToken);
 
 		/// <summary>
@@ -1220,7 +1221,7 @@ namespace Deveel.Data {
 		/// <exception cref="OperationException">
 		/// Thrown when an unknown error occurs while looking for the entities.
 		/// </exception>
-		public virtual Task<long> CountAsync(IQueryFilter filter, CancellationToken? cancellationToken = null) {
+		public virtual ValueTask<long> CountAsync(IQueryFilter filter, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			if (!SupportsFilters)
@@ -1263,7 +1264,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the number of entities that match the given filter.
 		/// </returns>
-		public Task<long> CountAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
+		public ValueTask<long> CountAsync(Expression<Func<TEntity, bool>>? filter = null, CancellationToken? cancellationToken = null)
 			=> CountAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter), cancellationToken);
 
 		/// <summary>
@@ -1274,7 +1275,7 @@ namespace Deveel.Data {
 		/// <returns></returns>
 		/// <exception cref="NotSupportedException"></exception>
 		/// <exception cref="OperationException"></exception>
-		public virtual async Task<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> query, CancellationToken? cancellationToken = null) {
+		public virtual async ValueTask<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> query, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			if (!SupportsPaging)

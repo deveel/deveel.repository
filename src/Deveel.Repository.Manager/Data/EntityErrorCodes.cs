@@ -34,6 +34,11 @@ namespace Deveel.Data {
 		public const string NotFound = "NOT_FOUND";
 
 		/// <summary>
+		/// The operation is not supported by the repository.
+		/// </summary>
+		public const string NotSupported = "NOT_SUPPORTED";
+
+		/// <summary>
 		/// An unknown error occurred during the operation.
 		/// </summary>
 		public const string UnknownError = "UNKNOWN_ERROR";

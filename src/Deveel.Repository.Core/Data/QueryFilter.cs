@@ -15,8 +15,6 @@
 using System;
 using System.Linq.Expressions;
 
-using CommunityToolkit.Diagnostics;
-
 namespace Deveel.Data {
 	/// <summary>
 	/// A utility class that provides a set of static methods to create
@@ -123,7 +121,7 @@ namespace Deveel.Data {
 		/// the result of the application of the given filter to the queryable.
 		/// </returns>
 		public static IQueryable<TEntity> Apply<TEntity>(this IQueryFilter filter, IQueryable<TEntity> queryable) where TEntity : class {
-			Guard.IsNotNull(filter, nameof(filter));
+			ArgumentNullException.ThrowIfNull(filter);
 
 			if (filter.IsEmpty())
 				return queryable;
@@ -184,8 +182,8 @@ namespace Deveel.Data {
 		/// Thrown if the given list of filters is empty.
 		/// </exception>
 		public static IQueryFilter Combine(params IQueryFilter[] filters) {
-			Guard.IsNotNull(filters, nameof(filters));
-			Guard.IsNotEmpty(filters, nameof(filters));
+            ArgumentNullException.ThrowIfNull(filters);
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(filters.Length, 0);
 
 			return Combine((IEnumerable<IQueryFilter>)filters);
 		}
@@ -204,8 +202,8 @@ namespace Deveel.Data {
 		/// Thrown if either of the given filters is <c>null</c>.
 		/// </exception>
 		public static CombinedQueryFilter Combine(IQueryFilter filter1, IQueryFilter filter2) {
-			Guard.IsNotNull(filter1, nameof(filter1));
-			Guard.IsNotNull(filter2, nameof(filter2));
+            ArgumentNullException.ThrowIfNull(filter1);
+            ArgumentNullException.ThrowIfNull(filter2);
 
 			if (filter1.IsEmpty() && filter2.IsEmpty())
 				throw new ArgumentException("Cannot combine two empty filters");

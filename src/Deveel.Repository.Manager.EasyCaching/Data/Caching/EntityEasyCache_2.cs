@@ -113,7 +113,7 @@ namespace Deveel.Data.Caching {
 			throw new NotSupportedException("The converter is not defined for this cache");
 		}
 
-		private Func<Task<TCached>> Factory(Func<Task<TEntity?>> valueFactory, CancellationToken cancellationToken) {
+		private Func<Task<TCached>> Factory(Func<ValueTask<TEntity?>> valueFactory, CancellationToken cancellationToken) {
 			return async () => {
 				var entity = await valueFactory();
 				if (entity == null)
@@ -135,7 +135,7 @@ namespace Deveel.Data.Caching {
 		}
 
 		/// <inheritdoc/>
-		public async Task<TEntity?> GetOrSetAsync(string cacheKey, Func<Task<TEntity?>> valueFactory, CancellationToken cancellationToken = default) {
+		public async ValueTask<TEntity?> GetOrSetAsync(string cacheKey, Func<ValueTask<TEntity?>> valueFactory, CancellationToken cancellationToken = default) {
 			try {
 				var factory = Factory(valueFactory, cancellationToken);
 
@@ -149,7 +149,7 @@ namespace Deveel.Data.Caching {
 		}
 
 		/// <inheritdoc/>
-		public async Task RemoveAsync(string[] cacheKeys, CancellationToken cancellationToken = default) {
+		public async ValueTask RemoveAsync(string[] cacheKeys, CancellationToken cancellationToken = default) {
 			try {
 				await cacheProvider.RemoveAllAsync(cacheKeys, cancellationToken);
 			} catch (Exception ex) {
@@ -158,7 +158,7 @@ namespace Deveel.Data.Caching {
 		}
 
 		/// <inheritdoc/>
-		public async Task SetAsync(string[] cacheKeys, TEntity entity, CancellationToken cancellationToken = default) {
+		public async ValueTask SetAsync(string[] cacheKeys, TEntity entity, CancellationToken cancellationToken = default) {
 			try {
 				var cached = ConvertToCached(entity);
 				var pairs = cacheKeys.ToDictionary(x => x, y => cached);

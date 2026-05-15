@@ -56,7 +56,7 @@ public class FilterableRepositoryTests {
     public async Task Should_ThrowInvalidOperationException_When_CountExpressionInvalid() {
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _repository.CountAsync("x.FirstName", TestContext.Current.CancellationToken));
+            async () => await _repository.CountAsync("x.FirstName", TestContext.Current.CancellationToken));
     }
 
     #endregion
@@ -95,7 +95,7 @@ public class FilterableRepositoryTests {
     public async Task Should_ThrowInvalidOperationException_When_ExistsExpressionInvalid() {
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _repository.ExistsAsync("x.FirstName", TestContext.Current.CancellationToken));
+            async () => await _repository.ExistsAsync("x.FirstName", TestContext.Current.CancellationToken));
     }
 
     #endregion
@@ -134,7 +134,7 @@ public class FilterableRepositoryTests {
     public async Task Should_ThrowInvalidOperationException_When_FindFirstExpressionInvalid() {
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _repository.FindFirstAsync<Person>("x.FirstName", TestContext.Current.CancellationToken));
+            async () => await _repository.FindFirstAsync<Person>("x.FirstName", TestContext.Current.CancellationToken));
     }
 
     #endregion
@@ -173,7 +173,7 @@ public class FilterableRepositoryTests {
     public async Task Should_ThrowInvalidOperationException_When_FindAllExpressionInvalid() {
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _repository.FindAllAsync("x.FirstName", TestContext.Current.CancellationToken));
+            async () => await _repository.FindAllAsync("x.FirstName", TestContext.Current.CancellationToken));
     }
 
     #endregion

@@ -45,7 +45,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <typeparamref name="TEntity"/> that matches the given expression,
 		/// otherwise <c>null</c> if no entity is found.
 		/// </returns>
-		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindFirstAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
@@ -74,7 +74,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <typeparamref name="TEntity"/> that matches the given expression,
 		/// otherwise <c>null</c> if no entity is found.
 		/// </returns>
-		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindFirstAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
@@ -98,7 +98,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <typeparamref name="TEntity"/> that matches the given expression,
 		/// otherwise <c>null</c> if no entity is found.
 		/// </returns>
-		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindFirstAsync(new DynamicLinqFilter(expression), cancellationToken);
 
@@ -124,7 +124,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <typeparamref name="TEntity"/> that matches the given expression,
 		/// otherwise <c>null</c> if no entity is found.
 		/// </returns>
-		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindFirstAsync(new DynamicLinqFilter(expression), cancellationToken);
 
@@ -156,7 +156,7 @@ namespace Deveel.Data {
 		/// Returns a list of <typeparamref name="TEntity"/> that match the 
 		/// given expression.
 		/// </returns>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindAllAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
@@ -186,7 +186,7 @@ namespace Deveel.Data {
 		/// Returns a list of <typeparamref name="TEntity"/> that match the 
 		/// given expression.
 		/// </returns>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindAllAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
@@ -211,7 +211,7 @@ namespace Deveel.Data {
 		/// Returns a list of <typeparamref name="TEntity"/> that match the
 		/// given expression.
 		/// </returns>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindAllAsync(new DynamicLinqFilter(expression), cancellationToken);
 
@@ -238,7 +238,7 @@ namespace Deveel.Data {
 		/// Returns a list of <typeparamref name="TEntity"/> that match the
 		/// given expression.
 		/// </returns>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindAllAsync(new DynamicLinqFilter(expression), cancellationToken);
 
@@ -270,7 +270,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the number of entities that match the given expression.
 		/// </returns>
-		public static Task<long> CountAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<long> CountAsync<TEntity>(this IRepository<TEntity> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.AsFilterable().CountAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
@@ -300,7 +300,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the number of entities that match the given expression.
 		/// </returns>
-		public static Task<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.AsFilterable().CountAsync(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
@@ -325,7 +325,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the number of entities that match the given expression.
 		/// </returns>
-		public static Task<long> CountAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<long> CountAsync<TEntity>(this IRepository<TEntity> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.AsFilterable().CountAsync(new DynamicLinqFilter(expression), cancellationToken);
 
@@ -352,7 +352,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the number of entities that match the given expression.
 		/// </returns>
-		public static Task<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.AsFilterable().CountAsync(new DynamicLinqFilter(expression), cancellationToken);
 
@@ -387,7 +387,7 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the repository contains at least one entity
 		/// that matches the given expression, otherwise <c>false</c>.
 		/// </returns>
-		public static Task<bool> ExistsAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<bool> ExistsAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string paramName, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.ExistsAsync<TEntity, TKey>(new DynamicLinqFilter(paramName, expression), cancellationToken);
 
@@ -418,7 +418,7 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the repository contains at least one entity
 		/// that matches the given expression, otherwise <c>false</c>.
 		/// </returns>
-		public static Task<bool> ExistsAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
+		public static ValueTask<bool> ExistsAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, string expression, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.ExistsAsync<TEntity, TKey>(DynamicLinqFilter.DefaultParameterName, expression, cancellationToken);
 

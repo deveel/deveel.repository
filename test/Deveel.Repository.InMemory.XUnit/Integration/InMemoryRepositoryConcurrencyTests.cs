@@ -49,7 +49,7 @@ public class InMemoryRepositoryConcurrencyTests {
         var people = PersonFaker.Generate(ThreadCount);
 
         // Act — fire all AddAsync calls simultaneously
-        var tasks = people.Select(p => repository.AddAsync(p, cancellationToken));
+        var tasks = people.Select(p => repository.AddAsync(p, cancellationToken).AsTask());
         await Task.WhenAll(tasks);
 
         // Assert — every entity must be retrievable; no writes may have been lost
@@ -195,7 +195,7 @@ public class InMemoryRepositoryConcurrencyTests {
             await repository.AddAsync(p, cancellationToken);
 
         // Act — every task removes its own distinct entity
-        var tasks = people.Select(p => repository.RemoveAsync(p, cancellationToken));
+        var tasks = people.Select(p => repository.RemoveAsync(p, cancellationToken).AsTask());
         var results = await Task.WhenAll(tasks);
 
         // Assert — every removal must have returned true and the store must be empty
@@ -305,7 +305,7 @@ public class InMemoryRepositoryConcurrencyTests {
         var extra = PersonFaker.Generate(extraCount);
 
         // Act — take snapshot while writers are running
-        var writeTask = Task.WhenAll(extra.Select(p => repository.AddAsync(p, cancellationToken)));
+        var writeTask = Task.WhenAll(extra.Select(p => repository.AddAsync(p, cancellationToken).AsTask()));
         var snapshot = repository.Entities; // taken while writes may still be in-flight
 
         await writeTask;

@@ -51,6 +51,6 @@ namespace Deveel.Data {
 		/// as it was loaded from the data source, or <c>null</c> if the entity is not
 		/// found or it's not being tracked.
 		/// </returns>
-		Task<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken = default);
+		ValueTask<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken = default);
 	}
 }

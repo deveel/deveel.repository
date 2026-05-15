@@ -50,7 +50,7 @@ namespace Deveel.Data {
 		/// Thrown when the given repository is not a <see cref="MongoRepository{TEntity}"/>.
 		/// </exception>
 		/// <seealso cref="MongoGeoDistanceFilter{TEntity}"/>
-		public static Task<TEntity?> FindFirstByGeoDistanceAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, object>> field, GeoPoint point, double? maxDistance = null)
+		public static ValueTask<TEntity?> FindFirstByGeoDistanceAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, object>> field, GeoPoint point, double? maxDistance = null)
 			where TEntity : class {
 			ArgumentNullException.ThrowIfNull(repository, nameof(repository));
 
@@ -91,7 +91,7 @@ namespace Deveel.Data {
 		/// Thrown when the given repository is not a <see cref="MongoRepository{TEntity}"/>.
 		/// </exception>
 		/// <seealso cref="MongoGeoDistanceFilter{TEntity}"/>
-		public static Task<TEntity?> FindFirstByGeoDistanceAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, object>> field, GeoPoint point, double? maxDistance = null)
+		public static ValueTask<TEntity?> FindFirstByGeoDistanceAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, object>> field, GeoPoint point, double? maxDistance = null)
 			where TEntity : class {
 			ArgumentNullException.ThrowIfNull(repository, nameof(repository));
 
@@ -129,7 +129,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentException">
 		/// Thrown when the given repository is not a <see cref="MongoRepository{TEntity}"/>.
 		/// </exception>
-		public static Task<IList<TEntity>> FindAllByGeoDistanceAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, object>> field, GeoPoint point, double? maxDistance = null)
+		public static ValueTask<IList<TEntity>> FindAllByGeoDistanceAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, object>> field, GeoPoint point, double? maxDistance = null)
 			where TEntity : class {
 			ArgumentNullException.ThrowIfNull(repository, nameof(repository));
 
@@ -167,7 +167,7 @@ namespace Deveel.Data {
 		/// is the result of the search.
 		/// </returns>
 		/// <exception cref="ArgumentException"></exception>
-		public static Task<IList<TEntity>> FindAllByGeoDistanceAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, object>> field, GeoPoint point, double? maxDistance = null)
+		public static ValueTask<IList<TEntity>> FindAllByGeoDistanceAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, object>> field, GeoPoint point, double? maxDistance = null)
 			where TEntity : class {
 			ArgumentNullException.ThrowIfNull(repository, nameof(repository));
 

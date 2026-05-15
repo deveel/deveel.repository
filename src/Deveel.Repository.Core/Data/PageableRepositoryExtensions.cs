@@ -53,7 +53,7 @@ namespace Deveel.Data {
 		/// Thrown when the given page number is less than 1, or
 		/// if the given page size is less than 0.
 		/// </exception>
-		public static Task<PageResult<TEntity>> GetPageAsync<TEntity, TKey>(this IPageableRepository<TEntity, TKey> repository, int page, int size, CancellationToken cancellationToken = default)
+		public static ValueTask<PageResult<TEntity>> GetPageAsync<TEntity, TKey>(this IPageableRepository<TEntity, TKey> repository, int page, int size, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.GetPageAsync(new PageQuery<TEntity>(page, size), cancellationToken);
 

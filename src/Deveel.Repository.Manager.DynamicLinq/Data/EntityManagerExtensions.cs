@@ -36,10 +36,11 @@ namespace Deveel.Data {
 		/// A token to cancel the operation.
 		/// </param>
 		/// <returns>
-		/// Returns the first entity that matches the given expression, or
-		/// <c>null</c> if no entity was found.
+		/// Returns an instance of <see cref="OperationResult{TEntity}"/>
+		/// containing the first entity that matches the given expression,
+		/// or a failure result if no entity was found or an error occurred.
 		/// </returns>
-		public static Task<TEntity?> FindFirstAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
+		public static ValueTask<OperationResult<TEntity>> FindFirstAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
 			where TEntity : class
 			=> manager.FindFirstAsync(new Query(new DynamicLinqFilter(expression)), cancellationToken);
 
@@ -63,10 +64,11 @@ namespace Deveel.Data {
 		/// A token to cancel the operation.
 		/// </param>
 		/// <returns>
-		/// Returns the first entity that matches the given expression, or
-		/// <c>null</c> if no entity was found.
+		/// Returns an instance of <see cref="OperationResult{TEntity}"/>
+		/// containing the first entity that matches the given expression,
+		/// or a failure result if no entity was found or an error occurred.
 		/// </returns>
-		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this EntityManager<TEntity, TKey> manager, string expression, CancellationToken? cancellationToken = null)
+		public static ValueTask<OperationResult<TEntity>> FindFirstAsync<TEntity, TKey>(this EntityManager<TEntity, TKey> manager, string expression, CancellationToken? cancellationToken = null)
 			where TEntity : class
 			where TKey : notnull
 			=> manager.FindFirstAsync(new Query(new DynamicLinqFilter(expression)), cancellationToken);
@@ -91,7 +93,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns a list of entities that matches the given expression.
 		/// </returns>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
 			where TEntity : class
 			=> manager.FindAllAsync(new Query(new DynamicLinqFilter(expression)), cancellationToken);
 
@@ -117,7 +119,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns a list of entities that matches the given expression.
 		/// </returns>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this EntityManager<TEntity, TKey> manager, string expression, CancellationToken? cancellationToken = null)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity, TKey>(this EntityManager<TEntity, TKey> manager, string expression, CancellationToken? cancellationToken = null)
 			where TEntity : class
 			where TKey : notnull
 			=> manager.FindAllAsync(new Query(new DynamicLinqFilter(expression)), cancellationToken);
@@ -142,7 +144,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the number of entities that matches the given expression.
 		/// </returns>
-		public static Task<long> CountAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
+		public static ValueTask<long> CountAsync<TEntity>(this EntityManager<TEntity> manager, string expression, CancellationToken? cancellationToken = null)
 			where TEntity : class
 			=> manager.CountAsync(new DynamicLinqFilter(expression), cancellationToken);
 
@@ -168,7 +170,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns the number of entities that matches the given expression.
 		/// </returns>
-		public static Task<long> CountAsync<TEntity, TKey>(this EntityManager<TEntity, TKey> manager, string expression, CancellationToken? cancellationToken = null)
+		public static ValueTask<long> CountAsync<TEntity, TKey>(this EntityManager<TEntity, TKey> manager, string expression, CancellationToken? cancellationToken = null)
 			where TEntity : class
 			where TKey : notnull
 			=> manager.CountAsync(new DynamicLinqFilter(expression), cancellationToken);

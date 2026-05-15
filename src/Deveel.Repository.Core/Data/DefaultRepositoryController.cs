@@ -103,7 +103,7 @@ namespace Deveel.Data {
 		}
 
 
-		private async Task CreateRepository(IControllableRepository? repository, CancellationToken cancellationToken) {
+		private async ValueTask CreateRepository(IControllableRepository? repository, CancellationToken cancellationToken) {
 			if (repository != null) {
 				try {
 					if (await repository.ExistsAsync(cancellationToken)) {
@@ -143,7 +143,7 @@ namespace Deveel.Data {
 			}
 		}
 
-		private async Task DropRepository(IControllableRepository? repository, CancellationToken cancellationToken) {
+		private async ValueTask DropRepository(IControllableRepository? repository, CancellationToken cancellationToken) {
 			if (repository != null) {
 				try {
 					if (!await repository.ExistsAsync(cancellationToken)) {
@@ -173,7 +173,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task CreateRepositoryAsync<TEntity>(CancellationToken cancellationToken = default)
+		public virtual async ValueTask CreateRepositoryAsync<TEntity>(CancellationToken cancellationToken = default)
 			where TEntity : class {
 			LogTrace("Creating the repository for type '{EntityType}'", typeof(TEntity).Name);
 
@@ -185,7 +185,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task CreateRepositoryAsync<TEntity, TKey>(CancellationToken cancellationToken = default)
+		public virtual async ValueTask CreateRepositoryAsync<TEntity, TKey>(CancellationToken cancellationToken = default)
 			where TEntity : class {
 			LogTrace("Creating the repository for type '{EntityType}'", typeof(TEntity).Name);
 
@@ -198,7 +198,7 @@ namespace Deveel.Data {
 
 
 		/// <inheritdoc/>
-		public virtual async Task DropRepositoryAsync<TEntity>(CancellationToken cancellationToken = default) where TEntity : class {
+		public virtual async ValueTask DropRepositoryAsync<TEntity>(CancellationToken cancellationToken = default) where TEntity : class {
 			LogTrace("Dropping the repository handling the type '{EntityType}'", typeof(TEntity).Name);
 
 			var repository = RequireRepository<TEntity>();
@@ -209,7 +209,7 @@ namespace Deveel.Data {
 		}
 
 		/// <inheritdoc/>
-		public virtual async Task DropRepositoryAsync<TEntity, TKey>(CancellationToken cancellationToken = default) where TEntity : class {
+		public virtual async ValueTask DropRepositoryAsync<TEntity, TKey>(CancellationToken cancellationToken = default) where TEntity : class {
 			LogTrace("Dropping the repository handling the type '{EntityType}'", typeof(TEntity).Name);
 
 			var repository = RequireRepository<TEntity, TKey>();

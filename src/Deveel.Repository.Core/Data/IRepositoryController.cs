@@ -31,7 +31,7 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns a <see cref="Task"/> that can be used to await the operation
 		/// </returns>
-		Task CreateRepositoryAsync<TEntity>(CancellationToken cancellationToken = default)
+		ValueTask CreateRepositoryAsync<TEntity>(CancellationToken cancellationToken = default)
 			where TEntity : class;
 
 		/// <summary>
@@ -47,9 +47,9 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation
 		/// </param>
 		/// <returns>
-		/// Returns a <see cref="Task"/> that can be used to await the operation
+		/// Returns a <see cref="ValueTask"/> that can be used to await the operation
 		/// </returns>
-		Task CreateRepositoryAsync<TEntity, TKey>(CancellationToken cancellationToken = default)
+		ValueTask CreateRepositoryAsync<TEntity, TKey>(CancellationToken cancellationToken = default)
 			where TEntity : class;
 
 		/// <summary>
@@ -62,9 +62,9 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation
 		/// </param>
 		/// <returns>
-		/// Returns a <see cref="Task"/> that can be used to await the operation
+		/// Returns a <see cref="ValueTask"/> that can be used to await the operation
 		/// </returns>
-		Task DropRepositoryAsync<TEntity>(CancellationToken cancellationToken = default)
+		ValueTask DropRepositoryAsync<TEntity>(CancellationToken cancellationToken = default)
 			where TEntity : class;
 
 		/// <summary>
@@ -80,9 +80,9 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation
 		/// </param>
 		/// <returns>
-		/// Returns a <see cref="Task"/> that can be used to await the operation
+		/// Returns a <see cref="ValueTask"/> that can be used to await the operation
 		/// </returns>
-		Task DropRepositoryAsync<TEntity, TKey>(CancellationToken cancellationToken = default)
+		ValueTask DropRepositoryAsync<TEntity, TKey>(CancellationToken cancellationToken = default)
 			where TEntity : class;
 	}
 }

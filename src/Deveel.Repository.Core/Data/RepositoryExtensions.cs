@@ -323,7 +323,7 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the entity was removed successfully,
 		/// otherwise it returns <c>false</c>.
 		/// </returns>
-		public static async Task<bool> RemoveByKeyAsync<TEntity>(this IRepository<TEntity> repository, object key, CancellationToken cancellationToken = default)
+		public static async ValueTask<bool> RemoveByKeyAsync<TEntity>(this IRepository<TEntity> repository, object key, CancellationToken cancellationToken = default)
             where TEntity : class {
             var entity = await repository.FindAsync(key, cancellationToken);
             if (entity == null)
@@ -355,7 +355,7 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if the entity was removed successfully,
 		/// otherwise it returns <c>false</c>.
 		/// </returns>
-		public static async Task<bool> RemoveByKeyAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, TKey key, CancellationToken cancellationToken = default)
+		public static async ValueTask<bool> RemoveByKeyAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, TKey key, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			var entity = await repository.FindAsync(key, cancellationToken);
 			if (entity == null)
@@ -554,12 +554,12 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support paging.
 		/// </exception>
-		public static Task<PageResult<TEntity>> GetPageAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, PageQuery<TEntity> request, CancellationToken cancellationToken = default)
+		public static ValueTask<PageResult<TEntity>> GetPageAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, PageQuery<TEntity> request, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsPageable())
 				return repository.RequirePageable().GetPageAsync(request, cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult(repository.AsQueryable().GetPage(request));
+				return new ValueTask<PageResult<TEntity>>(repository.AsQueryable().GetPage(request));
 
 			throw new NotSupportedException("The repository does not support paging");
 		}
@@ -597,7 +597,7 @@ namespace Deveel.Data {
 		/// Thrown when the given page number is less than 1, or the given
 		/// size is less than zero.
 		/// </exception>
-		public static Task<PageResult<TEntity>> GetPageAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, int page, int size, CancellationToken cancellationToken = default)
+		public static ValueTask<PageResult<TEntity>> GetPageAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, int page, int size, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.GetPageAsync(new PageQuery<TEntity>(page, size), cancellationToken);
 
@@ -713,7 +713,7 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if any entity exists in the repository
 		/// that matches the given filter, otherwise <c>false</c>.
 		/// </returns>
-		public static Task<bool> ExistsAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+		public static ValueTask<bool> ExistsAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.ExistsAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
 
@@ -756,12 +756,12 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying or filtering.
 		/// </exception>
-		public static Task<bool> ExistsAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
+		public static ValueTask<bool> ExistsAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
 				return repository.AsFilterable().ExistsAsync(filter, cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult(repository.AsQueryable().AsQueryable().Any(filter.AsLambda<TEntity>()));
+				return new ValueTask<bool>(repository.AsQueryable().AsQueryable().Any(filter.AsLambda<TEntity>()));
 
 			throw new NotSupportedException("The repository does not support querying");
 		}
@@ -844,7 +844,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying or filtering.
 		/// </exception>
-		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
+		public static ValueTask<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> ExistsAsync<TEntity, object>(repository, filter, cancellationToken);
 
@@ -869,7 +869,7 @@ namespace Deveel.Data {
 		/// Returns <c>true</c> if any entity exists in the repository
 		/// that matches the given filter, otherwise <c>false</c>.
 		/// </returns>
-		public static Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+		public static ValueTask<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> ExistsAsync<TEntity, object>(repository, filter, cancellationToken);
 
@@ -963,12 +963,12 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying or filtering.
 		/// </exception>
-        public static Task<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+        public static ValueTask<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class {
 			if (repository.IsFilterable())
 				return repository.AsFilterable().CountAsync(new ExpressionQueryFilter<TEntity>(filter), cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult(repository.AsQueryable().AsQueryable().LongCount(filter));
+				return new ValueTask<long>(repository.AsQueryable().AsQueryable().LongCount(filter));
 
 			throw new NotSupportedException("The repository does not support querying");
 		}
@@ -999,12 +999,12 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying or filtering.
 		/// </exception>
-		public static Task<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
+		public static ValueTask<long> CountAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
 				return repository.AsFilterable().CountAsync(filter, cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult(repository.AsQueryable().AsQueryable().LongCount(filter.AsLambda<TEntity>()));
+				return new ValueTask<long>(repository.AsQueryable().AsQueryable().LongCount(filter.AsLambda<TEntity>()));
 
 			throw new NotSupportedException("The repository does not support querying");
 		}
@@ -1031,12 +1031,12 @@ namespace Deveel.Data {
         /// Thrown when the repository does not support querying or filtering.
         /// </exception>
         /// <seealso cref="IFilterableRepository{TEntity, TKey}.CountAsync(IQueryFilter, CancellationToken)"/>
-		public static Task<long> CountAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
+		public static ValueTask<long> CountAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
 				return repository.AsFilterable().CountAsync(QueryFilter.Empty, cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult(repository.AsQueryable().AsQueryable().LongCount());
+				return new ValueTask<long>(repository.AsQueryable().AsQueryable().LongCount());
 
 			throw new NotSupportedException("The repository does not support querying");
 		}
@@ -1171,7 +1171,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying or filtering.
 		/// </exception>
-		public static Task<long> CountAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+		public static ValueTask<long> CountAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> CountAsync<TEntity, object>(repository, filter, cancellationToken);
 
@@ -1194,7 +1194,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying or filtering.
 		/// </exception>
-		public static Task<long> CountAllAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
+		public static ValueTask<long> CountAllAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> CountAllAsync<TEntity, object>(repository, cancellationToken);
 
@@ -1342,12 +1342,12 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying.
 		/// </exception>
-		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQuery query, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQuery query, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
 				return repository.AsFilterable().FindFirstAsync(query, cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult(query.Apply(repository.AsQueryable().AsQueryable()).FirstOrDefault());
+				return new ValueTask<TEntity?>(query.Apply(repository.AsQueryable().AsQueryable()).FirstOrDefault());
 
 			throw new NotSupportedException("The repository does not support querying");
 		}
@@ -1376,7 +1376,7 @@ namespace Deveel.Data {
 		/// matched the given filter, or <c>null</c> if no entity matches
 		/// the given filter.
 		/// </returns>
-		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindFirstAsync(new Query(filter), cancellationToken);
 
@@ -1435,7 +1435,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support filtering.
 		/// </exception>
-		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.FindFirstAsync(Query.Where(filter), cancellationToken);
 
@@ -1459,7 +1459,7 @@ namespace Deveel.Data {
 		/// is the first entity in the repository, or <c>null</c> if the
 		/// repository is empty.
 		/// </returns>
-		public static Task<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.AsFilterable().FindFirstAsync(Query.Empty, cancellationToken);
 
@@ -1585,7 +1585,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying.
 		/// </exception>
-		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, IQuery query, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, IQuery query, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> FindFirstAsync<TEntity, object>(repository, query, cancellationToken);
 
@@ -1609,7 +1609,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <typeparamref name="TEntity"/> that matched the given
 		/// filter, or <c>null</c> if no entity matches.
 		/// </returns>
-		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> FindFirstAsync<TEntity, object>(repository, filter, cancellationToken);
 
@@ -1636,7 +1636,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support filtering.
 		/// </exception>
-		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> FindFirstAsync<TEntity, object>(repository, filter, cancellationToken);
 
@@ -1657,7 +1657,7 @@ namespace Deveel.Data {
 		/// Returns an instance of <typeparamref name="TEntity"/> that is the first
 		/// entity in the repository, or <c>null</c> if the repository is empty.
 		/// </returns>
-		public static Task<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
+		public static ValueTask<TEntity?> FindFirstAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> FindFirstAsync<TEntity, object>(repository, cancellationToken);
 
@@ -1779,12 +1779,12 @@ namespace Deveel.Data {
 		/// Thrown when the repository does not support querying 
 		/// or filtering.
 		/// </exception>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQuery query, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQuery query, CancellationToken cancellationToken = default)
 			where TEntity : class {
 			if (repository.IsFilterable())
 				return repository.AsFilterable().FindAllAsync(query, cancellationToken);
 			if (repository.IsQueryable())
-				return Task.FromResult<IList<TEntity>>(query.Apply(repository.AsQueryable().AsQueryable()).ToList());
+				return new ValueTask<IList<TEntity>>(query.Apply(repository.AsQueryable().AsQueryable()).ToList());
 
 			throw new NotSupportedException("The repository does not support querying");
 		}
@@ -1812,7 +1812,7 @@ namespace Deveel.Data {
 		/// Returns a list of <typeparamref name="TEntity"/> from
 		/// the repository that match the given filter.
 		/// </returns>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> repository.FindAllAsync(new Query(filter), cancellationToken);
 
@@ -1839,7 +1839,7 @@ namespace Deveel.Data {
 		/// Returns a list of <typeparamref name="TEntity"/> from
 		/// the repository that match the given filter.
 		/// </returns>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.FindAllAsync(Query.Where(filter), cancellationToken);
 
@@ -1865,7 +1865,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying or filtering.
 		/// </exception>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity, TKey>(this IRepository<TEntity, TKey> repository, CancellationToken cancellationToken = default)
             where TEntity : class
             => repository.FindAllAsync(Query.Empty, cancellationToken);
 
@@ -2035,7 +2035,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying or filtering.
 		/// </exception>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, IQuery query, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, IQuery query, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> FindAllAsync<TEntity, object>(repository, query, cancellationToken);
 
@@ -2059,7 +2059,7 @@ namespace Deveel.Data {
 		/// Returns a list of <typeparamref name="TEntity"/> from
 		/// the repository that match the given filter.
 		/// </returns>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, IQueryFilter filter, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> FindAllAsync<TEntity, object>(repository, filter, cancellationToken);
 
@@ -2083,7 +2083,7 @@ namespace Deveel.Data {
 		/// Returns a list of <typeparamref name="TEntity"/> from
 		/// the repository that match the given filter.
 		/// </returns>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> FindAllAsync<TEntity, object>(repository, filter, cancellationToken);
 
@@ -2107,7 +2107,7 @@ namespace Deveel.Data {
 		/// <exception cref="NotSupportedException">
 		/// Thrown when the repository does not support querying or filtering.
 		/// </exception>
-		public static Task<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
+		public static ValueTask<IList<TEntity>> FindAllAsync<TEntity>(this IRepository<TEntity> repository, CancellationToken cancellationToken = default)
 			where TEntity : class
 			=> FindAllAsync<TEntity, object>(repository, cancellationToken);
 

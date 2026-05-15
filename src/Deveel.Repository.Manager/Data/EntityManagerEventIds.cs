@@ -147,5 +147,10 @@ namespace Deveel.Data {
 		/// An entity was found in the repository.
 		/// </summary>
 		public const int EntityFoundByKey = 2006;
+
+		/// <summary>
+		/// A first entity matching a query was found in the repository.
+		/// </summary>
+		public const int EntityFoundByQuery = 2007;
 	}
 }

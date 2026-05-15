@@ -98,24 +98,24 @@ public abstract class RepositoryCoreBenchmarksBase<TEntity, TKey>
 	}
 
 	[Benchmark]
-	public Task AddAsync_One() => Repository.AddAsync(_singleToAdd);
+	public async Task AddAsync_One() => await Repository.AddAsync(_singleToAdd);
 
 	[Benchmark]
-	public Task AddRangeAsync_Batch() => Repository.AddRangeAsync(_batchToAdd);
+	public async Task AddRangeAsync_Batch() => await Repository.AddRangeAsync(_batchToAdd);
 
 	[Benchmark]
-	public Task<TEntity?> FindAsync_ByKey() => Repository.FindAsync(_targetId);
+	public async Task<TEntity?> FindAsync_ByKey() => await Repository.FindAsync(_targetId);
 
 	[Benchmark]
-	public Task<bool> UpdateAsync_Entity() => Repository.UpdateAsync(_targetForUpdate);
+	public async Task<bool> UpdateAsync_Entity() => await Repository.UpdateAsync(_targetForUpdate);
 
 	[Benchmark]
-	public Task<bool> RemoveAsync_Entity() => Repository.RemoveAsync(_targetForRemove);
+	public async Task<bool> RemoveAsync_Entity() => await Repository.RemoveAsync(_targetForRemove);
 
 	[Benchmark]
-	public Task<long> CountAsync_Filtered() => Repository.CountAsync(CountPredicate);
+	public async Task<long> CountAsync_Filtered() => await Repository.CountAsync(CountPredicate);
 
 	[Benchmark]
-	public Task<bool> ExistsAsync_Filtered() => Repository.ExistsAsync(ExistsPredicate);
+	public async Task<bool> ExistsAsync_Filtered() => await Repository.ExistsAsync(ExistsPredicate);
 }
 

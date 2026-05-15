@@ -42,7 +42,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentException">
 		/// Throw if the <paramref name="filter"/> is not supported by the repository
 		/// </exception>
-		Task<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
+		ValueTask<bool> ExistsAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Counts the number of items in the repository matching the given 
@@ -64,7 +64,7 @@ namespace Deveel.Data {
 		/// <exception cref="ArgumentException">
 		/// Throw if the <paramref name="filter"/> is not supported by the repository
 		/// </exception>
-		Task<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
+		ValueTask<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Finds the first item in the repository that matches the given query
@@ -87,7 +87,7 @@ namespace Deveel.Data {
 		/// Throw if the <paramref name="query"/> defines a filter or a sort rule
 		/// that is not supported by the repository
 		/// </exception>
-		Task<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default);
+		ValueTask<TEntity?> FindFirstAsync(IQuery query, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Finds all the items in the repository that match the given filtering condition
@@ -103,6 +103,6 @@ namespace Deveel.Data {
 		/// Returns a list of items in the repository that match the given query,
 		/// or an empty list if none of the items matches the condition.
 		/// </returns>
-		Task<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default);
+		ValueTask<IList<TEntity>> FindAllAsync(IQuery query, CancellationToken cancellationToken = default);
 	}
 }
