@@ -69,9 +69,9 @@ namespace Deveel.Data
 		/// <inheritdoc/>
 		public override async Task<TEntity?> FindAsync(TKey key, CancellationToken cancellationToken = default)
 		{
-            var userId = UserId;
+            var userId = UserAccessor.GetUserId();
 
-            if (Equals(default(TUserKey), UserId))
+            if (Equals(default(TUserKey), userId))
             {
                 Logger.WarnUserNotSet();
                 return null;
@@ -98,12 +98,10 @@ namespace Deveel.Data
 		/// <inheritdoc/>
 		protected override TEntity OnAddingEntity(TEntity entity)
 		{
-			var userId = UserId;
-            if (Equals(default(TUserKey), UserId))
+			var userId = UserAccessor.GetUserId();
+            if (Equals(default(TUserKey), userId))
             {
                 Logger.WarnUserNotSet();
-            } else if  (Equals(default(TEntity), entity)) {
-                Logger.WarnEntityNotFound(typeof(TEntity), default(TKey));
             }
             else
             {
