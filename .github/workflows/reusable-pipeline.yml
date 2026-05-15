@@ -120,11 +120,15 @@ jobs:
 
       - name: Publish packages to GitHub Packages
         if: ${{ inputs.publish-github-packages }}
-        run: dotnet nuget push ./nupkgs/*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_API_TOKEN }} --source https://nuget.pkg.github.com/deveel/index.json
+        env: 
+          GITHUB_API_TOKEN: ${{ secrets.GITHUB_API_TOKEN }}
+        run: dotnet nuget push ./nupkgs/*.nupkg --skip-duplicate --api-key $GITHUB_API_TOKEN --source https://nuget.pkg.github.com/deveel/index.json
 
       - name: Publish packages to NuGet.org
         if: ${{ inputs.publish-nuget-org }}
-        run: dotnet nuget push ./nupkgs/*.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./nupkgs/*.nupkg --skip-duplicate --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
 
 
 
