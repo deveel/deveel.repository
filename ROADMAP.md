@@ -1,9 +1,9 @@
 # Deveel Repository — Product Roadmap
 
 **Current Version:** 1.4.3  
-**Roadmap Horizon:** v1.5.0 → v2.0.0  
+**Roadmap Horizon:** v1.5.0 → v2.1.0  
 **Target Runtimes:** .NET 8.0, 9.0, 10.0  
-**Last Updated:** April 27, 2026
+**Last Updated:** May 15, 2026
 
 ---
 
@@ -24,7 +24,8 @@ The roadmap below takes the framework from *useful primitives* to a *complete de
 | [**1.7.0**](#milestone-3-v170--entity-lifecycle) | Entity Lifecycle | Q4 2026 (early) | Soft delete, state machine, autonomous timestamps |
 | [**1.8.0**](#milestone-4-v180--scale--throughput) | Scale & Throughput | Q4 2026 (late) | Bulk operations, streaming, read/write split |
 | [**1.9.0**](#milestone-5-v190--observability--governance) | Observability & Governance | Q1 2027 (early) | OpenTelemetry, audit trail, EF Core multi-tenancy |
-| [**2.0.0**](#milestone-6-v200--unified-platform) | Unified Platform | Q1 2027 (late) | Breaking changes, new drivers, source generators |
+| [**2.0.0**](#milestone-6-v200--unified-platform) | Unified Platform | Q1 2027 (late) | Breaking changes, new database drivers |
+| [**2.1.0**](#milestone-7-v210--developer-velocity--platform-extensions) | Developer Velocity & Platform Extensions | Q2 2027 | Source generators, service-backed repositories |
 
 ---
 
@@ -629,7 +630,7 @@ Repository operations are completely invisible to distributed tracing systems to
 **Release Target:** Q1 2027 (late)  
 **Theme:** API modernization, new drivers, strategic breaking changes
 
-v1.5–v1.9 delivered capabilities incrementally and carefully. v2.0 takes the structural actions that backward compatibility prevented earlier: a simplified interface hierarchy, a .NET 9 minimum baseline, new first-party drivers for PostgreSQL and Azure Cosmos DB, and source generators that eliminate repository boilerplate entirely.
+v1.5–v1.9 delivered capabilities incrementally and carefully. v2.0 takes the structural actions that backward compatibility prevented earlier: a simplified interface hierarchy, a .NET 9 minimum baseline, and new first-party drivers for PostgreSQL, Azure Cosmos DB, and Dapper.
 
 ---
 
@@ -735,7 +736,40 @@ Azure Cosmos DB is the leading serverless, globally-distributed document databas
 
 ---
 
-### Feature 2.0.5 — Repository Source Generators
+### Feature 2.0.5 — Dapper Repository Driver
+
+**Title:** `Deveel.Repository.Dapper` — Lightweight Dapper-Backed Repository Implementation
+
+**Intent**  
+> "Give teams using Dapper as their data-access strategy a first-party driver that maps Deveel Repository abstractions directly to raw SQL and stored procedures — without forcing them into a full ORM."
+
+**The Problem Today**  
+Dapper is the most widely adopted micro-ORM in the .NET ecosystem: lightweight, fast, and SQL-first. Teams using it today must either hand-roll repository wrappers around every query (losing the framework's pluggable caching, validation, event emission, and health-check benefits) or adopt EF Core just to use the framework — a non-starter for SQL-optimization-conscious teams and legacy database migrations.
+
+**What We Are Building**  
+- A `Deveel.Repository.Dapper` package built on `Dapper` and `Microsoft.Data.SqlClient` / Npgsql / generic `DbConnection`
+- `IRepository<TEntity, TKey>` backed by convention-over-configuration SQL generation (or overridable per-operation SQL templates)
+- Native stored procedure and batch-operation execution mapped to the batch and streaming APIs from v1.8
+- Flexible entity-to-SQL mapping: table name, column mapping, key strategy configurable per entity
+- Automatic `IDbConnection` lifecycle management from a registered `DbDataSource` or connection-string provider
+- Full driver parity: filtering from `IQueryFilter` → parameterized `WHERE` clauses, pagination → `OFFSET`/`FETCH`, soft-delete filtering, and health checks
+
+**Benefits**
+- The most .NET-native ORM becomes a first-class Deveel Repository driver — no boilerplate wrappers, no vendor lock-in
+- Teams keep their existing Dapper investment (raw SQL, existing procedures, performance-tuned queries) while gaining the full framework feature set
+- The driver works against any ADO.NET provider: SQL Server, PostgreSQL, MySQL, SQLite — a single abstraction across heterogeneous databases
+- A smooth migration path from hand-rolled Dapper repositories to a consistent, observable, and cache-aware pattern
+
+## Milestone 7: v2.1.0 — "Developer Velocity & Platform Extensions"
+
+**Release Target:** Q2 2027  
+**Theme:** Boilerplate elimination, service-backed repositories
+
+v2.0 laid the architectural foundation with interface simplification and new database drivers. v2.1.0 shifts focus outward: Roslyn source generators eliminate the last pockets of manual repository plumbing, while the service-backed driver lets teams extend the repository abstraction beyond the process boundary — turning any RESTful or gRPC endpoint into a type-safe repository without custom adapter code.
+
+---
+
+### Feature 2.1.1 — Repository Source Generators
 
 **Title:** Compile-Time Repository Scaffolding via Roslyn Source Generators
 
@@ -760,7 +794,7 @@ Creating a custom repository — even a trivial one adding two domain-specific q
 
 ---
 
-### Feature 2.0.6 — Service-Based Repository Driver
+### Feature 2.1.2 — Service-Based Repository Driver
 
 **Title:** `Deveel.Repository.Services` — RESTful and gRPC Service-Backed Repository Implementation
 
@@ -784,7 +818,6 @@ Microservice architectures often require aggregating data from multiple remote s
 - Teams can switch between local and remote implementations with a single DI configuration change
 - Event-driven workflows maintain transactional boundaries across service calls where supported
 - gRPC performance benefits for service-to-service communication without adding a new abstraction layer
-
 ---
 
 ## Post-v2.0 Backlog
