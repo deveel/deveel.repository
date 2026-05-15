@@ -21,7 +21,10 @@ jobs:
     with:
       publish-github-packages: true
       publish-nuget-org: ${{ github.event_name == 'release' || inputs.publish-to-nuget-org }}
-    secrets: inherit
+    secrets:
+      GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     permissions:
       packages: write
       contents: read

@@ -15,7 +15,10 @@ jobs:
       generate-coverage: true
       upload-codecov: true
       publish-github-packages: true
-    secrets: inherit
+    secrets:
+      GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
     permissions:
       packages: write
       contents: read
