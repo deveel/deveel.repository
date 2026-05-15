@@ -69,6 +69,7 @@ Features: OpenTelemetry Integration, Audit Trail Support, EF Core Multi-Tenancy 
 - **Azure Cosmos DB Driver:** Cloud-native driver for Azure Cosmos DB.
 - **Dapper Repository Driver:** Lightweight Dapper-backed repository implementation.
 - **Service-Based Repository Driver:** RESTful and gRPC service-backed repository implementation.
+- **Neo4j Repository Driver:** A graph database repository driver built on the Neo4j .NET driver.
 
 ## Success Metrics
 

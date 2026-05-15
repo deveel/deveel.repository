@@ -809,6 +809,32 @@ Microservice architectures often require aggregating data from multiple remote s
 - Teams can switch between local and remote implementations with a single DI configuration change
 - Event-driven workflows maintain transactional boundaries across service calls where supported
 - gRPC performance benefits for service-to-service communication without adding a new abstraction layer
+
+---
+
+### Feature — Neo4j Repository Driver
+
+**Title:** `Deveel.Repository.Neo4j` — A Graph Database Repository Driver
+
+**Intent**  
+> "Give teams using Neo4j as their graph database a first-party driver that maps Deveel Repository abstractions directly to Cypher queries — enabling graph-traversal queries within the familiar repository abstraction."
+
+**The Problem Today**  
+Neo4j is the leading graph database in the .NET ecosystem, used for recommendation engines, fraud detection, identity graphs, and knowledge management. Teams using it today must either use the raw Neo4j .NET driver or the Neo4jClient library directly, losing all repository abstraction benefits. There is no framework-native way to express graph relationships, traversal queries, or property-graph operations within the repository pattern.
+
+**What We Are Building**  
+- A `Deveel.Repository.Neo4j` package built on the official Neo4j .NET driver
+- `IRepository<TEntity, TKey>` backed by Cypher queries against labeled nodes
+- Native relationship mapping — entity properties mapped to node attributes, relationships mapped to navigation properties
+- Graph-traversal query support via extension methods on `QueryBuilder<TEntity>` (shortest-path, variable-length patterns, neighborhood queries)
+- Automatic index management for frequently-queried node properties and relationship types
+- Support for the full framework feature set: filtering, pagination, soft-delete, async streaming, health checks
+
+**Benefits**
+- Full repository abstraction over Neo4j — no raw Cypher wiring in application code
+- Graph-traversal queries accessible through the familiar `QueryBuilder` API
+- Teams can prototype on In-Memory, validate on Neo4j, and switch with a single DI registration change
+- Relationship management becomes a first-class concern in the repository layer
 ---
 
 ## Post-v2.0 Backlog

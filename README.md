@@ -186,6 +186,7 @@ We are actively building Deveel Repository toward a comprehensive, production-re
   - [ ] Azure Cosmos DB Driver
   - [ ] Dapper Repository Driver
   - [ ] Service-Based Repository Driver
+  - [ ] Neo4j Repository Driver
 
 For more details on features, design rationale, and success criteria, see the [ROADMAP](ROADMAP.md).
 
