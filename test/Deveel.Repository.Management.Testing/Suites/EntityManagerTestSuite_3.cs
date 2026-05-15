@@ -346,7 +346,8 @@ public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLi
 
 		// Assert
 		Assert.NotNull(found);
-		Assert.Equal(person.Id, found.Id);
+		Assert.True(found.IsSuccess());
+		Assert.Equal(person.Id, found.Value!.Id);
 	}
 
 	[Fact]
@@ -361,7 +362,8 @@ public abstract class EntityManagerTestSuite<TManager, TPerson, TKey> : IAsyncLi
 		var found = await Manager.FindAsync(personId);
 
 		// Assert
-		Assert.Null(found);
+		Assert.NotNull(found);
+		Assert.True(found.IsError());
 	}
 
 	[Fact]

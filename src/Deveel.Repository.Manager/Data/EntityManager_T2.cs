@@ -853,11 +853,12 @@ namespace Deveel.Data {
 			return EntityComparer.Equals(existing, other);
 		}
 
-		private ValueTask<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken) {
+		private async ValueTask<TEntity?> FindOriginalAsync(TKey key, CancellationToken cancellationToken) {
 			if (SupportsTracking && IsTrackingChanges)
-				return TrackingRepository.FindOriginalAsync(key, cancellationToken);
+				return await TrackingRepository.FindOriginalAsync(key, cancellationToken);
 
-			return FindAsync(key, cancellationToken);
+			var result = await FindAsync(key, cancellationToken);
+			return result.IsSuccess() ? result.Value : null;
 		}
 
 		/// <summary>
@@ -977,13 +978,13 @@ namespace Deveel.Data {
 
 				Logger.LogRemovingEntity(typeof(TEntity), entityKey);
 
-				var found = await FindAsync(entityKey, token);
-				if (found == null) {
+				var foundResult = await FindAsync(entityKey, token);
+				if (!foundResult.IsSuccess()) {
 					LogEntityNotFound(entityKey);
 					return Fail(EntityErrorCodes.NotFound);
 				}
 
-				if (!await Repository.RemoveAsync(found, token)) {
+				if (!await Repository.RemoveAsync(foundResult.Value!, token)) {
 					Logger.LogEntityNotRemoved(typeof(TEntity), entityKey);
 					return NotChanged();
 				}
@@ -1036,7 +1037,7 @@ namespace Deveel.Data {
 		}
 
 		/// <summary>
-		/// Finds an entity in the repository with the given key.
+		/// Attempts to find an entity in the repository by its key.
 		/// </summary>
 		/// <param name="key">
 		/// The key of the entity to be found.
@@ -1045,16 +1046,11 @@ namespace Deveel.Data {
 		/// A token used to cancel the operation.
 		/// </param>
 		/// <returns>
-		/// Returns an instance of <typeparamref name="TEntity"/> that
-		/// is identified by the given key, or <c>null</c> if no entity
-		/// was found for the given key.
+		/// Returns an instance of <see cref="OperationResult{TEntity}"/> that
+		/// contains the entity identified by the given key, or a failure
+		/// result if no entity was found or an error occurred.
 		/// </returns>
-		/// <exception cref="OperationException">
-		/// Thrown when an unknown error occurs while looking for the entity.
-		/// </exception>
-		// TODO: Is there any use case for using OperationResult<TEntity> here
-		//       instead of returning an entity?
-		public virtual async ValueTask<TEntity?> FindAsync(TKey key, CancellationToken? cancellationToken = null) {
+		public virtual async ValueTask<OperationResult<TEntity>> FindAsync(TKey key, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 
 			ArgumentNullException.ThrowIfNull(key, nameof(key));
@@ -1067,14 +1063,14 @@ namespace Deveel.Data {
 
 				if (result == null) {
 					Logger.LogEntityNotFound(typeof(TEntity), key);
-				} else {
-					Logger.LogEntityFoundByKey(typeof(TEntity), key);
+					return OperationResult<TEntity>.Fail(OperationError(EntityErrorCodes.NotFound, "Entity was not found"));
 				}
 
-				return result;
+				Logger.LogEntityFoundByKey(typeof(TEntity), key);
+				return OperationResult<TEntity>.Success(result);
 			} catch (Exception ex) {
 				LogEntityUnknownError(key, ex);
-				throw new OperationException(EntityErrorCodes.UnknownError, Domain, "Could not look for the entity", ex);
+				return OperationResult<TEntity>.Fail(OperationError(EntityErrorCodes.UnknownError, "Could not look for the entity"));
 			}
 		}
 

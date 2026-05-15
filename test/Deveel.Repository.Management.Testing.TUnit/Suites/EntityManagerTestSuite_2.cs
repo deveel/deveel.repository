@@ -251,8 +251,8 @@ public abstract class EntityManagerTestSuite<TManager, TPerson> : IAsyncInitiali
 
 		var found = await Manager.FindAsync(person.Id!);
 
-		await Assert.That(found).IsNotNull();
-		await Assert.That(found!.Id).IsEqualTo(person.Id);
+		await Assert.That(found.IsSuccess()).IsTrue();
+		await Assert.That(found.Value!.Id).IsEqualTo(person.Id);
 	}
 
 	[Test]
@@ -263,7 +263,7 @@ public abstract class EntityManagerTestSuite<TManager, TPerson> : IAsyncInitiali
 
 		var found = await Manager.FindAsync(personId);
 
-		await Assert.That(found).IsNull();
+		await Assert.That(found.IsError()).IsTrue();
 	}
 
 	[Test]
