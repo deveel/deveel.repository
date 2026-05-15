@@ -23,7 +23,7 @@ jobs:
       publish-nuget-org: ${{ github.event_name == 'release' || inputs.publish-to-nuget-org }}
     secrets:
       GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      NUGET_API_KEY: ${{ secrets.NUGET_AUTH_TOKEN }}
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     permissions:
       packages: write
