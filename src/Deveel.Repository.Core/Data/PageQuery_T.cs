@@ -20,7 +20,9 @@ namespace Deveel.Data {
 	/// Describes the request to obtain a page of a given size
 	/// from a repository
 	/// </summary>
-	/// <typeparam name="TEntity"></typeparam>
+	/// <typeparam name="TEntity">
+	/// The type of entity to page.
+	/// </typeparam>
 	/// <seealso cref="IPageableRepository{TEntity,TKey}.GetPageAsync(PageQuery{TEntity}, CancellationToken)"/>
 	public class PageQuery<TEntity> : IQuery where TEntity : class {
 		private QueryBuilder<TEntity> queryBuilder;
@@ -131,9 +133,11 @@ namespace Deveel.Data {
 		/// Appends the given sort order to the request
 		/// </summary>
 		/// <param name="order">
-		/// The 
+		/// The sort order to apply to the page query.
 		/// </param>
-		/// <returns></returns>
+		/// <returns>
+		/// Returns this instance of <see cref="PageQuery{TEntity}"/> for chaining.
+		/// </returns>
 		public PageQuery<TEntity> OrderBy(IQueryOrder order) {
             ArgumentNullException.ThrowIfNull(order);
 

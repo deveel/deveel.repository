@@ -689,8 +689,13 @@ namespace Deveel.Data {
 		/// from the repository, if the key is not then made available
 		/// from an instance of <see cref="IEntityCacheKeyGenerator{TEntity}"/>.
 		/// </remarks>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the entity from the cache, if available, or
+		/// the value produced by the factory if not found in the cache.
+		/// </returns>
 		protected async ValueTask<TEntity?> GetOrSetAsync(string cacheKey, Func<ValueTask<TEntity?>> valueFactory, CancellationToken cancellationToken) {
 			if (EntityCache == null)
 				return await valueFactory();
@@ -706,6 +711,15 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Adds the given entity to the repository.
 		/// </summary>
+		/// <example>
+		/// <code>
+		/// var manager = new EntityManager&lt;MyEntity&gt;(repository);
+		/// var result = await manager.AddAsync(entity);
+		/// if (result.IsSuccess()) {
+		///     Console.WriteLine("Entity added successfully");
+		/// }
+		/// </code>
+		/// </example>
 		/// <param name="entity">
 		/// The entity to be added.
 		/// </param>
@@ -748,6 +762,15 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Adds the given range of entities to the repository.
 		/// </summary>
+		/// <example>
+		/// <code>
+		/// var manager = new EntityManager&lt;MyEntity&gt;(repository);
+		/// var result = await manager.AddRangeAsync(new[] { entity1, entity2 });
+		/// if (result.IsSuccess()) {
+		///     Console.WriteLine("Entities added successfully");
+		/// }
+		/// </code>
+		/// </example>
 		/// <param name="entities">
 		/// The range of entities to be added.
 		/// </param>
@@ -864,6 +887,15 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Updates the given entity in the repository.
 		/// </summary>
+		/// <example>
+		/// <code>
+		/// var manager = new EntityManager&lt;MyEntity&gt;(repository);
+		/// var result = await manager.UpdateAsync(entity);
+		/// if (result.IsSuccess()) {
+		///     Console.WriteLine("Entity updated successfully");
+		/// }
+		/// </code>
+		/// </example>
 		/// <param name="entity">
 		/// The entity to be updated.
 		/// </param>
@@ -942,6 +974,15 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Removes the given entity from the repository.
 		/// </summary>
+		/// <example>
+		/// <code>
+		/// var manager = new EntityManager&lt;MyEntity&gt;(repository);
+		/// var result = await manager.RemoveAsync(entity);
+		/// if (result.IsSuccess()) {
+		///     Console.WriteLine("Entity removed successfully");
+		/// }
+		/// </code>
+		/// </example>
 		/// <param name="entity">
 		/// The entity to be removed.
 		/// </param>
@@ -1039,6 +1080,16 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Attempts to find an entity in the repository by its key.
 		/// </summary>
+		/// <example>
+		/// <code>
+		/// var manager = new EntityManager&lt;MyEntity&gt;(repository);
+		/// var result = await manager.FindAsync(entityId);
+		/// if (result.IsSuccess()) {
+		///     var entity = result.Value;
+		///     Console.WriteLine($"Found: {entity}");
+		/// }
+		/// </code>
+		/// </example>
 		/// <param name="key">
 		/// The key of the entity to be found.
 		/// </param>
@@ -1077,6 +1128,17 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Finds an entity in the repository that matches the given filter.
 		/// </summary>
+		/// <example>
+		/// <code>
+		/// var manager = new EntityManager&lt;MyEntity&gt;(repository);
+		/// var query = new QueryBuilder&lt;MyEntity&gt;().Where(x =&gt; x.IsActive).Build();
+		/// var result = await manager.FindFirstAsync(query);
+		/// if (result.IsSuccess()) {
+		///     var entity = result.Value;
+		///     Console.WriteLine($"Found: {entity}");
+		/// }
+		/// </code>
+		/// </example>
 		/// <param name="query">
 		/// The query to be used to look for the entity.
 		/// </param>
@@ -1143,6 +1205,16 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Finds all the entities in the repository that match the given filter.
 		/// </summary>
+		/// <example>
+		/// <code>
+		/// var manager = new EntityManager&lt;MyEntity&gt;(repository);
+		/// var query = new QueryBuilder&lt;MyEntity&gt;().Where(x =&gt; x.IsActive).Build();
+		/// var entities = await manager.FindAllAsync(query);
+		/// foreach (var entity in entities) {
+		///     Console.WriteLine($"Found: {entity}");
+		/// }
+		/// </code>
+		/// </example>
 		/// <param name="query">
 		/// The query to be used to look for the entities.
 		/// </param>
@@ -1206,6 +1278,14 @@ namespace Deveel.Data {
 		/// Counts the number of entities in the repository that match
 		/// the given filter.
 		/// </summary>
+		/// <example>
+		/// <code>
+		/// var manager = new EntityManager&lt;MyEntity&gt;(repository);
+		/// var filter = new QueryFilter&lt;MyEntity&gt;(x =&gt; x.IsActive);
+		/// long count = await manager.CountAsync(filter);
+		/// Console.WriteLine($"Count: {count}");
+		/// </code>
+		/// </example>
 		/// <param name="filter">
 		/// The filter to be used to look for the entities.
 		/// </param>
@@ -1268,13 +1348,34 @@ namespace Deveel.Data {
 			=> CountAsync(filter == null ? QueryFilter.Empty : QueryFilter.Where(filter), cancellationToken);
 
 		/// <summary>
-		/// 
+		/// Retrieves a page of entities from the repository based on the given query.
 		/// </summary>
-		/// <param name="query"></param>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
-		/// <exception cref="NotSupportedException"></exception>
-		/// <exception cref="OperationException"></exception>
+		/// <example>
+		/// <code>
+		/// var manager = new EntityManager&lt;MyEntity&gt;(repository);
+		/// var pageQuery = new PageQuery&lt;MyEntity&gt;(1, 10);
+		/// var page = await manager.GetPageAsync(pageQuery);
+		/// foreach (var entity in page.Items) {
+		///     Console.WriteLine(entity);
+		/// }
+		/// </code>
+		/// </example>
+		/// <param name="query">
+		/// The paging and filtering criteria to apply to the query.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns a <see cref="PageResult{TEntity}"/> containing the entities
+		/// that match the given paging criteria.
+		/// </returns>
+		/// <exception cref="NotSupportedException">
+		/// Thrown when the repository does not support paging.
+		/// </exception>
+		/// <exception cref="OperationException">
+		/// Thrown when an unknown error occurs while retrieving the page.
+		/// </exception>
 		public virtual async ValueTask<PageResult<TEntity>> GetPageAsync(PageQuery<TEntity> query, CancellationToken? cancellationToken = null) {
 			ThrowIfDisposed();
 

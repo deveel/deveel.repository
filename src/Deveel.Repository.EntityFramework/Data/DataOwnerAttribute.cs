@@ -14,6 +14,10 @@
 
 namespace Deveel.Data
 {
+	/// <summary>
+	/// An attribute that marks a property or field as the owner
+	/// of the entity, used to identify the owner of the data.
+	/// </summary>
 	[System.AttributeUsage(System.AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
 	public sealed class DataOwnerAttribute : Attribute
 	{

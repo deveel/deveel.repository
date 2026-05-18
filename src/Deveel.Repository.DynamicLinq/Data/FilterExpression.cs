@@ -67,8 +67,12 @@ namespace Deveel.Data {
 		/// <param name="paramNames">
 		/// The array of names of the parameters to be used in the expression
 		/// </param>
-		/// <param name="expression"></param>
-		/// <returns></returns>
+		/// <param name="expression">
+		/// The string expression to compile into a delegate.
+		/// </param>
+		/// <returns>
+		/// Returns a compiled delegate that can be invoked to evaluate the expression.
+		/// </returns>
 		public static Delegate Compile(Type[] paramTypes, string[] paramNames, string expression)
 			=> Compile(null, paramTypes, paramNames, expression);
 
@@ -102,7 +106,9 @@ namespace Deveel.Data {
 		/// or whitespace, or when the given <paramref name="paramTypes"/> and
 		/// <paramref name="paramNames"/> arrays are not the same size.
 		/// </exception>
-		/// <exception cref="InvalidOperationException"></exception>
+		/// <exception cref="InvalidOperationException">
+		/// Thrown when the resulting expression is not a filter or cannot be compiled.
+		/// </exception>
 		public static Delegate Compile(IFilterCache? cache, Type[] paramTypes, string[] paramNames, string expression) {
 			ArgumentNullException.ThrowIfNull(paramTypes, nameof(paramTypes));
 			ArgumentNullException.ThrowIfNull(paramNames, nameof(paramNames));

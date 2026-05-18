@@ -29,7 +29,9 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Constructs the cancellation source using the given <see cref="IHttpContextAccessor"/>.
 		/// </summary>
-		/// <param name="httpContextAccessor"></param>
+		/// <param name="httpContextAccessor">
+		/// The accessor to the current HTTP context.
+		/// </param>
 		public HttpRequestCancellationSource(IHttpContextAccessor httpContextAccessor) {
 			this.httpContextAccessor = httpContextAccessor;
 		}

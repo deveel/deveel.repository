@@ -144,13 +144,13 @@ We are actively building Deveel Repository toward a comprehensive, production-re
 
 ### Release Timeline
 
-- [ ] **v1.5.0** — "Solid Ground"
+  - [ ] **v1.5.0** — "Solid Ground"
   - [x] Package Namespace Correction
   - [x] Thread-Safe In-Memory Repository
   - [ ] Expression Compilation Cache
-  - [ ] Full .NET 10 Compatibility and Benchmark Baseline
-  - [ ] XML Documentation Completeness
-  - [ ] Conversion to ValueTask Results for Asynchronous Methods
+  - [x] Full .NET 10 Compatibility and Benchmark Baseline
+  - [x] XML Documentation Completeness
+  - [x] Conversion to ValueTask Results for Asynchronous Methods
   - [ ] General Performance Optimizations
 
 - [ ] **v1.6.0** — "Developer Flow"

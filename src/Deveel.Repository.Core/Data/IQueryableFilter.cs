@@ -17,7 +17,9 @@ namespace Deveel.Data {
 	/// A filter that can be applied to a <see cref="IQueryable{T}"/>
 	/// object to restrict the results of a query.
 	/// </summary>
-	/// <typeparam name="TEntity"></typeparam>
+	/// <typeparam name="TEntity">
+	/// The type of entity to filter.
+	/// </typeparam>
 	public interface IQueryableFilter<TEntity> : IQueryFilter where TEntity : class {
 		/// <summary>
 		/// Applies the filter to the given queryable object.

@@ -19,7 +19,9 @@ namespace Deveel.Data {
 	/// An object that maps a field name to a <see cref="Expression"/>
 	/// used to select the field from an entity.
 	/// </summary>
-	/// <typeparam name="TEntity"></typeparam>
+	/// <typeparam name="TEntity">
+	/// The type of entity to map fields for.
+	/// </typeparam>
 	public interface IFieldMapper<TEntity> {
 		/// <summary>
 		/// Maps the given field name to an expression that selects

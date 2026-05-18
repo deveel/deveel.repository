@@ -132,8 +132,13 @@ namespace Deveel.Data {
 		/// Constructs a new <see cref="IMongoDbSet{TEntity}"/> that is
 		/// coherent with the context and the entity type.
 		/// </summary>
-		/// <returns></returns>
-		/// <exception cref="RepositoryException"></exception>
+		/// <returns>
+		/// Returns an instance of <see cref="IMongoDbSet{TEntity}"/> that is
+		/// coherent with the context and the entity type.
+		/// </returns>
+		/// <exception cref="RepositoryException">
+		/// Thrown when the entity set cannot be created.
+		/// </exception>
 		protected virtual IMongoDbSet<TEntity> MakeEntitySet() {
 			if (Context is IMongoDbTenantContext tenantContext &&
 				typeof(IHaveTenantId).IsAssignableFrom(typeof(TEntity))) {
@@ -321,7 +326,9 @@ namespace Deveel.Data {
 		/// Returns a task that, when completed, has created all the indices
 		/// of the repository.
 		/// </returns>
-		/// <exception cref="RepositoryException"></exception>
+		/// <exception cref="RepositoryException">
+		/// Thrown when an error occurs while creating the indices for the repository.
+		/// </exception>
 		public async ValueTask CreateIndicesAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));
@@ -399,7 +406,9 @@ namespace Deveel.Data {
 		/// <returns>
 		/// Returns a task that, when completed, has dropped the collection.
 		/// </returns>
-		/// <exception cref="RepositoryException"></exception>
+		/// <exception cref="RepositoryException">
+		/// Thrown when an error occurs while dropping the collection in the database.
+		/// </exception>
 		public async ValueTask DropCollectionAsync(CancellationToken cancellationToken = default) {
 			try {
 				var entityDef = EntityMapping.GetOrCreateDefinition(typeof(TEntity));

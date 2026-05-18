@@ -31,7 +31,9 @@ namespace Deveel.Data {
 		/// given filtering conditions
 		/// </summary>
 		/// <param name="filter">The filter used to identify the items</param>
-		/// <param name="cancellationToken"></param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
 		/// <returns>
 		/// Returns <c>true</c> if at least one item in the inventory matches the given
 		/// filter, otherwise returns <c>false</c>

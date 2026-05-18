@@ -32,7 +32,9 @@ namespace Deveel.Data {
 		/// <param name="request">The request to obtain a given page from the repository. This
 		/// object provides the number of the page, the size of the items to return, filters and
 		/// sorting order.</param>
-		/// <param name="cancellationToken"></param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
 		/// <returns>
 		/// Returns an instance of <see cref="PageResult{TEntity}"/> that provides the
 		/// page items and a count of total items.

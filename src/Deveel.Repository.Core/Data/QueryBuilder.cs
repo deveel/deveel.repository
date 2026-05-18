@@ -19,7 +19,9 @@ namespace Deveel.Data {
 	/// A fluent builder that can be used to create a query
 	/// that can be applied to a repository.
 	/// </summary>
-	/// <typeparam name="TEntity"></typeparam>
+	/// <typeparam name="TEntity">
+	/// The type of entity to build the query for.
+	/// </typeparam>
 	public sealed class QueryBuilder<TEntity> : IQuery where TEntity : class {
 		/// <summary>
 		/// Creates a new query builder that wraps the 
@@ -110,7 +112,9 @@ namespace Deveel.Data {
 		/// <param name="field">
 		/// The expression used to select the field to sort by.
 		/// </param>
-		/// <returns></returns>
+		/// <returns>
+		/// Returns the built <see cref="IQuery"/> instance.
+		/// </returns>
 		public QueryBuilder<TEntity> OrderByDescending(Expression<Func<TEntity, object?>> field)
 			=> OrderBy(field, SortDirection.Descending);
 

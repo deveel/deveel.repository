@@ -299,9 +299,15 @@ namespace Deveel.Data
 		/// <param name="key">
 		/// The key used to find the entity.
 		/// </param>
-		/// <param name="entity"></param>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
+		/// <param name="entity">
+		/// The entity that was found in the repository.
+		/// </param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
+		/// <returns>
+		/// Returns the entity after any modification by the callback.
+		/// </returns>
 		protected virtual ValueTask<TEntity> OnEntityFoundByKeyAsync(TKey key, TEntity entity, CancellationToken cancellationToken = default) {
 			return new ValueTask<TEntity>(entity);
 		}
@@ -388,7 +394,9 @@ namespace Deveel.Data
 		/// <param name="cancellationToken">
 		/// A token used to cancel the operation.
 		/// </param>
-		/// <returns></returns>
+		/// <returns>
+		/// Returns the number of entities that match the given filter.
+		/// </returns>
 		public virtual async ValueTask<long> CountAsync(IQueryFilter filter, CancellationToken cancellationToken = default) {
 			ThrowIfDisposed();
 

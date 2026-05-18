@@ -18,6 +18,9 @@ namespace Deveel.Data {
 	/// that can be used to report errors in an operation
 	/// for a specific entity.
 	/// </summary>
+	/// <typeparam name="TEntity">
+	/// The type of the entity for which errors are created.
+	/// </typeparam>
 	public interface IOperationErrorFactory<TEntity> : IOperationErrorFactory where TEntity : class {
 	}
 }
