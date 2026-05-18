@@ -48,7 +48,13 @@ dotnet add package Deveel.Repository.Core
 | ------ | ------- | ----------- |
 | [_In-Memory_](repository-implementations/in-memory.md) | `Deveel.Repository.InMemory` | A volatile, in-process repository — ideal for testing and prototyping. |
 | [_MongoDB_](repository-implementations/mongodb.md) | `Deveel.Repository.MongoFramework` | Stores entities in a MongoDB database via [MongoFramework](https://github.com/turnersoftware/mongoframework). |
+| [_MongoDB Multi-Tenant_](multi-tenancy.md) | `Deveel.Repository.MongoFramework.MultiTenant` | Multi-tenant MongoDB connection management via [Finbuckle.MultiTenant](https://github.com/Finbuckle/Finbuckle.MultiTenant). |
 | [_Entity Framework Core_](repository-implementations/ef-core.md) | `Deveel.Repository.EntityFramework` | Stores entities in any relational database supported by [Entity Framework Core](https://github.com/dotnet/efcore). |
+| [_Dynamic LINQ_](repository-implementations/README.md#dynamic-linq-support) | `Deveel.Repository.DynamicLinq` | Runtime string-based filter expressions via [System.Linq.Dynamic.Core](https://github.com/zzzprojects/System.Linq.Dynamic.Core). |
+| [_Entity Manager_](entity-manager/) | `Deveel.Repository.Manager` | Business layer with validation, normalization, caching, and event sourcing. |
+| [_Entity Manager EasyCaching_](entity-manager/caching-entities.md) | `Deveel.Repository.Manager.EasyCaching` | Second-level caching for EntityManager via [EasyCaching](https://github.com/dotnetcore/EasyCaching). |
+| [_Entity Manager ASP.NET Core_](entity-manager/http-request-cancellation.md) | `Deveel.Repository.Manager.AspNetCore` | ASP.NET Core integration for automatic HTTP request cancellation. |
+| [_Entity States_](#) | `Deveel.Repository.States.Core` | Entity state management abstractions (experimental). |
 
 ## Instrumentation
 

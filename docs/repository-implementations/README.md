@@ -7,6 +7,7 @@ The _Deveel Repository_ framework ships with a set of ready-to-use repository im
 | [In-Memory](in-memory.md) | `Deveel.Repository.InMemory` | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.InMemory.svg)](https://www.nuget.org/packages/Deveel.Repository.InMemory/) |
 | [Entity Framework Core](ef-core.md) | `Deveel.Repository.EntityFramework` | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.EntityFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.EntityFramework/) |
 | [MongoDB](mongodb.md) | `Deveel.Repository.MongoFramework` | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.MongoFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.MongoFramework/) |
+| [MongoDB Multi-Tenant](../multi-tenancy.md) | `Deveel.Repository.MongoFramework.MultiTenant` | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.MongoFramework.MultiTenant.svg)](https://www.nuget.org/packages/Deveel.Repository.MongoFramework.MultiTenant/) |
 
 ## Capability Matrix
 
