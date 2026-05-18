@@ -35,7 +35,9 @@ namespace Deveel.Data.Caching {
 		/// Converts the given entity to an
 		/// object that can be cached.
 		/// </summary>
-		/// <param name="entity"></param>
+		/// <param name="entity">
+		/// The entity instance to convert to a cached version.
+		/// </param>
 		/// <returns>
 		/// Returns an object that can be cached.
 		/// </returns>

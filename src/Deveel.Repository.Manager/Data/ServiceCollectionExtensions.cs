@@ -280,10 +280,18 @@ namespace Deveel.Data {
 		/// <param name="services">
 		/// The collection of services to register the validator.
 		/// </param>
-		/// <param name="validatorType"></param>
-		/// <param name="lifetime"></param>
-		/// <returns></returns>
-		/// <exception cref="ArgumentException"></exception>
+		/// <param name="validatorType">
+		/// The type of the validator to register.
+		/// </param>
+		/// <param name="lifetime">
+		/// The desired lifetime of the validator service.
+		/// </param>
+		/// <returns>
+		/// Returns the given collection of services for chaining calls.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the given type is not a concrete class.
+		/// </exception>
 		public static IServiceCollection AddEntityValidator(this IServiceCollection services, Type validatorType, ServiceLifetime lifetime = ServiceLifetime.Transient) {
 			ArgumentNullException.ThrowIfNull(validatorType, nameof(validatorType));
 

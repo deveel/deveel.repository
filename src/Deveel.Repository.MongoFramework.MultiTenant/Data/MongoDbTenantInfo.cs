@@ -27,10 +27,19 @@ namespace Deveel.Data
             set => Identifier = value ?? "";
         }
 #endif
+        /// <summary>
+        /// Gets or sets the unique identifier of the tenant.
+        /// </summary>
         public string Id { get; set; }
         
+        /// <summary>
+        /// Gets or sets the unique identifier used to identify the tenant.
+        /// </summary>
         public string Identifier { get; set; }
         
+        /// <summary>
+        /// Gets or sets the display name of the tenant.
+        /// </summary>
         public string? Name { get; set; }
     }
 }

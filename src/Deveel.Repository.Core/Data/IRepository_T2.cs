@@ -42,8 +42,16 @@ namespace Deveel.Data {
 		/// <summary>
 		/// Adds a new entity into the repository
 		/// </summary>
+		/// <example>
+		/// <code>
+		/// var repository = new MyEntityRepository(context);
+		/// await repository.AddAsync(entity);
+		/// </code>
+		/// </example>
 		/// <param name="entity">The entity to be added</param>
-		/// <param name="cancellationToken"></param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
 		/// <returns>
 		/// Returns a task that will complete when the operation is completed
 		/// </returns>
@@ -59,7 +67,9 @@ namespace Deveel.Data {
 		/// Adds a list of entities in the repository in one single operation
 		/// </summary>
 		/// <param name="entities">The enumeration of the entities to be added</param>
-		/// <param name="cancellationToken"></param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
 		/// <remarks>
 		/// <para>
 		/// The operation is intended to be <c>all-or-nothing</c> fashion, where it
@@ -84,7 +94,9 @@ namespace Deveel.Data {
 		/// Updates an existing entity in the repository
 		/// </summary>
 		/// <param name="entity">The entity instance to be updated</param>
-		/// <param name="cancellationToken"></param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
 		/// <returns>
 		/// Returns <c>true</c> if the entity was found and updated in 
 		/// the repository, otherwise <c>false</c>
@@ -101,7 +113,9 @@ namespace Deveel.Data {
 		/// Removes an entity from the repository
 		/// </summary>
 		/// <param name="entity">The entity to be deleted</param>
-		/// <param name="cancellationToken"></param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
 		/// <returns>
 		/// Returns <c>true</c> if the entity was successfully removed 
 		/// from the repository, otherwise <c>false</c>. 
@@ -137,7 +151,9 @@ namespace Deveel.Data {
 		/// given unique identifier
 		/// </summary>
 		/// <param name="key">The unique identifier of the entity to find</param>
-		/// <param name="cancellationToken"></param>
+		/// <param name="cancellationToken">
+		/// A token used to cancel the operation.
+		/// </param>
 		/// <returns>
 		/// Returns the instance of the entity associated to the given <paramref name="key"/>,
 		/// or <c>null</c> if none entity was found.

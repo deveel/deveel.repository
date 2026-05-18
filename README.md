@@ -56,10 +56,13 @@ The framework is organized into a _kernel_ package (providing interfaces and abs
 | `Deveel.Repository.InMemory`           | Volatile, in-process repository — ideal for testing and prototyping                                           | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.InMemory.svg)](https://www.nuget.org/packages/Deveel.Repository.InMemory/) |            [![Downloads](https://img.shields.io/nuget/dt/Deveel.Repository.InMemory.svg)](https://www.nuget.org/packages/Deveel.Repository.InMemory/)            |
 | `Deveel.Repository.EntityFramework`    | Repository driver backed by [Entity Framework Core](https://github.com/dotnet/efcore)                         | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.EntityFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.EntityFramework/) |     [![Downloads](https://img.shields.io/nuget/dt/Deveel.Repository.EntityFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.EntityFramework/)     |
 | `Deveel.Repository.MongoFramework`     | Repository driver backed by [MongoFramework](https://github.com/turnersoftware/mongoframework) / MongoDB      | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.MongoFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.MongoFramework/) |      [![Downloads](https://img.shields.io/nuget/dt/Deveel.Repository.MongoFramework.svg)](https://www.nuget.org/packages/Deveel.Repository.MongoFramework/)      |
+| `Deveel.Repository.MongoFramework.MultiTenant` | Multi-tenant MongoDB connection management via [Finbuckle.MultiTenant](https://github.com/Finbuckle/Finbuckle.MultiTenant) | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.MongoFramework.MultiTenant.svg)](https://www.nuget.org/packages/Deveel.Repository.MongoFramework.MultiTenant/) |      [![Downloads](https://img.shields.io/nuget/dt/Deveel.Repository.MongoFramework.MultiTenant.svg)](https://www.nuget.org/packages/Deveel.Repository.MongoFramework.MultiTenant/)      |
 | `Deveel.Repository.DynamicLinq`        | Filter / query support via [System.Linq.Dynamic.Core](https://github.com/zzzprojects/System.Linq.Dynamic.Core) | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.DynamicLinq.svg)](https://www.nuget.org/packages/Deveel.Repository.DynamicLinq/) |         [![Downloads](https://img.shields.io/nuget/dt/Deveel.Repository.DynamicLinq.svg)](https://www.nuget.org/packages/Deveel.Repository.DynamicLinq/)         |
 | `Deveel.Repository.Manager`            | Business layer (_EntityManager_) with validation, normalization, event sourcing, and logging                  | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.Manager.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager/) |             [![Downloads](https://img.shields.io/nuget/dt/Deveel.Repository.Manager.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager/)             |
 | `Deveel.Repository.Manager.DynamicLinq` | Dynamic LINQ query extensions for the Entity Manager                                                          | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.Manager.DynamicLinq.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager.DynamicLinq/) | [![Downloads](https://img.shields.io/nuget/dt/Deveel.Repository.Manager.DynamicLinq.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager.DynamicLinq/) |
 | `Deveel.Repository.Manager.EasyCaching` | Second-level caching for the Entity Manager via [EasyCaching](https://github.com/dotnetcore/EasyCaching)      | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.Manager.EasyCaching.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager.EasyCaching/) | [![Downloads](https://img.shields.io/nuget/dt/Deveel.Repository.Manager.EasyCaching.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager.EasyCaching/) |
+| `Deveel.Repository.Manager.AspNetCore` | ASP.NET Core integration for automatic HTTP request cancellation                                              | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.Manager.AspNetCore.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager.AspNetCore/) | [![Downloads](https://img.shields.io/nuget/dt/Deveel.Repository.Manager.AspNetCore.svg)](https://www.nuget.org/packages/Deveel.Repository.Manager.AspNetCore/) |
+| `Deveel.Repository.States.Core`        | Entity state management abstractions (experimental)                                                           | [![NuGet](https://img.shields.io/nuget/v/Deveel.Repository.States.Core.svg)](https://www.nuget.org/packages/Deveel.Repository.States.Core/) | [![Downloads](https://img.shields.io/nuget/dt/Deveel.Repository.States.Core.svg)](https://www.nuget.org/packages/Deveel.Repository.States.Core/) |
 
 ---
 
@@ -144,20 +147,20 @@ We are actively building Deveel Repository toward a comprehensive, production-re
 
 ### Release Timeline
 
-- [ ] **v1.5.0** — "Solid Ground"
+  - [x] **v1.5.0** — "Solid Ground"
   - [x] Package Namespace Correction
   - [x] Thread-Safe In-Memory Repository
   - [ ] Expression Compilation Cache
-  - [ ] Full .NET 10 Compatibility and Benchmark Baseline
-  - [ ] XML Documentation Completeness
-  - [ ] Conversion to ValueTask Results for Asynchronous Methods
+  - [x] Full .NET 10 Compatibility and Benchmark Baseline
+  - [x] XML Documentation Completeness
+  - [x] Conversion to ValueTask Results for Asynchronous Methods
   - [ ] General Performance Optimizations
 
 - [ ] **v1.6.0** — "Developer Flow"
   - [ ] Unified Repository Setup Builder
   - [ ] QueryBuilder Execution Extensions
   - [ ] Pluggable Cache Provider Abstraction
-  - [ ] Automatic Timestamp and Ownership Management
+  - [x] Automatic Timestamp and Ownership Management
   - [ ] Repository Health Checks
   - [ ] Repository Controller Lifecycle Redesign
 

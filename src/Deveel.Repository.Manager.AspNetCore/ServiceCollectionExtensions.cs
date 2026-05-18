@@ -4,6 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Deveel
 {
+	/// <summary>
+	/// Provides extension methods for the <see cref="IServiceCollection"/> interface
+	/// to register services for handling HTTP request cancellation.
+	/// </summary>
     public static class ServiceCollectionExtensions
     {
         /// <summary>

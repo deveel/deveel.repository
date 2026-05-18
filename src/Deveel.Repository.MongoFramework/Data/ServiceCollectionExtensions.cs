@@ -25,6 +25,25 @@ namespace Deveel.Data
 	/// </summary>
 	public static class ServiceCollectionExtensions
 	{
+		/// <summary>
+		/// Adds a <see cref="IMongoDbContext"/> to the service collection
+		/// using the given connection string.
+		/// </summary>
+		/// <typeparam name="TContext">
+		/// The type of the context to register.
+		/// </typeparam>
+		/// <param name="services">
+		/// The service collection to add the context to.
+		/// </param>
+		/// <param name="connectionString">
+		/// The connection string to use for the MongoDB connection.
+		/// </param>
+		/// <param name="lifetime">
+		/// The lifetime of the context in the service collection.
+		/// </param>
+		/// <returns>
+		/// Returns the service collection for chaining.
+		/// </returns>
 		public static IServiceCollection AddMongoDbContext<TContext>(this IServiceCollection services, string connectionString, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			where TContext : class, IMongoDbContext
 		{

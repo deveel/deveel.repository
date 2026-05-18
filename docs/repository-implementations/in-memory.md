@@ -8,8 +8,13 @@
 | Pageable | ✅ | |
 | Tracking | ❌ | |
 | Multi-tenant | ❌ | |
+| Thread-Safe | ✅ | `ReaderWriterLockSlim` for concurrent access |
 
 The `InMemoryRepository<TEntity>` class stores entities in the memory of the running process. It is intended for **testing, prototyping, and scenarios where data persistence is not required**.
+
+## Thread Safety
+
+`InMemoryRepository<TEntity>` is fully thread-safe. All read operations acquire a shared read lock, and all write operations acquire an exclusive write lock via `ReaderWriterLockSlim`. Multiple threads can safely read and write to the same repository instance concurrently.
 
 ## Installation
 

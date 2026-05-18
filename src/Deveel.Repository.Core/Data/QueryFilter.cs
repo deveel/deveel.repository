@@ -48,7 +48,9 @@ namespace Deveel.Data {
 		/// Converts the given filter to a LINQ expression that can be
 		/// used to filter a <see cref="IQueryable{TEntity}"/> storage
 		/// </summary>
-		/// <typeparam name="TEntity"></typeparam>
+		/// <typeparam name="TEntity">
+		/// The type of entity to filter.
+		/// </typeparam>
 		/// <param name="filter">
 		/// The instance of the filter to convert to a LINQ expression.
 		/// </param>
@@ -197,7 +199,9 @@ namespace Deveel.Data {
 		/// <param name="filter2">
 		/// The second filter to combine.
 		/// </param>
-		/// <returns></returns>
+		/// <returns>
+		/// Returns an <see cref="IQueryFilter"/> that represents the combined filter.
+		/// </returns>
 		/// <exception cref="ArgumentNullException">
 		/// Thrown if either of the given filters is <c>null</c>.
 		/// </exception>

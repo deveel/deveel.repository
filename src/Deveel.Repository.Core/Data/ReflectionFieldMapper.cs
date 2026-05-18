@@ -20,7 +20,9 @@ namespace Deveel.Data {
 	/// An implementation of <see cref="IFieldMapper{TEntity}"/> that
 	/// uses reflection to map a field name to a member of the entity.
 	/// </summary>
-	/// <typeparam name="TEntity"></typeparam>
+	/// <typeparam name="TEntity">
+	/// The type of entity to map fields for.
+	/// </typeparam>
 	public sealed class ReflectionFieldMapper<TEntity> : IFieldMapper<TEntity> {
 		private Expression<Func<TEntity, object?>>? cachedExpr;
 

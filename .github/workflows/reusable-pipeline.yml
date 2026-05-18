@@ -66,6 +66,9 @@ jobs:
       - name: Build
         run: dotnet build --no-restore -c Release -f ${{ matrix.target-framework }}
 
+      - name: Validate XML Documentation
+        run: dotnet build --no-restore -c Release -f ${{ matrix.target-framework }} /p:WarningsAsErrors=CS1591 /p:EnforceCodeStyleInBuild=false
+
       - name: Test
         if: ${{ inputs.generate-coverage == false }}
         run: dotnet test --no-build --no-restore -c Release -f ${{ matrix.target-framework }}
